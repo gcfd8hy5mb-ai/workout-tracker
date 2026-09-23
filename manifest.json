@@ -4,37 +4,29 @@
 
   "short_name": "Workout",
 
-  "description": "Track workouts, weights, reps and progress.",
+  "description": "Personal workout and progress tracker",
 
   "start_url": "./",
 
+  "scope": "./",
+
   "display": "standalone",
 
-  "background_color": "#f3f4f6",
+  "background_color": "#111111",
 
-  "theme_color": "#111827",
-
-  "orientation": "portrait",
+  "theme_color": "#111111",
 
   "icons": [
 
     {
 
-      "src": "icon-192.png",
+      "src": "images/app-icon.png",
 
-      "sizes": "192x192",
+      "sizes": "1024x1024",
 
-      "type": "image/png"
+      "type": "image/png",
 
-    },
-
-    {
-
-      "src": "icon-512.png",
-
-      "sizes": "512x512",
-
-      "type": "image/png"
+      "purpose": "any"
 
     }
 
