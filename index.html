@@ -40,13 +40,13 @@
 
   --sub:#6e6e73;
 
-  --dark:#111;
-
   --line:#e5e5ea;
 
   --green:#28a745;
 
   --red:#dc3545;
+
+  --blue:#007aff;
 
 }
 
@@ -68,13 +68,9 @@ header{
 
   background:#111;
 
-  color:white;
+  color:#fff;
 
-  padding:
-
-    calc(18px + env(safe-area-inset-top))
-
-    18px 18px;
+  padding:calc(18px + env(safe-area-inset-top)) 18px 18px;
 
   text-align:center;
 
@@ -116,7 +112,7 @@ header p{
 
 .card{
 
-  background:var(--card);
+  background:white;
 
   border-radius:18px;
 
@@ -186,8 +182,6 @@ header p{
 
   box-shadow:0 2px 8px rgba(0,0,0,.07);
 
-  cursor:pointer;
-
 }
 
 .day-button span,
@@ -234,13 +228,13 @@ header p{
 
   background:transparent;
 
+  color:var(--blue);
+
   font-size:17px;
 
   font-weight:650;
 
   padding:5px 0 14px;
-
-  cursor:pointer;
 
 }
 
@@ -261,8 +255,6 @@ header p{
 .exercise-header{
 
   padding:16px;
-
-  cursor:pointer;
 
 }
 
@@ -312,7 +304,7 @@ header p{
 
   width:100%;
 
-  max-height:330px;
+  max-height:350px;
 
   object-fit:contain;
 
@@ -388,6 +380,20 @@ header p{
 
 }
 
+.set-block{
+
+  padding:12px 0;
+
+  border-bottom:1px solid #ddd;
+
+}
+
+.set-block:last-of-type{
+
+  border-bottom:0;
+
+}
+
 .set-row{
 
   display:grid;
@@ -398,33 +404,41 @@ header p{
 
   align-items:center;
 
-  margin-top:9px;
-
 }
 
 .set-label{
 
-  font-weight:650;
+  font-weight:700;
 
   font-size:14px;
 
 }
 
-.picker{
-
-  width:100%;
+.picker-button{
 
   border:1px solid #ccc;
 
-  border-radius:10px;
+  background:#fff;
 
-  padding:11px 5px;
+  border-radius:11px;
 
-  background:white;
+  padding:12px 6px;
 
-  font-size:16px;
+  font-size:15px;
 
-  text-align:center;
+  font-weight:650;
+
+  min-height:46px;
+
+}
+
+.previous{
+
+  margin:7px 0 0 56px;
+
+  font-size:12px;
+
+  color:#777;
 
 }
 
@@ -436,7 +450,7 @@ header p{
 
   background:#111;
 
-  color:white;
+  color:#fff;
 
   border-radius:11px;
 
@@ -456,11 +470,31 @@ header p{
 
 }
 
+.finish-workout{
+
+  width:100%;
+
+  border:0;
+
+  border-radius:15px;
+
+  padding:17px;
+
+  background:var(--green);
+
+  color:#fff;
+
+  font-size:17px;
+
+  font-weight:800;
+
+  margin:5px 0 20px;
+
+}
+
 input,
 
-select,
-
-textarea{
+select{
 
   width:100%;
 
@@ -470,11 +504,9 @@ textarea{
 
   border-radius:11px;
 
-  background:white;
+  background:#fff;
 
   font-size:16px;
-
-  font-family:inherit;
 
 }
 
@@ -522,7 +554,7 @@ label{
 
   background:#111;
 
-  color:white;
+  color:#fff;
 
   padding:9px 13px;
 
@@ -556,7 +588,7 @@ label{
 
   background:#111;
 
-  color:white;
+  color:#fff;
 
   padding:15px;
 
@@ -642,27 +674,151 @@ label{
 
 }
 
-.top-actions{
+/* =========================
 
-  display:grid;
+   WHEEL PICKER
 
-  grid-template-columns:1fr 1fr;
+========================= */
 
-  gap:10px;
+.picker-overlay{
+
+  position:fixed;
+
+  inset:0;
+
+  background:rgba(0,0,0,.35);
+
+  z-index:9998;
 
 }
 
-.top-actions button{
+.picker-sheet{
+
+  position:fixed;
+
+  left:0;
+
+  right:0;
+
+  bottom:0;
+
+  background:#f8f8f8;
+
+  border-radius:22px 22px 0 0;
+
+  z-index:9999;
+
+  padding-bottom:calc(12px + env(safe-area-inset-bottom));
+
+  box-shadow:0 -8px 30px rgba(0,0,0,.18);
+
+}
+
+.picker-toolbar{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  padding:14px 18px;
+
+  background:white;
+
+  border-radius:22px 22px 0 0;
+
+  border-bottom:1px solid #ddd;
+
+}
+
+.picker-toolbar strong{
+
+  font-size:17px;
+
+}
+
+.picker-done{
 
   border:0;
 
-  border-radius:12px;
+  background:transparent;
 
-  padding:13px 8px;
+  color:var(--blue);
+
+  font-size:17px;
 
   font-weight:700;
 
-  background:white;
+}
+
+.wheel-wrap{
+
+  position:relative;
+
+  height:260px;
+
+  overflow:hidden;
+
+  background:#f8f8f8;
+
+}
+
+.wheel{
+
+  height:260px;
+
+  overflow-y:scroll;
+
+  scroll-snap-type:y mandatory;
+
+  -webkit-overflow-scrolling:touch;
+
+  padding:104px 0;
+
+}
+
+.wheel::-webkit-scrollbar{
+
+  display:none;
+
+}
+
+.wheel-option{
+
+  height:52px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  scroll-snap-align:center;
+
+  font-size:24px;
+
+  font-weight:600;
+
+}
+
+.wheel-highlight{
+
+  pointer-events:none;
+
+  position:absolute;
+
+  top:104px;
+
+  left:18px;
+
+  right:18px;
+
+  height:52px;
+
+  border-top:1px solid #bbb;
+
+  border-bottom:1px solid #bbb;
 
 }
 
@@ -671,6 +827,12 @@ label{
   .set-row{
 
     grid-template-columns:42px 1fr 1fr;
+
+  }
+
+  .previous{
+
+    margin-left:50px;
 
   }
 
@@ -684,2023 +846,2411 @@ label{
 
 <header>
 
-  <h1>Workout Tracker</h1>
+<h1>Workout Tracker</h1>
 
-  <p>Version 5</p>
+<p>Version 5.1</p>
 
 </header>
 
 <div class="container">
 
-<!-- HOME -->
-
 <section id="home">
 
-  <div class="card">
+<div class="card">
 
-    <strong>Workout Progress</strong>
+<strong>Workout Progress</strong>
 
-    <div class="small" id="progressText">0 exercises completed</div>
+<div class="small" id="progressText"></div>
 
-    <div class="progress-bar">
+<div class="progress-bar">
 
-      <div class="progress-fill" id="progressFill"></div>
+<div class="progress-fill" id="progressFill"></div>
 
-    </div>
+</div>
 
-  </div>
+</div>
 
-  <button class="action-button primary" onclick="showBuilder()">
+<button class="action-button primary" onclick="showBuilder()">
 
-    ＋ Create Your Own Workout
+＋ Create Your Own Workout
 
-    <span>Build a workout using the exercise library</span>
+<span>Build a workout using the exercise library</span>
 
-  </button>
+</button>
 
-  <button class="action-button" onclick="showLibrary()">
+<button class="action-button" onclick="showLibrary()">
 
-    Exercise Library
+Exercise Library
 
-    <span>Browse exercises and instructions</span>
+<span>Browse exercises and instructions</span>
 
-  </button>
+</button>
 
-  <h2 class="section-heading">Preset Workouts</h2>
+<h2 class="section-heading">Preset Workouts</h2>
 
-  <div id="presetButtons"></div>
+<div id="presetButtons"></div>
 
-  <h2 class="section-heading">My Workouts</h2>
+<h2 class="section-heading">My Workouts</h2>
 
-  <div id="customButtons"></div>
+<div id="customButtons"></div>
 
 </section>
-
-<!-- WORKOUT -->
 
 <section id="workoutScreen" class="hidden">
 
-  <button class="back" onclick="goHome()">← Back</button>
+<button class="back" onclick="goHome()">← Back</button>
 
-  <h2 id="workoutTitle"></h2>
+<h2 id="workoutTitle"></h2>
 
-  <div id="exerciseList"></div>
+<div id="exerciseList"></div>
+
+<button
+
+ id="finishWorkoutButton"
+
+ class="finish-workout"
+
+ onclick="finishWorkout()">
+
+ Finish Workout
+
+</button>
 
 </section>
-
-<!-- LIBRARY -->
 
 <section id="libraryScreen" class="hidden">
 
-  <button class="back" onclick="goHome()">← Back</button>
+<button class="back" onclick="goHome()">← Back</button>
 
-  <h2>Exercise Library</h2>
+<h2>Exercise Library</h2>
 
-  <input
+<input
 
-    id="librarySearch"
+ id="librarySearch"
 
-    class="search"
+ class="search"
 
-    type="search"
+ type="search"
 
-    placeholder="Search exercises..."
+ placeholder="Search exercises..."
 
-    oninput="renderLibrary()"
+ oninput="renderLibrary()">
 
-  >
+<select id="muscleFilter" onchange="renderLibrary()">
 
-  <select id="muscleFilter" onchange="renderLibrary()">
+<option value="All">All Muscle Groups</option>
 
-    <option value="All">All Muscle Groups</option>
+<option>Chest</option>
 
-    <option>Chest</option>
+<option>Back</option>
 
-    <option>Back</option>
+<option>Shoulders</option>
 
-    <option>Shoulders</option>
+<option>Biceps</option>
 
-    <option>Biceps</option>
+<option>Triceps</option>
 
-    <option>Triceps</option>
+<option>Quads</option>
 
-    <option>Quads</option>
+<option>Hamstrings</option>
 
-    <option>Hamstrings</option>
+<option>Glutes</option>
 
-    <option>Glutes</option>
+<option>Calves</option>
 
-    <option>Calves</option>
+<option>Core</option>
 
-    <option>Core</option>
+</select>
 
-  </select>
-
-  <div class="card" id="libraryList"></div>
+<div class="card" id="libraryList"></div>
 
 </section>
 
-<!-- BUILDER -->
-
 <section id="builderScreen" class="hidden">
 
-  <button class="back" onclick="goHome()">← Cancel</button>
+<button class="back" onclick="goHome()">← Cancel</button>
 
-  <h2>Create Workout</h2>
+<h2>Create Workout</h2>
 
-  <div class="card">
+<div class="card">
 
-    <label>Workout Name</label>
+<label>Workout Name</label>
 
-    <input
+<input
 
-      id="customWorkoutName"
+ id="customWorkoutName"
 
-      placeholder="Example: Monday Push Day"
+ placeholder="Example: Monday Push Day">
 
-    >
+<div class="detail-title">
 
-    <div class="detail-title">
+Exercises Added
 
-      Exercises Added
+</div>
 
-    </div>
+<div id="builderExercises" class="builder-list"></div>
 
-    <div id="builderExercises" class="builder-list"></div>
+</div>
 
-  </div>
+<h3>Choose Exercises</h3>
 
-  <h3>Choose Exercises</h3>
+<input
 
-  <input
+ id="builderSearch"
 
-    id="builderSearch"
+ class="search"
 
-    class="search"
+ type="search"
 
-    type="search"
+ placeholder="Search exercise library..."
 
-    placeholder="Search exercise library..."
+ oninput="renderBuilderLibrary()">
 
-    oninput="renderBuilderLibrary()"
+<div class="card" id="builderLibrary"></div>
 
-  >
+<button class="save-button" onclick="saveCustomWorkout()">
 
-  <div class="card" id="builderLibrary"></div>
+Save Workout
 
-  <button class="save-button" onclick="saveCustomWorkout()">
-
-    Save Workout
-
-  </button>
+</button>
 
 </section>
 
 </div>
 
+<!-- Wheel picker -->
+
+<div id="pickerOverlay"
+
+     class="picker-overlay hidden"
+
+     onclick="closePicker()"></div>
+
+<div id="pickerSheet" class="picker-sheet hidden">
+
+<div class="picker-toolbar">
+
+<strong id="pickerTitle">
+
+Select
+
+</strong>
+
+<button class="picker-done" onclick="confirmPicker()">
+
+Done
+
+</button>
+
+</div>
+
+<div class="wheel-wrap">
+
+<div id="wheel" class="wheel"></div>
+
+<div class="wheel-highlight"></div>
+
+</div>
+
+</div>
+
 <script>
 
-/* =====================================================
+/* =========================
 
    EXERCISE LIBRARY
 
-===================================================== */
+========================= */
 
 const exerciseLibrary = [
 
 {
 
- id:"machine-chest-press",
+id:"machine-chest-press",
 
- name:"Machine Chest Press",
+name:"Machine Chest Press",
 
- muscle:"Chest",
+muscle:"Chest",
 
- image:"images/machine-chest-press.png",
+image:"images/machine-chest-press.png",
 
- how:"Adjust the seat so the handles are around mid-chest height. Keep your back against the pad. Press the handles forward until your arms are almost straight, then slowly return to the starting position.",
+how:"Adjust the seat so the handles are around mid-chest height. Keep your back against the pad. Press the handles forward until your arms are almost straight, then slowly return to the starting position.",
 
- tips:[
+tips:[
 
-  "Keep your chest up and back against the pad.",
+"Keep your chest up and back against the pad.",
 
-  "Keep your wrists straight.",
+"Keep your wrists straight.",
 
-  "Control the weight through the entire repetition."
+"Control the weight through the entire repetition."
 
- ],
+],
 
- mistakes:[
+mistakes:[
 
-  "Using momentum.",
+"Using momentum.",
 
-  "Letting the shoulders roll forward.",
+"Letting the shoulders roll forward.",
 
-  "Locking the elbows aggressively."
+"Locking the elbows aggressively."
 
- ]
-
-},
-
-{
-
- id:"pec-deck",
-
- name:"Pec Deck",
-
- muscle:"Chest",
-
- image:"images/pec-deck.png",
-
- how:"Sit with your back against the pad. Position your arms on the pads or handles and bring them together in front of your chest. Squeeze your chest, then slowly return.",
-
- tips:[
-
-  "Keep your chest lifted.",
-
-  "Maintain a slight bend in your elbows.",
-
-  "Control the return."
-
- ],
-
- mistakes:[
-
-  "Swinging the weight.",
-
-  "Going excessively heavy.",
-
-  "Letting the shoulders roll forward."
-
- ]
+]
 
 },
 
 {
 
- id:"triceps-pushdown",
+id:"pec-deck",
 
- name:"Triceps Pushdown",
+name:"Pec Deck",
 
- muscle:"Triceps",
+muscle:"Chest",
 
- image:"images/triceps-pushdown.png",
+image:"images/pec-deck.png",
 
- how:"Stand facing the cable. Keep your elbows close to your sides and push the attachment downward until your arms are nearly straight. Slowly return.",
+how:"Sit with your back against the pad. Position your arms on the pads or handles and bring them together in front of your chest. Squeeze your chest, then slowly return.",
 
- tips:[
+tips:[
 
-  "Keep your elbows tucked.",
+"Keep your chest lifted.",
 
-  "Keep your upper arms still.",
+"Maintain a slight bend in your elbows.",
 
-  "Squeeze the triceps at the bottom."
+"Control the return."
 
- ],
+],
 
- mistakes:[
+mistakes:[
 
-  "Swinging your torso.",
+"Swinging the weight.",
 
-  "Moving your elbows forward.",
+"Going excessively heavy.",
 
-  "Using momentum."
+"Letting the shoulders roll forward."
 
- ]
-
-},
-
-{
-
- id:"lat-pulldown",
-
- name:"Lat Pulldown",
-
- muscle:"Back",
-
- image:"images/lat-pulldown.png",
-
- how:"Secure your legs under the pads and grip the bar slightly wider than shoulder width. Pull the bar toward your upper chest while driving your elbows downward. Slowly return.",
-
- tips:[
-
-  "Keep your chest up.",
-
-  "Think about pulling with your elbows.",
-
-  "Control the upward portion."
-
- ],
-
- mistakes:[
-
-  "Pulling behind the neck.",
-
-  "Swinging backward excessively.",
-
-  "Jerking the weight."
-
- ]
+]
 
 },
 
 {
 
- id:"seated-row",
+id:"triceps-pushdown",
 
- name:"Seated Row Machine",
+name:"Triceps Pushdown",
 
- muscle:"Back",
+muscle:"Triceps",
 
- image:"images/seated-row.png",
+image:"images/triceps-pushdown.png",
 
- how:"Sit upright and grip the handles. Pull them toward your torso while squeezing your shoulder blades together. Slowly extend your arms.",
+how:"Stand facing the cable. Keep your elbows close to your sides and push the attachment downward until your arms are nearly straight. Slowly return.",
 
- tips:[
+tips:[
 
-  "Keep your chest tall.",
+"Keep your elbows tucked.",
 
-  "Drive your elbows backward.",
+"Keep your upper arms still.",
 
-  "Control each repetition."
+"Squeeze the triceps at the bottom."
 
- ],
+],
 
- mistakes:[
+mistakes:[
 
-  "Rounding your back.",
+"Swinging your torso.",
 
-  "Shrugging your shoulders.",
+"Moving your elbows forward.",
 
-  "Jerking the weight."
+"Using momentum."
 
- ]
-
-},
-
-{
-
- id:"preacher-curl",
-
- name:"Preacher Curl Machine",
-
- muscle:"Biceps",
-
- image:"images/preacher-curl.png",
-
- how:"Place your upper arms firmly against the pad. Curl the handles upward while keeping your upper arms planted. Slowly lower until your arms are nearly straight.",
-
- tips:[
-
-  "Keep your upper arms on the pad.",
-
-  "Lower the weight slowly.",
-
-  "Squeeze your biceps at the top."
-
- ],
-
- mistakes:[
-
-  "Lifting your elbows.",
-
-  "Dropping the weight.",
-
-  "Using excessive weight."
-
- ]
+]
 
 },
 
 {
 
- id:"leg-press",
+id:"lat-pulldown",
 
- name:"Leg Press",
+name:"Lat Pulldown",
 
- muscle:"Quads",
+muscle:"Back",
 
- image:"images/leg-press.png",
+image:"images/lat-pulldown.png",
 
- how:"Place your feet about shoulder width apart. Lower the platform under control while keeping your back against the pad. Press through your feet to return.",
+how:"Secure your legs under the pads and grip the bar slightly wider than shoulder width. Pull the bar toward your upper chest while driving your elbows downward. Slowly return.",
 
- tips:[
+tips:[
 
-  "Keep your feet planted.",
+"Keep your chest up.",
 
-  "Keep your knees aligned with your toes.",
+"Think about pulling with your elbows.",
 
-  "Control the descent."
+"Control the upward portion."
 
- ],
+],
 
- mistakes:[
+mistakes:[
 
-  "Letting the knees collapse inward.",
+"Pulling behind the neck.",
 
-  "Allowing the lower back to round.",
+"Swinging backward excessively.",
 
-  "Aggressively locking the knees."
+"Jerking the weight."
 
- ]
-
-},
-
-{
-
- id:"leg-extension",
-
- name:"Leg Extension",
-
- muscle:"Quads",
-
- image:"images/leg-extension.png",
-
- how:"Position your ankles behind the roller. Extend your knees until your legs are nearly straight. Squeeze your quads briefly and lower under control.",
-
- tips:[
-
-  "Keep your hips against the seat.",
-
-  "Use controlled repetitions.",
-
-  "Squeeze the quads at the top."
-
- ],
-
- mistakes:[
-
-  "Kicking the weight.",
-
-  "Using momentum.",
-
-  "Dropping the weight quickly."
-
- ]
+]
 
 },
 
 {
 
- id:"seated-leg-curl",
+id:"seated-row",
 
- name:"Seated Leg Curl",
+name:"Seated Row Machine",
 
- muscle:"Hamstrings",
+muscle:"Back",
 
- image:"images/seated-leg-curl.png",
+image:"images/seated-row.png",
 
- how:"Position your legs against the machine rollers. Curl your heels downward and back as far as comfortably possible. Slowly return.",
+how:"Sit upright and grip the handles. Pull them toward your torso while squeezing your shoulder blades together. Slowly extend your arms.",
 
- tips:[
+tips:[
 
-  "Keep your hips against the seat.",
+"Keep your chest tall.",
 
-  "Squeeze your hamstrings.",
+"Drive your elbows backward.",
 
-  "Control the return."
+"Control each repetition."
 
- ],
+],
 
- mistakes:[
+mistakes:[
 
-  "Lifting your hips.",
+"Rounding your back.",
 
-  "Using momentum.",
+"Shrugging your shoulders.",
 
-  "Moving too quickly."
+"Jerking the weight."
 
- ]
-
-},
-
-{
-
- id:"calf-raise",
-
- name:"Calf Raise Machine",
-
- muscle:"Calves",
-
- image:"images/calf-raise.png",
-
- how:"Position the balls of your feet on the platform. Lower your heels for a controlled stretch, then raise your heels as high as comfortably possible.",
-
- tips:[
-
-  "Use a full comfortable range of motion.",
-
-  "Pause briefly at the top.",
-
-  "Control the bottom stretch."
-
- ],
-
- mistakes:[
-
-  "Bouncing.",
-
-  "Using short repetitions.",
-
-  "Moving too quickly."
-
- ]
+]
 
 },
 
 {
 
- id:"shoulder-press",
+id:"preacher-curl",
 
- name:"Shoulder Press Machine",
+name:"Preacher Curl Machine",
 
- muscle:"Shoulders",
+muscle:"Biceps",
 
- image:"images/shoulder-press.png",
+image:"images/preacher-curl.png",
 
- how:"Adjust the seat so the handles begin around shoulder height. Press upward until your arms are nearly straight and slowly lower.",
+how:"Place your upper arms firmly against the pad. Curl the handles upward while keeping your upper arms planted. Slowly lower until your arms are nearly straight.",
 
- tips:[
+tips:[
 
-  "Keep your back against the pad.",
+"Keep your upper arms on the pad.",
 
-  "Keep your wrists straight.",
+"Lower the weight slowly.",
 
-  "Control the lowering phase."
+"Squeeze your biceps at the top."
 
- ],
+],
 
- mistakes:[
+mistakes:[
 
-  "Excessively arching the lower back.",
+"Lifting your elbows.",
 
-  "Using momentum.",
+"Dropping the weight.",
 
-  "Dropping the weight."
+"Using excessive weight."
 
- ]
-
-},
-
-{
-
- id:"lateral-raise",
-
- name:"Lateral Raise Machine",
-
- muscle:"Shoulders",
-
- image:"images/lateral-raise.png",
-
- how:"Position your arms against the pads and raise them outward until approximately shoulder height. Slowly lower.",
-
- tips:[
-
-  "Keep the movement controlled.",
-
-  "Focus on the side delts.",
-
-  "Keep your shoulders down."
-
- ],
-
- mistakes:[
-
-  "Shrugging.",
-
-  "Swinging the weight.",
-
-  "Going excessively heavy."
-
- ]
+]
 
 },
 
 {
 
- id:"biceps-curl",
+id:"leg-press",
 
- name:"Biceps Curl Machine",
+name:"Leg Press",
 
- muscle:"Biceps",
+muscle:"Quads",
 
- image:"images/biceps-curl.png",
+image:"images/leg-press.png",
 
- how:"Position your upper arms against the pad. Curl the handles upward, squeeze your biceps, and slowly lower.",
+how:"Place your feet about shoulder width apart. Lower the platform under control while keeping your back against the pad. Press through your feet to return.",
 
- tips:[
+tips:[
 
-  "Keep your elbows planted.",
+"Keep your feet planted.",
 
-  "Squeeze at the top.",
+"Keep your knees aligned with your toes.",
 
-  "Lower slowly."
+"Control the descent."
 
- ],
+],
 
- mistakes:[
+mistakes:[
 
-  "Lifting the elbows.",
+"Letting the knees collapse inward.",
 
-  "Swinging.",
+"Allowing the lower back to round.",
 
-  "Using momentum."
+"Aggressively locking the knees."
 
- ]
-
-},
-
-{
-
- id:"triceps-extension",
-
- name:"Triceps Extension Machine",
-
- muscle:"Triceps",
-
- image:"images/triceps-extension.png",
-
- how:"Position yourself securely in the machine. Extend your arms against the resistance until nearly straight and slowly return.",
-
- tips:[
-
-  "Keep your shoulders stable.",
-
-  "Move through the elbows.",
-
-  "Use controlled repetitions."
-
- ],
-
- mistakes:[
-
-  "Moving the shoulders excessively.",
-
-  "Using momentum.",
-
-  "Going too heavy."
-
- ]
-
-},
-
-/* Additional library exercises */
-
-{
-
- id:"incline-chest-press",
-
- name:"Incline Chest Press Machine",
-
- muscle:"Chest",
-
- how:"Press the handles upward and forward while keeping your back against the pad.",
-
- tips:["Control the weight.","Keep your shoulders down."],
-
- mistakes:["Using momentum.","Overarching your back."]
+]
 
 },
 
 {
 
- id:"cable-fly",
+id:"leg-extension",
 
- name:"Cable Fly",
+name:"Leg Extension",
 
- muscle:"Chest",
+muscle:"Quads",
 
- how:"Bring the cable handles together in front of your chest while maintaining a slight elbow bend.",
+image:"images/leg-extension.png",
 
- tips:["Keep tension on the chest.","Move smoothly."],
+how:"Position your ankles behind the roller. Extend your knees until your legs are nearly straight. Squeeze your quads briefly and lower under control.",
 
- mistakes:["Turning it into a press.","Using too much weight."]
+tips:[
 
-},
+"Keep your hips against the seat.",
 
-{
+"Use controlled repetitions.",
 
- id:"assisted-pullup",
+"Squeeze the quads at the top."
 
- name:"Assisted Pull-Up",
+],
 
- muscle:"Back",
+mistakes:[
 
- how:"Use the assistance platform and pull your chest upward while driving your elbows down.",
+"Kicking the weight.",
 
- tips:["Keep your chest tall.","Control the descent."],
+"Using momentum.",
 
- mistakes:["Swinging.","Shrugging."]
+"Dropping the weight quickly."
 
-},
-
-{
-
- id:"straight-arm-pulldown",
-
- name:"Straight-Arm Pulldown",
-
- muscle:"Back",
-
- how:"Keep your arms mostly straight and pull the cable attachment toward your thighs.",
-
- tips:["Focus on your lats.","Keep your torso stable."],
-
- mistakes:["Bending the elbows excessively.","Swinging."]
+]
 
 },
 
 {
 
- id:"reverse-pec-deck",
+id:"seated-leg-curl",
 
- name:"Reverse Pec Deck",
+name:"Seated Leg Curl",
 
- muscle:"Shoulders",
+muscle:"Hamstrings",
 
- how:"Face the machine and move your arms outward and backward under control.",
+image:"images/seated-leg-curl.png",
 
- tips:["Keep your chest supported.","Control the return."],
+how:"Position your legs against the machine rollers. Curl your heels downward and back as far as comfortably possible. Slowly return.",
 
- mistakes:["Shrugging.","Using momentum."]
+tips:[
 
-},
+"Keep your hips against the seat.",
 
-{
+"Squeeze your hamstrings.",
 
- id:"cable-lateral-raise",
+"Control the return."
 
- name:"Cable Lateral Raise",
+],
 
- muscle:"Shoulders",
+mistakes:[
 
- how:"Raise the cable outward until your arm reaches approximately shoulder height.",
+"Lifting your hips.",
 
- tips:["Keep tension on the delt.","Move slowly."],
+"Using momentum.",
 
- mistakes:["Shrugging.","Swinging."]
+"Moving too quickly."
 
-},
-
-{
-
- id:"cable-curl",
-
- name:"Cable Curl",
-
- muscle:"Biceps",
-
- how:"Keep your elbows close to your sides and curl the attachment toward your shoulders.",
-
- tips:["Keep elbows stationary.","Squeeze at the top."],
-
- mistakes:["Swinging.","Moving the elbows forward."]
+]
 
 },
 
 {
 
- id:"hammer-curl",
+id:"calf-raise",
 
- name:"Hammer Curl",
+name:"Calf Raise Machine",
 
- muscle:"Biceps",
+muscle:"Calves",
 
- how:"Hold the weights with palms facing inward and curl them toward your shoulders.",
+image:"images/calf-raise.png",
 
- tips:["Keep elbows tucked.","Control the lowering phase."],
+how:"Position the balls of your feet on the platform. Lower your heels for a controlled stretch, then raise your heels as high as comfortably possible.",
 
- mistakes:["Swinging.","Using momentum."]
+tips:[
 
-},
+"Use a full comfortable range of motion.",
 
-{
+"Pause briefly at the top.",
 
- id:"overhead-triceps",
+"Control the bottom stretch."
 
- name:"Overhead Cable Triceps Extension",
+],
 
- muscle:"Triceps",
+mistakes:[
 
- how:"With the cable behind you, extend your elbows until your arms are nearly straight.",
+"Bouncing.",
 
- tips:["Keep elbows stable.","Control the stretch."],
+"Using short repetitions.",
 
- mistakes:["Flaring excessively.","Moving the upper arms."]
+"Moving too quickly."
 
-},
-
-{
-
- id:"hack-squat",
-
- name:"Hack Squat Machine",
-
- muscle:"Quads",
-
- how:"Lower yourself under control by bending your knees and hips, then drive through your feet to stand.",
-
- tips:["Keep your back against the pad.","Track knees with toes."],
-
- mistakes:["Knees collapsing inward.","Bouncing at the bottom."]
+]
 
 },
 
 {
 
- id:"lying-leg-curl",
+id:"shoulder-press",
 
- name:"Lying Leg Curl",
+name:"Shoulder Press Machine",
 
- muscle:"Hamstrings",
+muscle:"Shoulders",
 
- how:"Curl your heels toward your glutes while keeping your hips against the pad.",
+image:"images/shoulder-press.png",
 
- tips:["Control the movement.","Squeeze the hamstrings."],
+how:"Adjust the seat so the handles begin around shoulder height. Press upward until your arms are nearly straight and slowly lower.",
 
- mistakes:["Lifting the hips.","Using momentum."]
+tips:[
 
-},
+"Keep your back against the pad.",
 
-{
+"Keep your wrists straight.",
 
- id:"hip-thrust",
+"Control the lowering phase."
 
- name:"Hip Thrust Machine",
+],
 
- muscle:"Glutes",
+mistakes:[
 
- how:"Drive your hips upward against the resistance and squeeze your glutes at the top.",
+"Excessively arching the lower back.",
 
- tips:["Keep your ribs controlled.","Squeeze your glutes."],
+"Using momentum.",
 
- mistakes:["Overextending your lower back.","Moving too quickly."]
+"Dropping the weight."
 
-},
-
-{
-
- id:"hip-abduction",
-
- name:"Hip Abduction Machine",
-
- muscle:"Glutes",
-
- how:"Push your knees outward against the pads and slowly return.",
-
- tips:["Control both directions.","Keep your torso stable."],
-
- mistakes:["Bouncing.","Using momentum."]
+]
 
 },
 
 {
 
- id:"ab-crunch",
+id:"lateral-raise",
 
- name:"Ab Crunch Machine",
+name:"Lateral Raise Machine",
 
- muscle:"Core",
+muscle:"Shoulders",
 
- how:"Contract your abdominal muscles to curl your torso forward against the resistance.",
+image:"images/lateral-raise.png",
 
- tips:["Move through your abs.","Use controlled repetitions."],
+how:"Position your arms against the pads and raise them outward until approximately shoulder height. Slowly lower.",
 
- mistakes:["Pulling with your arms.","Using momentum."]
+tips:[
+
+"Keep the movement controlled.",
+
+"Focus on the side delts.",
+
+"Keep your shoulders down."
+
+],
+
+mistakes:[
+
+"Shrugging.",
+
+"Swinging the weight.",
+
+"Going excessively heavy."
+
+]
 
 },
 
 {
 
- id:"cable-crunch",
+id:"biceps-curl",
 
- name:"Cable Crunch",
+name:"Biceps Curl Machine",
 
- muscle:"Core",
+muscle:"Biceps",
 
- how:"Kneel at the cable and flex your torso downward by contracting your abdominal muscles.",
+image:"images/biceps-curl.png",
 
- tips:["Keep your hips relatively stable.","Focus on spinal flexion."],
+how:"Position your upper arms against the pad. Curl the handles upward, squeeze your biceps, and slowly lower.",
 
- mistakes:["Turning it into a hip hinge.","Pulling with the arms."]
+tips:[
+
+"Keep your elbows planted.",
+
+"Squeeze at the top.",
+
+"Lower slowly."
+
+],
+
+mistakes:[
+
+"Lifting the elbows.",
+
+"Swinging.",
+
+"Using momentum."
+
+]
+
+},
+
+{
+
+id:"triceps-extension",
+
+name:"Triceps Extension Machine",
+
+muscle:"Triceps",
+
+image:"images/triceps-extension.png",
+
+how:"Position yourself securely in the machine. Extend your arms against the resistance until nearly straight and slowly return.",
+
+tips:[
+
+"Keep your shoulders stable.",
+
+"Move through the elbows.",
+
+"Use controlled repetitions."
+
+],
+
+mistakes:[
+
+"Moving the shoulders excessively.",
+
+"Using momentum.",
+
+"Going too heavy."
+
+]
+
+},
+
+{
+
+id:"incline-chest-press",
+
+name:"Incline Chest Press Machine",
+
+muscle:"Chest",
+
+how:"Press the handles upward and forward while keeping your back against the pad.",
+
+tips:["Control the weight.","Keep your shoulders down."],
+
+mistakes:["Using momentum.","Overarching your back."]
+
+},
+
+{
+
+id:"cable-fly",
+
+name:"Cable Fly",
+
+muscle:"Chest",
+
+how:"Bring the cable handles together in front of your chest while maintaining a slight elbow bend.",
+
+tips:["Keep tension on the chest.","Move smoothly."],
+
+mistakes:["Turning it into a press.","Using too much weight."]
+
+},
+
+{
+
+id:"assisted-pullup",
+
+name:"Assisted Pull-Up",
+
+muscle:"Back",
+
+how:"Use the assistance platform and pull your chest upward while driving your elbows down.",
+
+tips:["Keep your chest tall.","Control the descent."],
+
+mistakes:["Swinging.","Shrugging."]
+
+},
+
+{
+
+id:"straight-arm-pulldown",
+
+name:"Straight-Arm Pulldown",
+
+muscle:"Back",
+
+how:"Keep your arms mostly straight and pull the cable attachment toward your thighs.",
+
+tips:["Focus on your lats.","Keep your torso stable."],
+
+mistakes:["Bending the elbows excessively.","Swinging."]
+
+},
+
+{
+
+id:"reverse-pec-deck",
+
+name:"Reverse Pec Deck",
+
+muscle:"Shoulders",
+
+how:"Face the machine and move your arms outward and backward under control.",
+
+tips:["Keep your chest supported.","Control the return."],
+
+mistakes:["Shrugging.","Using momentum."]
+
+},
+
+{
+
+id:"cable-lateral-raise",
+
+name:"Cable Lateral Raise",
+
+muscle:"Shoulders",
+
+how:"Raise the cable outward until your arm reaches approximately shoulder height.",
+
+tips:["Keep tension on the delt.","Move slowly."],
+
+mistakes:["Shrugging.","Swinging."]
+
+},
+
+{
+
+id:"cable-curl",
+
+name:"Cable Curl",
+
+muscle:"Biceps",
+
+how:"Keep your elbows close to your sides and curl the attachment toward your shoulders.",
+
+tips:["Keep elbows stationary.","Squeeze at the top."],
+
+mistakes:["Swinging.","Moving the elbows forward."]
+
+},
+
+{
+
+id:"hammer-curl",
+
+name:"Hammer Curl",
+
+muscle:"Biceps",
+
+how:"Hold the weights with palms facing inward and curl them toward your shoulders.",
+
+tips:["Keep elbows tucked.","Control the lowering phase."],
+
+mistakes:["Swinging.","Using momentum."]
+
+},
+
+{
+
+id:"overhead-triceps",
+
+name:"Overhead Cable Triceps Extension",
+
+muscle:"Triceps",
+
+how:"With the cable behind you, extend your elbows until your arms are nearly straight.",
+
+tips:["Keep elbows stable.","Control the stretch."],
+
+mistakes:["Flaring excessively.","Moving the upper arms."]
+
+},
+
+{
+
+id:"hack-squat",
+
+name:"Hack Squat Machine",
+
+muscle:"Quads",
+
+how:"Lower yourself under control by bending your knees and hips, then drive through your feet to stand.",
+
+tips:["Keep your back against the pad.","Track knees with toes."],
+
+mistakes:["Knees collapsing inward.","Bouncing at the bottom."]
+
+},
+
+{
+
+id:"lying-leg-curl",
+
+name:"Lying Leg Curl",
+
+muscle:"Hamstrings",
+
+how:"Curl your heels toward your glutes while keeping your hips against the pad.",
+
+tips:["Control the movement.","Squeeze the hamstrings."],
+
+mistakes:["Lifting the hips.","Using momentum."]
+
+},
+
+{
+
+id:"hip-thrust",
+
+name:"Hip Thrust Machine",
+
+muscle:"Glutes",
+
+how:"Drive your hips upward against the resistance and squeeze your glutes at the top.",
+
+tips:["Keep your ribs controlled.","Squeeze your glutes."],
+
+mistakes:["Overextending your lower back.","Moving too quickly."]
+
+},
+
+{
+
+id:"hip-abduction",
+
+name:"Hip Abduction Machine",
+
+muscle:"Glutes",
+
+how:"Push your knees outward against the pads and slowly return.",
+
+tips:["Control both directions.","Keep your torso stable."],
+
+mistakes:["Bouncing.","Using momentum."]
+
+},
+
+{
+
+id:"ab-crunch",
+
+name:"Ab Crunch Machine",
+
+muscle:"Core",
+
+how:"Contract your abdominal muscles to curl your torso forward against the resistance.",
+
+tips:["Move through your abs.","Use controlled repetitions."],
+
+mistakes:["Pulling with your arms.","Using momentum."]
+
+},
+
+{
+
+id:"cable-crunch",
+
+name:"Cable Crunch",
+
+muscle:"Core",
+
+how:"Kneel at the cable and flex your torso downward by contracting your abdominal muscles.",
+
+tips:["Keep your hips relatively stable.","Focus on spinal flexion."],
+
+mistakes:["Turning it into a hip hinge.","Pulling with the arms."]
 
 }
 
 ];
 
-/* =====================================================
+/* =========================
 
    PRESET WORKOUTS
 
-===================================================== */
+========================= */
 
-const presetWorkouts = {
+const presetWorkouts={
 
- day1:{
+day1:{
 
-  title:"Day 1 — Chest & Triceps",
+title:"Day 1 — Chest & Triceps",
 
-  subtitle:"Chest and triceps",
+subtitle:"Chest and triceps",
 
-  exercises:[
+exercises:[
 
-   "machine-chest-press",
+"machine-chest-press",
 
-   "pec-deck",
+"pec-deck",
 
-   "triceps-pushdown"
+"triceps-pushdown"
 
-  ]
+]
 
- },
+},
 
- day2:{
+day2:{
 
-  title:"Day 2 — Back & Biceps",
+title:"Day 2 — Back & Biceps",
 
-  subtitle:"Back and biceps",
+subtitle:"Back and biceps",
 
-  exercises:[
+exercises:[
 
-   "lat-pulldown",
+"lat-pulldown",
 
-   "seated-row",
+"seated-row",
 
-   "preacher-curl"
+"preacher-curl"
 
-  ]
+]
 
- },
+},
 
- day3:{
+day3:{
 
-  title:"Day 3 — Legs",
+title:"Day 3 — Legs",
 
-  subtitle:"Quads, hamstrings and calves",
+subtitle:"Quads, hamstrings and calves",
 
-  exercises:[
+exercises:[
 
-   "leg-press",
+"leg-press",
 
-   "leg-extension",
+"leg-extension",
 
-   "seated-leg-curl",
+"seated-leg-curl",
 
-   "calf-raise"
+"calf-raise"
 
-  ]
+]
 
- },
+},
 
- day4:{
+day4:{
 
-  title:"Day 4 — Shoulders & Arms",
+title:"Day 4 — Shoulders & Arms",
 
-  subtitle:"Shoulders, biceps and triceps",
+subtitle:"Shoulders, biceps and triceps",
 
-  exercises:[
+exercises:[
 
-   "shoulder-press",
+"shoulder-press",
 
-   "lateral-raise",
+"lateral-raise",
 
-   "biceps-curl",
+"biceps-curl",
 
-   "triceps-extension"
+"triceps-extension"
 
-  ]
+]
 
- }
+}
 
 };
 
-/* =====================================================
+/* =========================
 
    STORAGE
 
-===================================================== */
+========================= */
 
-let completedExercises =
+let completedExercises=
 
- JSON.parse(localStorage.getItem("completedExercisesV5") || "[]");
+JSON.parse(localStorage.getItem("completedExercisesV5")||"[]");
 
-let customWorkouts =
+let customWorkouts=
 
- JSON.parse(localStorage.getItem("customWorkoutsV5") || "[]");
+JSON.parse(localStorage.getItem("customWorkoutsV5")||"[]");
 
-let setHistory =
+let setHistory=
 
- JSON.parse(localStorage.getItem("setHistoryV5") || "{}");
+JSON.parse(localStorage.getItem("setHistoryV5")||"{}");
 
-let builderSelected = [];
+let previousHistory=
 
-let activeWorkoutKey = null;
+JSON.parse(localStorage.getItem("previousHistoryV51")||"{}");
 
-/* =====================================================
+let builderSelected=[];
+
+let activeWorkoutKey=null;
+
+let activeWorkoutExerciseIds=[];
+
+let activeCustomIndex=null;
+
+/* =========================
 
    HELPERS
 
-===================================================== */
+========================= */
 
 function getExercise(id){
 
- return exerciseLibrary.find(ex => ex.id === id);
+return exerciseLibrary.find(ex=>ex.id===id);
 
 }
 
 function showScreen(screen){
 
- ["home","workoutScreen","libraryScreen","builderScreen"]
+["home","workoutScreen","libraryScreen","builderScreen"]
 
- .forEach(id=>{
+.forEach(id=>{
 
-   document.getElementById(id).classList.add("hidden");
+document.getElementById(id).classList.add("hidden");
 
- });
+});
 
- document.getElementById(screen).classList.remove("hidden");
+document.getElementById(screen).classList.remove("hidden");
 
- window.scrollTo(0,0);
+window.scrollTo(0,0);
 
 }
 
 function goHome(){
 
- showScreen("home");
+closePicker();
 
- renderHome();
+showScreen("home");
 
- updateProgress();
+renderHome();
+
+updateProgress();
 
 }
 
-/* =====================================================
+/* =========================
 
    HOME
 
-===================================================== */
+========================= */
 
 function renderHome(){
 
- const preset = document.getElementById("presetButtons");
+const preset=document.getElementById("presetButtons");
 
- preset.innerHTML = "";
+preset.innerHTML="";
 
- Object.entries(presetWorkouts).forEach(([key,w])=>{
+Object.entries(presetWorkouts).forEach(([key,w])=>{
 
-  const button = document.createElement("button");
+const button=document.createElement("button");
 
-  button.className = "day-button";
+button.className="day-button";
 
-  button.innerHTML =
+button.innerHTML=
 
-   `${w.title}<span>${w.subtitle}</span>`;
+`${w.title}<span>${w.subtitle}</span>`;
 
-  button.onclick = ()=>openPresetWorkout(key);
+button.onclick=()=>openPresetWorkout(key);
 
-  preset.appendChild(button);
+preset.appendChild(button);
 
- });
+});
 
- renderCustomButtons();
+renderCustomButtons();
 
 }
 
 function renderCustomButtons(){
 
- const area = document.getElementById("customButtons");
+const area=document.getElementById("customButtons");
 
- area.innerHTML = "";
+area.innerHTML="";
 
- if(!customWorkouts.length){
+if(!customWorkouts.length){
 
-  area.innerHTML =
+area.innerHTML=
 
-   `<div class="card empty">
+`<div class="card empty">
 
-      You haven't created a custom workout yet.
+You haven't created a custom workout yet.
 
-    </div>`;
+</div>`;
 
-  return;
-
- }
-
- customWorkouts.forEach((w,index)=>{
-
-  const button = document.createElement("button");
-
-  button.className = "day-button";
-
-  button.innerHTML =
-
-   `${escapeHTML(w.name)}
-
-    <span>${w.exercises.length} exercises</span>`;
-
-  button.onclick = ()=>openCustomWorkout(index);
-
-  area.appendChild(button);
-
- });
+return;
 
 }
 
-/* =====================================================
+customWorkouts.forEach((w,index)=>{
 
-   WORKOUT
+const button=document.createElement("button");
 
-===================================================== */
+button.className="day-button";
+
+button.innerHTML=
+
+`${escapeHTML(w.name)}
+
+<span>${w.exercises.length} exercises</span>`;
+
+button.onclick=()=>openCustomWorkout(index);
+
+area.appendChild(button);
+
+});
+
+}
+
+/* =========================
+
+   OPEN WORKOUTS
+
+========================= */
 
 function openPresetWorkout(key){
 
- activeWorkoutKey = "preset-" + key;
+activeWorkoutKey="preset-"+key;
 
- const workout = presetWorkouts[key];
+activeWorkoutExerciseIds=[
 
- openWorkout(workout.title,workout.exercises,false);
+...presetWorkouts[key].exercises
+
+];
+
+activeCustomIndex=null;
+
+openWorkout(
+
+presetWorkouts[key].title,
+
+activeWorkoutExerciseIds,
+
+false
+
+);
 
 }
 
 function openCustomWorkout(index){
 
- const workout = customWorkouts[index];
+const workout=customWorkouts[index];
 
- activeWorkoutKey = "custom-" + workout.id;
+activeWorkoutKey="custom-"+workout.id;
 
- openWorkout(
+activeWorkoutExerciseIds=[
 
-  workout.name,
+...workout.exercises
 
-  workout.exercises,
+];
 
-  true,
+activeCustomIndex=index;
 
-  index
+openWorkout(
 
- );
+workout.name,
+
+activeWorkoutExerciseIds,
+
+true
+
+);
+
+}
+
+function openWorkout(title,exerciseIds,isCustom){
+
+showScreen("workoutScreen");
+
+document.getElementById("workoutTitle").textContent=title;
+
+const list=document.getElementById("exerciseList");
+
+list.innerHTML="";
+
+exerciseIds.forEach((id,i)=>{
+
+const exercise=getExercise(id);
+
+if(!exercise)return;
+
+const unique=
+
+activeWorkoutKey+"-"+exercise.id;
+
+list.appendChild(
+
+createExerciseCard(exercise,unique,i)
+
+);
+
+});
+
+if(isCustom){
+
+const deleteButton=document.createElement("button");
+
+deleteButton.className="delete-button";
+
+deleteButton.textContent="Delete This Workout";
+
+deleteButton.onclick=()=>deleteCustomWorkout(activeCustomIndex);
+
+list.appendChild(deleteButton);
 
 }
 
-function openWorkout(title,exerciseIds,isCustom,index){
+document.getElementById("finishWorkoutButton")
 
- showScreen("workoutScreen");
-
- document.getElementById("workoutTitle").textContent = title;
-
- const list = document.getElementById("exerciseList");
-
- list.innerHTML = "";
-
- exerciseIds.forEach((id,i)=>{
-
-  const exercise = getExercise(id);
-
-  if(!exercise) return;
-
-  const unique =
-
-   activeWorkoutKey + "-" + exercise.id;
-
-  list.appendChild(
-
-   createExerciseCard(exercise,unique,i)
-
-  );
-
- });
-
- if(isCustom){
-
-  const deleteButton = document.createElement("button");
-
-  deleteButton.className = "delete-button";
-
-  deleteButton.textContent = "Delete This Workout";
-
-  deleteButton.onclick = ()=>deleteCustomWorkout(index);
-
-  list.appendChild(deleteButton);
-
- }
+.classList.remove("hidden");
 
 }
+
+/* =========================
+
+   EXERCISE CARD
+
+========================= */
 
 function createExerciseCard(exercise,unique,index){
 
- const card = document.createElement("div");
+const card=document.createElement("div");
 
- card.className = "exercise";
+card.className="exercise";
 
- const completed =
+const completed=
 
-  completedExercises.includes(unique);
+completedExercises.includes(unique);
 
- card.innerHTML = `
+card.innerHTML=`
 
- <div class="exercise-header"
+<div class="exercise-header"
 
-      onclick="toggleDetails('${safeId(unique)}')">
+onclick="toggleDetails('${safeId(unique)}')">
 
-   <div class="exercise-title">
+<div class="exercise-title">
 
-     ${escapeHTML(exercise.name)}
+${escapeHTML(exercise.name)}
 
-   </div>
+</div>
 
-   <div class="muscle">
+<div class="muscle">
 
-     ${escapeHTML(exercise.muscle)}
+${escapeHTML(exercise.muscle)}
 
-   </div>
+</div>
 
- </div>
+</div>
 
- <div class="details" id="${safeId(unique)}">
+<div class="details" id="${safeId(unique)}">
 
-   ${exercise.image ?
+${exercise.image ?
 
-   `
+`
 
-   <img
+<img
 
-      class="exercise-image"
+class="exercise-image"
 
-      src="${exercise.image}"
+src="${exercise.image}"
 
-      alt="${escapeHTML(exercise.name)}"
+alt="${escapeHTML(exercise.name)}"
 
-      onerror="this.style.display='none';
+onerror="this.style.display='none';
 
-      this.nextElementSibling.style.display='flex';">
+this.nextElementSibling.style.display='flex';">
 
-   <div class="image-placeholder"
+<div class="image-placeholder"
 
-        style="display:none">
+style="display:none">
 
-        Exercise picture coming next
+Exercise picture coming soon
 
-   </div>
+</div>
 
-   `
+`
 
-   :
+:
 
-   `
+`
 
-   <div class="image-placeholder">
+<div class="image-placeholder">
 
-      Exercise picture will be added to the library later
+Exercise picture will be added to the library later
 
-   </div>
+</div>
 
-   `}
+`}
 
-   <div class="detail-title">
+<div class="detail-title">
 
-     How to Perform
+How to Perform
 
-   </div>
+</div>
 
-   <p>${escapeHTML(exercise.how)}</p>
+<p>${escapeHTML(exercise.how)}</p>
 
-   <div class="detail-title">
+<div class="detail-title">
 
-     Form Tips
+Form Tips
 
-   </div>
+</div>
 
-   <ul>
+<ul>
 
-   ${(exercise.tips || [])
+${(exercise.tips||[])
 
-      .map(x=>`<li>${escapeHTML(x)}</li>`)
+.map(x=>`<li>${escapeHTML(x)}</li>`)
 
-      .join("")}
+.join("")}
 
-   </ul>
+</ul>
 
-   <div class="detail-title">
+<div class="detail-title">
 
-     Common Mistakes
+Common Mistakes
 
-   </div>
+</div>
 
-   <ul>
+<ul>
 
-   ${(exercise.mistakes || [])
+${(exercise.mistakes||[])
 
-      .map(x=>`<li>${escapeHTML(x)}</li>`)
+.map(x=>`<li>${escapeHTML(x)}</li>`)
 
-      .join("")}
+.join("")}
 
-   </ul>
+</ul>
 
-   <div class="tracking">
+<div class="tracking">
 
-      <strong>Track Your Sets</strong>
+<strong>Track Your Sets</strong>
 
-      <div class="small">
+<div class="small">
 
-        Tap weight or reps and scroll to your number.
+Tap Weight or Reps and scroll to select.
 
-      </div>
+</div>
 
-      ${createSetRows(unique)}
+${createSetRows(unique)}
 
-      <button
+<button
 
-        class="complete ${completed ? "done" : ""}"
+class="complete ${completed?"done":""}"
 
-        onclick="toggleComplete('${escapeAttribute(unique)}',this)">
+onclick="toggleComplete('${escapeAttribute(unique)}',this)">
 
-        ${completed ? "✓ Completed" : "Mark Exercise Complete"}
+${completed?"✓ Completed":"Mark Exercise Complete"}
 
-      </button>
+</button>
 
-   </div>
+</div>
 
- </div>
+</div>
 
- `;
+`;
 
- return card;
+return card;
 
 }
 
 function toggleDetails(id){
 
- const el = document.getElementById(id);
+const el=document.getElementById(id);
 
- if(el) el.classList.toggle("open");
+if(el)el.classList.toggle("open");
 
 }
 
-/* =====================================================
+/* =========================
 
-   WEIGHT + REP SCROLL SELECTORS
+   SET TRACKING
 
-===================================================== */
+========================= */
 
 function createSetRows(unique){
 
- let html = "";
+let html="";
 
- for(let set=1;set<=4;set++){
+for(let set=1;set<=4;set++){
 
-  const key = unique + "-set" + set;
+const key=unique+"-set"+set;
 
-  const previous =
+const current=
 
-   setHistory[key] || {weight:"",reps:""};
+setHistory[key]||{weight:"",reps:""};
 
-  html += `
+const previous=
 
-   <div class="set-row">
+previousHistory[key]||{weight:"",reps:""};
 
-     <span class="set-label">
+const currentWeight=
 
-       Set ${set}
+current.weight!==undefined && current.weight!==""
 
-     </span>
+? `${current.weight} lb`
 
-     <select
+: "Weight";
 
-       class="picker"
+const currentReps=
 
-       onchange="saveSet('${escapeAttribute(key)}','weight',this.value)">
+current.reps!==undefined && current.reps!==""
 
-       ${weightOptions(previous.weight)}
+? `${current.reps} reps`
 
-     </select>
+: "Reps";
 
-     <select
+let previousText="No previous workout";
 
-       class="picker"
+if(
 
-       onchange="saveSet('${escapeAttribute(key)}','reps',this.value)">
+previous.weight!==undefined &&
 
-       ${repOptions(previous.reps)}
+previous.weight!=="" &&
 
-     </select>
+previous.reps!==undefined &&
 
-   </div>
+previous.reps!==""
 
-  `;
+){
 
- }
+previousText=
 
- return html;
+`Previous: ${previous.weight} lb × ${previous.reps}`;
+
+}else if(
+
+previous.weight!==undefined &&
+
+previous.weight!==""
+
+){
+
+previousText=
+
+`Previous: ${previous.weight} lb`;
+
+}else if(
+
+previous.reps!==undefined &&
+
+previous.reps!==""
+
+){
+
+previousText=
+
+`Previous: ${previous.reps} reps`;
 
 }
 
-function weightOptions(selected){
+html+=`
 
- let html =
+<div class="set-block">
 
- `<option value="">Weight</option>`;
+<div class="set-row">
 
- for(let weight=0;weight<=500;weight+=5){
+<span class="set-label">
 
-  html +=
+Set ${set}
 
-   `<option value="${weight}"
+</span>
 
-    ${String(selected)===String(weight) ? "selected" : ""}>
+<button
 
-    ${weight} lb
+class="picker-button"
 
-    </option>`;
+id="${safeId(key+"-weight-button")}"
 
- }
+onclick="openPicker('${escapeAttribute(key)}','weight')">
 
- return html;
+${currentWeight}
+
+</button>
+
+<button
+
+class="picker-button"
+
+id="${safeId(key+"-reps-button")}"
+
+onclick="openPicker('${escapeAttribute(key)}','reps')">
+
+${currentReps}
+
+</button>
+
+</div>
+
+<div class="previous">
+
+${previousText}
+
+</div>
+
+</div>
+
+`;
 
 }
 
-function repOptions(selected){
-
- let html =
-
- `<option value="">Reps</option>`;
-
- for(let reps=1;reps<=50;reps++){
-
-  html +=
-
-   `<option value="${reps}"
-
-    ${String(selected)===String(reps) ? "selected" : ""}>
-
-    ${reps} reps
-
-    </option>`;
-
- }
-
- return html;
+return html;
 
 }
 
 function saveSet(key,type,value){
 
- if(!setHistory[key])
+if(!setHistory[key]){
 
-   setHistory[key] = {};
-
- setHistory[key][type] = value;
-
- localStorage.setItem(
-
-  "setHistoryV5",
-
-  JSON.stringify(setHistory)
-
- );
+setHistory[key]={weight:"",reps:""};
 
 }
 
-/* =====================================================
+setHistory[key][type]=value;
+
+localStorage.setItem(
+
+"setHistoryV5",
+
+JSON.stringify(setHistory)
+
+);
+
+}
+
+/* =========================
+
+   WHEEL PICKER
+
+========================= */
+
+let pickerKey=null;
+
+let pickerType=null;
+
+let pickerValues=[];
+
+let pickerSelectedIndex=0;
+
+function openPicker(key,type){
+
+pickerKey=key;
+
+pickerType=type;
+
+const wheel=document.getElementById("wheel");
+
+wheel.innerHTML="";
+
+if(type==="weight"){
+
+document.getElementById("pickerTitle")
+
+.textContent="Select Weight";
+
+pickerValues=[];
+
+for(let i=0;i<=500;i+=5){
+
+pickerValues.push(i);
+
+}
+
+}else{
+
+document.getElementById("pickerTitle")
+
+.textContent="Select Reps";
+
+pickerValues=[];
+
+for(let i=1;i<=50;i++){
+
+pickerValues.push(i);
+
+}
+
+}
+
+pickerValues.forEach(value=>{
+
+const option=document.createElement("div");
+
+option.className="wheel-option";
+
+option.textContent=
+
+type==="weight"
+
+? `${value} lb`
+
+: `${value} reps`;
+
+wheel.appendChild(option);
+
+});
+
+const existing=
+
+setHistory[key] &&
+
+setHistory[key][type]!==undefined &&
+
+setHistory[key][type]!==""
+
+? Number(setHistory[key][type])
+
+: null;
+
+let index=0;
+
+if(existing!==null){
+
+const found=
+
+pickerValues.indexOf(existing);
+
+if(found>=0)index=found;
+
+}
+
+pickerSelectedIndex=index;
+
+document.getElementById("pickerOverlay")
+
+.classList.remove("hidden");
+
+document.getElementById("pickerSheet")
+
+.classList.remove("hidden");
+
+requestAnimationFrame(()=>{
+
+wheel.scrollTop=index*52;
+
+});
+
+}
+
+function closePicker(){
+
+document.getElementById("pickerOverlay")
+
+.classList.add("hidden");
+
+document.getElementById("pickerSheet")
+
+.classList.add("hidden");
+
+}
+
+document.getElementById("wheel")
+
+.addEventListener("scroll",()=>{
+
+const wheel=document.getElementById("wheel");
+
+const index=
+
+Math.round(wheel.scrollTop/52);
+
+pickerSelectedIndex=
+
+Math.max(
+
+0,
+
+Math.min(index,pickerValues.length-1)
+
+);
+
+});
+
+function confirmPicker(){
+
+if(
+
+pickerKey===null ||
+
+pickerType===null ||
+
+!pickerValues.length
+
+){
+
+closePicker();
+
+return;
+
+}
+
+const value=
+
+pickerValues[pickerSelectedIndex];
+
+saveSet(
+
+pickerKey,
+
+pickerType,
+
+value
+
+);
+
+const button=
+
+document.getElementById(
+
+safeId(
+
+pickerKey+"-"+pickerType+"-button"
+
+)
+
+);
+
+if(button){
+
+button.textContent=
+
+pickerType==="weight"
+
+? `${value} lb`
+
+: `${value} reps`;
+
+}
+
+closePicker();
+
+}
+
+/* =========================
+
+   FINISH WORKOUT
+
+========================= */
+
+function finishWorkout(){
+
+if(!activeWorkoutKey)return;
+
+activeWorkoutExerciseIds.forEach(exerciseId=>{
+
+for(let set=1;set<=4;set++){
+
+const key=
+
+activeWorkoutKey+
+
+"-"+
+
+exerciseId+
+
+"-set"+
+
+set;
+
+if(setHistory[key]){
+
+previousHistory[key]={
+
+weight:
+
+setHistory[key].weight ?? "",
+
+reps:
+
+setHistory[key].reps ?? ""
+
+};
+
+}
+
+}
+
+});
+
+localStorage.setItem(
+
+"previousHistoryV51",
+
+JSON.stringify(previousHistory)
+
+);
+
+alert(
+
+"Workout finished! Your sets are saved for comparison next time."
+
+);
+
+goHome();
+
+}
+
+/* =========================
 
    COMPLETION
 
-===================================================== */
+========================= */
 
 function toggleComplete(id,button){
 
- if(completedExercises.includes(id)){
+if(completedExercises.includes(id)){
 
-  completedExercises =
+completedExercises=
 
-   completedExercises.filter(x=>x!==id);
+completedExercises.filter(x=>x!==id);
 
-  button.textContent =
+button.textContent=
 
-   "Mark Exercise Complete";
+"Mark Exercise Complete";
 
-  button.classList.remove("done");
+button.classList.remove("done");
 
- }else{
+}else{
 
-  completedExercises.push(id);
+completedExercises.push(id);
 
-  button.textContent =
+button.textContent=
 
-   "✓ Completed";
+"✓ Completed";
 
-  button.classList.add("done");
+button.classList.add("done");
 
- }
+}
 
- localStorage.setItem(
+localStorage.setItem(
 
-  "completedExercisesV5",
+"completedExercisesV5",
 
-  JSON.stringify(completedExercises)
+JSON.stringify(completedExercises)
 
- );
+);
 
- updateProgress();
+updateProgress();
 
 }
 
 function updateProgress(){
 
- const total =
+const total=
 
-  Object.values(presetWorkouts)
+Object.values(presetWorkouts)
 
-   .reduce((sum,w)=>sum+w.exercises.length,0);
+.reduce(
 
- const presetCompleted =
+(sum,w)=>sum+w.exercises.length,
 
-  completedExercises.filter(
+0
 
-   id=>id.startsWith("preset-")
+);
 
-  ).length;
+const presetCompleted=
 
- const percent =
+completedExercises.filter(
 
-  total ?
+id=>id.startsWith("preset-")
 
-  Math.min((presetCompleted/total)*100,100)
+).length;
 
-  : 0;
+const percent=
 
- document.getElementById("progressFill")
+total
 
-  .style.width = percent + "%";
+? Math.min((presetCompleted/total)*100,100)
 
- document.getElementById("progressText")
+:0;
 
-  .textContent =
+document.getElementById("progressFill")
 
-  `${presetCompleted} of ${total} preset exercises completed`;
+.style.width=percent+"%";
+
+document.getElementById("progressText")
+
+.textContent=
+
+`${presetCompleted} of ${total} preset exercises completed`;
 
 }
 
-/* =====================================================
+/* =========================
 
-   EXERCISE LIBRARY
+   LIBRARY
 
-===================================================== */
+========================= */
 
 function showLibrary(){
 
- showScreen("libraryScreen");
+showScreen("libraryScreen");
 
- renderLibrary();
+renderLibrary();
 
 }
 
 function renderLibrary(){
 
- const search =
+const search=
 
-  document.getElementById("librarySearch")
+document.getElementById("librarySearch")
 
-   .value.toLowerCase();
+.value.toLowerCase();
 
- const muscle =
+const muscle=
 
-  document.getElementById("muscleFilter").value;
+document.getElementById("muscleFilter").value;
 
- const filtered =
+const filtered=
 
-  exerciseLibrary.filter(ex=>{
+exerciseLibrary.filter(ex=>{
 
-   const matchesSearch =
+const matchesSearch=
 
-    ex.name.toLowerCase().includes(search) ||
+ex.name.toLowerCase().includes(search) ||
 
-    ex.muscle.toLowerCase().includes(search);
+ex.muscle.toLowerCase().includes(search);
 
-   const matchesMuscle =
+const matchesMuscle=
 
-    muscle==="All" || ex.muscle===muscle;
+muscle==="All" ||
 
-   return matchesSearch && matchesMuscle;
+ex.muscle===muscle;
 
-  });
+return matchesSearch && matchesMuscle;
 
- const list =
+});
 
-  document.getElementById("libraryList");
+const list=
 
- list.innerHTML = "";
+document.getElementById("libraryList");
 
- if(!filtered.length){
+list.innerHTML="";
 
-  list.innerHTML =
+if(!filtered.length){
 
-   `<div class="empty">No exercises found.</div>`;
+list.innerHTML=
 
-  return;
+`<div class="empty">
 
- }
+No exercises found.
 
- filtered.forEach(ex=>{
+</div>`;
 
-  const row = document.createElement("div");
+return;
 
-  row.className = "library-item";
+}
 
-  row.innerHTML = `
+filtered.forEach(ex=>{
 
-   <div>
+const row=document.createElement("div");
 
-     <div class="library-name">
+row.className="library-item";
 
-       ${escapeHTML(ex.name)}
+row.innerHTML=`
 
-     </div>
+<div>
 
-     <span class="badge">
+<div class="library-name">
 
-       ${escapeHTML(ex.muscle)}
+${escapeHTML(ex.name)}
 
-     </span>
+</div>
 
-   </div>
+<span class="badge">
 
-   <button class="add-small">
+${escapeHTML(ex.muscle)}
 
-      View
+</span>
 
-   </button>
+</div>
 
-  `;
+<button class="add-small">
 
-  row.querySelector("button").onclick =
+View
 
-   ()=>viewLibraryExercise(ex.id);
+</button>
 
-  list.appendChild(row);
+`;
 
- });
+row.querySelector("button").onclick=
+
+()=>viewLibraryExercise(ex.id);
+
+list.appendChild(row);
+
+});
 
 }
 
 function viewLibraryExercise(id){
 
- const ex = getExercise(id);
+const ex=getExercise(id);
 
- if(!ex) return;
+if(!ex)return;
 
- activeWorkoutKey = "library";
+activeWorkoutKey="library";
 
- showScreen("workoutScreen");
+activeWorkoutExerciseIds=[id];
 
- document.getElementById("workoutTitle")
+showScreen("workoutScreen");
 
-  .textContent = ex.name;
+document.getElementById("workoutTitle")
 
- const list =
+.textContent=ex.name;
 
-  document.getElementById("exerciseList");
+const list=
 
- list.innerHTML = "";
+document.getElementById("exerciseList");
 
- const card =
+list.innerHTML="";
 
-  createExerciseCard(
+const card=
 
-   ex,
+createExerciseCard(
 
-   "library-" + ex.id,
+ex,
 
-   0
+"library-"+ex.id,
 
-  );
+0
 
- list.appendChild(card);
+);
 
- const details =
+list.appendChild(card);
 
-  card.querySelector(".details");
+card.querySelector(".details")
 
- if(details)
+.classList.add("open");
 
-   details.classList.add("open");
+document.getElementById("finishWorkoutButton")
+
+.classList.add("hidden");
 
 }
 
-/* =====================================================
+/* =========================
 
    CUSTOM WORKOUT BUILDER
 
-===================================================== */
+========================= */
 
 function showBuilder(){
 
- builderSelected = [];
+builderSelected=[];
 
- document.getElementById("customWorkoutName")
+document.getElementById("customWorkoutName")
 
-  .value = "";
+.value="";
 
- document.getElementById("builderSearch")
+document.getElementById("builderSearch")
 
-  .value = "";
+.value="";
 
- showScreen("builderScreen");
+showScreen("builderScreen");
 
- renderBuilderSelected();
+renderBuilderSelected();
 
- renderBuilderLibrary();
+renderBuilderLibrary();
 
 }
 
 function renderBuilderLibrary(){
 
- const search =
+const search=
 
-  document.getElementById("builderSearch")
+document.getElementById("builderSearch")
 
-   .value.toLowerCase();
+.value.toLowerCase();
 
- const exercises =
+const exercises=
 
-  exerciseLibrary.filter(ex=>
+exerciseLibrary.filter(ex=>
 
-   ex.name.toLowerCase().includes(search) ||
+ex.name.toLowerCase().includes(search) ||
 
-   ex.muscle.toLowerCase().includes(search)
+ex.muscle.toLowerCase().includes(search)
 
-  );
+);
 
- const list =
+const list=
 
-  document.getElementById("builderLibrary");
+document.getElementById("builderLibrary");
 
- list.innerHTML = "";
+list.innerHTML="";
 
- exercises.forEach(ex=>{
+exercises.forEach(ex=>{
 
-  const row = document.createElement("div");
+const row=document.createElement("div");
 
-  row.className = "library-item";
+row.className="library-item";
 
-  const already =
+const already=
 
-   builderSelected.includes(ex.id);
+builderSelected.includes(ex.id);
 
-  row.innerHTML = `
+row.innerHTML=`
 
-   <div>
+<div>
 
-      <div class="library-name">
+<div class="library-name">
 
-        ${escapeHTML(ex.name)}
+${escapeHTML(ex.name)}
 
-      </div>
+</div>
 
-      <span class="badge">
+<span class="badge">
 
-        ${escapeHTML(ex.muscle)}
+${escapeHTML(ex.muscle)}
 
-      </span>
+</span>
 
-   </div>
+</div>
 
-   <button class="add-small">
+<button class="add-small">
 
-      ${already ? "Added ✓" : "Add"}
+${already?"Added ✓":"Add"}
 
-   </button>
+</button>
 
-  `;
+`;
 
-  row.querySelector("button").onclick =
+row.querySelector("button").onclick=
 
-   ()=>addBuilderExercise(ex.id);
+()=>addBuilderExercise(ex.id);
 
-  list.appendChild(row);
+list.appendChild(row);
 
- });
+});
 
 }
 
 function addBuilderExercise(id){
 
- if(!builderSelected.includes(id))
+if(!builderSelected.includes(id)){
 
-   builderSelected.push(id);
+builderSelected.push(id);
 
- renderBuilderSelected();
+}
 
- renderBuilderLibrary();
+renderBuilderSelected();
+
+renderBuilderLibrary();
 
 }
 
 function removeBuilderExercise(id){
 
- builderSelected =
+builderSelected=
 
-  builderSelected.filter(x=>x!==id);
+builderSelected.filter(x=>x!==id);
 
- renderBuilderSelected();
+renderBuilderSelected();
 
- renderBuilderLibrary();
+renderBuilderLibrary();
 
 }
 
 function renderBuilderSelected(){
 
- const area =
+const area=
 
-  document.getElementById("builderExercises");
+document.getElementById("builderExercises");
 
- area.innerHTML = "";
+area.innerHTML="";
 
- if(!builderSelected.length){
+if(!builderSelected.length){
 
-  area.innerHTML =
+area.innerHTML=
 
-   `<div class="small">
+`<div class="small">
 
-     No exercises added yet.
+No exercises added yet.
 
-    </div>`;
+</div>`;
 
-  return;
+return;
 
- }
+}
 
- builderSelected.forEach((id,index)=>{
+builderSelected.forEach((id,index)=>{
 
-  const ex = getExercise(id);
+const ex=getExercise(id);
 
-  if(!ex) return;
+if(!ex)return;
 
-  const item =
+const item=document.createElement("div");
 
-   document.createElement("div");
+item.className="builder-exercise";
 
-  item.className = "builder-exercise";
+item.innerHTML=`
 
-  item.innerHTML = `
+<strong>
 
-   <strong>
+${index+1}. ${escapeHTML(ex.name)}
 
-    ${index+1}. ${escapeHTML(ex.name)}
+</strong>
 
-   </strong>
+<span class="badge">
 
-   <span class="badge">
+${escapeHTML(ex.muscle)}
 
-    ${escapeHTML(ex.muscle)}
+</span>
 
-   </span>
+<button
 
-   <button
+class="remove-small"
 
-    class="remove-small"
+style="float:right">
 
-    style="float:right">
+Remove
 
-    Remove
+</button>
 
-   </button>
+`;
 
-  `;
+item.querySelector("button").onclick=
 
-  item.querySelector("button").onclick =
+()=>removeBuilderExercise(id);
 
-   ()=>removeBuilderExercise(id);
+area.appendChild(item);
 
-  area.appendChild(item);
-
- });
+});
 
 }
 
 function saveCustomWorkout(){
 
- const name =
+const name=
 
-  document.getElementById("customWorkoutName")
+document.getElementById("customWorkoutName")
 
-   .value.trim();
+.value.trim();
 
- if(!name){
+if(!name){
 
-  alert("Give your workout a name first.");
+alert("Give your workout a name first.");
 
-  return;
+return;
 
- }
+}
 
- if(!builderSelected.length){
+if(!builderSelected.length){
 
-  alert("Add at least one exercise.");
+alert("Add at least one exercise.");
 
-  return;
+return;
 
- }
+}
 
- customWorkouts.push({
+customWorkouts.push({
 
-  id:Date.now(),
+id:Date.now(),
 
-  name:name,
+name:name,
 
-  exercises:[...builderSelected]
+exercises:[...builderSelected]
 
- });
+});
 
- localStorage.setItem(
+localStorage.setItem(
 
-  "customWorkoutsV5",
+"customWorkoutsV5",
 
-  JSON.stringify(customWorkouts)
+JSON.stringify(customWorkouts)
 
- );
+);
 
- goHome();
+goHome();
 
 }
 
 function deleteCustomWorkout(index){
 
- const workout =
+const workout=
 
-  customWorkouts[index];
+customWorkouts[index];
 
- if(!workout) return;
+if(!workout)return;
 
- const yes =
+const yes=
 
-  confirm(
+confirm(
 
-   `Delete "${workout.name}"?`
+`Delete "${workout.name}"?`
 
-  );
+);
 
- if(!yes) return;
+if(!yes)return;
 
- customWorkouts.splice(index,1);
+customWorkouts.splice(index,1);
 
- localStorage.setItem(
+localStorage.setItem(
 
-  "customWorkoutsV5",
+"customWorkoutsV5",
 
-  JSON.stringify(customWorkouts)
+JSON.stringify(customWorkouts)
 
- );
+);
 
- goHome();
+goHome();
 
 }
 
-/* =====================================================
+/* =========================
 
-   SAFETY HELPERS
+   ESCAPE HELPERS
 
-===================================================== */
+========================= */
 
 function escapeHTML(value){
 
- return String(value)
+return String(value)
 
-  .replaceAll("&","&amp;")
+.replaceAll("&","&amp;")
 
-  .replaceAll("<","&lt;")
+.replaceAll("<","&lt;")
 
-  .replaceAll(">","&gt;")
+.replaceAll(">","&gt;")
 
-  .replaceAll('"',"&quot;")
+.replaceAll('"',"&quot;")
 
-  .replaceAll("'","&#039;");
+.replaceAll("'","&#039;");
 
 }
 
 function escapeAttribute(value){
 
- return String(value)
+return String(value)
 
-  .replaceAll("\\","\\\\")
+.replaceAll("\\","\\\\")
 
-  .replaceAll("'","\\'");
+.replaceAll("'","\\'");
 
 }
 
 function safeId(value){
 
- return "id-" +
+return "id-"+String(value)
 
-  String(value)
-
-   .replace(/[^a-zA-Z0-9_-]/g,"-");
+.replace(/[^a-zA-Z0-9_-]/g,"-");
 
 }
 
-/* =====================================================
+/* =========================
 
-   START APP
+   START
 
-===================================================== */
+========================= */
 
 renderHome();
 
