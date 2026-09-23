@@ -1,43 +1,2437 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><title>Workout Tracker V3</title>
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<meta name="theme-color" content="#111827">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<meta name="apple-mobile-web-app-title" content="Workout">
+
+<link rel="manifest" href="./manifest.json">
+
+<title>Workout Tracker V4</title>
+
 <style>
-:root{--bg:#f2f2f7;--card:#fff;--ink:#111;--muted:#6b6b72;--line:#e5e5ea;--accent:#111;--good:#34c759}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif}header{background:#fff;padding:calc(env(safe-area-inset-top) + 16px) 18px 14px;position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line)}header .top{display:flex;justify-content:space-between;align-items:center}h1{font-size:28px;margin:0}.date{color:var(--muted);font-size:14px;margin-top:3px}main{max-width:760px;margin:auto;padding:14px 14px 100px}.hero{background:#111;color:#fff;border-radius:20px;padding:18px;margin-bottom:14px}.hero h2{margin:0 0 6px;font-size:22px}.hero p{margin:0 0 14px;color:#d7d7dc}.hero button{background:#fff;color:#111}.card{background:var(--card);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px #00000010}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{font-size:26px;font-weight:750}.muted{color:var(--muted)}button,input,select{font:inherit;border-radius:13px;padding:11px;border:1px solid #d1d1d6;background:#fff}button{border:0;background:#111;color:#fff;font-weight:650}button.secondary{background:#e5e5ea;color:#111}.full{width:100%}.hidden{display:none}.badge{display:inline-block;background:#e5e5ea;padding:5px 9px;border-radius:999px;font-size:12px}.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.section-title h2{margin:0;font-size:20px}.exercise{padding:15px 0;border-top:1px solid var(--line)}.exercise:first-child{border-top:0}.ex-head{display:flex;gap:12px}.art{width:100px;height:82px;flex:0 0 100px;border-radius:15px;background:#f7f7f9;border:1px solid var(--line);display:flex;align-items:center;justify-content:center}.art svg{width:94px;height:76px}.ex-info{min-width:0;flex:1}.ex-name{font-weight:750;font-size:17px;line-height:1.15}.target{font-size:13px;color:var(--muted);margin-top:5px}.last{font-size:13px;margin-top:5px}.next{margin-top:9px;background:#f7f7f9;border-radius:12px;padding:9px;font-size:13px}.next b{display:block}.sets{margin-top:10px}.set{display:grid;grid-template-columns:28px 1fr 1fr 42px;gap:7px;align-items:center;margin-top:7px}.setnum{font-weight:700;color:var(--muted);text-align:center}.set input{width:100%;padding:10px}.remove{background:#eee;color:#555}.done{background:var(--good);color:#fff}.exercise.complete{outline:2px solid #34c759;border-radius:15px;padding:12px;margin:8px -4px}.rest{margin-top:8px}.tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;gap:7px;padding:9px 9px calc(9px + env(safe-area-inset-bottom));z-index:10}.tabs button{flex:1;background:#e5e5ea;color:#111;font-size:12px;padding:10px 4px}.tabs button.active{background:#111;color:#fff}.timer{position:fixed;left:12px;right:12px;bottom:78px;background:#fff;border-radius:18px;padding:16px;box-shadow:0 6px 30px #0003;z-index:20}.clock{text-align:center;font-size:44px;font-weight:800}.timer .row{display:flex;gap:7px}.timer .row button{flex:1}.history-item{padding:12px 0;border-top:1px solid var(--line)}.history-item:first-child{border-top:0}.program-day{padding:13px 0;border-top:1px solid var(--line)}.program-day:first-child{border-top:0}.custom-row{display:flex;gap:8px}.custom-row>*{flex:1}
-</style></head><body>
-<header><div class="top"><div><h1>Workout Tracker</h1><div class="date" id="date"></div></div><span class="badge">V3</span></div></header>
-<main>
-<section id="home"><div class="hero"><h2 id="heroTitle">Ready to train?</h2><p id="heroText">Choose a workout and start logging your sets.</p><button onclick="quickStart()">Start today's workout</button></div><div class="grid"><div class="card"><div class="stat" id="statWorkouts">0</div><div class="muted">Workouts</div></div><div class="card"><div class="stat" id="statVolume">0</div><div class="muted">Total lbs</div></div></div><div class="card"><div class="section-title"><h2>4-Day Program</h2><span class="badge">Machines</span></div><div id="homeProgram"></div></div></section>
-<section id="workout" class="hidden"><div class="card"><div class="section-title"><h2>Start Workout</h2></div><div class="custom-row"><select id="routine"><option>Day 1 — Upper A</option><option>Day 2 — Lower A</option><option>Day 3 — Upper B</option><option>Day 4 — Lower B</option></select><button onclick="startWorkout()">Start</button></div></div><div id="activeWorkout"></div></section>
-<section id="progress" class="hidden"><div class="card"><h2>Progress</h2><div id="progressList"></div></div><div class="card"><h2>Exercise History</h2><div id="exerciseHistory"></div></div></section>
-<section id="program" class="hidden"><div class="card"><h2>Program</h2><p class="muted">Use a controlled tempo and generally finish sets with 1–3 reps in reserve.</p><div id="programList"></div></div></section>
-<section id="more" class="hidden"><div class="card"><h2>Workout History</h2><div id="historyList"></div></div><div class="card"><h2>Custom Exercise</h2><div class="custom-row"><input id="newExercise" placeholder="Exercise name"><button onclick="addCustom()">Add</button></div><div id="customList"></div></div></section>
+
+* {
+
+  box-sizing: border-box;
+
+  -webkit-tap-highlight-color: transparent;
+
+}
+
+body {
+
+  margin: 0;
+
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
+
+  background: #f3f4f6;
+
+  color: #111827;
+
+  padding-bottom: 90px;
+
+}
+
+header {
+
+  background: #111827;
+
+  color: white;
+
+  padding: 22px 18px 18px;
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 20;
+
+}
+
+header h1 {
+
+  margin: 0;
+
+  font-size: 25px;
+
+}
+
+header p {
+
+  margin: 5px 0 0;
+
+  opacity: .75;
+
+  font-size: 14px;
+
+}
+
+.container {
+
+  max-width: 700px;
+
+  margin: auto;
+
+  padding: 16px;
+
+}
+
+.card {
+
+  background: white;
+
+  border-radius: 18px;
+
+  padding: 16px;
+
+  margin-bottom: 14px;
+
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+
+}
+
+h2 {
+
+  margin-top: 0;
+
+}
+
+button {
+
+  border: 0;
+
+  border-radius: 12px;
+
+  padding: 12px 15px;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+}
+
+.primary {
+
+  background: #111827;
+
+  color: white;
+
+}
+
+.secondary {
+
+  background: #e5e7eb;
+
+  color: #111827;
+
+}
+
+.success {
+
+  background: #16a34a;
+
+  color: white;
+
+}
+
+.danger {
+
+  background: #dc2626;
+
+  color: white;
+
+}
+
+.nav {
+
+  position: fixed;
+
+  bottom: 0;
+
+  left: 0;
+
+  right: 0;
+
+  background: white;
+
+  border-top: 1px solid #ddd;
+
+  display: flex;
+
+  justify-content: space-around;
+
+  padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+
+  z-index: 50;
+
+}
+
+.nav button {
+
+  background: transparent;
+
+  padding: 7px 8px;
+
+  color: #6b7280;
+
+  font-size: 12px;
+
+}
+
+.nav button.active {
+
+  color: #111827;
+
+  font-weight: 800;
+
+}
+
+.day-buttons {
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 10px;
+
+}
+
+.day-button {
+
+  text-align: left;
+
+  background: white;
+
+  border: 2px solid transparent;
+
+  padding: 16px;
+
+  min-height: 82px;
+
+}
+
+.day-button.selected {
+
+  border-color: #111827;
+
+}
+
+.day-number {
+
+  font-size: 12px;
+
+  color: #6b7280;
+
+  margin-bottom: 4px;
+
+}
+
+.exercise {
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 16px;
+
+  padding: 13px;
+
+  margin-bottom: 13px;
+
+}
+
+.exercise-top {
+
+  display: flex;
+
+  gap: 12px;
+
+  align-items: center;
+
+}
+
+.exercise-picture {
+
+  width: 82px;
+
+  height: 82px;
+
+  border-radius: 14px;
+
+  background: #eef2ff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  font-size: 42px;
+
+}
+
+.exercise-name {
+
+  font-weight: 800;
+
+  font-size: 17px;
+
+}
+
+.muscle {
+
+  color: #6b7280;
+
+  font-size: 13px;
+
+  margin-top: 3px;
+
+}
+
+.last {
+
+  margin-top: 8px;
+
+  font-size: 13px;
+
+  color: #2563eb;
+
+  font-weight: 700;
+
+}
+
+.suggestion {
+
+  margin-top: 7px;
+
+  background: #ecfdf5;
+
+  color: #166534;
+
+  border-radius: 10px;
+
+  padding: 8px;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+}
+
+.set-row {
+
+  display: grid;
+
+  grid-template-columns: 42px 1fr 1fr 48px;
+
+  gap: 7px;
+
+  align-items: center;
+
+  margin-top: 9px;
+
+}
+
+.set-number {
+
+  font-weight: 800;
+
+  color: #6b7280;
+
+}
+
+input {
+
+  width: 100%;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 10px;
+
+  padding: 10px;
+
+  font-size: 16px;
+
+  background: white;
+
+}
+
+.complete {
+
+  width: 45px;
+
+  height: 42px;
+
+  padding: 0;
+
+  background: #e5e7eb;
+
+}
+
+.complete.done {
+
+  background: #16a34a;
+
+  color: white;
+
+}
+
+.exercise-actions {
+
+  display: flex;
+
+  gap: 8px;
+
+  margin-top: 12px;
+
+}
+
+.exercise-actions button {
+
+  flex: 1;
+
+  font-size: 13px;
+
+}
+
+.progress-bar {
+
+  height: 12px;
+
+  background: #e5e7eb;
+
+  border-radius: 10px;
+
+  overflow: hidden;
+
+  margin-top: 8px;
+
+}
+
+.progress-fill {
+
+  height: 100%;
+
+  background: #111827;
+
+  width: 0%;
+
+}
+
+.stat-grid {
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 10px;
+
+}
+
+.stat {
+
+  background: #f9fafb;
+
+  border-radius: 14px;
+
+  padding: 14px;
+
+}
+
+.stat strong {
+
+  display: block;
+
+  font-size: 24px;
+
+}
+
+.history-item {
+
+  padding: 12px 0;
+
+  border-bottom: 1px solid #eee;
+
+}
+
+.history-item:last-child {
+
+  border-bottom: 0;
+
+}
+
+.timer {
+
+  text-align: center;
+
+}
+
+.timer-number {
+
+  font-size: 70px;
+
+  font-weight: 800;
+
+  margin: 15px 0;
+
+}
+
+.timer-buttons {
+
+  display: flex;
+
+  gap: 8px;
+
+}
+
+.timer-buttons button {
+
+  flex: 1;
+
+}
+
+.empty {
+
+  text-align: center;
+
+  color: #6b7280;
+
+  padding: 30px 10px;
+
+}
+
+.small {
+
+  font-size: 12px;
+
+  color: #6b7280;
+
+}
+
+.modal {
+
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(0,0,0,.55);
+
+  display: none;
+
+  align-items: flex-end;
+
+  z-index: 100;
+
+}
+
+.modal.show {
+
+  display: flex;
+
+}
+
+.modal-content {
+
+  background: white;
+
+  width: 100%;
+
+  border-radius: 22px 22px 0 0;
+
+  padding: 20px;
+
+  max-height: 85vh;
+
+  overflow-y: auto;
+
+}
+
+.modal-actions {
+
+  display: flex;
+
+  gap: 10px;
+
+  margin-top: 15px;
+
+}
+
+.modal-actions button {
+
+  flex: 1;
+
+}
+
+label {
+
+  display: block;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  margin: 12px 0 5px;
+
+}
+
+.install-box {
+
+  background: #eff6ff;
+
+  border: 1px solid #bfdbfe;
+
+  color: #1e40af;
+
+  border-radius: 14px;
+
+  padding: 13px;
+
+  margin-bottom: 15px;
+
+  font-size: 13px;
+
+}
+
+canvas {
+
+  width: 100%;
+
+  height: 220px;
+
+  border-radius: 12px;
+
+  background: #f9fafb;
+
+}
+
+@media (max-width: 420px) {
+
+  .exercise-picture {
+
+    width: 70px;
+
+    height: 70px;
+
+    font-size: 34px;
+
+  }
+
+  .set-row {
+
+    grid-template-columns: 34px 1fr 1fr 44px;
+
+  }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+  <h1>Workout Tracker</h1>
+
+  <p id="headerSubtitle">Build strength. Track progress.</p>
+
+</header>
+
+<main class="container">
+
+  <!-- HOME -->
+
+  <section id="homePage">
+
+    <div class="install-box" id="installBox">
+
+      <strong>📱 Make this an app</strong><br>
+
+      Open Safari's Share menu and choose <b>Add to Home Screen</b>.
+
+    </div>
+
+    <div class="card">
+
+      <h2>Choose Workout</h2>
+
+      <div class="day-buttons" id="dayButtons"></div>
+
+    </div>
+
+    <div class="card">
+
+      <h2>Today's Progress</h2>
+
+      <div class="stat-grid">
+
+        <div class="stat">
+
+          <strong id="homeCompleted">0</strong>
+
+          Sets Completed
+
+        </div>
+
+        <div class="stat">
+
+          <strong id="homeWorkouts">0</strong>
+
+          Workouts
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <h2>How Progressive Overload Works</h2>
+
+      <p class="small">
+
+        When you can complete all prescribed reps with good form,
+
+        the tracker will suggest increasing the weight next time.
+
+      </p>
+
+    </div>
+
+  </section>
+
+  <!-- WORKOUT -->
+
+  <section id="workoutPage" style="display:none">
+
+    <div class="card">
+
+      <button class="secondary" onclick="showPage('home')">← Back</button>
+
+      <h2 id="workoutTitle" style="margin-top:15px"></h2>
+
+      <p id="workoutDescription" class="small"></p>
+
+    </div>
+
+    <div id="exerciseList"></div>
+
+    <div class="card">
+
+      <button class="primary" style="width:100%" onclick="finishWorkout()">
+
+        Finish Workout
+
+      </button>
+
+    </div>
+
+  </section>
+
+  <!-- PROGRESS -->
+
+  <section id="progressPage" style="display:none">
+
+    <div class="card">
+
+      <h2>Progress</h2>
+
+      <div class="stat-grid">
+
+        <div class="stat">
+
+          <strong id="totalWorkouts">0</strong>
+
+          Workouts
+
+        </div>
+
+        <div class="stat">
+
+          <strong id="totalSets">0</strong>
+
+          Sets
+
+        </div>
+
+        <div class="stat">
+
+          <strong id="totalVolume">0</strong>
+
+          Total Volume
+
+        </div>
+
+        <div class="stat">
+
+          <strong id="personalBests">0</strong>
+
+          Personal Bests
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <h2>Volume Progress</h2>
+
+      <canvas id="progressChart" width="600" height="300"></canvas>
+
+    </div>
+
+    <div class="card">
+
+      <h2>Personal Bests</h2>
+
+      <div id="pbList"></div>
+
+    </div>
+
+  </section>
+
+  <!-- HISTORY -->
+
+  <section id="historyPage" style="display:none">
+
+    <div class="card">
+
+      <h2>Workout History</h2>
+
+      <div id="historyList"></div>
+
+    </div>
+
+    <div class="card">
+
+      <button class="danger" style="width:100%" onclick="clearHistory()">
+
+        Clear All Workout History
+
+      </button>
+
+    </div>
+
+  </section>
+
+  <!-- TIMER -->
+
+  <section id="timerPage" style="display:none">
+
+    <div class="card timer">
+
+      <h2>Rest Timer</h2>
+
+      <div class="timer-number" id="timerDisplay">90</div>
+
+      <div class="timer-buttons">
+
+        <button class="secondary" onclick="setTimer(60)">60s</button>
+
+        <button class="secondary" onclick="setTimer(90)">90s</button>
+
+        <button class="secondary" onclick="setTimer(120)">120s</button>
+
+      </div>
+
+      <br>
+
+      <div class="timer-buttons">
+
+        <button class="primary" onclick="startTimer()">Start</button>
+
+        <button class="secondary" onclick="pauseTimer()">Pause</button>
+
+        <button class="danger" onclick="resetTimer()">Reset</button>
+
+      </div>
+
+    </div>
+
+  </section>
+
 </main>
-<div id="timer" class="timer hidden"><div class="clock" id="clock">02:00</div><div class="row"><button onclick="startTimer(60)">1 min</button><button onclick="startTimer(90)">90 sec</button><button onclick="startTimer(120)">2 min</button><button class="secondary" onclick="closeTimer()">Close</button></div></div>
-<nav class="tabs"><button class="active" onclick="tab('home',this)">Home</button><button onclick="tab('workout',this)">Workout</button><button onclick="tab('progress',this)">Progress</button><button onclick="tab('program',this)">Program</button><button onclick="tab('more',this)">More</button></nav>
+
+<!-- BOTTOM NAV -->
+
+<nav class="nav">
+
+  <button id="navHome" class="active" onclick="showPage('home')">
+
+    🏠<br>Home
+
+  </button>
+
+  <button id="navWorkout" onclick="showPage('workout')">
+
+    🏋️<br>Workout
+
+  </button>
+
+  <button id="navProgress" onclick="showPage('progress')">
+
+    📈<br>Progress
+
+  </button>
+
+  <button id="navHistory" onclick="showPage('history')">
+
+    🕘<br>History
+
+  </button>
+
+  <button id="navTimer" onclick="showPage('timer')">
+
+    ⏱️<br>Timer
+
+  </button>
+
+</nav>
+
+<!-- ADD EXERCISE MODAL -->
+
+<div class="modal" id="exerciseModal">
+
+  <div class="modal-content">
+
+    <h2>Add Custom Exercise</h2>
+
+    <label>Exercise Name</label>
+
+    <input id="customName" placeholder="Example: Chest Press">
+
+    <label>Muscle Group</label>
+
+    <input id="customMuscle" placeholder="Example: Chest">
+
+    <label>Number of Sets</label>
+
+    <input id="customSets" type="number" value="3" min="1" max="10">
+
+    <label>Target Reps</label>
+
+    <input id="customReps" type="number" value="10" min="1" max="50">
+
+    <div class="modal-actions">
+
+      <button class="secondary" onclick="closeModal()">Cancel</button>
+
+      <button class="primary" onclick="saveCustomExercise()">Add Exercise</button>
+
+    </div>
+
+  </div>
+
+</div>
+
 <script>
-const program={
-"Day 1 — Upper A":[["Machine Chest Press",3,8,12,120],["Chest-Supported Row",3,8,12,120],["Machine Shoulder Press",3,8,12,120],["Lat Pulldown",3,8,12,120],["Machine Lateral Raise",3,10,15,90],["Triceps Extension",2,10,15,75],["Machine Biceps Curl",2,10,15,75]],
-"Day 2 — Lower A":[["Leg Press",3,8,12,150],["Seated Leg Curl",3,8,12,120],["Leg Extension",3,10,15,90],["Hip Abduction",2,12,15,75],["Seated Calf Raise",3,10,15,90]],
-"Day 3 — Upper B":[["Incline Machine Press",3,8,12,120],["Seated Machine Row",3,8,12,120],["Neutral-Grip Lat Pulldown",3,8,12,120],["Machine Pec Deck",2,10,15,90],["Rear Delt Fly",3,10,15,90],["Machine Triceps Press",2,10,15,75],["Machine Preacher Curl",2,10,15,75]],
-"Day 4 — Lower B":[["Hack Squat",3,8,12,150],["Lying Leg Curl",3,8,12,120],["Leg Extension",3,10,15,90],["Hip Adduction",2,12,15,75],["Calf Press",3,10,15,90]]};
-const routines=Object.keys(program);let data=JSON.parse(localStorage.getItem('workoutsV3')||localStorage.getItem('workoutsV2')||'[]');let custom=JSON.parse(localStorage.getItem('customExercisesV3')||'[]');let timerInt=null,seconds=120;
-document.getElementById('date').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
-function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function previous(name){for(const w of data){const e=w.workout?.find(x=>x.name===name);if(e)return e}return null}
-function prog(name,low,high){const p=previous(name);if(!p)return {last:'No previous workout',next:`Start with a weight you can perform for ${low}–${high} reps.`};const sets=p.sets||[];const max=Math.max(...sets.map(x=>+x.weight||0));const top=sets.length&&sets.every(x=>+x.reps>=high);return {last:`Last: ${sets.map(x=>x.weight+' × '+x.reps).join(', ')}`,next:top&&max?`Next target: ${max+5} lb × ${low}–${high} reps`:`Next target: ${max?max+' lb':''} — work toward ${high} reps on every set`}}
-function art(name){let n=name.toLowerCase();let type=n.includes('leg')||n.includes('squat')||n.includes('calf')||n.includes('hip')?'leg':n.includes('row')||n.includes('pulldown')||n.includes('delt')?'pull':n.includes('curl')?'curl':'push';let body=type==='leg'?'<circle cx="48" cy="16" r="6"/><path d="M48 23v20l-13 17M48 43l18 17M48 29L30 36M48 29l16 4"/>':type==='pull'?'<circle cx="48" cy="17" r="6"/><path d="M48 24v19M48 29l-17 10M48 29l17 10M48 43l-13 17M48 43l13 17"/><path d="M20 12v38M15 12h10M20 12h55"/>':'<circle cx="48" cy="17" r="6"/><path d="M48 24v20M48 29L28 23M48 29l20-6M48 44L35 60M48 44l13 16"/><path d="M18 25h60M18 20v10M78 20v10"/>';return `<div class="art"><svg viewBox="0 0 96 76" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 64h80" stroke="#888"/>${body}</svg></div>`}
-function startWorkout(){const r=document.getElementById('routine').value;const list=program[r]||custom;document.getElementById('activeWorkout').innerHTML=`<div class="card"><div class="section-title"><h2>${r}</h2><span class="badge">${list.length} exercises</span></div><div id="exercises"></div><button class="full" onclick="finish()">Finish & Save Workout</button></div>`;list.forEach((x,i)=>addExercise(x,i));}
-function addExercise(item,i){let name=item[0]||item,meta=Array.isArray(item)?item:null,low=meta?meta[2]:8,high=meta?meta[3]:12,rest=meta?meta[4]:90,p=prog(name,low,high);let d=document.createElement('div');d.className='exercise';d.dataset.name=name;d.innerHTML=`<div class="ex-head">${art(name)}<div class="ex-info"><div class="ex-name">${esc(name)}</div><div class="target">${low}–${high} reps · ${rest}s rest · ${meta?meta[1]+' working sets':''}</div><div class="last">${esc(p.last)}</div><div class="next"><b>${esc(p.next)}</b>Progress only when your form stays controlled.</div></div></div><div class="sets">${setHtml(1)}</div><button class="secondary rest" onclick="addSet(this)">+ Add set</button>`;document.getElementById('exercises').appendChild(d)}
-function setHtml(n){return `<div class="set"><div class="setnum">${n}</div><input type="number" placeholder="lbs" inputmode="decimal"><input type="number" placeholder="reps" inputmode="numeric"><button class="remove" onclick="removeSet(this)">×</button></div>`}
-function addSet(btn){let box=btn.parentElement,sets=box.querySelector('.sets'),n=sets.children.length+1;sets.insertAdjacentHTML('beforeend',setHtml(n))}
-function removeSet(btn){let sets=btn.closest('.sets');if(sets.children.length>1)btn.parentElement.remove()}
-document.addEventListener('input',e=>{if(!e.target.matches('.set input'))return;let ex=e.target.closest('.exercise'),rows=[...ex.querySelectorAll('.set')];ex.classList.toggle('complete',rows.every(r=>{let i=r.querySelectorAll('input');return +i[0].value>0&&+i[1].value>0}))});
-function finish(){let workout=[],volume=0;document.querySelectorAll('.exercise').forEach(ex=>{let sets=[];ex.querySelectorAll('.set').forEach(r=>{let i=r.querySelectorAll('input'),w=+i[0].value,rep=+i[1].value;if(w>0&&rep>0){sets.push({weight:w,reps:rep});volume+=w*rep}});if(sets.length)workout.push({name:ex.dataset.name,sets})});if(!workout.length){alert('Log at least one set first.');return}data.unshift({date:new Date().toISOString(),workout,volume});localStorage.setItem('workoutsV3',JSON.stringify(data));document.getElementById('activeWorkout').innerHTML=`<div class="card"><h2>Workout saved ✓</h2><p>${volume.toLocaleString()} lb total volume.</p><button class="full" onclick="tab('home',document.querySelector('.tabs button'))">Back to Home</button></div>`;render()}
-function quickStart(){let idx=data.length%4;document.getElementById('routine').value=routines[idx];tab('workout',document.querySelectorAll('.tabs button')[1]);startWorkout()}
-function tab(id,btn){['home','workout','progress','program','more'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');if(id==='progress')renderProgress();if(id==='more')renderMore()}
-function render(){let vol=data.reduce((a,w)=>a+(w.volume||0),0);document.getElementById('statWorkouts').textContent=data.length;document.getElementById('statVolume').textContent=vol>=1000?(vol/1000).toFixed(1)+'k':vol;document.getElementById('homeProgram').innerHTML=routines.map((r,i)=>`<div class="program-day"><b>${r}</b><div class="muted">${program[r].length} exercises · ${program[r].reduce((a,x)=>a+x[1],0)} working sets</div></div>`).join('');document.getElementById('programList').innerHTML=routines.map(r=>`<div class="program-day"><b>${r}</b>${program[r].map(x=>`<p>${x[0]} — ${x[1]} sets · ${x[2]}–${x[3]} reps</p>`).join('')}</div>`).join('');renderProgress();renderMore()}
-function renderProgress(){let best={};data.forEach(w=>(w.workout||[]).forEach(e=>(e.sets||[]).forEach(s=>{if(!best[e.name]||s.weight>best[e.name].weight||(s.weight===best[e.name].weight&&s.reps>best[e.name].reps))best[e.name]=s})));document.getElementById('progressList').innerHTML=Object.keys(best).length?Object.entries(best).map(([n,s])=>`<p><b>${esc(n)}</b><br>${s.weight} lb × ${s.reps} reps</p>`).join(''):'<div class="muted">Complete a workout to create records.</div>';document.getElementById('exerciseHistory').innerHTML=Object.keys(best).length?Object.entries(best).map(([n,s])=>{let c=data.reduce((a,w)=>a+(w.workout||[]).filter(e=>e.name===n).length,0);return `<div class="history-item"><b>${esc(n)}</b> <span class="badge">${c} sessions</span><br><span class="muted">Best logged set: ${s.weight} × ${s.reps}</span></div>`}).join(''):'<div class="muted">Your exercise history will appear here.</div>'}
-function renderMore(){document.getElementById('historyList').innerHTML=data.length?data.map(w=>`<div class="history-item"><b>${new Date(w.date).toLocaleDateString()}</b> <span class="badge">${(w.volume||0).toLocaleString()} lb</span>${(w.workout||[]).map(e=>`<div>${esc(e.name)} — ${(e.sets||[]).map(s=>s.weight+'×'+s.reps).join(', ')}</div>`).join('')}</div>`).join(''):'<div class="muted">No workouts yet.</div>';document.getElementById('customList').innerHTML=custom.length?custom.map((x,i)=>`<p><b>${esc(x)}</b> <button class="remove" onclick="delCustom(${i})">Delete</button></p>`).join(''):'<div class="muted">No custom exercises.</div>'}
-function addCustom(){let v=document.getElementById('newExercise').value.trim();if(v&&!custom.includes(v)){custom.push(v);localStorage.setItem('customExercisesV3',JSON.stringify(custom));document.getElementById('newExercise').value='';renderMore()}}
-function delCustom(i){custom.splice(i,1);localStorage.setItem('customExercisesV3',JSON.stringify(custom));renderMore()}
-function openTimer(){document.getElementById('timer').classList.remove('hidden');startTimer(120)}function closeTimer(){clearInterval(timerInt);document.getElementById('timer').classList.add('hidden')}function startTimer(s){clearInterval(timerInt);seconds=s;tick();timerInt=setInterval(()=>{seconds--;tick();if(seconds<=0){clearInterval(timerInt);navigator.vibrate?.([250,100,250]);}},1000)}function tick(){document.getElementById('clock').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')}
-render();
-</script></body></html>
+
+/* =========================================================
+
+   WORKOUT DATA
+
+========================================================= */
+
+const workouts = {
+
+  1: {
+
+    name: "Day 1 — Chest + Triceps",
+
+    description: "Machine-focused chest and triceps workout.",
+
+    exercises: [
+
+      {name:"Machine Chest Press", muscle:"Chest", icon:"🏋️", sets:3, reps:10},
+
+      {name:"Pec Deck", muscle:"Chest", icon:"💪", sets:3, reps:12},
+
+      {name:"Incline Chest Press", muscle:"Upper Chest", icon:"🏋️", sets:3, reps:10},
+
+      {name:"Machine Triceps Extension", muscle:"Triceps", icon:"💪", sets:3, reps:12},
+
+      {name:"Cable Triceps Pushdown", muscle:"Triceps", icon:"🔻", sets:3, reps:12}
+
+    ]
+
+  },
+
+  2: {
+
+    name: "Day 2 — Back + Biceps",
+
+    description: "Machine-focused back and biceps workout.",
+
+    exercises: [
+
+      {name:"Lat Pulldown", muscle:"Back", icon:"⬇️", sets:3, reps:10},
+
+      {name:"Seated Cable Row", muscle:"Back", icon:"🚣", sets:3, reps:10},
+
+      {name:"Machine Row", muscle:"Upper Back", icon:"🏋️", sets:3, reps:10},
+
+      {name:"Reverse Pec Deck", muscle:"Rear Delts", icon:"🔄", sets:3, reps:12},
+
+      {name:"Machine Biceps Curl", muscle:"Biceps", icon:"💪", sets:3, reps:12}
+
+    ]
+
+  },
+
+  3: {
+
+    name: "Day 3 — Legs",
+
+    description: "Machine-focused lower body workout.",
+
+    exercises: [
+
+      {name:"Leg Press", muscle:"Quads / Glutes", icon:"🦵", sets:4, reps:10},
+
+      {name:"Leg Extension", muscle:"Quads", icon:"🦵", sets:3, reps:12},
+
+      {name:"Seated Leg Curl", muscle:"Hamstrings", icon:"🦵", sets:3, reps:12},
+
+      {name:"Hip Abductor", muscle:"Glutes", icon:"🦵", sets:3, reps:15},
+
+      {name:"Calf Raise Machine", muscle:"Calves", icon:"🦶", sets:4, reps:15}
+
+    ]
+
+  },
+
+  4: {
+
+    name: "Day 4 — Shoulders + Arms",
+
+    description: "Shoulders, biceps and triceps.",
+
+    exercises: [
+
+      {name:"Machine Shoulder Press", muscle:"Shoulders", icon:"🏋️", sets:3, reps:10},
+
+      {name:"Machine Lateral Raise", muscle:"Side Delts", icon:"💪", sets:3, reps:12},
+
+      {name:"Rear Delt Machine", muscle:"Rear Delts", icon:"🔄", sets:3, reps:12},
+
+      {name:"Machine Biceps Curl", muscle:"Biceps", icon:"💪", sets:3, reps:12},
+
+      {name:"Machine Triceps Extension", muscle:"Triceps", icon:"💪", sets:3, reps:12}
+
+    ]
+
+  }
+
+};
+
+/* =========================================================
+
+   STORAGE
+
+========================================================= */
+
+let history = JSON.parse(localStorage.getItem("workoutHistoryV4") || "[]");
+
+let customExercises =
+
+  JSON.parse(localStorage.getItem("customExercisesV4") || "[]");
+
+let currentDay = 1;
+
+let currentWorkout = [];
+
+let timerSeconds = 90;
+
+let timerInterval = null;
+
+/* =========================================================
+
+   SAVE
+
+========================================================= */
+
+function saveData() {
+
+  localStorage.setItem(
+
+    "workoutHistoryV4",
+
+    JSON.stringify(history)
+
+  );
+
+  localStorage.setItem(
+
+    "customExercisesV4",
+
+    JSON.stringify(customExercises)
+
+  );
+
+}
+
+/* =========================================================
+
+   HOME
+
+========================================================= */
+
+function renderHome() {
+
+  const container = document.getElementById("dayButtons");
+
+  container.innerHTML = "";
+
+  for (let day in workouts) {
+
+    const workout = workouts[day];
+
+    const button = document.createElement("button");
+
+    button.className =
+
+      "day-button " +
+
+      (Number(day) === currentDay ? "selected" : "");
+
+    button.innerHTML = `
+
+      <div class="day-number">DAY ${day}</div>
+
+      <strong>${workout.name.replace("Day " + day + " — ", "")}</strong>
+
+    `;
+
+    button.onclick = () => {
+
+      currentDay = Number(day);
+
+      renderHome();
+
+      startWorkout(currentDay);
+
+    };
+
+    container.appendChild(button);
+
+  }
+
+  document.getElementById("homeCompleted").textContent =
+
+    getCompletedSets();
+
+  document.getElementById("homeWorkouts").textContent =
+
+    history.length;
+
+}
+
+/* =========================================================
+
+   START WORKOUT
+
+========================================================= */
+
+function startWorkout(day) {
+
+  currentDay = day;
+
+  currentWorkout = workouts[day].exercises.map(exercise => {
+
+    const previous = getLastExercise(exercise.name);
+
+    return {
+
+      ...exercise,
+
+      values: Array.from(
+
+        {length: exercise.sets},
+
+        () => ({
+
+          weight: previous ? previous.weight : "",
+
+          reps: previous ? previous.reps : exercise.reps,
+
+          done: false
+
+        })
+
+      )
+
+    };
+
+  });
+
+  renderWorkout();
+
+  showPage("workout");
+
+}
+
+/* =========================================================
+
+   LAST WORKOUT
+
+========================================================= */
+
+function getLastExercise(name) {
+
+  for (let i = history.length - 1; i >= 0; i--) {
+
+    const workout = history[i];
+
+    const exercise = workout.exercises.find(
+
+      e => e.name === name
+
+    );
+
+    if (exercise && exercise.sets.length) {
+
+      const completed =
+
+        exercise.sets.filter(s => s.done);
+
+      if (completed.length) {
+
+        const last = completed[completed.length - 1];
+
+        return {
+
+          weight: last.weight,
+
+          reps: last.reps
+
+        };
+
+      }
+
+    }
+
+  }
+
+  return null;
+
+}
+
+/* =========================================================
+
+   PROGRESSIVE OVERLOAD
+
+========================================================= */
+
+function getSuggestion(exercise) {
+
+  const previous = getLastExercise(exercise.name);
+
+  if (!previous || !previous.weight) {
+
+    return "Enter your starting weight. Future workouts will use it automatically.";
+
+  }
+
+  const lastWeight = Number(previous.weight);
+
+  const lastReps = Number(previous.reps);
+
+  if (lastReps >= exercise.reps) {
+
+    const increase =
+
+      lastWeight >= 100 ? 5 : 2.5;
+
+    return `Suggested next weight: ${lastWeight + increase} lb`;
+
+  }
+
+  return `Try to reach ${exercise.reps} reps before increasing weight.`;
+
+}
+
+/* =========================================================
+
+   RENDER WORKOUT
+
+========================================================= */
+
+function renderWorkout() {
+
+  const workout = workouts[currentDay];
+
+  document.getElementById("workoutTitle").textContent =
+
+    workout.name;
+
+  document.getElementById("workoutDescription").textContent =
+
+    workout.description;
+
+  const list =
+
+    document.getElementById("exerciseList");
+
+  list.innerHTML = "";
+
+  currentWorkout.forEach((exercise, exerciseIndex) => {
+
+    const card = document.createElement("div");
+
+    card.className = "card exercise";
+
+    const previous = getLastExercise(exercise.name);
+
+    let html = `
+
+      <div class="exercise-top">
+
+        <div class="exercise-picture">
+
+          ${exercise.icon || "🏋️"}
+
+        </div>
+
+        <div style="flex:1">
+
+          <div class="exercise-name">
+
+            ${exercise.name}
+
+          </div>
+
+          <div class="muscle">
+
+            ${exercise.muscle}
+
+          </div>
+
+          ${
+
+            previous
+
+            ? `<div class="last">
+
+                Last: ${previous.weight || "—"} lb ×
+
+                ${previous.reps || "—"} reps
+
+              </div>`
+
+            : ""
+
+          }
+
+        </div>
+
+      </div>
+
+      <div class="suggestion">
+
+        💡 ${getSuggestion(exercise)}
+
+      </div>
+
+    `;
+
+    exercise.values.forEach((set, setIndex) => {
+
+      html += `
+
+        <div class="set-row">
+
+          <div class="set-number">
+
+            ${setIndex + 1}
+
+          </div>
+
+          <input
+
+            type="number"
+
+            placeholder="Weight"
+
+            value="${set.weight}"
+
+            onchange="updateSet(${exerciseIndex},${setIndex},'weight',this.value)"
+
+          >
+
+          <input
+
+            type="number"
+
+            placeholder="Reps"
+
+            value="${set.reps}"
+
+            onchange="updateSet(${exerciseIndex},${setIndex},'reps',this.value)"
+
+          >
+
+          <button
+
+            class="complete ${set.done ? "done" : ""}"
+
+            onclick="toggleSet(${exerciseIndex},${setIndex})"
+
+          >
+
+            ${set.done ? "✓" : "○"}
+
+          </button>
+
+        </div>
+
+      `;
+
+    });
+
+    html += `
+
+      <div class="exercise-actions">
+
+        <button
+
+          class="secondary"
+
+          onclick="startRest()"
+
+        >
+
+          ⏱ Rest
+
+        </button>
+
+        <button
+
+          class="secondary"
+
+          onclick="removeCurrentExercise(${exerciseIndex})"
+
+        >
+
+          Remove
+
+        </button>
+
+      </div>
+
+    `;
+
+    card.innerHTML = html;
+
+    list.appendChild(card);
+
+  });
+
+  const add = document.createElement("div");
+
+  add.className = "card";
+
+  add.innerHTML = `
+
+    <button
+
+      class="secondary"
+
+      style="width:100%"
+
+      onclick="openModal()"
+
+    >
+
+      + Add Custom Exercise
+
+    </button>
+
+  `;
+
+  list.appendChild(add);
+
+}
+
+/* =========================================================
+
+   UPDATE SET
+
+========================================================= */
+
+function updateSet(exerciseIndex, setIndex, field, value) {
+
+  currentWorkout[exerciseIndex]
+
+    .values[setIndex][field] = value;
+
+}
+
+/* =========================================================
+
+   TOGGLE SET
+
+========================================================= */
+
+function toggleSet(exerciseIndex, setIndex) {
+
+  currentWorkout[exerciseIndex]
+
+    .values[setIndex].done =
+
+      !currentWorkout[exerciseIndex]
+
+        .values[setIndex].done;
+
+  renderWorkout();
+
+}
+
+/* =========================================================
+
+   FINISH WORKOUT
+
+========================================================= */
+
+function finishWorkout() {
+
+  const completedSets =
+
+    currentWorkout.reduce(
+
+      (total, exercise) =>
+
+        total +
+
+        exercise.values.filter(s => s.done).length,
+
+      0
+
+    );
+
+  if (completedSets === 0) {
+
+    alert("Complete at least one set before finishing.");
+
+    return;
+
+  }
+
+  const workoutRecord = {
+
+    date: new Date().toISOString(),
+
+    day: currentDay,
+
+    name: workouts[currentDay].name,
+
+    exercises: currentWorkout.map(exercise => ({
+
+      name: exercise.name,
+
+      muscle: exercise.muscle,
+
+      sets: exercise.values.map(set => ({
+
+        weight: Number(set.weight) || 0,
+
+        reps: Number(set.reps) || 0,
+
+        done: set.done
+
+      }))
+
+    }))
+
+  };
+
+  history.push(workoutRecord);
+
+  saveData();
+
+  alert(
+
+    `Workout saved!\n\n${completedSets} sets completed.`
+
+  );
+
+  renderHome();
+
+  showPage("home");
+
+}
+
+/* =========================================================
+
+   REMOVE EXERCISE
+
+========================================================= */
+
+function removeCurrentExercise(index) {
+
+  if (
+
+    !confirm(
+
+      "Remove this exercise from today's workout?"
+
+    )
+
+  ) {
+
+    return;
+
+  }
+
+  currentWorkout.splice(index, 1);
+
+  renderWorkout();
+
+}
+
+/* =========================================================
+
+   CUSTOM EXERCISES
+
+========================================================= */
+
+function openModal() {
+
+  document
+
+    .getElementById("exerciseModal")
+
+    .classList.add("show");
+
+}
+
+function closeModal() {
+
+  document
+
+    .getElementById("exerciseModal")
+
+    .classList.remove("show");
+
+}
+
+function saveCustomExercise() {
+
+  const name =
+
+    document.getElementById("customName").value.trim();
+
+  const muscle =
+
+    document.getElementById("customMuscle").value.trim();
+
+  const sets =
+
+    Number(document.getElementById("customSets").value);
+
+  const reps =
+
+    Number(document.getElementById("customReps").value);
+
+  if (!name) {
+
+    alert("Enter an exercise name.");
+
+    return;
+
+  }
+
+  const exercise = {
+
+    name,
+
+    muscle: muscle || "Custom",
+
+    icon: "🏋️",
+
+    sets: sets || 3,
+
+    reps: reps || 10
+
+  };
+
+  customExercises.push(exercise);
+
+  currentWorkout.push({
+
+    ...exercise,
+
+    values: Array.from(
+
+      {length: exercise.sets},
+
+      () => ({
+
+        weight: "",
+
+        reps: exercise.reps,
+
+        done: false
+
+      })
+
+    )
+
+  });
+
+  saveData();
+
+  closeModal();
+
+  document.getElementById("customName").value = "";
+
+  document.getElementById("customMuscle").value = "";
+
+  renderWorkout();
+
+}
+
+/* =========================================================
+
+   PAGES
+
+========================================================= */
+
+function showPage(page) {
+
+  const pages = [
+
+    "home",
+
+    "workout",
+
+    "progress",
+
+    "history",
+
+    "timer"
+
+  ];
+
+  pages.forEach(name => {
+
+    const element =
+
+      document.getElementById(name + "Page");
+
+    if (element) {
+
+      element.style.display =
+
+        name === page ? "block" : "none";
+
+    }
+
+    const nav =
+
+      document.getElementById("nav" +
+
+        name.charAt(0).toUpperCase() +
+
+        name.slice(1));
+
+    if (nav) {
+
+      nav.classList.toggle(
+
+        "active",
+
+        name === page
+
+      );
+
+    }
+
+  });
+
+  if (page === "home") {
+
+    renderHome();
+
+  }
+
+  if (page === "progress") {
+
+    renderProgress();
+
+  }
+
+  if (page === "history") {
+
+    renderHistory();
+
+  }
+
+  if (page === "timer") {
+
+    updateTimerDisplay();
+
+  }
+
+  window.scrollTo(0, 0);
+
+}
+
+/* =========================================================
+
+   HISTORY
+
+========================================================= */
+
+function renderHistory() {
+
+  const list =
+
+    document.getElementById("historyList");
+
+  if (!history.length) {
+
+    list.innerHTML = `
+
+      <div class="empty">
+
+        No workouts recorded yet.
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+  list.innerHTML = "";
+
+  [...history]
+
+    .reverse()
+
+    .forEach(workout => {
+
+      const date =
+
+        new Date(workout.date)
+
+          .toLocaleDateString();
+
+      const sets =
+
+        workout.exercises.reduce(
+
+          (total, e) =>
+
+            total +
+
+            e.sets.filter(s => s.done).length,
+
+          0
+
+        );
+
+      const volume =
+
+        calculateWorkoutVolume(workout);
+
+      const div =
+
+        document.createElement("div");
+
+      div.className =
+
+        "history-item";
+
+      div.innerHTML = `
+
+        <strong>${workout.name}</strong>
+
+        <div class="small">
+
+          ${date} · ${sets} sets ·
+
+          ${Math.round(volume).toLocaleString()} lb volume
+
+        </div>
+
+      `;
+
+      list.appendChild(div);
+
+    });
+
+}
+
+/* =========================================================
+
+   PROGRESS
+
+========================================================= */
+
+function renderProgress() {
+
+  document.getElementById("totalWorkouts")
+
+    .textContent = history.length;
+
+  document.getElementById("totalSets")
+
+    .textContent = getCompletedSets();
+
+  const volume =
+
+    history.reduce(
+
+      (total, workout) =>
+
+        total + calculateWorkoutVolume(workout),
+
+      0
+
+    );
+
+  document.getElementById("totalVolume")
+
+    .textContent =
+
+      Math.round(volume).toLocaleString();
+
+  const bests =
+
+    calculatePersonalBests();
+
+  document.getElementById("personalBests")
+
+    .textContent =
+
+      Object.keys(bests).length;
+
+  const pbList =
+
+    document.getElementById("pbList");
+
+  if (!Object.keys(bests).length) {
+
+    pbList.innerHTML =
+
+      `<div class="empty">Complete workouts to create personal bests.</div>`;
+
+  } else {
+
+    pbList.innerHTML = "";
+
+    Object.entries(bests).forEach(
+
+      ([name, data]) => {
+
+        const div =
+
+          document.createElement("div");
+
+        div.className =
+
+          "history-item";
+
+        div.innerHTML = `
+
+          <strong>${name}</strong>
+
+          <div class="small">
+
+            Best: ${data.weight} lb × ${data.reps} reps
+
+          </div>
+
+        `;
+
+        pbList.appendChild(div);
+
+      }
+
+    );
+
+  }
+
+  drawChart();
+
+}
+
+/* =========================================================
+
+   PERSONAL BESTS
+
+========================================================= */
+
+function calculatePersonalBests() {
+
+  const bests = {};
+
+  history.forEach(workout => {
+
+    workout.exercises.forEach(exercise => {
+
+      exercise.sets.forEach(set => {
+
+        if (!set.done) return;
+
+        const weight =
+
+          Number(set.weight) || 0;
+
+        const reps =
+
+          Number(set.reps) || 0;
+
+        if (
+
+          !bests[exercise.name] ||
+
+          weight > bests[exercise.name].weight ||
+
+          (
+
+            weight === bests[exercise.name].weight &&
+
+            reps > bests[exercise.name].reps
+
+          )
+
+        ) {
+
+          bests[exercise.name] = {
+
+            weight,
+
+            reps
+
+          };
+
+        }
+
+      });
+
+    });
+
+  });
+
+  return bests;
+
+}
+
+/* =========================================================
+
+   VOLUME
+
+========================================================= */
+
+function calculateWorkoutVolume(workout) {
+
+  let total = 0;
+
+  workout.exercises.forEach(exercise => {
+
+    exercise.sets.forEach(set => {
+
+      if (!set.done) return;
+
+      total +=
+
+        (Number(set.weight) || 0) *
+
+        (Number(set.reps) || 0);
+
+    });
+
+  });
+
+  return total;
+
+}
+
+/* =========================================================
+
+   COMPLETED SETS
+
+========================================================= */
+
+function getCompletedSets() {
+
+  return history.reduce(
+
+    (total, workout) =>
+
+      total +
+
+      workout.exercises.reduce(
+
+        (t, e) =>
+
+          t +
+
+          e.sets.filter(s => s.done).length,
+
+        0
+
+      ),
+
+    0
+
+  );
+
+}
+
+/* =========================================================
+
+   CHART
+
+========================================================= */
+
+function drawChart() {
+
+  const canvas =
+
+    document.getElementById("progressChart");
+
+  const ctx =
+
+    canvas.getContext("2d");
+
+  ctx.clearRect(
+
+    0,
+
+    0,
+
+    canvas.width,
+
+    canvas.height
+
+  );
+
+  if (!history.length) {
+
+    ctx.font = "18px Arial";
+
+    ctx.fillText(
+
+      "Complete workouts to see your progress.",
+
+      50,
+
+      140
+
+    );
+
+    return;
+
+  }
+
+  const recent =
+
+    history.slice(-10);
+
+  const values =
+
+    recent.map(calculateWorkoutVolume);
+
+  const max =
+
+    Math.max(...values, 1);
+
+  const padding = 40;
+
+  const width =
+
+    canvas.width - padding * 2;
+
+  const height =
+
+    canvas.height - padding * 2;
+
+  ctx.beginPath();
+
+  values.forEach((value, index) => {
+
+    const x =
+
+      padding +
+
+      (index *
+
+        width /
+
+        Math.max(values.length - 1, 1));
+
+    const y =
+
+      canvas.height -
+
+      padding -
+
+      (value / max) * height;
+
+    if (index === 0) {
+
+      ctx.moveTo(x, y);
+
+    } else {
+
+      ctx.lineTo(x, y);
+
+    }
+
+  });
+
+  ctx.stroke();
+
+  values.forEach((value, index) => {
+
+    const x =
+
+      padding +
+
+      (index *
+
+        width /
+
+        Math.max(values.length - 1, 1));
+
+    const y =
+
+      canvas.height -
+
+      padding -
+
+      (value / max) * height;
+
+    ctx.beginPath();
+
+    ctx.arc(
+
+      x,
+
+      y,
+
+      5,
+
+      0,
+
+      Math.PI * 2
+
+    );
+
+    ctx.fill();
+
+  });
+
+}
+
+/* =========================================================
+
+   CLEAR HISTORY
+
+========================================================= */
+
+function clearHistory() {
+
+  if (
+
+    !confirm(
+
+      "Delete all workout history? This cannot be undone."
+
+    )
+
+  ) {
+
+    return;
+
+  }
+
+  history = [];
+
+  saveData();
+
+  renderHistory();
+
+  renderHome();
+
+}
+
+/* =========================================================
+
+   TIMER
+
+========================================================= */
+
+function updateTimerDisplay() {
+
+  const minutes =
+
+    Math.floor(timerSeconds / 60);
+
+  const seconds =
+
+    timerSeconds % 60;
+
+  document.getElementById("timerDisplay")
+
+    .textContent =
+
+      `${minutes}:${String(seconds).padStart(2,"0")}`;
+
+}
+
+function setTimer(seconds) {
+
+  pauseTimer();
+
+  timerSeconds = seconds;
+
+  updateTimerDisplay();
+
+}
+
+function startTimer() {
+
+  if (timerInterval) return;
+
+  timerInterval =
+
+    setInterval(() => {
+
+      if (timerSeconds > 0) {
+
+        timerSeconds--;
+
+        updateTimerDisplay();
+
+      } else {
+
+        pauseTimer();
+
+        if (navigator.vibrate) {
+
+          navigator.vibrate([300,150,300]);
+
+        }
+
+        alert("Rest complete!");
+
+      }
+
+    }, 1000);
+
+}
+
+function pauseTimer() {
+
+  clearInterval(timerInterval);
+
+  timerInterval = null;
+
+}
+
+function resetTimer() {
+
+  pauseTimer();
+
+  timerSeconds = 90;
+
+  updateTimerDisplay();
+
+}
+
+function startRest() {
+
+  setTimer(90);
+
+  showPage("timer");
+
+  startTimer();
+
+}
+
+/* =========================================================
+
+   SERVICE WORKER
+
+========================================================= */
+
+if ("serviceWorker" in navigator) {
+
+  window.addEventListener(
+
+    "load",
+
+    () => {
+
+      navigator.serviceWorker
+
+        .register("./sw.js")
+
+        .then(() => {
+
+          console.log(
+
+            "Workout Tracker service worker registered."
+
+          );
+
+        })
+
+        .catch(error => {
+
+          console.log(
+
+            "Service worker registration failed:",
+
+            error
+
+          );
+
+        });
+
+    }
+
+  );
+
+}
+
+/* =========================================================
+
+   START APP
+
+========================================================= */
+
+renderHome();
+
+updateTimerDisplay();
+
+showPage("home");
+
+</script>
+
+</body>
+
+</html>
