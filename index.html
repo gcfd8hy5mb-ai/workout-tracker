@@ -6,121 +6,369 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-
-<meta name="theme-color" content="#111827">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<meta name="apple-mobile-web-app-title" content="Workout">
+<meta name="apple-mobile-web-app-title" content="Workout Tracker">
 
-<link rel="manifest" href="./manifest.json">
-
-<title>Workout Tracker V5</title>
+<title>Workout Tracker</title>
 
 <style>
 
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+* {
 
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;background:#f3f4f6;color:#111827;padding-bottom:90px}
+    box-sizing: border-box;
 
-header{background:#111827;color:white;padding:22px 18px 18px;position:sticky;top:0;z-index:20}
+    -webkit-tap-highlight-color: transparent;
 
-header h1{margin:0;font-size:25px}
+}
 
-header p{margin:5px 0 0;opacity:.75;font-size:14px}
+body {
 
-.container{max-width:700px;margin:auto;padding:16px}
+    margin: 0;
 
-.card{background:white;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
 
-h2{margin-top:0}
+    background: #f2f2f7;
 
-button{border:0;border-radius:12px;padding:12px 15px;font-size:15px;font-weight:700}
+    color: #111;
 
-.primary{background:#111827;color:white}.secondary{background:#e5e7eb;color:#111827}
+}
 
-.success{background:#16a34a;color:white}.danger{background:#dc2626;color:white}
+header {
 
-.nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #ddd;display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:50}
+    background: #111;
 
-.nav button{background:transparent;padding:7px 8px;color:#6b7280;font-size:12px}
+    color: white;
 
-.nav button.active{color:#111827;font-weight:800}
+    padding: 22px 18px 18px;
 
-.day-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    text-align: center;
 
-.day-button{text-align:left;background:white;border:2px solid transparent;padding:16px;min-height:82px}
+}
 
-.day-button.selected{border-color:#111827}
+header h1 {
 
-.day-number{font-size:12px;color:#6b7280;margin-bottom:4px}
+    margin: 0;
 
-.exercise{border:1px solid #e5e7eb;border-radius:16px;padding:13px;margin-bottom:13px}
+    font-size: 28px;
 
-.exercise-picture{width:100%;height:190px;border-radius:14px;background:#f3f4f6;margin-bottom:14px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+}
 
-.exercise-picture svg{width:100%;height:100%}
+header p {
 
-.exercise-name{font-weight:800;font-size:19px}
+    margin: 5px 0 0;
 
-.muscle{color:#2563eb;font-size:14px;font-weight:700;margin-top:4px}
+    color: #aaa;
 
-.instructions{background:#f9fafb;border-radius:12px;padding:12px;margin-top:12px;font-size:14px;line-height:1.5}
+}
 
-.instructions strong{display:block;margin-bottom:5px}
+.container {
 
-.last{margin-top:9px;font-size:13px;color:#2563eb;font-weight:700}
+    padding: 16px;
 
-.suggestion{margin-top:8px;background:#ecfdf5;color:#166534;border-radius:10px;padding:8px;font-size:12px;font-weight:700}
+    max-width: 700px;
 
-.set-row{display:grid;grid-template-columns:42px 1fr 1fr 48px;gap:7px;align-items:center;margin-top:9px}
+    margin: auto;
 
-.set-number{font-weight:800;color:#6b7280}
+}
 
-input{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:10px;font-size:16px;background:white}
+.day-button {
 
-.complete{width:45px;height:42px;padding:0;background:#e5e7eb}
+    width: 100%;
 
-.complete.done{background:#16a34a;color:white}
+    border: none;
 
-.exercise-actions{display:flex;gap:8px;margin-top:12px}
+    background: white;
 
-.exercise-actions button{flex:1;font-size:13px}
+    border-radius: 16px;
 
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    padding: 18px;
 
-.stat{background:#f9fafb;border-radius:14px;padding:14px}
+    margin-bottom: 12px;
 
-.stat strong{display:block;font-size:24px}
+    text-align: left;
 
-.history-item{padding:12px 0;border-bottom:1px solid #eee}
+    font-size: 18px;
 
-.small{font-size:12px;color:#6b7280}
+    font-weight: 700;
 
-.empty{text-align:center;color:#6b7280;padding:30px 10px}
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
 
-.timer{text-align:center}.timer-number{font-size:70px;font-weight:800;margin:15px 0}
+    cursor: pointer;
 
-.timer-buttons{display:flex;gap:8px}.timer-buttons button{flex:1}
+}
 
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;z-index:100}
+.day-button span {
 
-.modal.show{display:flex}
+    display: block;
 
-.modal-content{background:white;width:100%;border-radius:22px 22px 0 0;padding:20px;max-height:85vh;overflow-y:auto}
+    font-size: 14px;
 
-.modal-actions{display:flex;gap:10px;margin-top:15px}.modal-actions button{flex:1}
+    color: #777;
 
-label{display:block;font-size:13px;font-weight:700;margin:12px 0 5px}
+    margin-top: 5px;
 
-.install-box{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:14px;padding:13px;margin-bottom:15px;font-size:13px}
+    font-weight: 400;
 
-canvas{width:100%;height:220px;border-radius:12px;background:#f9fafb}
+}
 
-@media(max-width:420px){.set-row{grid-template-columns:34px 1fr 1fr 44px}}
+.exercise {
+
+    background: white;
+
+    border-radius: 18px;
+
+    margin-bottom: 14px;
+
+    overflow: hidden;
+
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+
+}
+
+.exercise-header {
+
+    padding: 16px;
+
+    cursor: pointer;
+
+}
+
+.exercise-title {
+
+    font-size: 19px;
+
+    font-weight: 700;
+
+}
+
+.muscle {
+
+    display: inline-block;
+
+    margin-top: 7px;
+
+    padding: 5px 9px;
+
+    border-radius: 8px;
+
+    background: #eee;
+
+    color: #555;
+
+    font-size: 13px;
+
+}
+
+.details {
+
+    display: none;
+
+    padding: 0 16px 18px;
+
+    border-top: 1px solid #eee;
+
+}
+
+.details.open {
+
+    display: block;
+
+}
+
+.exercise-image {
+
+    width: 100%;
+
+    height: 220px;
+
+    background: #e8e8ed;
+
+    border-radius: 14px;
+
+    margin: 16px 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #777;
+
+    text-align: center;
+
+    padding: 20px;
+
+}
+
+.section-title {
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    margin-top: 16px;
+
+    margin-bottom: 7px;
+
+}
+
+.details p,
+
+.details li {
+
+    color: #444;
+
+    line-height: 1.5;
+
+    font-size: 15px;
+
+}
+
+.details ul {
+
+    padding-left: 20px;
+
+}
+
+.tracking {
+
+    background: #f7f7f9;
+
+    border-radius: 14px;
+
+    padding: 12px;
+
+    margin-top: 15px;
+
+}
+
+.set-row {
+
+    display: flex;
+
+    gap: 8px;
+
+    align-items: center;
+
+    margin-bottom: 8px;
+
+}
+
+.set-row span {
+
+    width: 45px;
+
+    font-weight: 600;
+
+}
+
+.set-row input {
+
+    width: 100%;
+
+    padding: 10px;
+
+    border: 1px solid #ccc;
+
+    border-radius: 9px;
+
+    font-size: 16px;
+
+}
+
+.complete {
+
+    width: 100%;
+
+    border: none;
+
+    border-radius: 11px;
+
+    padding: 12px;
+
+    background: #111;
+
+    color: white;
+
+    font-weight: 700;
+
+    font-size: 15px;
+
+    margin-top: 5px;
+
+}
+
+.back {
+
+    border: none;
+
+    background: transparent;
+
+    font-size: 17px;
+
+    font-weight: 600;
+
+    padding: 5px 0 15px;
+
+    cursor: pointer;
+
+}
+
+.hidden {
+
+    display: none;
+
+}
+
+.progress {
+
+    background: white;
+
+    border-radius: 16px;
+
+    padding: 16px;
+
+    margin-bottom: 16px;
+
+}
+
+.progress-bar {
+
+    height: 10px;
+
+    background: #ddd;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+}
+
+.progress-fill {
+
+    height: 100%;
+
+    width: 0%;
+
+    background: #111;
+
+    transition: width .3s;
+
+}
+
+.small {
+
+    color: #777;
+
+    font-size: 13px;
+
+}
 
 </style>
 
@@ -130,1133 +378,859 @@ canvas{width:100%;height:220px;border-radius:12px;background:#f9fafb}
 
 <header>
 
-<h1>Workout Tracker</h1>
+    <h1>Workout Tracker</h1>
 
-<p id="headerSubtitle">Train smarter. Track everything.</p>
+    <p>Version 4</p>
 
 </header>
 
-<main class="container">
+<div class="container">
 
-<section id="homePage">
+    <!-- HOME -->
 
-<div class="install-box">
+    <div id="home">
 
-<strong>📱 Install as an app</strong><br>
+        <div class="progress">
 
-In Safari tap Share → Add to Home Screen.
+            <strong>Workout Progress</strong>
 
-</div>
+            <p class="small" id="progressText">0 exercises completed</p>
 
-<div class="card">
+            <div class="progress-bar">
 
-<h2>Choose Workout</h2>
+                <div class="progress-fill" id="progressFill"></div>
 
-<div class="day-buttons" id="dayButtons"></div>
+            </div>
 
-</div>
+        </div>
 
-<div class="card">
+        <button class="day-button" onclick="openWorkout('day1')">
 
-<h2>Your Progress</h2>
+            Day 1 — Chest & Triceps
 
-<div class="stat-grid">
+            <span>Chest, shoulders and triceps</span>
 
-<div class="stat"><strong id="homeCompleted">0</strong>Sets Completed</div>
+        </button>
 
-<div class="stat"><strong id="homeWorkouts">0</strong>Workouts</div>
+        <button class="day-button" onclick="openWorkout('day2')">
 
-</div>
+            Day 2 — Back & Biceps
 
-</div>
+            <span>Back, lats and biceps</span>
 
-</section>
+        </button>
 
-<section id="workoutPage" style="display:none">
+        <button class="day-button" onclick="openWorkout('day3')">
 
-<div class="card">
+            Day 3 — Legs
 
-<button class="secondary" onclick="showPage('home')">← Back</button>
+            <span>Quads, hamstrings and calves</span>
 
-<h2 id="workoutTitle" style="margin-top:15px"></h2>
+        </button>
 
-<p id="workoutDescription" class="small"></p>
+        <button class="day-button" onclick="openWorkout('day4')">
 
-</div>
+            Day 4 — Shoulders & Arms
 
-<div id="exerciseList"></div>
+            <span>Shoulders, biceps and triceps</span>
 
-<div class="card">
+        </button>
 
-<button class="primary" style="width:100%" onclick="finishWorkout()">Finish Workout</button>
+    </div>
 
-</div>
+    <!-- WORKOUT -->
 
-</section>
+    <div id="workout" class="hidden">
 
-<section id="progressPage" style="display:none">
+        <button class="back" onclick="goHome()">← Back</button>
 
-<div class="card">
+        <h2 id="workoutTitle"></h2>
 
-<h2>Progress</h2>
+        <div id="exerciseList"></div>
 
-<div class="stat-grid">
-
-<div class="stat"><strong id="totalWorkouts">0</strong>Workouts</div>
-
-<div class="stat"><strong id="totalSets">0</strong>Sets</div>
-
-<div class="stat"><strong id="totalVolume">0</strong>Volume</div>
-
-<div class="stat"><strong id="personalBests">0</strong>Personal Bests</div>
-
-</div>
-
-</div>
-
-<div class="card">
-
-<h2>Volume Progress</h2>
-
-<canvas id="progressChart" width="600" height="300"></canvas>
-
-</div>
-
-<div class="card">
-
-<h2>Personal Bests</h2>
-
-<div id="pbList"></div>
-
-</div>
-
-</section>
-
-<section id="historyPage" style="display:none">
-
-<div class="card">
-
-<h2>Workout History</h2>
-
-<div id="historyList"></div>
-
-</div>
-
-<div class="card">
-
-<button class="danger" style="width:100%" onclick="clearHistory()">Clear Workout History</button>
-
-</div>
-
-</section>
-
-<section id="timerPage" style="display:none">
-
-<div class="card timer">
-
-<h2>Rest Timer</h2>
-
-<div class="timer-number" id="timerDisplay">1:30</div>
-
-<div class="timer-buttons">
-
-<button class="secondary" onclick="setTimer(60)">60s</button>
-
-<button class="secondary" onclick="setTimer(90)">90s</button>
-
-<button class="secondary" onclick="setTimer(120)">120s</button>
-
-</div>
-
-<br>
-
-<div class="timer-buttons">
-
-<button class="primary" onclick="startTimer()">Start</button>
-
-<button class="secondary" onclick="pauseTimer()">Pause</button>
-
-<button class="danger" onclick="resetTimer()">Reset</button>
-
-</div>
-
-</div>
-
-</section>
-
-</main>
-
-<nav class="nav">
-
-<button id="navHome" class="active" onclick="showPage('home')">🏠<br>Home</button>
-
-<button id="navWorkout" onclick="showPage('workout')">🏋️<br>Workout</button>
-
-<button id="navProgress" onclick="showPage('progress')">📈<br>Progress</button>
-
-<button id="navHistory" onclick="showPage('history')">🕘<br>History</button>
-
-<button id="navTimer" onclick="showPage('timer')">⏱️<br>Timer</button>
-
-</nav>
-
-<div class="modal" id="exerciseModal">
-
-<div class="modal-content">
-
-<h2>Add Custom Exercise</h2>
-
-<label>Exercise Name</label>
-
-<input id="customName" placeholder="Example: Chest Press">
-
-<label>Muscle Group</label>
-
-<input id="customMuscle" placeholder="Example: Chest">
-
-<label>Number of Sets</label>
-
-<input id="customSets" type="number" value="3">
-
-<label>Target Reps</label>
-
-<input id="customReps" type="number" value="10">
-
-<div class="modal-actions">
-
-<button class="secondary" onclick="closeModal()">Cancel</button>
-
-<button class="primary" onclick="saveCustomExercise()">Add Exercise</button>
-
-</div>
-
-</div>
+    </div>
 
 </div>
 
 <script>
 
-const workouts={
+const workouts = {
 
-1:{
+day1: {
 
-name:"Day 1 — Chest + Triceps",
+    title: "Day 1 — Chest & Triceps",
 
-description:"Chest and triceps using mainly machines.",
+    exercises: [
 
-exercises:[
+        {
 
-{
+            name: "Machine Chest Press",
 
-name:"Machine Chest Press",
+            muscle: "Chest",
 
-muscle:"Chest • Front Delts • Triceps",
+            image: "Machine Chest Press",
 
-sets:3,reps:10,type:"press",
+            how: "Sit with your back flat against the pad. Adjust the seat so the handles are around mid-chest height. Grip the handles and press them forward until your arms are almost straight. Slowly return the handles until you feel a comfortable stretch in your chest.",
 
-how:"Adjust the seat so the handles are around mid-chest. Keep your back against the pad. Press the handles forward, then slowly return under control."
+            tips: [
+
+                "Keep your back against the pad.",
+
+                "Keep your wrists straight.",
+
+                "Control the weight instead of letting it slam back.",
+
+                "Do not lock your elbows aggressively."
+
+            ],
+
+            mistakes: [
+
+                "Using momentum.",
+
+                "Bouncing the weight.",
+
+                "Letting the shoulders roll forward.",
+
+                "Using more weight than you can control."
+
+            ]
+
+        },
+
+        {
+
+            name: "Pec Deck",
+
+            muscle: "Chest",
+
+            image: "Pec Deck",
+
+            how: "Sit with your back against the pad. Place your arms against the machine pads or grip the handles. Bring your arms together in front of your chest while keeping a slight bend in your elbows. Slowly return to the starting position.",
+
+            tips: [
+
+                "Keep your chest up.",
+
+                "Move through a controlled range of motion.",
+
+                "Squeeze your chest when your hands come together."
+
+            ],
+
+            mistakes: [
+
+                "Moving too quickly.",
+
+                "Using your shoulders to swing the weight.",
+
+                "Going too heavy."
+
+            ]
+
+        },
+
+        {
+
+            name: "Triceps Pushdown",
+
+            muscle: "Triceps",
+
+            image: "Cable Triceps Pushdown",
+
+            how: "Stand facing the cable machine. Hold the attachment with your elbows close to your sides. Push the handle downward until your arms are almost straight. Slowly return the handle while keeping your upper arms stationary.",
+
+            tips: [
+
+                "Keep your elbows tucked.",
+
+                "Only your forearms should move.",
+
+                "Squeeze your triceps at the bottom."
+
+            ],
+
+            mistakes: [
+
+                "Swinging your body.",
+
+                "Moving your elbows forward.",
+
+                "Using momentum."
+
+            ]
+
+        }
+
+    ]
 
 },
 
-{
+day2: {
 
-name:"Pec Deck",
+    title: "Day 2 — Back & Biceps",
 
-muscle:"Chest",
+    exercises: [
 
-sets:3,reps:12,type:"fly",
+        {
 
-how:"Sit upright with your back against the pad. Place your arms on the pads or handles. Bring your arms together while keeping your shoulders down, then slowly return."
+            name: "Lat Pulldown",
+
+            muscle: "Lats / Back",
+
+            image: "Lat Pulldown",
+
+            how: "Sit down and secure your legs under the pads. Grab the bar slightly wider than shoulder width. Pull the bar toward your upper chest while driving your elbows down. Slowly allow the bar to return upward.",
+
+            tips: [
+
+                "Keep your chest up.",
+
+                "Pull with your elbows.",
+
+                "Control the weight on the way up."
+
+            ],
+
+            mistakes: [
+
+                "Pulling the bar behind your neck.",
+
+                "Swinging backward.",
+
+                "Using momentum."
+
+            ]
+
+        },
+
+        {
+
+            name: "Seated Row Machine",
+
+            muscle: "Mid Back",
+
+            image: "Seated Row Machine",
+
+            how: "Sit upright with your chest against the pad if your machine has one. Grip the handles and pull them toward your torso. Squeeze your shoulder blades together, then slowly extend your arms.",
+
+            tips: [
+
+                "Keep your chest supported.",
+
+                "Pull your elbows back.",
+
+                "Keep the movement controlled."
+
+            ],
+
+            mistakes: [
+
+                "Shrugging your shoulders.",
+
+                "Rounding your back.",
+
+                "Jerking the weight."
+
+            ]
+
+        },
+
+        {
+
+            name: "Preacher Curl Machine",
+
+            muscle: "Biceps",
+
+            image: "Preacher Curl Machine",
+
+            how: "Position your upper arms against the pad and grip the handles. Curl the weight upward without lifting your upper arms from the pad. Lower the weight slowly until your arms are nearly straight.",
+
+            tips: [
+
+                "Keep your upper arms planted.",
+
+                "Use a slow lowering phase.",
+
+                "Squeeze your biceps at the top."
+
+            ],
+
+            mistakes: [
+
+                "Lifting your elbows.",
+
+                "Dropping the weight quickly.",
+
+                "Using excessive weight."
+
+            ]
+
+        }
+
+    ]
 
 },
 
-{
+day3: {
 
-name:"Incline Chest Press",
+    title: "Day 3 — Legs",
 
-muscle:"Upper Chest • Front Delts • Triceps",
+    exercises: [
 
-sets:3,reps:10,type:"incline",
+        {
 
-how:"Adjust the seat so the handles start around upper-chest level. Press forward without locking your elbows. Slowly return to the starting position."
+            name: "Leg Press",
+
+            muscle: "Quads / Glutes",
+
+            image: "Leg Press",
+
+            how: "Place your feet on the platform around shoulder width apart. Release the safety handles and lower the platform by bending your knees. Lower until you reach a comfortable depth while keeping your lower back against the pad. Press the platform back up.",
+
+            tips: [
+
+                "Keep your feet planted.",
+
+                "Keep your knees tracking in line with your toes.",
+
+                "Control the descent."
+
+            ],
+
+            mistakes: [
+
+                "Allowing your knees to collapse inward.",
+
+                "Rounding your lower back.",
+
+                "Locking your knees aggressively."
+
+            ]
+
+        },
+
+        {
+
+            name: "Leg Extension",
+
+            muscle: "Quadriceps",
+
+            image: "Leg Extension",
+
+            how: "Sit against the back pad and place your ankles behind the roller. Extend your legs until they are nearly straight. Pause briefly and squeeze your quads, then lower the weight slowly.",
+
+            tips: [
+
+                "Keep your hips against the seat.",
+
+                "Use controlled movement.",
+
+                "Focus on squeezing the quads."
+
+            ],
+
+            mistakes: [
+
+                "Kicking the weight.",
+
+                "Using momentum.",
+
+                "Dropping the weight quickly."
+
+            ]
+
+        },
+
+        {
+
+            name: "Seated Leg Curl",
+
+            muscle: "Hamstrings",
+
+            image: "Seated Leg Curl",
+
+            how: "Sit with your back against the pad and place your lower legs against the roller. Curl your heels downward and underneath the seat as far as comfortably possible. Slowly return to the starting position.",
+
+            tips: [
+
+                "Keep your hips against the pad.",
+
+                "Control the return.",
+
+                "Squeeze your hamstrings."
+
+            ],
+
+            mistakes: [
+
+                "Lifting your hips.",
+
+                "Using momentum.",
+
+                "Moving too quickly."
+
+            ]
+
+        },
+
+        {
+
+            name: "Calf Raise Machine",
+
+            muscle: "Calves",
+
+            image: "Calf Raise Machine",
+
+            how: "Position the balls of your feet on the platform with your heels hanging off. Lower your heels for a controlled stretch, then push through the balls of your feet and raise your heels as high as comfortably possible.",
+
+            tips: [
+
+                "Use a full range of motion.",
+
+                "Pause briefly at the top.",
+
+                "Control the stretch at the bottom."
+
+            ],
+
+            mistakes: [
+
+                "Bouncing at the bottom.",
+
+                "Using very short repetitions.",
+
+                "Moving too quickly."
+
+            ]
+
+        }
+
+    ]
 
 },
 
-{
+day4: {
 
-name:"Machine Triceps Extension",
+    title: "Day 4 — Shoulders & Arms",
 
-muscle:"Triceps",
+    exercises: [
 
-sets:3,reps:12,type:"triceps",
+        {
 
-how:"Set the machine so your elbows are aligned with the machine pivot. Keep your upper arms steady and extend your elbows. Return slowly."
+            name: "Shoulder Press Machine",
 
-},
+            muscle: "Shoulders",
 
-{
+            image: "Shoulder Press Machine",
 
-name:"Cable Triceps Pushdown",
+            how: "Adjust the seat so the handles start around shoulder height. Sit with your back against the pad. Press the handles upward until your arms are nearly straight, then slowly lower them back down.",
 
-muscle:"Triceps",
+            tips: [
 
-sets:3,reps:12,type:"pushdown",
+                "Keep your back against the pad.",
 
-how:"Stand tall with elbows close to your sides. Push the handle downward until your arms are nearly straight. Slowly return while keeping your elbows stationary."
+                "Keep your wrists straight.",
+
+                "Control the lowering phase."
+
+            ],
+
+            mistakes: [
+
+                "Arching your lower back excessively.",
+
+                "Using momentum.",
+
+                "Dropping the weight."
+
+            ]
+
+        },
+
+        {
+
+            name: "Lateral Raise Machine",
+
+            muscle: "Side Delts",
+
+            image: "Lateral Raise Machine",
+
+            how: "Sit upright and position your arms against the machine pads. Raise your arms outward until approximately shoulder height. Slowly lower them back down.",
+
+            tips: [
+
+                "Use controlled repetitions.",
+
+                "Focus on the side of your shoulders.",
+
+                "Avoid shrugging."
+
+            ],
+
+            mistakes: [
+
+                "Using momentum.",
+
+                "Shrugging your shoulders.",
+
+                "Going excessively heavy."
+
+            ]
+
+        },
+
+        {
+
+            name: "Biceps Curl Machine",
+
+            muscle: "Biceps",
+
+            image: "Biceps Curl Machine",
+
+            how: "Place your upper arms against the machine pad and grip the handles. Curl the handles upward while keeping your upper arms stationary. Slowly lower the weight back down.",
+
+            tips: [
+
+                "Keep your elbows planted.",
+
+                "Squeeze your biceps at the top.",
+
+                "Lower the weight slowly."
+
+            ],
+
+            mistakes: [
+
+                "Lifting your elbows.",
+
+                "Swinging the weight.",
+
+                "Using momentum."
+
+            ]
+
+        },
+
+        {
+
+            name: "Triceps Extension Machine",
+
+            muscle: "Triceps",
+
+            image: "Triceps Extension Machine",
+
+            how: "Sit with your back against the pad and place your arms against the machine's pads or handles. Extend your arms against the resistance until nearly straight. Slowly return to the starting position.",
+
+            tips: [
+
+                "Keep your shoulders stable.",
+
+                "Focus on extending through the elbows.",
+
+                "Use controlled repetitions."
+
+            ],
+
+            mistakes: [
+
+                "Moving your shoulders excessively.",
+
+                "Using momentum.",
+
+                "Going too heavy."
+
+            ]
+
+        }
+
+    ]
 
 }
-
-]},
-
-2:{
-
-name:"Day 2 — Back + Biceps",
-
-description:"Back and biceps using mainly machines.",
-
-exercises:[
-
-{
-
-name:"Lat Pulldown",
-
-muscle:"Lats • Upper Back • Biceps",
-
-sets:3,reps:10,type:"pulldown",
-
-how:"Sit securely and grip the bar slightly wider than shoulder width. Pull the bar toward your upper chest while keeping your chest lifted. Slowly let the bar rise."
-
-},
-
-{
-
-name:"Seated Cable Row",
-
-muscle:"Mid Back • Lats • Biceps",
-
-sets:3,reps:10,type:"row",
-
-how:"Sit tall with your chest up. Pull the handle toward your lower ribs while squeezing your shoulder blades. Slowly extend your arms."
-
-},
-
-{
-
-name:"Machine Row",
-
-muscle:"Upper Back • Lats • Biceps",
-
-sets:3,reps:10,type:"row",
-
-how:"Keep your chest against the pad if the machine has one. Pull the handles toward your body and squeeze your back. Return slowly."
-
-},
-
-{
-
-name:"Reverse Pec Deck",
-
-muscle:"Rear Delts • Upper Back",
-
-sets:3,reps:12,type:"reverse",
-
-how:"Face the machine pad. Keep a slight bend in your elbows and move your arms outward until they are roughly in line with your shoulders."
-
-},
-
-{
-
-name:"Machine Biceps Curl",
-
-muscle:"Biceps",
-
-sets:3,reps:12,type:"curl",
-
-how:"Set the seat so your elbows line up with the machine pivot. Curl the handles upward without lifting your shoulders. Lower the weight slowly."
-
-}
-
-]},
-
-3:{
-
-name:"Day 3 — Legs",
-
-description:"Complete lower-body machine workout.",
-
-exercises:[
-
-{
-
-name:"Leg Press",
-
-muscle:"Quads • Glutes • Hamstrings",
-
-sets:4,reps:10,type:"legpress",
-
-how:"Place your feet about shoulder width apart. Lower the platform with control until your knees are comfortably bent. Press through your feet without locking your knees."
-
-},
-
-{
-
-name:"Leg Extension",
-
-muscle:"Quadriceps",
-
-sets:3,reps:12,type:"extension",
-
-how:"Align your knees with the machine pivot. Extend your legs until they are nearly straight. Squeeze your quads, then lower the weight slowly."
-
-},
-
-{
-
-name:"Seated Leg Curl",
-
-muscle:"Hamstrings",
-
-sets:3,reps:12,type:"curlleg",
-
-how:"Align your knees with the machine pivot. Keep your hips against the seat and curl the pad downward using your hamstrings. Return slowly."
-
-},
-
-{
-
-name:"Hip Abductor",
-
-muscle:"Gluteus Medius • Outer Glutes",
-
-sets:3,reps:15,type:"abductor",
-
-how:"Sit upright with your back against the pad. Push your knees outward against the pads. Pause briefly, then return under control."
-
-},
-
-{
-
-name:"Calf Raise Machine",
-
-muscle:"Calves",
-
-sets:4,reps:15,type:"calf",
-
-how:"Place the balls of your feet on the platform. Lower your heels for a controlled stretch, then push through your toes and raise your heels."
-
-}
-
-]},
-
-4:{
-
-name:"Day 4 — Shoulders + Arms",
-
-description:"Shoulders, biceps and triceps.",
-
-exercises:[
-
-{
-
-name:"Machine Shoulder Press",
-
-muscle:"Front Delts • Side Delts • Triceps",
-
-sets:3,reps:10,type:"shoulder",
-
-how:"Adjust the seat so the handles begin around shoulder level. Press upward without shrugging. Lower the handles slowly."
-
-},
-
-{
-
-name:"Machine Lateral Raise",
-
-muscle:"Side Delts",
-
-sets:3,reps:12,type:"lateral",
-
-how:"Position your arms against the machine pads. Raise your elbows outward until your arms are around shoulder height. Lower slowly."
-
-},
-
-{
-
-name:"Rear Delt Machine",
-
-muscle:"Rear Delts • Upper Back",
-
-sets:3,reps:12,type:"reverse",
-
-how:"Keep your chest against the pad. Move your arms outward and back using your rear shoulders. Avoid swinging or shrugging."
-
-},
-
-{
-
-name:"Machine Biceps Curl",
-
-muscle:"Biceps",
-
-sets:3,reps:12,type:"curl",
-
-how:"Keep your upper arms supported and stationary. Curl the handles toward your shoulders, squeeze the biceps, then slowly lower."
-
-},
-
-{
-
-name:"Machine Triceps Extension",
-
-muscle:"Triceps",
-
-sets:3,reps:12,type:"triceps",
-
-how:"Keep your upper arms stable. Extend your elbows against the resistance and squeeze your triceps. Return slowly."
-
-}
-
-]}
 
 };
 
-let history=JSON.parse(localStorage.getItem("workoutHistoryV5")||"[]");
+let completedExercises =
 
-let currentDay=1;
+    JSON.parse(localStorage.getItem("completedExercises") || "[]");
 
-let currentWorkout=[];
+function openWorkout(day) {
 
-let timerSeconds=90;
+    document.getElementById("home").classList.add("hidden");
 
-let timerInterval=null;
+    document.getElementById("workout").classList.remove("hidden");
 
-function save(){
+    const workout = workouts[day];
 
-localStorage.setItem("workoutHistoryV5",JSON.stringify(history));
+    document.getElementById("workoutTitle").textContent =
+
+        workout.title;
+
+    const list = document.getElementById("exerciseList");
+
+    list.innerHTML = "";
+
+    workout.exercises.forEach((exercise, index) => {
+
+        const id = day + "-" + index;
+
+        const card = document.createElement("div");
+
+        card.className = "exercise";
+
+        card.innerHTML = `
+
+            <div class="exercise-header"
+
+                 onclick="toggleExercise('${id}')">
+
+                <div class="exercise-title">
+
+                    ${exercise.name}
+
+                </div>
+
+                <div class="muscle">
+
+                    ${exercise.muscle}
+
+                </div>
+
+            </div>
+
+            <div class="details" id="${id}">
+
+                <div class="exercise-image">
+
+                    <div>
+
+                        <strong>Exercise Demonstration</strong>
+
+                        <br><br>
+
+                        ${exercise.image}
+
+                        <br><br>
+
+                        <span class="small">
+
+                        Exercise image will appear here
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="section-title">
+
+                    How to Perform
+
+                </div>
+
+                <p>
+
+                    ${exercise.how}
+
+                </p>
+
+                <div class="section-title">
+
+                    Form Tips
+
+                </div>
+
+                <ul>
+
+                    ${exercise.tips.map(tip =>
+
+                        `<li>${tip}</li>`
+
+                    ).join("")}
+
+                </ul>
+
+                <div class="section-title">
+
+                    Common Mistakes
+
+                </div>
+
+                <ul>
+
+                    ${exercise.mistakes.map(mistake =>
+
+                        `<li>${mistake}</li>`
+
+                    ).join("")}
+
+                </ul>
+
+                <div class="tracking">
+
+                    <strong>Track Your Sets</strong>
+
+                    <div class="set-row">
+
+                        <span>Set 1</span>
+
+                        <input type="number"
+
+                               placeholder="Weight">
+
+                        <input type="number"
+
+                               placeholder="Reps">
+
+                    </div>
+
+                    <div class="set-row">
+
+                        <span>Set 2</span>
+
+                        <input type="number"
+
+                               placeholder="Weight">
+
+                        <input type="number"
+
+                               placeholder="Reps">
+
+                    </div>
+
+                    <div class="set-row">
+
+                        <span>Set 3</span>
+
+                        <input type="number"
+
+                               placeholder="Weight">
+
+                        <input type="number"
+
+                               placeholder="Reps">
+
+                    </div>
+
+                    <div class="set-row">
+
+                        <span>Set 4</span>
+
+                        <input type="number"
+
+                               placeholder="Weight">
+
+                        <input type="number"
+
+                               placeholder="Reps">
+
+                    </div>
+
+                    <button class="complete"
+
+                            onclick="completeExercise('${id}', this)">
+
+                        ${completedExercises.includes(id)
+
+                            ? "✓ Completed"
+
+                            : "Mark Exercise Complete"}
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        `;
+
+        list.appendChild(card);
+
+    });
 
 }
 
-function renderHome(){
+function toggleExercise(id) {
 
-let box=document.getElementById("dayButtons");
+    const element = document.getElementById(id);
 
-box.innerHTML="";
-
-Object.keys(workouts).forEach(day=>{
-
-let w=workouts[day];
-
-let b=document.createElement("button");
-
-b.className="day-button "+(Number(day)===currentDay?"selected":"");
-
-b.innerHTML=`<div class="day-number">DAY ${day}</div><strong>${w.name.replace("Day "+day+" — ","")}</strong>`;
-
-b.onclick=()=>startWorkout(Number(day));
-
-box.appendChild(b);
-
-});
-
-document.getElementById("homeCompleted").textContent=getCompletedSets();
-
-document.getElementById("homeWorkouts").textContent=history.length;
+    element.classList.toggle("open");
 
 }
 
-function getLastExercise(name){
+function completeExercise(id, button) {
 
-for(let i=history.length-1;i>=0;i--){
+    if (!completedExercises.includes(id)) {
 
-let e=history[i].exercises.find(x=>x.name===name);
+        completedExercises.push(id);
 
-if(e){
+        button.textContent = "✓ Completed";
 
-let done=e.sets.filter(s=>s.done);
+    } else {
 
-if(done.length)return done[done.length-1];
+        completedExercises =
 
-}}
+            completedExercises.filter(item => item !== id);
 
-return null;
+        button.textContent =
 
-}
+            "Mark Exercise Complete";
 
-function suggestion(e){
+    }
 
-let last=getLastExercise(e.name);
+    localStorage.setItem(
 
-if(!last||!last.weight)return"💡 Enter your weight. Your next workout will remember it.";
+        "completedExercises",
 
-let w=Number(last.weight);
+        JSON.stringify(completedExercises)
 
-let r=Number(last.reps);
+    );
 
-if(r>=e.reps)return`💡 You hit your target. Try ${w+(w>=100?5:2.5)} lb next time.`;
-
-return`💡 Keep the same weight and work toward ${e.reps} reps.`;
+    updateProgress();
 
 }
 
-/* Illustrated exercise diagrams */
+function updateProgress() {
 
-function picture(type){
+    const total = Object.values(workouts)
 
-let body=`<circle cx="105" cy="42" r="16" fill="none" stroke="#111827" stroke-width="6"/>
+        .reduce((sum, day) => sum + day.exercises.length, 0);
 
-<path d="M105 58 L105 120 M105 75 L70 95 M105 75 L140 95 M105 120 L80 165 M105 120 L130 165" fill="none" stroke="#111827" stroke-width="7" stroke-linecap="round"/>`;
+    const completed = completedExercises.length;
 
-let machine=`<path d="M45 175 H170 M65 175 V70 M145 175 V45 M65 70 H145 M145 45 L175 45" fill="none" stroke="#6b7280" stroke-width="8" stroke-linecap="round"/>`;
+    const percentage =
 
-let movement="";
+        Math.min((completed / total) * 100, 100);
 
-if(type==="press"||type==="incline"||type==="shoulder")
+    document.getElementById("progressFill")
 
-movement=`<path d="M72 94 L38 94 M138 94 L172 94" stroke="#2563eb" stroke-width="6"/><path d="M42 84 L28 94 L42 104 M168 84 L182 94 L168 104" fill="none" stroke="#2563eb" stroke-width="5"/>`;
+        .style.width = percentage + "%";
 
-else if(type==="pulldown")
+    document.getElementById("progressText")
 
-movement=`<path d="M55 35 H155 M105 38 V80" stroke="#2563eb" stroke-width="6"/><path d="M92 70 L105 83 L118 70" fill="none" stroke="#2563eb" stroke-width="5"/>`;
+        .textContent =
 
-else if(type==="row")
+        completed + " of " + total +
 
-movement=`<path d="M65 92 H35 M145 92 H175" stroke="#2563eb" stroke-width="6"/><path d="M42 82 L28 92 L42 102 M158 82 L172 92 L158 102" fill="none" stroke="#2563eb" stroke-width="5"/>`;
-
-else if(type==="fly"||type==="reverse"||type==="lateral")
-
-movement=`<path d="M65 95 L35 70 M145 95 L175 70" stroke="#2563eb" stroke-width="6"/><path d="M38 60 L28 70 L40 78 M172 60 L182 70 L170 78" fill="none" stroke="#2563eb" stroke-width="5"/>`;
-
-else if(type==="curl"||type==="triceps"||type==="pushdown")
-
-movement=`<path d="M72 94 L55 125 M138 94 L155 125" stroke="#2563eb" stroke-width="6"/><path d="M48 115 L55 130 L62 115 M148 115 L155 130 L162 115" fill="none" stroke="#2563eb" stroke-width="5"/>`;
-
-else
-
-movement=`<path d="M70 150 L45 150 M140 150 L165 150" stroke="#2563eb" stroke-width="6"/>`;
-
-return`
-
-<svg viewBox="0 0 210 190" xmlns="http://www.w3.org/2000/svg">
-
-<rect width="210" height="190" fill="#f3f4f6"/>
-
-${machine}
-
-${body}
-
-${movement}
-
-<text x="105" y="185" text-anchor="middle" font-size="10" fill="#6b7280">Illustrated movement</text>
-
-</svg>`;
+        " exercises completed";
 
 }
 
-function startWorkout(day){
+function goHome() {
 
-currentDay=day;
+    document.getElementById("workout")
 
-currentWorkout=workouts[day].exercises.map(e=>{
+        .classList.add("hidden");
 
-let last=getLastExercise(e.name);
+    document.getElementById("home")
 
-return{
+        .classList.remove("hidden");
 
-...e,
-
-values:Array.from({length:e.sets},()=>({
-
-weight:last?last.weight:"",
-
-reps:last?last.reps:e.reps,
-
-done:false
-
-}))
-
-};
-
-});
-
-renderWorkout();
-
-showPage("workout");
+    updateProgress();
 
 }
 
-function renderWorkout(){
-
-let w=workouts[currentDay];
-
-document.getElementById("workoutTitle").textContent=w.name;
-
-document.getElementById("workoutDescription").textContent=w.description;
-
-let list=document.getElementById("exerciseList");
-
-list.innerHTML="";
-
-currentWorkout.forEach((e,ei)=>{
-
-let card=document.createElement("div");
-
-card.className="card exercise";
-
-let last=getLastExercise(e.name);
-
-card.innerHTML=`
-
-<div class="exercise-picture">${picture(e.type)}</div>
-
-<div class="exercise-name">${e.name}</div>
-
-<div class="muscle">💪 Muscles: ${e.muscle}</div>
-
-<div class="instructions">
-
-<strong>How to perform</strong>
-
-${e.how}
-
-</div>
-
-${last?`<div class="last">Last workout: ${last.weight||"—"} lb × ${last.reps||"—"} reps</div>`:""}
-
-<div class="suggestion">${suggestion(e)}</div>
-
-`;
-
-e.values.forEach((s,si)=>{
-
-let row=document.createElement("div");
-
-row.className="set-row";
-
-row.innerHTML=`
-
-<div class="set-number">Set ${si+1}</div>
-
-<input type="number" placeholder="Weight" value="${s.weight}" />
-
-<input type="number" placeholder="Reps" value="${s.reps}" />
-
-<button class="complete ${s.done?"done":""}">${s.done?"✓":"○"}</button>
-
-`;
-
-let inputs=row.querySelectorAll("input");
-
-inputs[0].onchange=x=>s.weight=x.target.value;
-
-inputs[1].onchange=x=>s.reps=x.target.value;
-
-row.querySelector("button").onclick=()=>{
-
-s.done=!s.done;
-
-renderWorkout();
-
-};
-
-card.appendChild(row);
-
-});
-
-let actions=document.createElement("div");
-
-actions.className="exercise-actions";
-
-actions.innerHTML=`
-
-<button class="secondary">⏱ Rest</button>
-
-<button class="danger">Remove</button>
-
-`;
-
-actions.children[0].onclick=startRest;
-
-actions.children[1].onclick=()=>{
-
-if(confirm("Remove this exercise from today's workout?")){
-
-currentWorkout.splice(ei,1);
-
-renderWorkout();
-
-}};
-
-card.appendChild(actions);
-
-list.appendChild(card);
-
-});
-
-let add=document.createElement("div");
-
-add.className="card";
-
-add.innerHTML=`<button class="secondary" style="width:100%" onclick="openModal()">+ Add Custom Exercise</button>`;
-
-list.appendChild(add);
-
-}
-
-function finishWorkout(){
-
-let sets=getCurrentCompleted();
-
-if(!sets){alert("Complete at least one set first.");return;}
-
-history.push({
-
-date:new Date().toISOString(),
-
-day:currentDay,
-
-name:workouts[currentDay].name,
-
-exercises:currentWorkout.map(e=>({
-
-name:e.name,
-
-sets:e.values.map(s=>({
-
-weight:Number(s.weight)||0,
-
-reps:Number(s.reps)||0,
-
-done:s.done
-
-}))
-
-}))
-
-});
-
-save();
-
-alert(`Workout saved!\n\n${sets} sets completed.`);
-
-renderHome();
-
-showPage("home");
-
-}
-
-function getCurrentCompleted(){
-
-return currentWorkout.reduce((n,e)=>n+e.values.filter(s=>s.done).length,0);
-
-}
-
-function getCompletedSets(){
-
-return history.reduce((n,w)=>n+w.exercises.reduce((a,e)=>a+e.sets.filter(s=>s.done).length,0),0);
-
-}
-
-function calculateVolume(w){
-
-return w.exercises.reduce((n,e)=>n+e.sets.reduce((a,s)=>a+(s.done?s.weight*s.reps:0),0),0);
-
-}
-
-function showPage(page){
-
-["home","workout","progress","history","timer"].forEach(p=>{
-
-document.getElementById(p+"Page").style.display=p===page?"block":"none";
-
-let n=document.getElementById("nav"+p.charAt(0).toUpperCase()+p.slice(1));
-
-if(n)n.classList.toggle("active",p===page);
-
-});
-
-if(page==="home")renderHome();
-
-if(page==="progress")renderProgress();
-
-if(page==="history")renderHistory();
-
-if(page==="timer")updateTimer();
-
-window.scrollTo(0,0);
-
-}
-
-function renderHistory(){
-
-let box=document.getElementById("historyList");
-
-if(!history.length){
-
-box.innerHTML=`<div class="empty">No workouts recorded yet.</div>`;
-
-return;
-
-}
-
-box.innerHTML="";
-
-[...history].reverse().forEach(w=>{
-
-let d=new Date(w.date).toLocaleDateString();
-
-let sets=w.exercises.reduce((n,e)=>n+e.sets.filter(s=>s.done).length,0);
-
-let div=document.createElement("div");
-
-div.className="history-item";
-
-div.innerHTML=`<strong>${w.name}</strong><div class="small">${d} · ${sets} sets · ${Math.round(calculateVolume(w)).toLocaleString()} lb volume</div>`;
-
-box.appendChild(div);
-
-});
-
-}
-
-function renderProgress(){
-
-let best={};
-
-history.forEach(w=>w.exercises.forEach(e=>e.sets.forEach(s=>{
-
-if(!s.done)return;
-
-if(!best[e.name]||s.weight>best[e.name].weight||(s.weight===best[e.name].weight&&s.reps>best[e.name].reps))
-
-best[e.name]={weight:s.weight,reps:s.reps};
-
-})));
-
-document.getElementById("totalWorkouts").textContent=history.length;
-
-document.getElementById("totalSets").textContent=getCompletedSets();
-
-document.getElementById("totalVolume").textContent=Math.round(history.reduce((n,w)=>n+calculateVolume(w),0)).toLocaleString();
-
-document.getElementById("personalBests").textContent=Object.keys(best).length;
-
-let box=document.getElementById("pbList");
-
-box.innerHTML="";
-
-Object.entries(best).forEach(([name,b])=>{
-
-box.innerHTML+=`<div class="history-item"><strong>${name}</strong><div class="small">Best: ${b.weight} lb × ${b.reps} reps</div></div>`;
-
-});
-
-drawChart();
-
-}
-
-function drawChart(){
-
-let c=document.getElementById("progressChart");
-
-let x=c.getContext("2d");
-
-x.clearRect(0,0,c.width,c.height);
-
-if(!history.length){
-
-x.font="18px Arial";
-
-x.fillText("Complete workouts to see progress.",50,140);
-
-return;
-
-}
-
-let vals=history.slice(-10).map(calculateVolume);
-
-let max=Math.max(...vals,1);
-
-let pad=40;
-
-let w=c.width-pad*2;
-
-let h=c.height-pad*2;
-
-x.beginPath();
-
-vals.forEach((v,i)=>{
-
-let px=pad+i*w/Math.max(vals.length-1,1);
-
-let py=c.height-pad-(v/max)*h;
-
-i?x.lineTo(px,py):x.moveTo(px,py);
-
-});
-
-x.stroke();
-
-vals.forEach((v,i)=>{
-
-let px=pad+i*w/Math.max(vals.length-1,1);
-
-let py=c.height-pad-(v/max)*h;
-
-x.beginPath();
-
-x.arc(px,py,5,0,Math.PI*2);
-
-x.fill();
-
-});
-
-}
-
-function clearHistory(){
-
-if(confirm("Delete all workout history?")){
-
-history=[];
-
-save();
-
-renderHistory();
-
-renderHome();
-
-}
-
-}
-
-function openModal(){document.getElementById("exerciseModal").classList.add("show")}
-
-function closeModal(){document.getElementById("exerciseModal").classList.remove("show")}
-
-function saveCustomExercise(){
-
-let name=document.getElementById("customName").value.trim();
-
-let muscle=document.getElementById("customMuscle").value.trim();
-
-let sets=Number(document.getElementById("customSets").value)||3;
-
-let reps=Number(document.getElementById("customReps").value)||10;
-
-if(!name){alert("Enter an exercise name.");return}
-
-currentWorkout.push({
-
-name,
-
-muscle:muscle||"Custom",
-
-sets,
-
-reps,
-
-type:"press",
-
-how:"Use controlled movement, keep good posture, and avoid using momentum. Follow the machine's instructions and adjust the seat before beginning.",
-
-values:Array.from({length:sets},()=>({weight:"",reps,done:false}))
-
-});
-
-closeModal();
-
-renderWorkout();
-
-}
-
-function updateTimer(){
-
-let m=Math.floor(timerSeconds/60);
-
-let s=timerSeconds%60;
-
-document.getElementById("timerDisplay").textContent=`${m}:${String(s).padStart(2,"0")}`;
-
-}
-
-function setTimer(s){
-
-pauseTimer();
-
-timerSeconds=s;
-
-updateTimer();
-
-}
-
-function startTimer(){
-
-if(timerInterval)return;
-
-timerInterval=setInterval(()=>{
-
-if(timerSeconds>0){
-
-timerSeconds--;
-
-updateTimer();
-
-}else{
-
-pauseTimer();
-
-if(navigator.vibrate)navigator.vibrate([300,150,300]);
-
-alert("Rest complete!");
-
-}
-
-},1000);
-
-}
-
-function pauseTimer(){
-
-clearInterval(timerInterval);
-
-timerInterval=null;
-
-}
-
-function resetTimer(){
-
-pauseTimer();
-
-timerSeconds=90;
-
-updateTimer();
-
-}
-
-function startRest(){
-
-setTimer(90);
-
-showPage("timer");
-
-startTimer();
-
-}
-
-if("serviceWorker"in navigator){
-
-window.addEventListener("load",()=>{
-
-navigator.serviceWorker.register("./sw.js").catch(console.error);
-
-});
-
-}
-
-renderHome();
-
-updateTimer();
-
-showPage("home");
+updateProgress();
 
 </script>
 
