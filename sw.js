@@ -1,4 +1,4 @@
-const CACHE_NAME = "workout-tracker-v4";
+const CACHE_NAME = "workout-tracker-v5";
 
 const APP_FILES = [
 
@@ -6,7 +6,9 @@ const APP_FILES = [
 
   "./index.html",
 
-  "./manifest.json"
+  "./manifest.json",
+
+  "./sw.js"
 
 ];
 
@@ -50,13 +52,21 @@ self.addEventListener("fetch", event => {
 
   if (event.request.method !== "GET") return;
 
-  event.respondWith(
+  const url = new URL(event.request.url);
 
-    caches.match(event.request).then(cached => {
+  // Always check the internet first for the main app.
 
-      if (cached) return cached;
+  if (
 
-      return fetch(event.request)
+    url.pathname.endsWith("/") ||
+
+    url.pathname.endsWith("/index.html")
+
+  ) {
+
+    event.respondWith(
+
+      fetch(event.request)
 
         .then(response => {
 
@@ -72,7 +82,39 @@ self.addEventListener("fetch", event => {
 
         })
 
-        .catch(() => caches.match("./index.html"));
+        .catch(() => {
+
+          return caches.match(event.request);
+
+        })
+
+    );
+
+    return;
+
+  }
+
+  // Other files can use the cache first.
+
+  event.respondWith(
+
+    caches.match(event.request).then(cached => {
+
+      if (cached) return cached;
+
+      return fetch(event.request).then(response => {
+
+        const copy = response.clone();
+
+        caches.open(CACHE_NAME).then(cache => {
+
+          cache.put(event.request, copy);
+
+        });
+
+        return response;
+
+      });
 
     })
 
