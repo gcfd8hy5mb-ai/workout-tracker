@@ -6,7 +6,7 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 
 <meta name="theme-color" content="#111827">
 
@@ -18,625 +18,109 @@
 
 <link rel="manifest" href="./manifest.json">
 
-<title>Workout Tracker V4</title>
+<title>Workout Tracker V5</title>
 
 <style>
 
-* {
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
-  box-sizing: border-box;
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;background:#f3f4f6;color:#111827;padding-bottom:90px}
 
-  -webkit-tap-highlight-color: transparent;
+header{background:#111827;color:white;padding:22px 18px 18px;position:sticky;top:0;z-index:20}
 
-}
+header h1{margin:0;font-size:25px}
 
-body {
+header p{margin:5px 0 0;opacity:.75;font-size:14px}
 
-  margin: 0;
+.container{max-width:700px;margin:auto;padding:16px}
 
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
+.card{background:white;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
 
-  background: #f3f4f6;
+h2{margin-top:0}
 
-  color: #111827;
+button{border:0;border-radius:12px;padding:12px 15px;font-size:15px;font-weight:700}
 
-  padding-bottom: 90px;
+.primary{background:#111827;color:white}.secondary{background:#e5e7eb;color:#111827}
 
-}
+.success{background:#16a34a;color:white}.danger{background:#dc2626;color:white}
 
-header {
+.nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #ddd;display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:50}
 
-  background: #111827;
+.nav button{background:transparent;padding:7px 8px;color:#6b7280;font-size:12px}
 
-  color: white;
+.nav button.active{color:#111827;font-weight:800}
 
-  padding: 22px 18px 18px;
+.day-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-  position: sticky;
+.day-button{text-align:left;background:white;border:2px solid transparent;padding:16px;min-height:82px}
 
-  top: 0;
+.day-button.selected{border-color:#111827}
 
-  z-index: 20;
+.day-number{font-size:12px;color:#6b7280;margin-bottom:4px}
 
-}
+.exercise{border:1px solid #e5e7eb;border-radius:16px;padding:13px;margin-bottom:13px}
 
-header h1 {
+.exercise-picture{width:100%;height:190px;border-radius:14px;background:#f3f4f6;margin-bottom:14px;display:flex;align-items:center;justify-content:center;overflow:hidden}
 
-  margin: 0;
+.exercise-picture svg{width:100%;height:100%}
 
-  font-size: 25px;
+.exercise-name{font-weight:800;font-size:19px}
 
-}
+.muscle{color:#2563eb;font-size:14px;font-weight:700;margin-top:4px}
 
-header p {
+.instructions{background:#f9fafb;border-radius:12px;padding:12px;margin-top:12px;font-size:14px;line-height:1.5}
 
-  margin: 5px 0 0;
+.instructions strong{display:block;margin-bottom:5px}
 
-  opacity: .75;
+.last{margin-top:9px;font-size:13px;color:#2563eb;font-weight:700}
 
-  font-size: 14px;
+.suggestion{margin-top:8px;background:#ecfdf5;color:#166534;border-radius:10px;padding:8px;font-size:12px;font-weight:700}
 
-}
+.set-row{display:grid;grid-template-columns:42px 1fr 1fr 48px;gap:7px;align-items:center;margin-top:9px}
 
-.container {
+.set-number{font-weight:800;color:#6b7280}
 
-  max-width: 700px;
+input{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:10px;font-size:16px;background:white}
 
-  margin: auto;
+.complete{width:45px;height:42px;padding:0;background:#e5e7eb}
 
-  padding: 16px;
+.complete.done{background:#16a34a;color:white}
 
-}
+.exercise-actions{display:flex;gap:8px;margin-top:12px}
 
-.card {
+.exercise-actions button{flex:1;font-size:13px}
 
-  background: white;
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-  border-radius: 18px;
+.stat{background:#f9fafb;border-radius:14px;padding:14px}
 
-  padding: 16px;
+.stat strong{display:block;font-size:24px}
 
-  margin-bottom: 14px;
+.history-item{padding:12px 0;border-bottom:1px solid #eee}
 
-  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+.small{font-size:12px;color:#6b7280}
 
-}
+.empty{text-align:center;color:#6b7280;padding:30px 10px}
 
-h2 {
+.timer{text-align:center}.timer-number{font-size:70px;font-weight:800;margin:15px 0}
 
-  margin-top: 0;
+.timer-buttons{display:flex;gap:8px}.timer-buttons button{flex:1}
 
-}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;z-index:100}
 
-button {
+.modal.show{display:flex}
 
-  border: 0;
+.modal-content{background:white;width:100%;border-radius:22px 22px 0 0;padding:20px;max-height:85vh;overflow-y:auto}
 
-  border-radius: 12px;
+.modal-actions{display:flex;gap:10px;margin-top:15px}.modal-actions button{flex:1}
 
-  padding: 12px 15px;
+label{display:block;font-size:13px;font-weight:700;margin:12px 0 5px}
 
-  font-size: 15px;
+.install-box{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:14px;padding:13px;margin-bottom:15px;font-size:13px}
 
-  font-weight: 700;
+canvas{width:100%;height:220px;border-radius:12px;background:#f9fafb}
 
-  cursor: pointer;
-
-}
-
-.primary {
-
-  background: #111827;
-
-  color: white;
-
-}
-
-.secondary {
-
-  background: #e5e7eb;
-
-  color: #111827;
-
-}
-
-.success {
-
-  background: #16a34a;
-
-  color: white;
-
-}
-
-.danger {
-
-  background: #dc2626;
-
-  color: white;
-
-}
-
-.nav {
-
-  position: fixed;
-
-  bottom: 0;
-
-  left: 0;
-
-  right: 0;
-
-  background: white;
-
-  border-top: 1px solid #ddd;
-
-  display: flex;
-
-  justify-content: space-around;
-
-  padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
-
-  z-index: 50;
-
-}
-
-.nav button {
-
-  background: transparent;
-
-  padding: 7px 8px;
-
-  color: #6b7280;
-
-  font-size: 12px;
-
-}
-
-.nav button.active {
-
-  color: #111827;
-
-  font-weight: 800;
-
-}
-
-.day-buttons {
-
-  display: grid;
-
-  grid-template-columns: 1fr 1fr;
-
-  gap: 10px;
-
-}
-
-.day-button {
-
-  text-align: left;
-
-  background: white;
-
-  border: 2px solid transparent;
-
-  padding: 16px;
-
-  min-height: 82px;
-
-}
-
-.day-button.selected {
-
-  border-color: #111827;
-
-}
-
-.day-number {
-
-  font-size: 12px;
-
-  color: #6b7280;
-
-  margin-bottom: 4px;
-
-}
-
-.exercise {
-
-  border: 1px solid #e5e7eb;
-
-  border-radius: 16px;
-
-  padding: 13px;
-
-  margin-bottom: 13px;
-
-}
-
-.exercise-top {
-
-  display: flex;
-
-  gap: 12px;
-
-  align-items: center;
-
-}
-
-.exercise-picture {
-
-  width: 82px;
-
-  height: 82px;
-
-  border-radius: 14px;
-
-  background: #eef2ff;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  flex-shrink: 0;
-
-  font-size: 42px;
-
-}
-
-.exercise-name {
-
-  font-weight: 800;
-
-  font-size: 17px;
-
-}
-
-.muscle {
-
-  color: #6b7280;
-
-  font-size: 13px;
-
-  margin-top: 3px;
-
-}
-
-.last {
-
-  margin-top: 8px;
-
-  font-size: 13px;
-
-  color: #2563eb;
-
-  font-weight: 700;
-
-}
-
-.suggestion {
-
-  margin-top: 7px;
-
-  background: #ecfdf5;
-
-  color: #166534;
-
-  border-radius: 10px;
-
-  padding: 8px;
-
-  font-size: 12px;
-
-  font-weight: 700;
-
-}
-
-.set-row {
-
-  display: grid;
-
-  grid-template-columns: 42px 1fr 1fr 48px;
-
-  gap: 7px;
-
-  align-items: center;
-
-  margin-top: 9px;
-
-}
-
-.set-number {
-
-  font-weight: 800;
-
-  color: #6b7280;
-
-}
-
-input {
-
-  width: 100%;
-
-  border: 1px solid #d1d5db;
-
-  border-radius: 10px;
-
-  padding: 10px;
-
-  font-size: 16px;
-
-  background: white;
-
-}
-
-.complete {
-
-  width: 45px;
-
-  height: 42px;
-
-  padding: 0;
-
-  background: #e5e7eb;
-
-}
-
-.complete.done {
-
-  background: #16a34a;
-
-  color: white;
-
-}
-
-.exercise-actions {
-
-  display: flex;
-
-  gap: 8px;
-
-  margin-top: 12px;
-
-}
-
-.exercise-actions button {
-
-  flex: 1;
-
-  font-size: 13px;
-
-}
-
-.progress-bar {
-
-  height: 12px;
-
-  background: #e5e7eb;
-
-  border-radius: 10px;
-
-  overflow: hidden;
-
-  margin-top: 8px;
-
-}
-
-.progress-fill {
-
-  height: 100%;
-
-  background: #111827;
-
-  width: 0%;
-
-}
-
-.stat-grid {
-
-  display: grid;
-
-  grid-template-columns: 1fr 1fr;
-
-  gap: 10px;
-
-}
-
-.stat {
-
-  background: #f9fafb;
-
-  border-radius: 14px;
-
-  padding: 14px;
-
-}
-
-.stat strong {
-
-  display: block;
-
-  font-size: 24px;
-
-}
-
-.history-item {
-
-  padding: 12px 0;
-
-  border-bottom: 1px solid #eee;
-
-}
-
-.history-item:last-child {
-
-  border-bottom: 0;
-
-}
-
-.timer {
-
-  text-align: center;
-
-}
-
-.timer-number {
-
-  font-size: 70px;
-
-  font-weight: 800;
-
-  margin: 15px 0;
-
-}
-
-.timer-buttons {
-
-  display: flex;
-
-  gap: 8px;
-
-}
-
-.timer-buttons button {
-
-  flex: 1;
-
-}
-
-.empty {
-
-  text-align: center;
-
-  color: #6b7280;
-
-  padding: 30px 10px;
-
-}
-
-.small {
-
-  font-size: 12px;
-
-  color: #6b7280;
-
-}
-
-.modal {
-
-  position: fixed;
-
-  inset: 0;
-
-  background: rgba(0,0,0,.55);
-
-  display: none;
-
-  align-items: flex-end;
-
-  z-index: 100;
-
-}
-
-.modal.show {
-
-  display: flex;
-
-}
-
-.modal-content {
-
-  background: white;
-
-  width: 100%;
-
-  border-radius: 22px 22px 0 0;
-
-  padding: 20px;
-
-  max-height: 85vh;
-
-  overflow-y: auto;
-
-}
-
-.modal-actions {
-
-  display: flex;
-
-  gap: 10px;
-
-  margin-top: 15px;
-
-}
-
-.modal-actions button {
-
-  flex: 1;
-
-}
-
-label {
-
-  display: block;
-
-  font-size: 13px;
-
-  font-weight: 700;
-
-  margin: 12px 0 5px;
-
-}
-
-.install-box {
-
-  background: #eff6ff;
-
-  border: 1px solid #bfdbfe;
-
-  color: #1e40af;
-
-  border-radius: 14px;
-
-  padding: 13px;
-
-  margin-bottom: 15px;
-
-  font-size: 13px;
-
-}
-
-canvas {
-
-  width: 100%;
-
-  height: 220px;
-
-  border-radius: 12px;
-
-  background: #f9fafb;
-
-}
-
-@media (max-width: 420px) {
-
-  .exercise-picture {
-
-    width: 70px;
-
-    height: 70px;
-
-    font-size: 34px;
-
-  }
-
-  .set-row {
-
-    grid-template-columns: 34px 1fr 1fr 44px;
-
-  }
-
-}
+@media(max-width:420px){.set-row{grid-template-columns:34px 1fr 1fr 44px}}
 
 </style>
 
@@ -646,1787 +130,1131 @@ canvas {
 
 <header>
 
-  <h1>Workout Tracker</h1>
+<h1>Workout Tracker</h1>
 
-  <p id="headerSubtitle">Build strength. Track progress.</p>
+<p id="headerSubtitle">Train smarter. Track everything.</p>
 
 </header>
 
 <main class="container">
 
-  <!-- HOME -->
+<section id="homePage">
 
-  <section id="homePage">
+<div class="install-box">
 
-    <div class="install-box" id="installBox">
+<strong>📱 Install as an app</strong><br>
 
-      <strong>📱 Make this an app</strong><br>
+In Safari tap Share → Add to Home Screen.
 
-      Open Safari's Share menu and choose <b>Add to Home Screen</b>.
+</div>
 
-    </div>
+<div class="card">
 
-    <div class="card">
+<h2>Choose Workout</h2>
 
-      <h2>Choose Workout</h2>
+<div class="day-buttons" id="dayButtons"></div>
 
-      <div class="day-buttons" id="dayButtons"></div>
+</div>
 
-    </div>
+<div class="card">
 
-    <div class="card">
+<h2>Your Progress</h2>
 
-      <h2>Today's Progress</h2>
+<div class="stat-grid">
 
-      <div class="stat-grid">
+<div class="stat"><strong id="homeCompleted">0</strong>Sets Completed</div>
 
-        <div class="stat">
+<div class="stat"><strong id="homeWorkouts">0</strong>Workouts</div>
 
-          <strong id="homeCompleted">0</strong>
+</div>
 
-          Sets Completed
+</div>
 
-        </div>
+</section>
 
-        <div class="stat">
+<section id="workoutPage" style="display:none">
 
-          <strong id="homeWorkouts">0</strong>
+<div class="card">
 
-          Workouts
+<button class="secondary" onclick="showPage('home')">← Back</button>
 
-        </div>
+<h2 id="workoutTitle" style="margin-top:15px"></h2>
 
-      </div>
+<p id="workoutDescription" class="small"></p>
 
-    </div>
+</div>
 
-    <div class="card">
+<div id="exerciseList"></div>
 
-      <h2>How Progressive Overload Works</h2>
+<div class="card">
 
-      <p class="small">
+<button class="primary" style="width:100%" onclick="finishWorkout()">Finish Workout</button>
 
-        When you can complete all prescribed reps with good form,
+</div>
 
-        the tracker will suggest increasing the weight next time.
+</section>
 
-      </p>
+<section id="progressPage" style="display:none">
 
-    </div>
+<div class="card">
 
-  </section>
+<h2>Progress</h2>
 
-  <!-- WORKOUT -->
+<div class="stat-grid">
 
-  <section id="workoutPage" style="display:none">
+<div class="stat"><strong id="totalWorkouts">0</strong>Workouts</div>
 
-    <div class="card">
+<div class="stat"><strong id="totalSets">0</strong>Sets</div>
 
-      <button class="secondary" onclick="showPage('home')">← Back</button>
+<div class="stat"><strong id="totalVolume">0</strong>Volume</div>
 
-      <h2 id="workoutTitle" style="margin-top:15px"></h2>
+<div class="stat"><strong id="personalBests">0</strong>Personal Bests</div>
 
-      <p id="workoutDescription" class="small"></p>
+</div>
 
-    </div>
+</div>
 
-    <div id="exerciseList"></div>
+<div class="card">
 
-    <div class="card">
+<h2>Volume Progress</h2>
 
-      <button class="primary" style="width:100%" onclick="finishWorkout()">
+<canvas id="progressChart" width="600" height="300"></canvas>
 
-        Finish Workout
+</div>
 
-      </button>
+<div class="card">
 
-    </div>
+<h2>Personal Bests</h2>
 
-  </section>
+<div id="pbList"></div>
 
-  <!-- PROGRESS -->
+</div>
 
-  <section id="progressPage" style="display:none">
+</section>
 
-    <div class="card">
+<section id="historyPage" style="display:none">
 
-      <h2>Progress</h2>
+<div class="card">
 
-      <div class="stat-grid">
+<h2>Workout History</h2>
 
-        <div class="stat">
+<div id="historyList"></div>
 
-          <strong id="totalWorkouts">0</strong>
+</div>
 
-          Workouts
+<div class="card">
 
-        </div>
+<button class="danger" style="width:100%" onclick="clearHistory()">Clear Workout History</button>
 
-        <div class="stat">
+</div>
 
-          <strong id="totalSets">0</strong>
+</section>
 
-          Sets
+<section id="timerPage" style="display:none">
 
-        </div>
+<div class="card timer">
 
-        <div class="stat">
+<h2>Rest Timer</h2>
 
-          <strong id="totalVolume">0</strong>
+<div class="timer-number" id="timerDisplay">1:30</div>
 
-          Total Volume
+<div class="timer-buttons">
 
-        </div>
+<button class="secondary" onclick="setTimer(60)">60s</button>
 
-        <div class="stat">
+<button class="secondary" onclick="setTimer(90)">90s</button>
 
-          <strong id="personalBests">0</strong>
+<button class="secondary" onclick="setTimer(120)">120s</button>
 
-          Personal Bests
+</div>
 
-        </div>
+<br>
 
-      </div>
+<div class="timer-buttons">
 
-    </div>
+<button class="primary" onclick="startTimer()">Start</button>
 
-    <div class="card">
+<button class="secondary" onclick="pauseTimer()">Pause</button>
 
-      <h2>Volume Progress</h2>
+<button class="danger" onclick="resetTimer()">Reset</button>
 
-      <canvas id="progressChart" width="600" height="300"></canvas>
+</div>
 
-    </div>
+</div>
 
-    <div class="card">
-
-      <h2>Personal Bests</h2>
-
-      <div id="pbList"></div>
-
-    </div>
-
-  </section>
-
-  <!-- HISTORY -->
-
-  <section id="historyPage" style="display:none">
-
-    <div class="card">
-
-      <h2>Workout History</h2>
-
-      <div id="historyList"></div>
-
-    </div>
-
-    <div class="card">
-
-      <button class="danger" style="width:100%" onclick="clearHistory()">
-
-        Clear All Workout History
-
-      </button>
-
-    </div>
-
-  </section>
-
-  <!-- TIMER -->
-
-  <section id="timerPage" style="display:none">
-
-    <div class="card timer">
-
-      <h2>Rest Timer</h2>
-
-      <div class="timer-number" id="timerDisplay">90</div>
-
-      <div class="timer-buttons">
-
-        <button class="secondary" onclick="setTimer(60)">60s</button>
-
-        <button class="secondary" onclick="setTimer(90)">90s</button>
-
-        <button class="secondary" onclick="setTimer(120)">120s</button>
-
-      </div>
-
-      <br>
-
-      <div class="timer-buttons">
-
-        <button class="primary" onclick="startTimer()">Start</button>
-
-        <button class="secondary" onclick="pauseTimer()">Pause</button>
-
-        <button class="danger" onclick="resetTimer()">Reset</button>
-
-      </div>
-
-    </div>
-
-  </section>
+</section>
 
 </main>
 
-<!-- BOTTOM NAV -->
-
 <nav class="nav">
 
-  <button id="navHome" class="active" onclick="showPage('home')">
+<button id="navHome" class="active" onclick="showPage('home')">🏠<br>Home</button>
 
-    🏠<br>Home
+<button id="navWorkout" onclick="showPage('workout')">🏋️<br>Workout</button>
 
-  </button>
+<button id="navProgress" onclick="showPage('progress')">📈<br>Progress</button>
 
-  <button id="navWorkout" onclick="showPage('workout')">
+<button id="navHistory" onclick="showPage('history')">🕘<br>History</button>
 
-    🏋️<br>Workout
-
-  </button>
-
-  <button id="navProgress" onclick="showPage('progress')">
-
-    📈<br>Progress
-
-  </button>
-
-  <button id="navHistory" onclick="showPage('history')">
-
-    🕘<br>History
-
-  </button>
-
-  <button id="navTimer" onclick="showPage('timer')">
-
-    ⏱️<br>Timer
-
-  </button>
+<button id="navTimer" onclick="showPage('timer')">⏱️<br>Timer</button>
 
 </nav>
 
-<!-- ADD EXERCISE MODAL -->
-
 <div class="modal" id="exerciseModal">
 
-  <div class="modal-content">
+<div class="modal-content">
 
-    <h2>Add Custom Exercise</h2>
+<h2>Add Custom Exercise</h2>
 
-    <label>Exercise Name</label>
+<label>Exercise Name</label>
 
-    <input id="customName" placeholder="Example: Chest Press">
+<input id="customName" placeholder="Example: Chest Press">
 
-    <label>Muscle Group</label>
+<label>Muscle Group</label>
 
-    <input id="customMuscle" placeholder="Example: Chest">
+<input id="customMuscle" placeholder="Example: Chest">
 
-    <label>Number of Sets</label>
+<label>Number of Sets</label>
 
-    <input id="customSets" type="number" value="3" min="1" max="10">
+<input id="customSets" type="number" value="3">
 
-    <label>Target Reps</label>
+<label>Target Reps</label>
 
-    <input id="customReps" type="number" value="10" min="1" max="50">
+<input id="customReps" type="number" value="10">
 
-    <div class="modal-actions">
+<div class="modal-actions">
 
-      <button class="secondary" onclick="closeModal()">Cancel</button>
+<button class="secondary" onclick="closeModal()">Cancel</button>
 
-      <button class="primary" onclick="saveCustomExercise()">Add Exercise</button>
+<button class="primary" onclick="saveCustomExercise()">Add Exercise</button>
 
-    </div>
+</div>
 
-  </div>
+</div>
 
 </div>
 
 <script>
 
-/* =========================================================
+const workouts={
 
-   WORKOUT DATA
+1:{
 
-========================================================= */
+name:"Day 1 — Chest + Triceps",
 
-const workouts = {
+description:"Chest and triceps using mainly machines.",
 
-  1: {
+exercises:[
 
-    name: "Day 1 — Chest + Triceps",
+{
 
-    description: "Machine-focused chest and triceps workout.",
+name:"Machine Chest Press",
 
-    exercises: [
+muscle:"Chest • Front Delts • Triceps",
 
-      {name:"Machine Chest Press", muscle:"Chest", icon:"🏋️", sets:3, reps:10},
+sets:3,reps:10,type:"press",
 
-      {name:"Pec Deck", muscle:"Chest", icon:"💪", sets:3, reps:12},
+how:"Adjust the seat so the handles are around mid-chest. Keep your back against the pad. Press the handles forward, then slowly return under control."
 
-      {name:"Incline Chest Press", muscle:"Upper Chest", icon:"🏋️", sets:3, reps:10},
+},
 
-      {name:"Machine Triceps Extension", muscle:"Triceps", icon:"💪", sets:3, reps:12},
+{
 
-      {name:"Cable Triceps Pushdown", muscle:"Triceps", icon:"🔻", sets:3, reps:12}
+name:"Pec Deck",
 
-    ]
+muscle:"Chest",
 
-  },
+sets:3,reps:12,type:"fly",
 
-  2: {
+how:"Sit upright with your back against the pad. Place your arms on the pads or handles. Bring your arms together while keeping your shoulders down, then slowly return."
 
-    name: "Day 2 — Back + Biceps",
+},
 
-    description: "Machine-focused back and biceps workout.",
+{
 
-    exercises: [
+name:"Incline Chest Press",
 
-      {name:"Lat Pulldown", muscle:"Back", icon:"⬇️", sets:3, reps:10},
+muscle:"Upper Chest • Front Delts • Triceps",
 
-      {name:"Seated Cable Row", muscle:"Back", icon:"🚣", sets:3, reps:10},
+sets:3,reps:10,type:"incline",
 
-      {name:"Machine Row", muscle:"Upper Back", icon:"🏋️", sets:3, reps:10},
+how:"Adjust the seat so the handles start around upper-chest level. Press forward without locking your elbows. Slowly return to the starting position."
 
-      {name:"Reverse Pec Deck", muscle:"Rear Delts", icon:"🔄", sets:3, reps:12},
+},
 
-      {name:"Machine Biceps Curl", muscle:"Biceps", icon:"💪", sets:3, reps:12}
+{
 
-    ]
+name:"Machine Triceps Extension",
 
-  },
+muscle:"Triceps",
 
-  3: {
+sets:3,reps:12,type:"triceps",
 
-    name: "Day 3 — Legs",
+how:"Set the machine so your elbows are aligned with the machine pivot. Keep your upper arms steady and extend your elbows. Return slowly."
 
-    description: "Machine-focused lower body workout.",
+},
 
-    exercises: [
+{
 
-      {name:"Leg Press", muscle:"Quads / Glutes", icon:"🦵", sets:4, reps:10},
+name:"Cable Triceps Pushdown",
 
-      {name:"Leg Extension", muscle:"Quads", icon:"🦵", sets:3, reps:12},
+muscle:"Triceps",
 
-      {name:"Seated Leg Curl", muscle:"Hamstrings", icon:"🦵", sets:3, reps:12},
+sets:3,reps:12,type:"pushdown",
 
-      {name:"Hip Abductor", muscle:"Glutes", icon:"🦵", sets:3, reps:15},
+how:"Stand tall with elbows close to your sides. Push the handle downward until your arms are nearly straight. Slowly return while keeping your elbows stationary."
 
-      {name:"Calf Raise Machine", muscle:"Calves", icon:"🦶", sets:4, reps:15}
+}
 
-    ]
+]},
 
-  },
+2:{
 
-  4: {
+name:"Day 2 — Back + Biceps",
 
-    name: "Day 4 — Shoulders + Arms",
+description:"Back and biceps using mainly machines.",
 
-    description: "Shoulders, biceps and triceps.",
+exercises:[
 
-    exercises: [
+{
 
-      {name:"Machine Shoulder Press", muscle:"Shoulders", icon:"🏋️", sets:3, reps:10},
+name:"Lat Pulldown",
 
-      {name:"Machine Lateral Raise", muscle:"Side Delts", icon:"💪", sets:3, reps:12},
+muscle:"Lats • Upper Back • Biceps",
 
-      {name:"Rear Delt Machine", muscle:"Rear Delts", icon:"🔄", sets:3, reps:12},
+sets:3,reps:10,type:"pulldown",
 
-      {name:"Machine Biceps Curl", muscle:"Biceps", icon:"💪", sets:3, reps:12},
+how:"Sit securely and grip the bar slightly wider than shoulder width. Pull the bar toward your upper chest while keeping your chest lifted. Slowly let the bar rise."
 
-      {name:"Machine Triceps Extension", muscle:"Triceps", icon:"💪", sets:3, reps:12}
+},
 
-    ]
+{
 
-  }
+name:"Seated Cable Row",
+
+muscle:"Mid Back • Lats • Biceps",
+
+sets:3,reps:10,type:"row",
+
+how:"Sit tall with your chest up. Pull the handle toward your lower ribs while squeezing your shoulder blades. Slowly extend your arms."
+
+},
+
+{
+
+name:"Machine Row",
+
+muscle:"Upper Back • Lats • Biceps",
+
+sets:3,reps:10,type:"row",
+
+how:"Keep your chest against the pad if the machine has one. Pull the handles toward your body and squeeze your back. Return slowly."
+
+},
+
+{
+
+name:"Reverse Pec Deck",
+
+muscle:"Rear Delts • Upper Back",
+
+sets:3,reps:12,type:"reverse",
+
+how:"Face the machine pad. Keep a slight bend in your elbows and move your arms outward until they are roughly in line with your shoulders."
+
+},
+
+{
+
+name:"Machine Biceps Curl",
+
+muscle:"Biceps",
+
+sets:3,reps:12,type:"curl",
+
+how:"Set the seat so your elbows line up with the machine pivot. Curl the handles upward without lifting your shoulders. Lower the weight slowly."
+
+}
+
+]},
+
+3:{
+
+name:"Day 3 — Legs",
+
+description:"Complete lower-body machine workout.",
+
+exercises:[
+
+{
+
+name:"Leg Press",
+
+muscle:"Quads • Glutes • Hamstrings",
+
+sets:4,reps:10,type:"legpress",
+
+how:"Place your feet about shoulder width apart. Lower the platform with control until your knees are comfortably bent. Press through your feet without locking your knees."
+
+},
+
+{
+
+name:"Leg Extension",
+
+muscle:"Quadriceps",
+
+sets:3,reps:12,type:"extension",
+
+how:"Align your knees with the machine pivot. Extend your legs until they are nearly straight. Squeeze your quads, then lower the weight slowly."
+
+},
+
+{
+
+name:"Seated Leg Curl",
+
+muscle:"Hamstrings",
+
+sets:3,reps:12,type:"curlleg",
+
+how:"Align your knees with the machine pivot. Keep your hips against the seat and curl the pad downward using your hamstrings. Return slowly."
+
+},
+
+{
+
+name:"Hip Abductor",
+
+muscle:"Gluteus Medius • Outer Glutes",
+
+sets:3,reps:15,type:"abductor",
+
+how:"Sit upright with your back against the pad. Push your knees outward against the pads. Pause briefly, then return under control."
+
+},
+
+{
+
+name:"Calf Raise Machine",
+
+muscle:"Calves",
+
+sets:4,reps:15,type:"calf",
+
+how:"Place the balls of your feet on the platform. Lower your heels for a controlled stretch, then push through your toes and raise your heels."
+
+}
+
+]},
+
+4:{
+
+name:"Day 4 — Shoulders + Arms",
+
+description:"Shoulders, biceps and triceps.",
+
+exercises:[
+
+{
+
+name:"Machine Shoulder Press",
+
+muscle:"Front Delts • Side Delts • Triceps",
+
+sets:3,reps:10,type:"shoulder",
+
+how:"Adjust the seat so the handles begin around shoulder level. Press upward without shrugging. Lower the handles slowly."
+
+},
+
+{
+
+name:"Machine Lateral Raise",
+
+muscle:"Side Delts",
+
+sets:3,reps:12,type:"lateral",
+
+how:"Position your arms against the machine pads. Raise your elbows outward until your arms are around shoulder height. Lower slowly."
+
+},
+
+{
+
+name:"Rear Delt Machine",
+
+muscle:"Rear Delts • Upper Back",
+
+sets:3,reps:12,type:"reverse",
+
+how:"Keep your chest against the pad. Move your arms outward and back using your rear shoulders. Avoid swinging or shrugging."
+
+},
+
+{
+
+name:"Machine Biceps Curl",
+
+muscle:"Biceps",
+
+sets:3,reps:12,type:"curl",
+
+how:"Keep your upper arms supported and stationary. Curl the handles toward your shoulders, squeeze the biceps, then slowly lower."
+
+},
+
+{
+
+name:"Machine Triceps Extension",
+
+muscle:"Triceps",
+
+sets:3,reps:12,type:"triceps",
+
+how:"Keep your upper arms stable. Extend your elbows against the resistance and squeeze your triceps. Return slowly."
+
+}
+
+]}
 
 };
 
-/* =========================================================
+let history=JSON.parse(localStorage.getItem("workoutHistoryV5")||"[]");
 
-   STORAGE
+let currentDay=1;
 
-========================================================= */
+let currentWorkout=[];
 
-let history = JSON.parse(localStorage.getItem("workoutHistoryV4") || "[]");
+let timerSeconds=90;
 
-let customExercises =
+let timerInterval=null;
 
-  JSON.parse(localStorage.getItem("customExercisesV4") || "[]");
+function save(){
 
-let currentDay = 1;
-
-let currentWorkout = [];
-
-let timerSeconds = 90;
-
-let timerInterval = null;
-
-/* =========================================================
-
-   SAVE
-
-========================================================= */
-
-function saveData() {
-
-  localStorage.setItem(
-
-    "workoutHistoryV4",
-
-    JSON.stringify(history)
-
-  );
-
-  localStorage.setItem(
-
-    "customExercisesV4",
-
-    JSON.stringify(customExercises)
-
-  );
+localStorage.setItem("workoutHistoryV5",JSON.stringify(history));
 
 }
 
-/* =========================================================
+function renderHome(){
 
-   HOME
+let box=document.getElementById("dayButtons");
 
-========================================================= */
+box.innerHTML="";
 
-function renderHome() {
+Object.keys(workouts).forEach(day=>{
 
-  const container = document.getElementById("dayButtons");
+let w=workouts[day];
 
-  container.innerHTML = "";
+let b=document.createElement("button");
 
-  for (let day in workouts) {
+b.className="day-button "+(Number(day)===currentDay?"selected":"");
 
-    const workout = workouts[day];
+b.innerHTML=`<div class="day-number">DAY ${day}</div><strong>${w.name.replace("Day "+day+" — ","")}</strong>`;
 
-    const button = document.createElement("button");
+b.onclick=()=>startWorkout(Number(day));
 
-    button.className =
+box.appendChild(b);
 
-      "day-button " +
+});
 
-      (Number(day) === currentDay ? "selected" : "");
+document.getElementById("homeCompleted").textContent=getCompletedSets();
 
-    button.innerHTML = `
-
-      <div class="day-number">DAY ${day}</div>
-
-      <strong>${workout.name.replace("Day " + day + " — ", "")}</strong>
-
-    `;
-
-    button.onclick = () => {
-
-      currentDay = Number(day);
-
-      renderHome();
-
-      startWorkout(currentDay);
-
-    };
-
-    container.appendChild(button);
-
-  }
-
-  document.getElementById("homeCompleted").textContent =
-
-    getCompletedSets();
-
-  document.getElementById("homeWorkouts").textContent =
-
-    history.length;
+document.getElementById("homeWorkouts").textContent=history.length;
 
 }
 
-/* =========================================================
+function getLastExercise(name){
 
-   START WORKOUT
+for(let i=history.length-1;i>=0;i--){
 
-========================================================= */
+let e=history[i].exercises.find(x=>x.name===name);
 
-function startWorkout(day) {
+if(e){
 
-  currentDay = day;
+let done=e.sets.filter(s=>s.done);
 
-  currentWorkout = workouts[day].exercises.map(exercise => {
+if(done.length)return done[done.length-1];
 
-    const previous = getLastExercise(exercise.name);
+}}
 
-    return {
-
-      ...exercise,
-
-      values: Array.from(
-
-        {length: exercise.sets},
-
-        () => ({
-
-          weight: previous ? previous.weight : "",
-
-          reps: previous ? previous.reps : exercise.reps,
-
-          done: false
-
-        })
-
-      )
-
-    };
-
-  });
-
-  renderWorkout();
-
-  showPage("workout");
+return null;
 
 }
 
-/* =========================================================
+function suggestion(e){
 
-   LAST WORKOUT
+let last=getLastExercise(e.name);
 
-========================================================= */
+if(!last||!last.weight)return"💡 Enter your weight. Your next workout will remember it.";
 
-function getLastExercise(name) {
+let w=Number(last.weight);
 
-  for (let i = history.length - 1; i >= 0; i--) {
+let r=Number(last.reps);
 
-    const workout = history[i];
+if(r>=e.reps)return`💡 You hit your target. Try ${w+(w>=100?5:2.5)} lb next time.`;
 
-    const exercise = workout.exercises.find(
-
-      e => e.name === name
-
-    );
-
-    if (exercise && exercise.sets.length) {
-
-      const completed =
-
-        exercise.sets.filter(s => s.done);
-
-      if (completed.length) {
-
-        const last = completed[completed.length - 1];
-
-        return {
-
-          weight: last.weight,
-
-          reps: last.reps
-
-        };
-
-      }
-
-    }
-
-  }
-
-  return null;
+return`💡 Keep the same weight and work toward ${e.reps} reps.`;
 
 }
 
-/* =========================================================
+/* Illustrated exercise diagrams */
 
-   PROGRESSIVE OVERLOAD
+function picture(type){
 
-========================================================= */
+let body=`<circle cx="105" cy="42" r="16" fill="none" stroke="#111827" stroke-width="6"/>
 
-function getSuggestion(exercise) {
+<path d="M105 58 L105 120 M105 75 L70 95 M105 75 L140 95 M105 120 L80 165 M105 120 L130 165" fill="none" stroke="#111827" stroke-width="7" stroke-linecap="round"/>`;
 
-  const previous = getLastExercise(exercise.name);
+let machine=`<path d="M45 175 H170 M65 175 V70 M145 175 V45 M65 70 H145 M145 45 L175 45" fill="none" stroke="#6b7280" stroke-width="8" stroke-linecap="round"/>`;
 
-  if (!previous || !previous.weight) {
+let movement="";
 
-    return "Enter your starting weight. Future workouts will use it automatically.";
+if(type==="press"||type==="incline"||type==="shoulder")
 
-  }
+movement=`<path d="M72 94 L38 94 M138 94 L172 94" stroke="#2563eb" stroke-width="6"/><path d="M42 84 L28 94 L42 104 M168 84 L182 94 L168 104" fill="none" stroke="#2563eb" stroke-width="5"/>`;
 
-  const lastWeight = Number(previous.weight);
+else if(type==="pulldown")
 
-  const lastReps = Number(previous.reps);
+movement=`<path d="M55 35 H155 M105 38 V80" stroke="#2563eb" stroke-width="6"/><path d="M92 70 L105 83 L118 70" fill="none" stroke="#2563eb" stroke-width="5"/>`;
 
-  if (lastReps >= exercise.reps) {
+else if(type==="row")
 
-    const increase =
+movement=`<path d="M65 92 H35 M145 92 H175" stroke="#2563eb" stroke-width="6"/><path d="M42 82 L28 92 L42 102 M158 82 L172 92 L158 102" fill="none" stroke="#2563eb" stroke-width="5"/>`;
 
-      lastWeight >= 100 ? 5 : 2.5;
+else if(type==="fly"||type==="reverse"||type==="lateral")
 
-    return `Suggested next weight: ${lastWeight + increase} lb`;
+movement=`<path d="M65 95 L35 70 M145 95 L175 70" stroke="#2563eb" stroke-width="6"/><path d="M38 60 L28 70 L40 78 M172 60 L182 70 L170 78" fill="none" stroke="#2563eb" stroke-width="5"/>`;
 
-  }
+else if(type==="curl"||type==="triceps"||type==="pushdown")
 
-  return `Try to reach ${exercise.reps} reps before increasing weight.`;
+movement=`<path d="M72 94 L55 125 M138 94 L155 125" stroke="#2563eb" stroke-width="6"/><path d="M48 115 L55 130 L62 115 M148 115 L155 130 L162 115" fill="none" stroke="#2563eb" stroke-width="5"/>`;
+
+else
+
+movement=`<path d="M70 150 L45 150 M140 150 L165 150" stroke="#2563eb" stroke-width="6"/>`;
+
+return`
+
+<svg viewBox="0 0 210 190" xmlns="http://www.w3.org/2000/svg">
+
+<rect width="210" height="190" fill="#f3f4f6"/>
+
+${machine}
+
+${body}
+
+${movement}
+
+<text x="105" y="185" text-anchor="middle" font-size="10" fill="#6b7280">Illustrated movement</text>
+
+</svg>`;
 
 }
 
-/* =========================================================
+function startWorkout(day){
 
-   RENDER WORKOUT
+currentDay=day;
 
-========================================================= */
+currentWorkout=workouts[day].exercises.map(e=>{
 
-function renderWorkout() {
+let last=getLastExercise(e.name);
 
-  const workout = workouts[currentDay];
+return{
 
-  document.getElementById("workoutTitle").textContent =
+...e,
 
-    workout.name;
+values:Array.from({length:e.sets},()=>({
 
-  document.getElementById("workoutDescription").textContent =
+weight:last?last.weight:"",
 
-    workout.description;
+reps:last?last.reps:e.reps,
 
-  const list =
+done:false
 
-    document.getElementById("exerciseList");
+}))
 
-  list.innerHTML = "";
+};
 
-  currentWorkout.forEach((exercise, exerciseIndex) => {
+});
 
-    const card = document.createElement("div");
+renderWorkout();
 
-    card.className = "card exercise";
-
-    const previous = getLastExercise(exercise.name);
-
-    let html = `
-
-      <div class="exercise-top">
-
-        <div class="exercise-picture">
-
-          ${exercise.icon || "🏋️"}
-
-        </div>
-
-        <div style="flex:1">
-
-          <div class="exercise-name">
-
-            ${exercise.name}
-
-          </div>
-
-          <div class="muscle">
-
-            ${exercise.muscle}
-
-          </div>
-
-          ${
-
-            previous
-
-            ? `<div class="last">
-
-                Last: ${previous.weight || "—"} lb ×
-
-                ${previous.reps || "—"} reps
-
-              </div>`
-
-            : ""
-
-          }
-
-        </div>
-
-      </div>
-
-      <div class="suggestion">
-
-        💡 ${getSuggestion(exercise)}
-
-      </div>
-
-    `;
-
-    exercise.values.forEach((set, setIndex) => {
-
-      html += `
-
-        <div class="set-row">
-
-          <div class="set-number">
-
-            ${setIndex + 1}
-
-          </div>
-
-          <input
-
-            type="number"
-
-            placeholder="Weight"
-
-            value="${set.weight}"
-
-            onchange="updateSet(${exerciseIndex},${setIndex},'weight',this.value)"
-
-          >
-
-          <input
-
-            type="number"
-
-            placeholder="Reps"
-
-            value="${set.reps}"
-
-            onchange="updateSet(${exerciseIndex},${setIndex},'reps',this.value)"
-
-          >
-
-          <button
-
-            class="complete ${set.done ? "done" : ""}"
-
-            onclick="toggleSet(${exerciseIndex},${setIndex})"
-
-          >
-
-            ${set.done ? "✓" : "○"}
-
-          </button>
-
-        </div>
-
-      `;
-
-    });
-
-    html += `
-
-      <div class="exercise-actions">
-
-        <button
-
-          class="secondary"
-
-          onclick="startRest()"
-
-        >
-
-          ⏱ Rest
-
-        </button>
-
-        <button
-
-          class="secondary"
-
-          onclick="removeCurrentExercise(${exerciseIndex})"
-
-        >
-
-          Remove
-
-        </button>
-
-      </div>
-
-    `;
-
-    card.innerHTML = html;
-
-    list.appendChild(card);
-
-  });
-
-  const add = document.createElement("div");
-
-  add.className = "card";
-
-  add.innerHTML = `
-
-    <button
-
-      class="secondary"
-
-      style="width:100%"
-
-      onclick="openModal()"
-
-    >
-
-      + Add Custom Exercise
-
-    </button>
-
-  `;
-
-  list.appendChild(add);
+showPage("workout");
 
 }
 
-/* =========================================================
+function renderWorkout(){
 
-   UPDATE SET
+let w=workouts[currentDay];
 
-========================================================= */
+document.getElementById("workoutTitle").textContent=w.name;
 
-function updateSet(exerciseIndex, setIndex, field, value) {
+document.getElementById("workoutDescription").textContent=w.description;
 
-  currentWorkout[exerciseIndex]
+let list=document.getElementById("exerciseList");
 
-    .values[setIndex][field] = value;
+list.innerHTML="";
+
+currentWorkout.forEach((e,ei)=>{
+
+let card=document.createElement("div");
+
+card.className="card exercise";
+
+let last=getLastExercise(e.name);
+
+card.innerHTML=`
+
+<div class="exercise-picture">${picture(e.type)}</div>
+
+<div class="exercise-name">${e.name}</div>
+
+<div class="muscle">💪 Muscles: ${e.muscle}</div>
+
+<div class="instructions">
+
+<strong>How to perform</strong>
+
+${e.how}
+
+</div>
+
+${last?`<div class="last">Last workout: ${last.weight||"—"} lb × ${last.reps||"—"} reps</div>`:""}
+
+<div class="suggestion">${suggestion(e)}</div>
+
+`;
+
+e.values.forEach((s,si)=>{
+
+let row=document.createElement("div");
+
+row.className="set-row";
+
+row.innerHTML=`
+
+<div class="set-number">Set ${si+1}</div>
+
+<input type="number" placeholder="Weight" value="${s.weight}" />
+
+<input type="number" placeholder="Reps" value="${s.reps}" />
+
+<button class="complete ${s.done?"done":""}">${s.done?"✓":"○"}</button>
+
+`;
+
+let inputs=row.querySelectorAll("input");
+
+inputs[0].onchange=x=>s.weight=x.target.value;
+
+inputs[1].onchange=x=>s.reps=x.target.value;
+
+row.querySelector("button").onclick=()=>{
+
+s.done=!s.done;
+
+renderWorkout();
+
+};
+
+card.appendChild(row);
+
+});
+
+let actions=document.createElement("div");
+
+actions.className="exercise-actions";
+
+actions.innerHTML=`
+
+<button class="secondary">⏱ Rest</button>
+
+<button class="danger">Remove</button>
+
+`;
+
+actions.children[0].onclick=startRest;
+
+actions.children[1].onclick=()=>{
+
+if(confirm("Remove this exercise from today's workout?")){
+
+currentWorkout.splice(ei,1);
+
+renderWorkout();
+
+}};
+
+card.appendChild(actions);
+
+list.appendChild(card);
+
+});
+
+let add=document.createElement("div");
+
+add.className="card";
+
+add.innerHTML=`<button class="secondary" style="width:100%" onclick="openModal()">+ Add Custom Exercise</button>`;
+
+list.appendChild(add);
 
 }
 
-/* =========================================================
+function finishWorkout(){
 
-   TOGGLE SET
+let sets=getCurrentCompleted();
 
-========================================================= */
+if(!sets){alert("Complete at least one set first.");return;}
 
-function toggleSet(exerciseIndex, setIndex) {
+history.push({
 
-  currentWorkout[exerciseIndex]
+date:new Date().toISOString(),
 
-    .values[setIndex].done =
+day:currentDay,
 
-      !currentWorkout[exerciseIndex]
+name:workouts[currentDay].name,
 
-        .values[setIndex].done;
+exercises:currentWorkout.map(e=>({
 
-  renderWorkout();
+name:e.name,
 
-}
+sets:e.values.map(s=>({
 
-/* =========================================================
+weight:Number(s.weight)||0,
 
-   FINISH WORKOUT
+reps:Number(s.reps)||0,
 
-========================================================= */
+done:s.done
 
-function finishWorkout() {
+}))
 
-  const completedSets =
+}))
 
-    currentWorkout.reduce(
+});
 
-      (total, exercise) =>
+save();
 
-        total +
-
-        exercise.values.filter(s => s.done).length,
-
-      0
-
-    );
-
-  if (completedSets === 0) {
-
-    alert("Complete at least one set before finishing.");
-
-    return;
-
-  }
-
-  const workoutRecord = {
-
-    date: new Date().toISOString(),
-
-    day: currentDay,
-
-    name: workouts[currentDay].name,
-
-    exercises: currentWorkout.map(exercise => ({
-
-      name: exercise.name,
-
-      muscle: exercise.muscle,
-
-      sets: exercise.values.map(set => ({
-
-        weight: Number(set.weight) || 0,
-
-        reps: Number(set.reps) || 0,
-
-        done: set.done
-
-      }))
-
-    }))
-
-  };
-
-  history.push(workoutRecord);
-
-  saveData();
-
-  alert(
-
-    `Workout saved!\n\n${completedSets} sets completed.`
-
-  );
-
-  renderHome();
-
-  showPage("home");
-
-}
-
-/* =========================================================
-
-   REMOVE EXERCISE
-
-========================================================= */
-
-function removeCurrentExercise(index) {
-
-  if (
-
-    !confirm(
-
-      "Remove this exercise from today's workout?"
-
-    )
-
-  ) {
-
-    return;
-
-  }
-
-  currentWorkout.splice(index, 1);
-
-  renderWorkout();
-
-}
-
-/* =========================================================
-
-   CUSTOM EXERCISES
-
-========================================================= */
-
-function openModal() {
-
-  document
-
-    .getElementById("exerciseModal")
-
-    .classList.add("show");
-
-}
-
-function closeModal() {
-
-  document
-
-    .getElementById("exerciseModal")
-
-    .classList.remove("show");
-
-}
-
-function saveCustomExercise() {
-
-  const name =
-
-    document.getElementById("customName").value.trim();
-
-  const muscle =
-
-    document.getElementById("customMuscle").value.trim();
-
-  const sets =
-
-    Number(document.getElementById("customSets").value);
-
-  const reps =
-
-    Number(document.getElementById("customReps").value);
-
-  if (!name) {
-
-    alert("Enter an exercise name.");
-
-    return;
-
-  }
-
-  const exercise = {
-
-    name,
-
-    muscle: muscle || "Custom",
-
-    icon: "🏋️",
-
-    sets: sets || 3,
-
-    reps: reps || 10
-
-  };
-
-  customExercises.push(exercise);
-
-  currentWorkout.push({
-
-    ...exercise,
-
-    values: Array.from(
-
-      {length: exercise.sets},
-
-      () => ({
-
-        weight: "",
-
-        reps: exercise.reps,
-
-        done: false
-
-      })
-
-    )
-
-  });
-
-  saveData();
-
-  closeModal();
-
-  document.getElementById("customName").value = "";
-
-  document.getElementById("customMuscle").value = "";
-
-  renderWorkout();
-
-}
-
-/* =========================================================
-
-   PAGES
-
-========================================================= */
-
-function showPage(page) {
-
-  const pages = [
-
-    "home",
-
-    "workout",
-
-    "progress",
-
-    "history",
-
-    "timer"
-
-  ];
-
-  pages.forEach(name => {
-
-    const element =
-
-      document.getElementById(name + "Page");
-
-    if (element) {
-
-      element.style.display =
-
-        name === page ? "block" : "none";
-
-    }
-
-    const nav =
-
-      document.getElementById("nav" +
-
-        name.charAt(0).toUpperCase() +
-
-        name.slice(1));
-
-    if (nav) {
-
-      nav.classList.toggle(
-
-        "active",
-
-        name === page
-
-      );
-
-    }
-
-  });
-
-  if (page === "home") {
-
-    renderHome();
-
-  }
-
-  if (page === "progress") {
-
-    renderProgress();
-
-  }
-
-  if (page === "history") {
-
-    renderHistory();
-
-  }
-
-  if (page === "timer") {
-
-    updateTimerDisplay();
-
-  }
-
-  window.scrollTo(0, 0);
-
-}
-
-/* =========================================================
-
-   HISTORY
-
-========================================================= */
-
-function renderHistory() {
-
-  const list =
-
-    document.getElementById("historyList");
-
-  if (!history.length) {
-
-    list.innerHTML = `
-
-      <div class="empty">
-
-        No workouts recorded yet.
-
-      </div>
-
-    `;
-
-    return;
-
-  }
-
-  list.innerHTML = "";
-
-  [...history]
-
-    .reverse()
-
-    .forEach(workout => {
-
-      const date =
-
-        new Date(workout.date)
-
-          .toLocaleDateString();
-
-      const sets =
-
-        workout.exercises.reduce(
-
-          (total, e) =>
-
-            total +
-
-            e.sets.filter(s => s.done).length,
-
-          0
-
-        );
-
-      const volume =
-
-        calculateWorkoutVolume(workout);
-
-      const div =
-
-        document.createElement("div");
-
-      div.className =
-
-        "history-item";
-
-      div.innerHTML = `
-
-        <strong>${workout.name}</strong>
-
-        <div class="small">
-
-          ${date} · ${sets} sets ·
-
-          ${Math.round(volume).toLocaleString()} lb volume
-
-        </div>
-
-      `;
-
-      list.appendChild(div);
-
-    });
-
-}
-
-/* =========================================================
-
-   PROGRESS
-
-========================================================= */
-
-function renderProgress() {
-
-  document.getElementById("totalWorkouts")
-
-    .textContent = history.length;
-
-  document.getElementById("totalSets")
-
-    .textContent = getCompletedSets();
-
-  const volume =
-
-    history.reduce(
-
-      (total, workout) =>
-
-        total + calculateWorkoutVolume(workout),
-
-      0
-
-    );
-
-  document.getElementById("totalVolume")
-
-    .textContent =
-
-      Math.round(volume).toLocaleString();
-
-  const bests =
-
-    calculatePersonalBests();
-
-  document.getElementById("personalBests")
-
-    .textContent =
-
-      Object.keys(bests).length;
-
-  const pbList =
-
-    document.getElementById("pbList");
-
-  if (!Object.keys(bests).length) {
-
-    pbList.innerHTML =
-
-      `<div class="empty">Complete workouts to create personal bests.</div>`;
-
-  } else {
-
-    pbList.innerHTML = "";
-
-    Object.entries(bests).forEach(
-
-      ([name, data]) => {
-
-        const div =
-
-          document.createElement("div");
-
-        div.className =
-
-          "history-item";
-
-        div.innerHTML = `
-
-          <strong>${name}</strong>
-
-          <div class="small">
-
-            Best: ${data.weight} lb × ${data.reps} reps
-
-          </div>
-
-        `;
-
-        pbList.appendChild(div);
-
-      }
-
-    );
-
-  }
-
-  drawChart();
-
-}
-
-/* =========================================================
-
-   PERSONAL BESTS
-
-========================================================= */
-
-function calculatePersonalBests() {
-
-  const bests = {};
-
-  history.forEach(workout => {
-
-    workout.exercises.forEach(exercise => {
-
-      exercise.sets.forEach(set => {
-
-        if (!set.done) return;
-
-        const weight =
-
-          Number(set.weight) || 0;
-
-        const reps =
-
-          Number(set.reps) || 0;
-
-        if (
-
-          !bests[exercise.name] ||
-
-          weight > bests[exercise.name].weight ||
-
-          (
-
-            weight === bests[exercise.name].weight &&
-
-            reps > bests[exercise.name].reps
-
-          )
-
-        ) {
-
-          bests[exercise.name] = {
-
-            weight,
-
-            reps
-
-          };
-
-        }
-
-      });
-
-    });
-
-  });
-
-  return bests;
-
-}
-
-/* =========================================================
-
-   VOLUME
-
-========================================================= */
-
-function calculateWorkoutVolume(workout) {
-
-  let total = 0;
-
-  workout.exercises.forEach(exercise => {
-
-    exercise.sets.forEach(set => {
-
-      if (!set.done) return;
-
-      total +=
-
-        (Number(set.weight) || 0) *
-
-        (Number(set.reps) || 0);
-
-    });
-
-  });
-
-  return total;
-
-}
-
-/* =========================================================
-
-   COMPLETED SETS
-
-========================================================= */
-
-function getCompletedSets() {
-
-  return history.reduce(
-
-    (total, workout) =>
-
-      total +
-
-      workout.exercises.reduce(
-
-        (t, e) =>
-
-          t +
-
-          e.sets.filter(s => s.done).length,
-
-        0
-
-      ),
-
-    0
-
-  );
-
-}
-
-/* =========================================================
-
-   CHART
-
-========================================================= */
-
-function drawChart() {
-
-  const canvas =
-
-    document.getElementById("progressChart");
-
-  const ctx =
-
-    canvas.getContext("2d");
-
-  ctx.clearRect(
-
-    0,
-
-    0,
-
-    canvas.width,
-
-    canvas.height
-
-  );
-
-  if (!history.length) {
-
-    ctx.font = "18px Arial";
-
-    ctx.fillText(
-
-      "Complete workouts to see your progress.",
-
-      50,
-
-      140
-
-    );
-
-    return;
-
-  }
-
-  const recent =
-
-    history.slice(-10);
-
-  const values =
-
-    recent.map(calculateWorkoutVolume);
-
-  const max =
-
-    Math.max(...values, 1);
-
-  const padding = 40;
-
-  const width =
-
-    canvas.width - padding * 2;
-
-  const height =
-
-    canvas.height - padding * 2;
-
-  ctx.beginPath();
-
-  values.forEach((value, index) => {
-
-    const x =
-
-      padding +
-
-      (index *
-
-        width /
-
-        Math.max(values.length - 1, 1));
-
-    const y =
-
-      canvas.height -
-
-      padding -
-
-      (value / max) * height;
-
-    if (index === 0) {
-
-      ctx.moveTo(x, y);
-
-    } else {
-
-      ctx.lineTo(x, y);
-
-    }
-
-  });
-
-  ctx.stroke();
-
-  values.forEach((value, index) => {
-
-    const x =
-
-      padding +
-
-      (index *
-
-        width /
-
-        Math.max(values.length - 1, 1));
-
-    const y =
-
-      canvas.height -
-
-      padding -
-
-      (value / max) * height;
-
-    ctx.beginPath();
-
-    ctx.arc(
-
-      x,
-
-      y,
-
-      5,
-
-      0,
-
-      Math.PI * 2
-
-    );
-
-    ctx.fill();
-
-  });
-
-}
-
-/* =========================================================
-
-   CLEAR HISTORY
-
-========================================================= */
-
-function clearHistory() {
-
-  if (
-
-    !confirm(
-
-      "Delete all workout history? This cannot be undone."
-
-    )
-
-  ) {
-
-    return;
-
-  }
-
-  history = [];
-
-  saveData();
-
-  renderHistory();
-
-  renderHome();
-
-}
-
-/* =========================================================
-
-   TIMER
-
-========================================================= */
-
-function updateTimerDisplay() {
-
-  const minutes =
-
-    Math.floor(timerSeconds / 60);
-
-  const seconds =
-
-    timerSeconds % 60;
-
-  document.getElementById("timerDisplay")
-
-    .textContent =
-
-      `${minutes}:${String(seconds).padStart(2,"0")}`;
-
-}
-
-function setTimer(seconds) {
-
-  pauseTimer();
-
-  timerSeconds = seconds;
-
-  updateTimerDisplay();
-
-}
-
-function startTimer() {
-
-  if (timerInterval) return;
-
-  timerInterval =
-
-    setInterval(() => {
-
-      if (timerSeconds > 0) {
-
-        timerSeconds--;
-
-        updateTimerDisplay();
-
-      } else {
-
-        pauseTimer();
-
-        if (navigator.vibrate) {
-
-          navigator.vibrate([300,150,300]);
-
-        }
-
-        alert("Rest complete!");
-
-      }
-
-    }, 1000);
-
-}
-
-function pauseTimer() {
-
-  clearInterval(timerInterval);
-
-  timerInterval = null;
-
-}
-
-function resetTimer() {
-
-  pauseTimer();
-
-  timerSeconds = 90;
-
-  updateTimerDisplay();
-
-}
-
-function startRest() {
-
-  setTimer(90);
-
-  showPage("timer");
-
-  startTimer();
-
-}
-
-/* =========================================================
-
-   SERVICE WORKER
-
-========================================================= */
-
-if ("serviceWorker" in navigator) {
-
-  window.addEventListener(
-
-    "load",
-
-    () => {
-
-      navigator.serviceWorker
-
-        .register("./sw.js")
-
-        .then(() => {
-
-          console.log(
-
-            "Workout Tracker service worker registered."
-
-          );
-
-        })
-
-        .catch(error => {
-
-          console.log(
-
-            "Service worker registration failed:",
-
-            error
-
-          );
-
-        });
-
-    }
-
-  );
-
-}
-
-/* =========================================================
-
-   START APP
-
-========================================================= */
+alert(`Workout saved!\n\n${sets} sets completed.`);
 
 renderHome();
 
-updateTimerDisplay();
+showPage("home");
+
+}
+
+function getCurrentCompleted(){
+
+return currentWorkout.reduce((n,e)=>n+e.values.filter(s=>s.done).length,0);
+
+}
+
+function getCompletedSets(){
+
+return history.reduce((n,w)=>n+w.exercises.reduce((a,e)=>a+e.sets.filter(s=>s.done).length,0),0);
+
+}
+
+function calculateVolume(w){
+
+return w.exercises.reduce((n,e)=>n+e.sets.reduce((a,s)=>a+(s.done?s.weight*s.reps:0),0),0);
+
+}
+
+function showPage(page){
+
+["home","workout","progress","history","timer"].forEach(p=>{
+
+document.getElementById(p+"Page").style.display=p===page?"block":"none";
+
+let n=document.getElementById("nav"+p.charAt(0).toUpperCase()+p.slice(1));
+
+if(n)n.classList.toggle("active",p===page);
+
+});
+
+if(page==="home")renderHome();
+
+if(page==="progress")renderProgress();
+
+if(page==="history")renderHistory();
+
+if(page==="timer")updateTimer();
+
+window.scrollTo(0,0);
+
+}
+
+function renderHistory(){
+
+let box=document.getElementById("historyList");
+
+if(!history.length){
+
+box.innerHTML=`<div class="empty">No workouts recorded yet.</div>`;
+
+return;
+
+}
+
+box.innerHTML="";
+
+[...history].reverse().forEach(w=>{
+
+let d=new Date(w.date).toLocaleDateString();
+
+let sets=w.exercises.reduce((n,e)=>n+e.sets.filter(s=>s.done).length,0);
+
+let div=document.createElement("div");
+
+div.className="history-item";
+
+div.innerHTML=`<strong>${w.name}</strong><div class="small">${d} · ${sets} sets · ${Math.round(calculateVolume(w)).toLocaleString()} lb volume</div>`;
+
+box.appendChild(div);
+
+});
+
+}
+
+function renderProgress(){
+
+let best={};
+
+history.forEach(w=>w.exercises.forEach(e=>e.sets.forEach(s=>{
+
+if(!s.done)return;
+
+if(!best[e.name]||s.weight>best[e.name].weight||(s.weight===best[e.name].weight&&s.reps>best[e.name].reps))
+
+best[e.name]={weight:s.weight,reps:s.reps};
+
+})));
+
+document.getElementById("totalWorkouts").textContent=history.length;
+
+document.getElementById("totalSets").textContent=getCompletedSets();
+
+document.getElementById("totalVolume").textContent=Math.round(history.reduce((n,w)=>n+calculateVolume(w),0)).toLocaleString();
+
+document.getElementById("personalBests").textContent=Object.keys(best).length;
+
+let box=document.getElementById("pbList");
+
+box.innerHTML="";
+
+Object.entries(best).forEach(([name,b])=>{
+
+box.innerHTML+=`<div class="history-item"><strong>${name}</strong><div class="small">Best: ${b.weight} lb × ${b.reps} reps</div></div>`;
+
+});
+
+drawChart();
+
+}
+
+function drawChart(){
+
+let c=document.getElementById("progressChart");
+
+let x=c.getContext("2d");
+
+x.clearRect(0,0,c.width,c.height);
+
+if(!history.length){
+
+x.font="18px Arial";
+
+x.fillText("Complete workouts to see progress.",50,140);
+
+return;
+
+}
+
+let vals=history.slice(-10).map(calculateVolume);
+
+let max=Math.max(...vals,1);
+
+let pad=40;
+
+let w=c.width-pad*2;
+
+let h=c.height-pad*2;
+
+x.beginPath();
+
+vals.forEach((v,i)=>{
+
+let px=pad+i*w/Math.max(vals.length-1,1);
+
+let py=c.height-pad-(v/max)*h;
+
+i?x.lineTo(px,py):x.moveTo(px,py);
+
+});
+
+x.stroke();
+
+vals.forEach((v,i)=>{
+
+let px=pad+i*w/Math.max(vals.length-1,1);
+
+let py=c.height-pad-(v/max)*h;
+
+x.beginPath();
+
+x.arc(px,py,5,0,Math.PI*2);
+
+x.fill();
+
+});
+
+}
+
+function clearHistory(){
+
+if(confirm("Delete all workout history?")){
+
+history=[];
+
+save();
+
+renderHistory();
+
+renderHome();
+
+}
+
+}
+
+function openModal(){document.getElementById("exerciseModal").classList.add("show")}
+
+function closeModal(){document.getElementById("exerciseModal").classList.remove("show")}
+
+function saveCustomExercise(){
+
+let name=document.getElementById("customName").value.trim();
+
+let muscle=document.getElementById("customMuscle").value.trim();
+
+let sets=Number(document.getElementById("customSets").value)||3;
+
+let reps=Number(document.getElementById("customReps").value)||10;
+
+if(!name){alert("Enter an exercise name.");return}
+
+currentWorkout.push({
+
+name,
+
+muscle:muscle||"Custom",
+
+sets,
+
+reps,
+
+type:"press",
+
+how:"Use controlled movement, keep good posture, and avoid using momentum. Follow the machine's instructions and adjust the seat before beginning.",
+
+values:Array.from({length:sets},()=>({weight:"",reps,done:false}))
+
+});
+
+closeModal();
+
+renderWorkout();
+
+}
+
+function updateTimer(){
+
+let m=Math.floor(timerSeconds/60);
+
+let s=timerSeconds%60;
+
+document.getElementById("timerDisplay").textContent=`${m}:${String(s).padStart(2,"0")}`;
+
+}
+
+function setTimer(s){
+
+pauseTimer();
+
+timerSeconds=s;
+
+updateTimer();
+
+}
+
+function startTimer(){
+
+if(timerInterval)return;
+
+timerInterval=setInterval(()=>{
+
+if(timerSeconds>0){
+
+timerSeconds--;
+
+updateTimer();
+
+}else{
+
+pauseTimer();
+
+if(navigator.vibrate)navigator.vibrate([300,150,300]);
+
+alert("Rest complete!");
+
+}
+
+},1000);
+
+}
+
+function pauseTimer(){
+
+clearInterval(timerInterval);
+
+timerInterval=null;
+
+}
+
+function resetTimer(){
+
+pauseTimer();
+
+timerSeconds=90;
+
+updateTimer();
+
+}
+
+function startRest(){
+
+setTimer(90);
+
+showPage("timer");
+
+startTimer();
+
+}
+
+if("serviceWorker"in navigator){
+
+window.addEventListener("load",()=>{
+
+navigator.serviceWorker.register("./sw.js").catch(console.error);
+
+});
+
+}
+
+renderHome();
+
+updateTimer();
 
 showPage("home");
 
