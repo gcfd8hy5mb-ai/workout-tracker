@@ -65,6 +65,16 @@ weekContext.renderWeeklySummary('weeklySummaryHome');
 assert.match(weeklyArea.innerHTML,/Weekly workout goal/);
 assert.match(weeklyArea.innerHTML,/1\/4/);
 assert.match(weeklyArea.innerHTML,/See all progress/);
+const pickerStart=source.indexOf('function confirmPicker(){'),pickerEnd=source.indexOf('function refreshComparison(key){',pickerStart);
+let chosen=null,closed=0;
+const direct={value:'185',focus:()=>{}};
+const pickerContext={pickerKey:'press-set1',pickerType:'weight',pickerValues:[2.5,5],pickerSelectedIndex:0,
+document:{getElementById:id=>id==='pickerDirectValue'?direct:{textContent:''}},
+safeId:id=>id,saveSet:(_,__,value)=>{chosen=value},refreshComparison:()=>{},closePicker:()=>{closed++}};
+vm.createContext(pickerContext);vm.runInContext(source.slice(pickerStart,pickerEnd),pickerContext);
+pickerContext.confirmPicker();assert.equal(chosen,185);assert.equal(closed,1);
+direct.value='0';chosen=null;pickerContext.confirmPicker();assert.equal(chosen,null,'zero weight is not a valid logged set');
 console.log('Smart progression: increase, repeat, and deload passed');
 console.log('Workout completion: saved summary, targets, and incomplete-set guard passed');
 console.log('Weekly dashboard: current-week tally and progress link passed');
+console.log('Direct set entry: accepts valid weight and rejects zero passed');
