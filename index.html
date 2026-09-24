@@ -337,7 +337,7 @@ background:#f4f4f6;border-radius:12px;padding:12px;margin-bottom:8px
 
 .workout-tabs{
 
-display:grid;grid-template-columns:repeat(3,1fr);
+display:grid;grid-template-columns:repeat(2,1fr);
 
 background:white;border-radius:15px;padding:5px;
 
@@ -635,7 +635,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 6.6</p>
+<p>Version 6.7</p>
 
 </header>
 
@@ -690,8 +690,6 @@ Exercise Library
 
 <button class="workout-tab active" id="tabWorkout" onclick="showWorkoutTab('workout')">🏋️<br>Workout</button>
 
-<button class="workout-tab" id="tabHistory" onclick="showWorkoutTab('history')">🕘<br>History</button>
-
 <button class="workout-tab" id="tabTimer" onclick="showWorkoutTab('timer')">⏱️<br>Timer</button>
 
 </div>
@@ -707,8 +705,6 @@ Mark Workout Complete
 <button id="finishWorkoutButton" class="finish-workout" onclick="finishWorkout()">Finish Workout</button>
 
 </div>
-
-<div id="workoutHistoryContent" class="hidden"></div>
 
 <div id="workoutTimerContent" class="hidden"></div>
 
@@ -1375,7 +1371,7 @@ showWorkoutTab("workout");
 
 function showWorkoutTab(tab){
 
-["Workout","History","Timer"].forEach(x=>{
+["Workout","Timer"].forEach(x=>{
 
 document.getElementById("tab"+x).classList.toggle("active",x.toLowerCase()===tab);
 
@@ -1383,19 +1379,9 @@ document.getElementById("tab"+x).classList.toggle("active",x.toLowerCase()===tab
 
 document.getElementById("workoutTabContent").classList.add("hidden");
 
-document.getElementById("workoutHistoryContent").classList.add("hidden");
-
 document.getElementById("workoutTimerContent").classList.add("hidden");
 
 if(tab==="workout") document.getElementById("workoutTabContent").classList.remove("hidden");
-
-if(tab==="history"){
-
-document.getElementById("workoutHistoryContent").classList.remove("hidden");
-
-renderWorkoutHistory();
-
-}
 
 if(tab==="timer"){
 
@@ -1850,32 +1836,6 @@ document.getElementById("progressText").textContent=`${done} of ${total} preset 
 
 /* WORKOUT HISTORY */
 
-function sessionsForActiveWorkout(){
-
-return workoutHistory.filter(x=>x.workoutKey===activeWorkoutKey);
-
-}
-
-function renderWorkoutHistory(){
-
-const area=document.getElementById("workoutHistoryContent");
-
-const sessions=sessionsForActiveWorkout();
-
-area.innerHTML="<h3>"+escapeHTML(activeWorkoutTitle)+" History</h3>";
-
-if(!sessions.length){
-
-area.innerHTML+='<div class="card empty">Finish this workout once and it will appear here.</div>';
-
-return;
-
-}
-
-sessions.forEach(s=>area.appendChild(historyCard(s)));
-
-}
-
 function historyCard(session){
 
 const card=document.createElement("div");card.className="history-card";
@@ -2025,43 +1985,53 @@ return counts;
 
 
 function muscleFigure(side,counts){
-const colored=name=>counts[name]?"#d46a57":"#d4d5dc";
-const part=(d,name)=>'<path d="'+d+'" fill="'+colored(name)+'" stroke="#62636b" stroke-width="1.25" stroke-linejoin="round"><title>'+name+'</title></path>';
-const line=d=>'<path d="'+d+'" fill="none" stroke="#777880" stroke-width="1" stroke-linecap="round"/>';
-const outline='<path d="M65 37 C53 38 42 41 37 52 C33 67 30 91 25 115 L21 129 Q20 135 26 137 Q31 139 34 132 L43 102 L49 77 L50 110 Q53 126 57 141 L59 177 L57 222 L54 254 Q53 264 63 265 L70 262 L75 230 L80 185 L85 230 L90 262 L97 265 Q107 264 106 254 L103 222 L101 177 L103 141 Q107 126 110 110 L111 77 L117 102 L126 132 Q129 139 134 137 Q140 135 139 129 L135 115 C130 91 127 67 123 52 C118 41 107 38 95 37 L88 40 L72 40 Z" fill="#ebebef" stroke="#62636b" stroke-width="1.7" stroke-linejoin="round"/>';
-const head='<ellipse cx="80" cy="20" rx="12" ry="16" fill="#e4e4e9" stroke="#62636b" stroke-width="1.5"/>'+
-'<path d="M73 35 L73 42 Q80 46 87 42 L87 35" fill="#e4e4e9" stroke="#62636b" stroke-width="1.3"/>';
-let parts='';
+const active=name=>Boolean(counts[name]);
+const part=(d,name)=>'<path d="'+d+'" fill="'+(active(name)?"#dc5477":"#bec1cc")+'" stroke="#5a5d6a" stroke-width="1.4" stroke-linejoin="round"><title>'+name+'</title></path>';
+const detail=d=>'<path d="'+d+'" fill="none" stroke="#727582" stroke-width="1" stroke-linecap="round" opacity=".8"/>';
+const highlight=d=>'<path d="'+d+'" fill="none" stroke="#f7f7f9" stroke-width="1.1" stroke-linecap="round" opacity=".42"/>';
+const body='<path d="M67 40 Q57 41 49 46 Q39 48 34 57 Q29 69 28 83 L24 105 Q19 115 16 127 Q12 134 15 140 Q18 144 22 140 L30 130 Q38 117 39 105 L44 83 L48 106 Q47 124 52 139 L55 166 L54 191 L51 214 L47 246 Q45 259 50 269 Q53 274 58 274 L67 272 Q72 258 72 240 L77 203 Q78 190 80 180 Q82 190 83 203 L88 240 Q88 258 93 272 L102 274 Q107 274 110 269 Q115 259 113 246 L109 214 L106 191 L105 166 L108 139 Q113 124 112 106 L116 83 L121 105 Q122 117 130 130 L138 140 Q142 144 145 140 Q148 134 144 127 Q141 115 136 105 L132 83 Q131 69 126 57 Q121 48 111 46 Q103 41 93 40 L88 43 Q80 48 72 43 Z" fill="#daddE5" stroke="#4c505d" stroke-width="2" stroke-linejoin="round"/>';
+const head='<path d="M67 19 Q68 5 80 5 Q92 5 93 19 L91 29 Q87 38 80 39 Q73 38 69 29 Z" fill="#c9ccd5" stroke="#4c505d" stroke-width="1.7"/>'+
+'<path d="M73 36 L72 43 Q80 48 88 43 L87 36" fill="#c9ccd5" stroke="#4c505d" stroke-width="1.4"/>';
+let muscles='';
 if(side==="Front"){
-parts+=part("M61 43 C51 43 43 48 39 55 Q39 63 46 71 L54 72 Q55 56 63 46 Z","Shoulders");
-parts+=part("M99 43 C109 43 117 48 121 55 Q121 63 114 71 L106 72 Q105 56 97 46 Z","Shoulders");
-parts+=part("M65 46 Q73 47 79 53 L79 77 Q66 82 52 75 L53 59 Q56 49 65 46 Z","Chest");
-parts+=part("M95 46 Q87 47 81 53 L81 77 Q94 82 108 75 L107 59 Q104 49 95 46 Z","Chest");
-parts+=part("M60 82 Q70 80 79 82 L79 110 Q70 112 61 109 Z","Core");
-parts+=part("M81 82 Q90 80 100 82 L99 109 Q90 112 81 110 Z","Core");
-parts+=part("M62 112 L98 112 L100 131 Q80 143 60 131 Z","Core");
-parts+=part("M40 74 L49 76 L44 105 L34 103 Q36 86 40 74 Z","Biceps");
-parts+=part("M120 74 L111 76 L116 105 L126 103 Q124 86 120 74 Z","Biceps");
-parts+=part("M60 140 Q69 145 79 143 L77 175 L72 194 L58 188 L58 169 Z","Quads");
-parts+=part("M100 140 Q91 145 81 143 L83 175 L88 194 L102 188 L102 169 Z","Quads");
+muscles+=part("M55 46 Q44 47 38 55 Q32 64 35 72 Q39 79 47 81 L52 72 Q50 60 61 49 Z","Shoulders");
+muscles+=part("M105 46 Q116 47 122 55 Q128 64 125 72 Q121 79 113 81 L108 72 Q110 60 99 49 Z","Shoulders");
+muscles+=part("M64 49 Q74 49 79 55 L79 78 Q68 85 53 77 Q51 62 57 54 Z","Chest");
+muscles+=part("M96 49 Q86 49 81 55 L81 78 Q92 85 107 77 Q109 62 103 54 Z","Chest");
+muscles+=part("M52 81 Q59 80 62 84 L57 102 Q52 112 45 116 L46 94 Z","Core");
+muscles+=part("M108 81 Q101 80 98 84 L103 102 Q108 112 115 116 L114 94 Z","Core");
+for(const [top,bottom] of [[83,94],[96,107],[109,121]]){
+muscles+=part("M65 "+top+" Q72 "+(top-2)+" 79 "+top+" L79 "+bottom+" Q72 "+(bottom+2)+" 64 "+bottom+" Z","Core");
+muscles+=part("M81 "+top+" Q88 "+(top-2)+" 95 "+top+" L96 "+bottom+" Q88 "+(bottom+2)+" 81 "+bottom+" Z","Core");
+}
+muscles+=part("M60 125 Q80 133 100 125 L103 139 Q93 149 80 151 Q67 149 57 139 Z","Core");
+muscles+=part("M37 81 Q43 78 49 83 L44 105 Q39 113 32 107 L35 91 Z","Biceps");
+muscles+=part("M123 81 Q117 78 111 83 L116 105 Q121 113 128 107 L125 91 Z","Biceps");
+muscles+=part("M58 150 Q67 153 78 151 L76 171 L70 196 Q65 201 55 193 L55 169 Z","Quads");
+muscles+=part("M102 150 Q93 153 82 151 L84 171 L90 196 Q95 201 105 193 L105 169 Z","Quads");
+muscles+=detail("M66 153 Q64 170 63 187 M74 158 L68 183 M94 153 Q96 170 97 187 M86 158 L92 183");
 }else{
-parts+=part("M64 44 Q72 51 80 53 Q88 51 96 44 L104 77 L98 105 L80 115 L62 105 L56 77 Z","Back");
-parts+=part("M61 43 C51 43 43 48 39 55 Q39 63 46 71 L54 72 Q55 56 63 46 Z","Shoulders");
-parts+=part("M99 43 C109 43 117 48 121 55 Q121 63 114 71 L106 72 Q105 56 97 46 Z","Shoulders");
-parts+=part("M40 74 L49 76 L44 105 L34 103 Q36 86 40 74 Z","Triceps");
-parts+=part("M120 74 L111 76 L116 105 L126 103 Q124 86 120 74 Z","Triceps");
-parts+=part("M60 113 Q70 118 79 116 L79 141 Q68 146 58 138 Z","Glutes");
-parts+=part("M100 113 Q90 118 81 116 L81 141 Q92 146 102 138 Z","Glutes");
-parts+=part("M59 143 Q69 147 78 144 L75 187 L61 190 L58 169 Z","Hamstrings");
-parts+=part("M101 143 Q91 147 82 144 L85 187 L99 190 L102 169 Z","Hamstrings");
+muscles+=part("M69 44 Q80 51 91 44 L100 57 L88 69 L80 63 L72 69 L60 57 Z","Back");
+muscles+=part("M61 58 Q70 69 79 66 L79 101 Q67 104 56 88 L53 73 Z","Back");
+muscles+=part("M99 58 Q90 69 81 66 L81 101 Q93 104 104 88 L107 73 Z","Back");
+muscles+=part("M57 91 Q68 104 79 103 L79 121 Q68 119 58 113 Z","Back");
+muscles+=part("M103 91 Q92 104 81 103 L81 121 Q92 119 102 113 Z","Back");
+muscles+=part("M55 46 Q44 47 38 55 Q32 64 35 72 Q39 79 47 81 L52 72 Q50 60 61 49 Z","Shoulders");
+muscles+=part("M105 46 Q116 47 122 55 Q128 64 125 72 Q121 79 113 81 L108 72 Q110 60 99 49 Z","Shoulders");
+muscles+=part("M37 81 Q43 78 49 83 L44 105 Q39 113 32 107 L35 91 Z","Triceps");
+muscles+=part("M123 81 Q117 78 111 83 L116 105 Q121 113 128 107 L125 91 Z","Triceps");
+muscles+=part("M60 126 Q69 130 79 128 L79 149 Q66 153 55 142 Z","Glutes");
+muscles+=part("M100 126 Q91 130 81 128 L81 149 Q94 153 105 142 Z","Glutes");
+muscles+=part("M58 152 Q68 155 78 153 L76 174 L70 197 Q62 200 55 192 L55 168 Z","Hamstrings");
+muscles+=part("M102 152 Q92 155 82 153 L84 174 L90 197 Q98 200 105 192 L105 168 Z","Hamstrings");
+muscles+=detail("M80 68 L80 121 M64 83 Q70 88 77 87 M96 83 Q90 88 83 87 M65 157 L67 184 M95 157 L93 184");
 }
-parts+=part("M60 197 L72 197 Q73 209 69 225 L66 246 L55 249 L58 220 Z","Calves");
-parts+=part("M100 197 L88 197 Q87 209 91 225 L94 246 L105 249 L102 220 Z","Calves");
-parts+=line("M69 56 Q80 60 91 56 M80 81 L80 111 M64 95 L76 96 M84 96 L96 95 M62 111 Q80 116 98 111");
-parts+=line("M60 190 Q67 194 74 191 M86 191 Q93 194 100 190 M69 204 L68 230 M91 204 L92 230");
-return '<div class="body-figure"><svg viewBox="15 0 130 270" role="img" aria-label="'+side+' body diagram"><title>'+side+' muscle diagram</title>'+outline+head+parts+'</svg>'+side+'</div>';
+muscles+=part("M55 202 Q64 207 73 202 L70 229 Q66 242 63 258 L51 258 L52 231 Z","Calves");
+muscles+=part("M105 202 Q96 207 87 202 L90 229 Q94 242 97 258 L109 258 L108 231 Z","Calves");
+muscles+=detail("M80 52 L80 64 M49 76 L46 92 M111 76 L114 92 M63 202 L62 228 M97 202 L98 228");
+muscles+=highlight("M37 65 Q39 54 48 50 M123 65 Q121 54 112 50 M58 158 L57 179 M102 158 L103 179");
+return '<div class="body-figure"><svg viewBox="9 0 142 278" role="img" aria-label="'+side+' body diagram"><title>'+side+' muscle diagram</title>'+body+head+muscles+'</svg>'+side+'</div>';
 }
-
 function muscleVisual(ids,context){
 const counts=muscleCounts(ids);
 const active=visualMuscles.filter(name=>counts[name]);
