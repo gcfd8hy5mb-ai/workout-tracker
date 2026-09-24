@@ -609,6 +609,9 @@ border-bottom:1px solid #ddd
 }
 
 .picker-toolbar strong{font-size:17px}
+.picker-direct{display:flex;align-items:center;gap:12px;padding:12px 18px;background:#fff}
+.picker-direct label{margin:0;flex:1;font-size:14px;font-weight:580}
+.picker-direct input{width:126px;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit}
 
 .picker-done{
 
@@ -736,6 +739,12 @@ header{background:#fff;color:#111;border-bottom:1px solid #e5e5e8}
 .container .summary-actions button{font-weight:600}
 .container .exercise-title,.container .day-button,.container .action-button{font-weight:620}
 .container .weekly-dashboard h3{font-weight:640}
+.exercise-instructions{margin-top:13px;border-top:1px solid var(--line)}
+.exercise-instructions summary{padding:14px 2px;cursor:pointer;min-height:48px;font-weight:600;list-style-position:inside}
+.exercise-instructions summary:focus-visible{outline:3px solid #9ab3c3;outline-offset:2px}
+.exercise-instructions:not([open]) summary{color:#404956}
+.wheel-option{cursor:pointer}
+.wheel-option:focus-visible{outline:2px solid #355d75;outline-offset:-3px}
 
 </style>
 
@@ -1024,7 +1033,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <button class="menu-link" id="navFood" onclick="showFood()">Food</button>
 <button class="menu-link" id="navWeight" onclick="showWeight()">Weight</button>
 <button class="menu-link" id="navGoals" onclick="showTrackingGoals()">Goals</button>
-<small class="menu-version">Version 9.1</small>
+<small class="menu-version">Version 9.2</small>
 </nav>
 
 <div id="pickerOverlay" class="picker-overlay hidden" onclick="closePicker()"></div>
@@ -1038,6 +1047,8 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <button class="picker-done" onclick="confirmPicker()">Done</button>
 
 </div>
+
+<div class="picker-direct"><label id="pickerDirectLabel" for="pickerDirectValue">Or type a value</label><input id="pickerDirectValue" type="number" inputmode="decimal" min="1" max="500" step="any" placeholder="Type here"></div>
 
 <div class="wheel-wrap">
 
@@ -1928,7 +1939,7 @@ onclick="toggleDetails('${detailId}')" onkeydown="if(event.key==='Enter'||event.
 <div class="exercise-title">${escapeHTML(ex.name)}</div>
 <div class="muscle">Primary muscle: ${escapeHTML(ex.muscle)}</div>
 ${showGoal?`<div class="goal-preview">${goalText}</div>`:""}
-<div class="small">Tap for picture, instructions, and sets</div>
+<div class="small">${showGoal?"Tap to log sets and see form tips":"Tap for picture and instructions"}</div>
 </div>
 <div class="exercise-mini-map" aria-hidden="true">${diagram}</div>
 </div>
@@ -1939,52 +1950,46 @@ ${showGoal?`<div class="goal-preview">${goalText}</div>`:""}
 
 ${showGoal?'<div class="exercise-tools"><button type="button" class="swap-toggle">Replace exercise</button><div class="exercise-swap-list hidden"></div></div>':""}
 
-${ex.image?`
-
-<img class="exercise-image" src="${ex.image}" alt="${escapeHTML(ex.name)}"
-
-onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-
-<div class="image-placeholder" style="display:none">Exercise picture coming soon</div>`
-
-:`<div class="image-placeholder">Exercise picture will be added to the library later</div>`}
-
-<div class="detail-title">How to Perform</div>
-
-<p>${escapeHTML(ex.how)}</p>
-
-<div class="detail-title">Form Tips</div>
-
-<ul>${(ex.tips||[]).map(x=>`<li>${escapeHTML(x)}</li>`).join("")}</ul>
-
-<div class="detail-title">Common Mistakes</div>
-
-<ul>${(ex.mistakes||[]).map(x=>`<li>${escapeHTML(x)}</li>`).join("")}</ul>
-
-<div class="tracking">
+${showGoal?'<div class="tracking">':""}
 
 ${showGoal?`<div class="overload-guide">
 <strong>Progressive overload goal</strong>
 ${suggestion?`<p>Last time: ${suggestion.last}. ${suggestion.reason}.</p>`:""}
 <label for="${safeId(unique+"-goal")}">Target weight (lb)</label>
 <div class="goal-controls"><input class="goal-weight" id="${safeId(unique+"-goal")}" type="number" inputmode="decimal" min="0" max="1000" step="any" value="${goal??""}" placeholder="Starting weight">${manual?'<button type="button" class="use-suggestion">Use suggestion</button>':""}</div>
-<p>Start with 8–10 reps. When you meet the target, the next suggestion can rise by 5 lb. After two difficult sessions it can drop by 5 lb. You can change the weight anytime.</p>
+<p>Aim for 8–10 reps. Adjust the suggested weight anytime.</p>
 <div class="warmup-guide"></div>
 </div>`:""}
 
-<strong>Track Your Sets</strong>
+${showGoal?'<strong>Track Your Sets</strong>':""}
 
-<div class="small">Tap Weight or Reps and scroll to select.</div>
+${showGoal?'<div class="small">Tap Weight or Reps and scroll to select.</div>':""}
 
-${createSetRows(unique)}
+${showGoal?createSetRows(unique):""}
 
-</div>
+${showGoal?"</div>":""}
+
+<details class="exercise-instructions" ${showGoal?"":"open"}>
+<summary>Picture and form instructions</summary>
+${ex.image?`
+<img class="exercise-image" src="${ex.image}" alt="${escapeHTML(ex.name)}"
+onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+<div class="image-placeholder" style="display:none">Exercise picture coming soon</div>`
+:`<div class="image-placeholder">Exercise picture will be added to the library later</div>`}
+<div class="detail-title">How to Perform</div>
+<p>${escapeHTML(ex.how)}</p>
+<div class="detail-title">Form Tips</div>
+<ul>${(ex.tips||[]).map(x=>`<li>${escapeHTML(x)}</li>`).join("")}</ul>
+<div class="detail-title">Common Mistakes</div>
+<ul>${(ex.mistakes||[]).map(x=>`<li>${escapeHTML(x)}</li>`).join("")}</ul>
+</details>
 
 </div>`;
 
 if(showGoal){
 const input=card.querySelector(".goal-weight");
-input.onchange=()=>saveOverloadGoal(ex.id,input,card.querySelector(".goal-preview"));
+input.addEventListener("input",()=>saveOverloadGoal(ex.id,input,card.querySelector(".goal-preview")));
+input.addEventListener("change",()=>saveOverloadGoal(ex.id,input,card.querySelector(".goal-preview")));
 const suggestedButton=card.querySelector(".use-suggestion");if(suggestedButton)suggestedButton.onclick=()=>{delete tracking.manualTargets[overloadKey(ex.id)];saveTracking();input.value=overloadGoal(ex.id)??"";card.querySelector(".goal-preview").textContent=overloadGoal(ex.id)?`Today: ${overloadGoal(ex.id)} lb × 8–10 reps`:'Choose a starting weight · 8–10 reps';suggestedButton.remove();renderWarmupGuide(ex.id,card)};
 const toggle=card.querySelector(".swap-toggle"),options=card.querySelector(".exercise-swap-list");
 toggle.onclick=()=>{
@@ -2052,7 +2057,7 @@ else{overloadTargets[overloadKey(exerciseId)]=weight;tracking.manualTargets[over
 localStorage.setItem("overloadTargetsV1",JSON.stringify(overloadTargets));
 saveTracking();
 const next=overloadGoal(exerciseId);
-preview.textContent=next!==null?`Try ${next} lb × 8–10 reps`:"Choose a starting weight · 8–10 reps";
+preview.textContent=next!==null?`Today: ${next} lb × 8–10 reps${input.value!==""?" · Your target":""}`:"Choose a starting weight · 8–10 reps";
 const controls=input.closest(".goal-controls"),existing=controls?.querySelector(".use-suggestion");
 if(input.value!==""&&!existing){const button=document.createElement("button");button.type="button";button.className="use-suggestion";button.textContent="Use suggestion";button.onclick=()=>{delete tracking.manualTargets[overloadKey(exerciseId)];saveTracking();input.value=overloadGoal(exerciseId)??"";preview.textContent=overloadGoal(exerciseId)?`Today: ${overloadGoal(exerciseId)} lb × 8–10 reps`:"Choose a starting weight · 8–10 reps";button.remove();renderWarmupGuide(exerciseId,input.closest(".exercise"))};controls.appendChild(button)}
 if(input.value===""&&existing)existing.remove();
@@ -2219,7 +2224,7 @@ if(type==="weight"){
 
 document.getElementById("pickerTitle").textContent="Select Weight";
 
-for(let i=0;i<=500;i+=2.5)pickerValues.push(i);
+for(let i=2.5;i<=500;i+=2.5)pickerValues.push(i);
 
 }else{
 
@@ -2233,13 +2238,20 @@ pickerValues.forEach(v=>{
 
 const o=document.createElement("div");o.className="wheel-option";
 
-o.textContent=type==="weight"?`${v} lb`:`${v} reps`;wheel.appendChild(o);
+o.textContent=type==="weight"?`${v} lb`:`${v} reps`;o.setAttribute("role","option");o.tabIndex=0;
+o.onclick=()=>{pickerSelectedIndex=pickerValues.indexOf(v);wheel.scrollTop=pickerSelectedIndex*52};
+o.onkeydown=event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();o.click()}};
+wheel.appendChild(o);
 
 });
 
-const existing=setHistory[key]&&setHistory[key][type]!==""?
-
-Number(setHistory[key][type]):type==="weight"?overloadGoal(key.replace(/-set[1-4]$/,"").slice(activeWorkoutKey.length+1)):null;
+const exerciseId=key.replace(/-set[1-4]$/,"").slice(activeWorkoutKey.length+1);
+const goalInput=document.getElementById(safeId(activeWorkoutKey+"-"+exerciseId+"-goal"));
+const target=Number(goalInput?.value)>0?Number(goalInput.value):overloadGoal(exerciseId);
+const saved=Number(setHistory[key]?.[type]);
+const existing=saved>0?saved:type==="weight"?target:null;
+const direct=document.getElementById("pickerDirectValue");direct.value="";direct.min=type==="weight"?"2.5":"1";direct.max=type==="weight"?"500":"50";direct.step=type==="weight"?"0.5":"1";
+document.getElementById("pickerDirectLabel").textContent=type==="weight"?"Or type weight (lb)":"Or type reps";
 
 let index=0;
 
@@ -2278,7 +2290,11 @@ function confirmPicker(){
 
 if(pickerKey===null||pickerType===null||!pickerValues.length){closePicker();return}
 
-const value=pickerValues[pickerSelectedIndex];
+const raw=document.getElementById("pickerDirectValue").value;
+const value=raw!==""?Number(raw):pickerValues[pickerSelectedIndex];
+if(!Number.isFinite(value)||value<(pickerType==="weight"?2.5:1)||value>(pickerType==="weight"?500:50)||pickerType==="reps"&&!Number.isInteger(value)){
+document.getElementById("pickerDirectValue").focus();return
+}
 
 saveSet(pickerKey,pickerType,value);
 
