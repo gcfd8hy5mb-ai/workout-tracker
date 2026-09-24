@@ -54,8 +54,28 @@ class WorkoutTrackerTests(unittest.TestCase):
         self.assertRegex(INDEX, r"header\{[\s\S]*?position:fixed")
         self.assertRegex(INDEX, r"\.bottom-nav\{[\s\S]*?position:fixed")
         self.assertIn("transition:color .12s ease-out;transform:none;filter:none", INDEX)
-        self.assertIn(".nav-button:active{color:var(--blue);transform:none;filter:none}", INDEX)
+        self.assertIn(".nav-button:active{color:var(--blue);background:transparent;transform:none;filter:none}", INDEX)
         self.assertIn('button.setAttribute("aria-current","page")', INDEX)
+
+    def test_buttons_only_animate_brief_color_changes(self):
+        button_rule = re.search(r"button\{([^}]*)\}", INDEX).group(1)
+        self.assertIn("transition:color .1s ease-out,background-color .1s ease-out", button_rule)
+        for disallowed in ("scale(", "translate(", "box-shadow", "width"):
+            self.assertNotIn(disallowed, button_rule)
+        self.assertIn("button:active{transform:none;filter:none}", INDEX)
+        self.assertIn(".day-button:active,.action-button:not(.primary):active", INDEX)
+        self.assertIn(".back:active", INDEX)
+        self.assertIn(".workout-tab:active", INDEX)
+        self.assertIn(".workout-complete:active", INDEX)
+
+    def test_progress_and_release_version_are_not_animated(self):
+        self.assertIn(".progress-fill{height:100%;width:0;background:#111;transition:none}", INDEX)
+        self.assertIn("<p>Version 6.1</p>", INDEX)
+        self.assertIn('const CACHE_NAME = "workout-tracker-v6.1";', SERVICE_WORKER)
+
+    def test_saved_data_storage_keys_remain_compatible(self):
+        for storage_key in ("completedExercisesV5", "customWorkoutsV5", "workoutHistoryV52"):
+            self.assertIn(storage_key, INDEX)
 
 
 if __name__ == "__main__":
