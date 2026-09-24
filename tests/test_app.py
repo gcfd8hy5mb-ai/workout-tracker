@@ -76,8 +76,12 @@ class WorkoutTrackerTests(unittest.TestCase):
             self.assertIn(f'id="tab{tab}"', INDEX)
         self.assertNotIn('id="tabHistory"', INDEX)
         self.assertNotIn('id="workoutHistoryContent"', INDEX)
-        for destination in ("Home", "Workout", "Manage", "Progress", "History", "Timer", "Water", "Food", "Weight", "Goals"):
+        for destination in ("Home", "Workout", "Library", "Manage", "Progress", "Calendar", "Records", "Measurements", "Photos", "Timer", "Water", "Food", "Weight", "Goals", "Profile", "Settings", "Help", "Backup"):
             self.assertEqual(INDEX.count(f'id="nav{destination}"'), 1)
+        self.assertIn('data-prism-tab="History" onclick="showGlobalHistory()"', INDEX)
+        for section in ("Training", "Progress", "Tracking"):
+            self.assertIn(f'aria-controls="menu{section}Items"', INDEX)
+        self.assertIn('localStorage.setItem("prismDrawerSectionsV1"', INDEX)
         self.assertIn('["Workout","Timer"].forEach', INDEX)
         self.assertIn('menu.inert=true', INDEX)
 
