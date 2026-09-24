@@ -481,12 +481,17 @@ padding:13px;font-size:15px;font-weight:700;margin-top:8px
 .today-card{margin-bottom:16px}
 .today-card h2{margin:0 0 8px;font-size:22px}
 .today-card p{margin:6px 0;color:#222}
-.today-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 16px}
-.today-metric{min-width:0;padding:12px;border:1px solid #e5e5e8;border-radius:14px;background:#fafafa}
+.today-metrics{display:grid;gap:10px;margin:12px 0 16px}
+.today-metric{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px 12px;min-width:0;padding:14px;border:1px solid #e5e5e8;border-radius:16px;background:#fafafa}
 .today-metric strong{display:block;font-size:14px;font-weight:600}
-.today-metric span{display:block;font-size:17px;margin-top:6px;overflow-wrap:anywhere}
-.today-metric small{display:block;color:#555;line-height:1.35;margin-top:4px}
-.today-metric button{margin-top:6px;min-height:44px}
+.today-metric .metric-value{display:block;font-size:21px;font-weight:600;line-height:1.25;margin-top:4px;font-variant-numeric:tabular-nums}
+.today-metric small{display:block;color:#555;font-size:13px;line-height:1.4;margin-top:4px}
+.metric-actions{display:flex;flex-direction:column;align-items:stretch;gap:3px}
+.metric-actions button{min-height:44px;padding:9px 13px;border:1px solid #dedee3;border-radius:11px;background:#fff;color:#111;font:inherit;font-size:14px;font-weight:600;white-space:nowrap}
+.metric-actions button.metric-secondary{min-height:34px;border:0;background:transparent;color:#555;font-size:13px}
+.today-meter{grid-column:1/-1;height:5px;border-radius:5px;background:#e8e8ec;overflow:hidden}
+.today-meter-fill{display:block;height:100%;background:#333;transition:none}
+.today-workout{border-top:1px solid #eee;padding-top:12px}
 .calorie-workout{margin:0 0 16px;padding:14px;border:1px solid #e5e5e8;border-radius:14px;background:#fafafa}
 .calorie-workout label{display:block;margin:8px 0}
 .calorie-workout input{max-width:130px}
@@ -915,7 +920,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <button class="menu-link" id="navFood" onclick="showFood()">Food</button>
 <button class="menu-link" id="navWeight" onclick="showWeight()">Weight</button>
 <button class="menu-link" id="navGoals" onclick="showTrackingGoals()">Goals</button>
-<small class="menu-version">Version 8.5</small>
+<small class="menu-version">Version 8.6</small>
 </nav>
 
 <div id="pickerOverlay" class="picker-overlay hidden" onclick="closePicker()"></div>
@@ -1562,16 +1567,24 @@ const food=tracking.food.filter(entry=>entry.day===day).reduce((sum,entry)=>sum+
 const workout=todaysCalorieWorkout();
 const target=dailyCalorieTarget(day);
 const metrics=document.createElement("div");metrics.className="today-metrics";
-for(const [title,value,detail] of [
-["Water intake",`${formatWater(water)} / ${formatWater(tracking.waterGoal)}`,"Today's total / daily goal"],
-[tracking.calorieMode==="manual"?"Your calorie target":"Suggested calorie intake",target?`About ${target.toLocaleString()} cal / day`:"Set up your estimate",target?`${food.toLocaleString()} cal logged today${tracking.calorieMode==="auto"&&workout?` · includes ${workout.title} (${workout.minutes} min)`:""}`:"Add your details in Goals"]
+const calorieDetail=target?`${tracking.calorieMode==="auto"?"Suggested":"Goal"}: ${target.toLocaleString()} cal${tracking.calorieMode==="auto"&&workout?` · ${workout.title}, ${workout.minutes} min`:""}`:
+"Add your weight and details in Goals";
+for(const item of [
+{title:"Water",value:`${formatWater(water)} logged`,detail:`Goal: ${formatWater(tracking.waterGoal)}`,current:water,goal:tracking.waterGoal,action:"Log water",open:showWater},
+{title:"Calories",value:`${food.toLocaleString()} cal logged`,detail:calorieDetail,current:food,goal:target,action:"Log food",open:showFood,secondary:target?"Change goal":"Set up goal"}
 ]){
 const card=document.createElement("div");card.className="today-metric";
-const label=document.createElement("strong");label.textContent=title;card.appendChild(label);
-const number=document.createElement("span");number.textContent=value;card.appendChild(number);
-const caption=document.createElement("small");caption.textContent=detail;card.appendChild(caption);
-if(title!=="Water intake"){
-const setup=document.createElement("button");setup.textContent=target?"Adjust":"Set up";setup.onclick=showTrackingGoals;card.appendChild(setup);
+const content=document.createElement("div");
+const label=document.createElement("strong");label.textContent=item.title;content.appendChild(label);
+const number=document.createElement("span");number.className="metric-value";number.textContent=item.value;content.appendChild(number);
+const caption=document.createElement("small");caption.textContent=item.detail;content.appendChild(caption);card.appendChild(content);
+const actions=document.createElement("div");actions.className="metric-actions";
+const primary=document.createElement("button");primary.textContent=item.action;primary.onclick=item.open;actions.appendChild(primary);
+if(item.secondary){const secondary=document.createElement("button");secondary.className="metric-secondary";secondary.textContent=item.secondary;secondary.onclick=showTrackingGoals;actions.appendChild(secondary)}
+card.appendChild(actions);
+if(item.goal){
+const meter=document.createElement("div");meter.className="today-meter";meter.setAttribute("role","progressbar");meter.setAttribute("aria-label",`${item.title} toward daily ${tracking.calorieMode==="auto"&&item.title==="Calories"?"estimate":"goal"}`);meter.setAttribute("aria-valuemin","0");meter.setAttribute("aria-valuemax",String(item.goal));meter.setAttribute("aria-valuenow",String(Math.min(item.goal,Math.max(0,item.current))));
+const fill=document.createElement("span");fill.className="today-meter-fill";fill.style.width=`${Math.min(100,Math.max(0,item.current/item.goal*100))}%`;meter.appendChild(fill);card.appendChild(meter);
 }metrics.appendChild(card)
 }area.appendChild(metrics);
 const plans=workoutGoals&&!workoutGoals.skipped?
@@ -1581,14 +1594,10 @@ if(plans.length){
 const last=workoutHistory.find(session=>plans.some(plan=>plan.key===session.workoutKey));
 const lastIndex=plans.findIndex(plan=>plan.key===last?.workoutKey);
 const next=plans[(lastIndex+1)%plans.length];
-const label=document.createElement("p");label.textContent=`Next workout: ${next.title}`;area.appendChild(label);
+const label=document.createElement("p");label.className="today-workout";label.textContent=`Next workout: ${next.title}`;area.appendChild(label);
 const actions=document.createElement("div");actions.className="today-actions";
 const start=document.createElement("button");start.textContent="Open workout";start.onclick=next.open;actions.appendChild(start);area.appendChild(actions);
-}else{const note=document.createElement("p");note.textContent="Choose a workout plan to see your next session here.";area.appendChild(note)}
-const quick=document.createElement("div");quick.className="today-actions";
-for(const [label,action] of [["Log water",showWater],["Log food",showFood]]){
-const button=document.createElement("button");button.textContent=label;button.onclick=action;quick.appendChild(button)
-}area.appendChild(quick);
+}else{const note=document.createElement("p");note.className="today-workout";note.textContent="Choose a workout plan to see your next session here.";area.appendChild(note)}
 }
 
 function renderCustomButtons(){
