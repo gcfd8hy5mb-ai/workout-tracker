@@ -673,7 +673,7 @@ header p{color:#222}
 </div>
 </fieldset>
 <label for="setupDays">How many days per week can you train?</label>
-<select id="setupDays"><option value="2">2 days</option><option value="3">3 days</option><option value="4" selected>4 days</option></select>
+<select id="setupDays"><option value="2">2 days</option><option value="3">3 days</option><option value="4" selected>4 days</option><option value="5">5 days</option></select>
 <div class="setup-actions"><button class="save-button" onclick="saveWorkoutGoals()">See my plan</button><button class="setup-skip" onclick="skipWorkoutGoals()">Skip</button></div>
 </div>
 </section>
@@ -1275,14 +1275,18 @@ const shortPlans={
 ]
 };
 
+const fifthDay={title:"Day 5 — Glutes & Core",exercises:["hip-thrust","hip-abduction","ab-crunch","calf-raise"]};
+
 function suggestedWorkouts(profile){
-if(!profile||!([2,3,4].includes(profile.days)))return [];
-const base=profile.days===4?Object.values(presetWorkouts):shortPlans[profile.days];
+if(!profile||!([2,3,4,5].includes(profile.days)))return [];
+const base=profile.days>=4?
+Object.values(presetWorkouts).concat(profile.days===5?[fifthDay]:[]):shortPlans[profile.days];
 return base.map((day,index)=>{
 let exercises=[...day.exercises];
-if(profile.goal==="consistency")exercises=profile.days===4&&index===2?
-[exercises[0],exercises[2]]:exercises.slice(0,profile.days===4?2:profile.days===2?4:3);
-else if(profile.goal==="strength")exercises=exercises.slice(0,profile.days===4?3:4);
+if(profile.goal==="consistency")exercises=profile.days>=4&&index===2?
+[exercises[0],exercises[2]]:profile.days===5&&index===4?
+[exercises[0],exercises[2]]:exercises.slice(0,profile.days>=4?2:profile.days===2?4:3);
+else if(profile.goal==="strength")exercises=exercises.slice(0,profile.days>=4?3:4);
 return {title:day.title,exercises};
 });
 }
@@ -1300,7 +1304,7 @@ showScreen("setupScreen");
 function saveWorkoutGoals(){
 const goal=document.querySelector('input[name="setupGoal"]:checked')?.value;
 const days=Number(document.getElementById("setupDays").value);
-if(!["muscle","strength","consistency"].includes(goal)||![2,3,4].includes(days))return;
+if(!["muscle","strength","consistency"].includes(goal)||![2,3,4,5].includes(days))return;
 workoutGoals={goal,days};
 localStorage.setItem("workoutGoalsV1",JSON.stringify(workoutGoals));
 goHome();
