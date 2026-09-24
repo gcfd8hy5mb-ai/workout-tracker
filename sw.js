@@ -1,4 +1,4 @@
-const CACHE_NAME = "workout-tracker-v9.3";
+const CACHE_NAME = "prism-v10.0";
 
 const APP_FILES = [
 
