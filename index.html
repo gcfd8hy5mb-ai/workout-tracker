@@ -654,7 +654,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 6.9</p>
+<p>Version 7.0</p>
 
 </header>
 
@@ -662,8 +662,10 @@ header p{color:#222}
 
 <section id="setupScreen" class="hidden">
 <h2>Build your workout plan</h2>
-<p class="small">Two quick questions to help you choose a starting plan. You can change your answers anytime.</p>
+<p class="small">Tell us about your goals. You can change these answers anytime.</p>
 <div class="card">
+<label for="setupGender">How do you identify? (optional)</label>
+<select id="setupGender"><option value="prefer">Prefer not to say</option><option value="male">Male</option><option value="female">Female</option></select>
 <fieldset style="border:0;padding:0;margin:0">
 <legend class="detail-title">What's your main goal?</legend>
 <div class="setup-options">
@@ -672,6 +674,9 @@ header p{color:#222}
 <label class="setup-option"><input type="radio" name="setupGoal" value="consistency"><span>Get into a routine</span></label>
 </div>
 </fieldset>
+<label for="setupFocus">Which muscles would you like to focus on?</label>
+<select id="setupFocus"><option value="balanced">Balanced, full body</option><option value="upper">More upper body</option><option value="lower">More legs and glutes</option></select>
+<p class="small">Your goal, schedule, and muscle focus shape the exercises. Anyone can choose any focus.</p>
 <label for="setupDays">How many days per week can you train?</label>
 <select id="setupDays"><option value="2">2 days</option><option value="3">3 days</option><option value="4" selected>4 days</option><option value="5">5 days</option></select>
 <div class="setup-actions"><button class="save-button" onclick="saveWorkoutGoals()">See my plan</button><button class="setup-skip" onclick="skipWorkoutGoals()">Skip</button></div>
@@ -1283,11 +1288,26 @@ const base=profile.days>=4?
 Object.values(presetWorkouts).concat(profile.days===5?[fifthDay]:[]):shortPlans[profile.days];
 return base.map((day,index)=>{
 let exercises=[...day.exercises];
+let title=day.title;
+if(profile.focus==="lower"){
+if(profile.days===2&&index===0)exercises[4]="hip-thrust";
+if(profile.days===3&&index===2)exercises[3]="hip-thrust";
+if(profile.days>=4&&index===2)exercises=["leg-press","seated-leg-curl","hip-thrust","calf-raise"];
+}
+if(profile.focus==="upper"){
+if(profile.days===2&&index===1)exercises[3]="reverse-pec-deck";
+if(profile.days===3&&index===2)exercises[3]="reverse-pec-deck";
+if(profile.days>=4&&index===3)exercises[1]="reverse-pec-deck";
+if(profile.days===5&&index===4){
+title="Day 5 — Upper & Core";
+exercises=["incline-chest-press","assisted-pullup","reverse-pec-deck","ab-crunch"];
+}
+}
 if(profile.goal==="consistency")exercises=profile.days>=4&&index===2?
 [exercises[0],exercises[2]]:profile.days===5&&index===4?
-[exercises[0],exercises[2]]:exercises.slice(0,profile.days>=4?2:profile.days===2?4:3);
+[exercises[0],exercises[profile.focus==="upper"?3:2]]:exercises.slice(0,profile.days>=4?2:profile.days===2?4:3);
 else if(profile.goal==="strength")exercises=exercises.slice(0,profile.days>=4?3:4);
-return {title:day.title,exercises};
+return {title,exercises};
 });
 }
 
@@ -1297,6 +1317,8 @@ function showGoalsSetup(){
 if(workoutGoals&&!workoutGoals.skipped){
 document.querySelector(`input[name="setupGoal"][value="${workoutGoals.goal}"]`)?.click();
 document.getElementById("setupDays").value=String(workoutGoals.days);
+document.getElementById("setupGender").value=workoutGoals.gender||"prefer";
+document.getElementById("setupFocus").value=workoutGoals.focus||"balanced";
 }
 showScreen("setupScreen");
 }
@@ -1304,8 +1326,11 @@ showScreen("setupScreen");
 function saveWorkoutGoals(){
 const goal=document.querySelector('input[name="setupGoal"]:checked')?.value;
 const days=Number(document.getElementById("setupDays").value);
+const gender=document.getElementById("setupGender").value;
+const focus=document.getElementById("setupFocus").value;
 if(!["muscle","strength","consistency"].includes(goal)||![2,3,4,5].includes(days))return;
-workoutGoals={goal,days};
+if(!["male","female","prefer"].includes(gender)||!["balanced","upper","lower"].includes(focus))return;
+workoutGoals={goal,days,gender,focus};
 localStorage.setItem("workoutGoalsV1",JSON.stringify(workoutGoals));
 goHome();
 }
@@ -1328,7 +1353,8 @@ strength:"Start with the larger machine movements. Record your reps so your next
 consistency:"Shorter sessions to help you build a routine. Start with a comfortable weight and increase gradually."
 };
 const card=document.createElement("div");card.className="card plan-card";
-card.innerHTML=`<h2>Your ${workoutGoals.days}-day plan</h2><p>${descriptions[workoutGoals.goal]}</p>`;
+const focusLabels={balanced:"Balanced",upper:"Upper body focus",lower:"Legs and glutes focus"};
+card.innerHTML=`<h2>Your ${workoutGoals.days}-day plan</h2><p>${descriptions[workoutGoals.goal]}</p><p>${focusLabels[workoutGoals.focus]||"Balanced"} · mostly machines</p>`;
 suggestedWorkouts(workoutGoals).forEach((day,index)=>{
 const button=document.createElement("button");button.className="plan-day";
 button.innerHTML=`<strong>${escapeHTML(day.title)}</strong><span>${day.exercises.map(id=>escapeHTML(getExercise(id)?.name||id)).join(" · ")}</span>`;
@@ -1336,7 +1362,7 @@ button.onclick=()=>openSuggestedWorkout(index);
 card.appendChild(button);
 });
 const edit=document.createElement("button");edit.className="plan-edit";
-edit.textContent="Change my goal or schedule";edit.onclick=showGoalsSetup;card.appendChild(edit);
+edit.textContent="Change my answers";edit.onclick=showGoalsSetup;card.appendChild(edit);
 area.appendChild(card);
 }
 
@@ -2631,7 +2657,7 @@ renderHome();
 
 updateProgress();
 
-if(!workoutGoals)showGoalsSetup();
+if(!workoutGoals||(!workoutGoals.skipped&&!workoutGoals.gender))showGoalsSetup();
 
 if("serviceWorker" in navigator){
 
