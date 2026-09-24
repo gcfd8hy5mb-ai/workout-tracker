@@ -608,6 +608,17 @@ header p{color:#222}
 .trend-svg{display:block;width:100%;height:auto;max-height:220px}
 .trend-summary{font-size:13px;line-height:1.45;margin:10px 0 0}
 
+/* A compact, always-visible muscle guide for each exercise. */
+.exercise-header{cursor:pointer}
+.exercise-header:focus-visible{outline:3px solid rgba(0,0,0,.28);outline-offset:-3px}
+.exercise-preview{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.exercise-text{min-width:0;flex:1}
+.exercise-text .muscle{color:#111}
+.exercise-text .small{margin-top:8px;line-height:1.35}
+.exercise-mini-map{flex:none;max-width:84px}
+.exercise-mini-map .body-figure{width:84px;font-size:11px}
+.exercise-mini-map .body-figure svg{width:100%;max-height:112px}
+
 </style>
 
 </head>
@@ -618,7 +629,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 6.4</p>
+<p>Version 6.5</p>
 
 </header>
 
@@ -667,7 +678,7 @@ Exercise Library
 <button class="back" onclick="goHome()">← Back</button>
 
 <h2 id="workoutTitle"></h2>
-<div id="workoutMuscleVisual"></div>
+
 
 <div class="workout-tabs">
 
@@ -1322,7 +1333,7 @@ function openWorkout(title,ids,isCustom){
 showScreen("workoutScreen");setBottomNav("Workout");
 
 document.getElementById("workoutTitle").textContent=title;
-document.getElementById("workoutMuscleVisual").innerHTML=muscleVisual(ids,"Muscles in this workout");
+
 
 const list=document.getElementById("exerciseList");list.innerHTML="";
 
@@ -1398,17 +1409,26 @@ const card=document.createElement("div");
 
 card.className="exercise";
 
+const detailId=safeId(unique);
+const side=["Back","Triceps","Glutes","Hamstrings","Calves"].includes(ex.muscle)?"Back":"Front";
+const diagram=muscleFigure(side,{[ex.muscle]:1});
 card.innerHTML=`
 
-<div class="exercise-header" onclick="toggleDetails('${safeId(unique)}')">
+<div class="exercise-header" role="button" tabindex="0" aria-expanded="false" aria-controls="${detailId}"
+onclick="toggleDetails('${detailId}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDetails('${detailId}')}">
 
+<div class="exercise-preview">
+<div class="exercise-text">
 <div class="exercise-title">${escapeHTML(ex.name)}</div>
-
-<div class="muscle">${escapeHTML(ex.muscle)}</div>
+<div class="muscle">Primary muscle: ${escapeHTML(ex.muscle)}</div>
+<div class="small">Tap for picture, instructions, and sets</div>
+</div>
+<div class="exercise-mini-map" aria-hidden="true">${diagram}</div>
+</div>
 
 </div>
 
-<div class="details" id="${safeId(unique)}">
+<div class="details" id="${detailId}">
 
 ${ex.image?`
 
@@ -1450,7 +1470,10 @@ return card;
 
 function toggleDetails(id){
 
-const e=document.getElementById(id);if(e)e.classList.toggle("open");
+const e=document.getElementById(id);if(!e)return;
+e.classList.toggle("open");
+const header=e.parentElement.querySelector(".exercise-header");
+if(header)header.setAttribute("aria-expanded",String(e.classList.contains("open")));
 
 }
 
