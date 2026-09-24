@@ -1,4 +1,4 @@
-const CACHE_NAME = "workout-tracker-v5";
+const CACHE_NAME = "workout-tracker-v6";
 
 const APP_FILES = [
 
@@ -8,7 +8,22 @@ const APP_FILES = [
 
   "./manifest.json",
 
-  "./sw.js"
+  "./sw.js",
+  "./images/app-icon.png",
+  "./images/biceps-curl.png",
+  "./images/calf-raise.png",
+  "./images/lat-pulldown.png",
+  "./images/lateral-raise.png",
+  "./images/leg-extension.png",
+  "./images/leg-press.png",
+  "./images/machine-chest-press.png",
+  "./images/pec-deck.png",
+  "./images/preacher-curl.png",
+  "./images/seated-leg-curl.png",
+  "./images/seated-row.png",
+  "./images/shoulder-press.png",
+  "./images/triceps-extension.png",
+  "./images/triceps-pushdown.png"
 
 ];
 
