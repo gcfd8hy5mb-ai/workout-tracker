@@ -305,7 +305,7 @@ background:#f4f4f6;border-radius:12px;padding:12px;margin-bottom:8px
 
 .workout-tabs{
 
-display:grid;grid-template-columns:repeat(4,1fr);
+display:grid;grid-template-columns:repeat(3,1fr);
 
 background:white;border-radius:15px;padding:5px;
 
@@ -599,8 +599,6 @@ Exercise Library
 
 <button class="workout-tab active" id="tabWorkout" onclick="showWorkoutTab('workout')">🏋️<br>Workout</button>
 
-<button class="workout-tab" id="tabProgress" onclick="showWorkoutTab('progress')">📈<br>Progress</button>
-
 <button class="workout-tab" id="tabHistory" onclick="showWorkoutTab('history')">🕘<br>History</button>
 
 <button class="workout-tab" id="tabTimer" onclick="showWorkoutTab('timer')">⏱️<br>Timer</button>
@@ -618,8 +616,6 @@ Mark Workout Complete
 <button id="finishWorkoutButton" class="finish-workout" onclick="finishWorkout()">Finish Workout</button>
 
 </div>
-
-<div id="workoutProgressContent" class="hidden"></div>
 
 <div id="workoutHistoryContent" class="hidden"></div>
 
@@ -1277,7 +1273,7 @@ showWorkoutTab("workout");
 
 function showWorkoutTab(tab){
 
-["Workout","Progress","History","Timer"].forEach(x=>{
+["Workout","History","Timer"].forEach(x=>{
 
 document.getElementById("tab"+x).classList.toggle("active",x.toLowerCase()===tab);
 
@@ -1285,21 +1281,11 @@ document.getElementById("tab"+x).classList.toggle("active",x.toLowerCase()===tab
 
 document.getElementById("workoutTabContent").classList.add("hidden");
 
-document.getElementById("workoutProgressContent").classList.add("hidden");
-
 document.getElementById("workoutHistoryContent").classList.add("hidden");
 
 document.getElementById("workoutTimerContent").classList.add("hidden");
 
 if(tab==="workout") document.getElementById("workoutTabContent").classList.remove("hidden");
-
-if(tab==="progress"){
-
-document.getElementById("workoutProgressContent").classList.remove("hidden");
-
-renderWorkoutProgress();
-
-}
 
 if(tab==="history"){
 
@@ -1813,44 +1799,6 @@ month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"
 
 }
 
-/* WORKOUT PROGRESS */
-
-function renderWorkoutProgress(){
-
-const area=document.getElementById("workoutProgressContent");
-
-const sessions=sessionsForActiveWorkout();
-
-area.innerHTML=`<h3>${escapeHTML(activeWorkoutTitle)} Progress</h3>`;
-
-area.innerHTML+=`
-
-<div class="stat-grid">
-
-<div class="stat-card"><div class="stat-number">${sessions.length}</div><div class="stat-label">Workouts Logged</div></div>
-
-<div class="stat-card"><div class="stat-number">${countImprovedExercises(activeWorkoutExerciseIds)}</div><div class="stat-label">Exercises Improved</div></div>
-
-</div>`;
-
-activeWorkoutExerciseIds.forEach(id=>{
-
-const ex=getExercise(id);if(!ex)return;
-
-const stats=getExerciseStats(id,sessions);
-
-const div=document.createElement("div");div.className="progress-exercise";
-
-div.innerHTML=`<div class="progress-name">${escapeHTML(ex.name)}</div>
-
-<div class="progress-detail">${stats}</div>`;
-
-area.appendChild(div);
-
-});
-
-}
-
 function getExerciseStats(id,sessions){
 
 const records=[];
@@ -1876,38 +1824,6 @@ const maxReps=Math.max(...records.map(x=>x.reps));
 const maxVolume=Math.max(...records.map(x=>x.weight*x.reps));
 
 return `Best weight: ${maxWeight} lb · Best reps: ${maxReps} · Best set volume: ${maxVolume.toLocaleString()} lb`;
-
-}
-
-function countImprovedExercises(ids){
-
-let count=0;
-
-ids.forEach(id=>{
-
-const sessions=workoutHistory.filter(s=>s.exercises.some(e=>e.id===id));
-
-if(sessions.length<2)return;
-
-const latest=bestExerciseVolume(sessions[0],id);
-
-const previous=bestExerciseVolume(sessions[1],id);
-
-if(latest>previous)count++;
-
-});
-
-return count;
-
-}
-
-function bestExerciseVolume(session,id){
-
-const ex=session.exercises.find(x=>x.id===id);
-
-if(!ex)return 0;
-
-return Math.max(0,...ex.sets.map(s=>Number(s.weight||0)*Number(s.reps||0)));
 
 }
 
