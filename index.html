@@ -765,9 +765,9 @@ header h1 small{display:block;font-size:10px;line-height:1.2;letter-spacing:.1em
 .card{padding:19px;margin-bottom:15px}
 .day-button,.action-button{font-weight:630;font-size:17px}
 .day-button span,.action-button span,.plan-day span{color:var(--sub)}
-.primary,.action-button.primary,.save-button,.prism-primary,.container .finish-workout,.tracker-form button[type=submit],.timer-start{background:linear-gradient(145deg,#62bcff,#268af2);color:#061423;border:1px solid #74c3ff;box-shadow:0 8px 22px rgba(39,143,250,.17);font-weight:760}
+.primary,.action-button.primary,.save-button,.prism-primary,.container .finish-workout,.tracker-form button[type=submit],.timer-start{background:linear-gradient(145deg,#62bcff,#268af2);color:#fff;border:1px solid #74c3ff;box-shadow:0 8px 22px rgba(39,143,250,.17);font-weight:760}
 .primary span,.action-button.primary span{color:#d7efff}
-.container .finish-workout:active,.prism-primary:active{background:#369dec;color:#061423}
+.container .finish-workout:active,.prism-primary:active{background:#369dec;color:#fff}
 button{color:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 button:active{opacity:.85}
@@ -829,6 +829,7 @@ body:has(#workoutScreen:not(.hidden)) .prism-bottom-nav,body:has(#prismRestScree
 .prism-browser-row .chevron{margin-left:auto;font-size:24px;color:var(--sub)}
 .prism-browser-group{margin:20px 2px 11px;font-size:17px}
 .prism-plan-options{margin-top:26px}
+#homeProgressCard,#home>.action-button{display:none}
 .prism-plan-options .card{margin-bottom:12px}
 .prism-profile-links{overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;margin:18px 0}
 .prism-profile-links button{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line);padding:16px 18px;min-height:55px;font-size:15px}
@@ -1016,7 +1017,7 @@ Exercise Library
 <label class="prism-search-label" for="workoutBrowserSearch">Search workouts</label><input id="workoutBrowserSearch" type="search" placeholder="Search workouts or exercises" oninput="renderWorkoutBrowser()">
 <div class="prism-segments" aria-label="Workout types"><button type="button" data-browser-filter="all" aria-pressed="true" onclick="setWorkoutBrowserFilter('all')">All</button><button type="button" data-browser-filter="plans" aria-pressed="false" onclick="setWorkoutBrowserFilter('plans')">Plans</button><button type="button" data-browser-filter="mine" aria-pressed="false" onclick="setWorkoutBrowserFilter('mine')">My workouts</button></div>
 <div id="workoutBrowserList"></div>
-<div id="suggestedPlan" class="prism-plan-options"></div>
+<button class="prism-text-link" onclick="showGoalsSetup()">Change training plan</button>
 <button class="prism-primary prism-wide" onclick="showBuilder()">＋ Create Workout</button>
 <button class="prism-text-link" onclick="showLibrary()">Browse exercise library →</button>
 </section>
@@ -2017,7 +2018,7 @@ for(const item of filtered){
 count++;const button=document.createElement("button");button.className="prism-browser-row";button.type="button";
 const visual=document.createElement("span");visual.innerHTML=prismExerciseVisual(getExercise(item.ids[0]));button.appendChild(visual);
 const text=document.createElement("span");const title=document.createElement("strong");title.textContent=item.title;
-const detail=document.createElement("small");detail.textContent=`${item.ids.length} exercises · about ${Math.max(20,item.ids.length*10)} min`;text.append(title,detail);button.appendChild(text);
+const detail=document.createElement("small");detail.textContent=`${item.ids.length} ${item.ids.length===1?"exercise":"exercises"} · about ${Math.max(20,item.ids.length*10)} min`;text.append(title,detail);button.appendChild(text);
 const chevron=document.createElement("span");chevron.className="chevron";chevron.textContent="›";button.appendChild(chevron);
 button.onclick=()=>showPrismWorkoutDetail(item);area.appendChild(button);
 }
@@ -2032,7 +2033,7 @@ const hero=document.createElement("div");hero.className="prism-detail-hero";
 const visual=document.createElement("div");visual.innerHTML=prismExerciseVisual(getExercise(item.ids[0]));hero.appendChild(visual);
 const eyebrow=document.createElement("span");eyebrow.className="prism-eyebrow";eyebrow.textContent=item.kind==="custom"?"MY WORKOUT":"WORKOUT PLAN";hero.appendChild(eyebrow);
 const heading=document.createElement("h2");heading.textContent=item.title;hero.appendChild(heading);
-const description=document.createElement("p");description.textContent=`${item.ids.length} exercises · about ${Math.max(20,item.ids.length*10)} minutes`;hero.appendChild(description);
+const description=document.createElement("p");description.textContent=`${item.ids.length} ${item.ids.length===1?"exercise":"exercises"} · about ${Math.max(20,item.ids.length*10)} minutes`;hero.appendChild(description);
 const actions=document.createElement("div");actions.className="prism-detail-actions";
 const start=document.createElement("button");start.className="prism-primary";start.textContent="Start Workout";start.onclick=()=>startPrismWorkout(item);actions.appendChild(start);
 if(item.kind==="custom"){const manage=document.createElement("button");manage.textContent="Manage Workout";manage.onclick=showManageWorkouts;actions.appendChild(manage)}
@@ -2178,7 +2179,6 @@ document.getElementById("prismGreeting").textContent=localGreeting();
 renderPrismTodayDashboard();
 renderWeeklySummary("weeklySummaryHome");
 document.getElementById("lastSummaryShortcut").classList.add("hidden");
-renderSuggestedPlan();
 document.getElementById("homeProgressCard").classList.toggle("hidden",!workoutGoals||workoutGoals.skipped);
 
 }
@@ -2195,7 +2195,7 @@ const next=plans.length?plans[(lastIndex+1)%plans.length]:null;
 const hero=document.createElement("div");hero.className="prism-today-hero";
 const eyebrow=document.createElement("span");eyebrow.className="eyebrow";eyebrow.textContent="TODAY'S WORKOUT";hero.appendChild(eyebrow);
 const name=document.createElement("h3");name.textContent=next?.title||"Make today count";hero.appendChild(name);
-const detail=document.createElement("p");detail.textContent=next?`${next.ids.length} exercises · about ${Math.max(20,next.ids.length*10)} min`:"Choose a plan or build your own workout.";hero.appendChild(detail);
+const detail=document.createElement("p");detail.textContent=next?`${next.ids.length} ${next.ids.length===1?"exercise":"exercises"} · about ${Math.max(20,next.ids.length*10)} min`:"Choose a plan or build your own workout.";hero.appendChild(detail);
 const start=document.createElement("button");start.className="prism-primary prism-wide";start.textContent=next?"Start Workout":"Explore Workouts";start.onclick=next?()=>startPrismWorkout(next):showWorkouts;hero.appendChild(start);area.appendChild(hero);
 const active=readPrismActiveWorkout();
 if(active){const resume=document.createElement("div");resume.className="prism-resume";const title=document.createElement("strong");title.textContent="Continue your workout";const desc=document.createElement("p");desc.textContent=active.title;const button=document.createElement("button");button.className="prism-primary";button.textContent="Resume Workout";button.onclick=resumePrismWorkout;resume.append(title,desc,button);area.appendChild(resume)}
@@ -3027,7 +3027,8 @@ const volume=sets.reduce((total,set)=>total+Number(set.weight||0)*Number(set.rep
 const summary=document.createElement("summary");
 const title=document.createElement("strong");title.textContent=session.workoutTitle||"Workout";
 const date=document.createElement("span");date.className="history-date";date.textContent=formatDate(session.date);
-const stats=document.createElement("span");stats.className="history-date";stats.textContent=`${session.exercises?.length||0} exercises · ${sets.length} sets · ${Math.round(volume).toLocaleString()} lb${session.durationMinutes?` · ${session.durationMinutes} min`:""}${session.recordIds?.length?` · ${session.recordIds.length} PR${session.recordIds.length>1?"s":""}`:""}`;
+const exerciseCount=session.exercises?.length||0;
+const stats=document.createElement("span");stats.className="history-date";stats.textContent=`${exerciseCount} ${exerciseCount===1?"exercise":"exercises"} · ${sets.length} ${sets.length===1?"set":"sets"} · ${Math.round(volume).toLocaleString()} lb${session.durationMinutes?` · ${session.durationMinutes} min`:""}${session.recordIds?.length?` · ${session.recordIds.length} PR${session.recordIds.length>1?"s":""}`:""}`;
 summary.append(title,date,stats);card.appendChild(summary);
 for(const ex of session.exercises||[]){
 const group=document.createElement("div");group.className="history-exercise";
