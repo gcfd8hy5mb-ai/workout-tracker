@@ -573,6 +573,25 @@ button{transition:none}
 
 }
 
+/* Calm, readable typography with black text on light surfaces. */
+:root{--text:#111;--sub:#222;--blue:#111}
+body{font-weight:500}
+h1,h2,h3,h4,strong{font-weight:600}
+header{background:#fff;color:#111;border-bottom:1px solid #dedee3}
+header p{color:#222}
+.container :is(h1,h2,h3,h4,p,li,label,strong,span,div,button,input,select){color:#111}
+.container :is(.day-button,.action-button,.exercise-title,.detail-title,.history-title,.progress-name,.stat-number,.timer-display,.section-heading){font-weight:600}
+.container button,.bottom-nav button,.picker-sheet button{font-weight:550}
+.day-button span,.action-button span{font-weight:500}
+.primary,.workout-complete,.save-button,.add-small,.timer-start{background:#e8e8ec;color:#111}
+.primary span{color:#111}
+.workout-tab.active{background:#e8e8ec;color:#111}
+.finish-workout,.workout-complete.done{background:#dff2e4;color:#111}
+.bottom-nav .nav-button{color:#111}
+.bottom-nav .nav-button.active{background:#e8e8ec;border-radius:10px;color:#111}
+.picker-sheet{color:#111}
+.picker-sheet button{color:#111}
+
 </style>
 
 </head>
@@ -583,7 +602,7 @@ button{transition:none}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 6.1</p>
+<p>Version 6.2</p>
 
 </header>
 
