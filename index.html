@@ -229,20 +229,6 @@ border-radius:8px;font-size:12px;font-weight:750
 
 .compare.new{background:#eee;color:#555}
 
-.workout-complete{
-
-width:100%;border:0;background:#111;color:white;border-radius:11px;
-
-padding:14px;font-weight:700;font-size:15px;margin:4px 0 12px
-
-}
-
-.workout-complete.done{background:var(--green)}
-
-.workout-complete:active{background:#2c2c2e}
-
-.workout-complete.done:active{background:#218838}
-
 .finish-workout{
 
 width:100%;border:0;border-radius:15px;padding:17px;
@@ -537,6 +523,61 @@ padding:13px;font-size:15px;font-weight:700;margin-top:8px
 .backup-actions{display:flex;flex-wrap:wrap;gap:10px}
 .backup-actions button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;border:1px solid #ddd;border-radius:11px;background:#f4f4f6;color:#111;font:inherit;cursor:pointer}
 
+/* A quiet, consistent surface for the dashboard and the active workout. */
+:root{--bg:#f6f7f9;--line:#e4e7eb;--sub:#59616c;--green:#1b7152;--blue:#245c94}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Arial,sans-serif;line-height:1.45}
+.container{max-width:720px;padding:20px 16px 36px}
+.card,.exercise,.day-button,.action-button{border:1px solid var(--line);box-shadow:0 3px 14px rgba(20,29,38,.035)}
+.card{border-radius:20px;padding:19px;margin-bottom:16px}
+.day-button,.action-button{border-radius:16px;font-weight:620;line-height:1.3}
+.day-button span,.action-button span{line-height:1.45}
+.exercise{border-radius:18px}
+.exercise-title{font-weight:640}
+.detail-title{font-weight:630}
+.today-card h2{font-weight:670}
+.today-metric{background:#fff;border-radius:15px}
+.metric-actions button{font-weight:580}
+.workout-readiness,.rest-strip{background:#fff;border-radius:16px;padding:16px}
+.workout-progress{padding:17px 18px;background:#fff;border:1px solid var(--line);border-radius:18px;margin:12px 0}
+.workout-progress strong{font-size:15px;font-weight:630}
+.workout-progress p{font-size:13px;color:var(--sub);margin:4px 0 0}
+.workout-progress .progress-bar{height:6px;background:#e9ebef;margin-top:12px}
+.workout-progress .progress-fill{background:#1b7152}
+.exercise-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.exercise-swap-list{flex-basis:100%;padding:10px;border:1px solid var(--line);border-radius:12px;background:#f8f9fb}
+.swap-description{font-size:13px;color:var(--sub);margin:0 0 8px}
+.goal-preview{font-weight:580;color:#244d3e}
+.overload-guide{background:#f3f6f4}
+.goal-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.goal-controls input{max-width:140px}
+.goal-controls button{min-height:46px;border:1px solid var(--line);border-radius:10px;background:white;padding:8px 12px;color:#111;font:inherit}
+.set-block{position:relative}
+.set-done{margin:9px 0 0 56px;font-weight:580}
+.set-clear{min-height:44px;margin:9px 0 0 6px;padding:8px 12px;border:0;background:transparent;color:var(--sub);font:inherit}
+.finish-workout{background:#1b7152;font-weight:650;min-height:55px}
+.finish-workout:active{background:#14573e}
+.weekly-dashboard h3{margin:0 0 5px;font-size:20px;font-weight:640}
+.weekly-dashboard .stat-grid{margin:14px 0}
+.weekly-dashboard .stat-card{box-shadow:none;border:1px solid var(--line);background:#f9fafb}
+.weekly-dashboard .stat-number{font-weight:680}
+.dashboard-link{min-height:44px;border:1px solid var(--line);background:white;border-radius:12px;padding:10px 14px;color:#111;font:inherit;font-weight:580}
+.summary-hero{border-radius:22px;background:#173e31;color:#fff;padding:22px;margin:8px 0 16px}
+.summary-hero h2{margin:5px 0;font-size:25px;font-weight:660}
+.summary-hero p{margin:5px 0;color:#e1eee8}
+.summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
+.summary-stat{background:#fff;border:1px solid var(--line);padding:15px;border-radius:15px}
+.summary-stat strong{display:block;font-size:23px;font-weight:650}
+.summary-stat span{display:block;color:var(--sub);font-size:13px}
+.summary-exercise{padding:13px 0;border-bottom:1px solid var(--line)}
+.summary-exercise:last-child{border-bottom:0}
+.summary-exercise strong{display:block;font-weight:620}
+.summary-exercise span{font-size:13px;color:var(--sub)}
+.summary-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+.summary-actions button{min-height:50px;border:1px solid var(--line);background:white;border-radius:13px;font:inherit;font-weight:600;color:#111}
+.summary-actions button:first-child{background:#173e31;color:#fff;border-color:#173e31}
+@media(max-width:480px){.container{padding:14px 13px 30px}.today-metric{grid-template-columns:minmax(0,1fr)}.metric-actions{flex-direction:row;align-items:center}.metric-actions button{flex:1}.metric-actions button.metric-secondary{flex:0 auto}.set-row{grid-template-columns:42px repeat(2,minmax(0,1fr))}.set-done,.previous,.compare{margin-left:50px}.photo-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.side-menu,.menu-scrim,button{transition:none!important}}
+
 /* PICKER */
 
 .picker-overlay{
@@ -684,6 +725,18 @@ header{background:#fff;color:#111;border-bottom:1px solid #e5e5e8}
 .data-reset p{font-size:13px;line-height:1.4;margin:0 0 10px}
 .data-reset button{display:block;width:100%;margin:8px 0;padding:12px;border:1px solid #c8c8cf;border-radius:11px;background:white;color:#8e2626;text-align:left}
 
+/* Final visual hierarchy overrides for older theme rules above. */
+:root{--sub:#59616c;--bg:#f6f7f9;--line:#e4e7eb}
+.container .finish-workout{background:#1b7152;color:#fff;font-weight:650}
+.container .finish-workout:active{background:#14573e;color:#fff}
+.container .summary-hero,.container .summary-hero :is(h2,p,span){color:#fff}
+.container .summary-hero p{color:#e1eee8}
+.container .summary-stat span,.container .summary-exercise span,.container .weekly-dashboard .small,.container .workout-progress p,.container .today-metric small{color:#59616c}
+.container .summary-actions button:first-child{background:#173e31;border-color:#173e31;color:#fff}
+.container .summary-actions button{font-weight:600}
+.container .exercise-title,.container .day-button,.container .action-button{font-weight:620}
+.container .weekly-dashboard h3{font-weight:640}
+
 </style>
 
 </head>
@@ -731,6 +784,7 @@ header{background:#fff;color:#111;border-bottom:1px solid #e5e5e8}
 
 <div id="todayDashboard" class="card today-card"></div>
 <div id="weeklySummaryHome"></div>
+<button id="lastSummaryShortcut" class="action-button hidden" onclick="showLastWorkoutSummary()">Last workout summary<span>See your sets and what to try next</span></button>
 
 <div id="suggestedPlan"></div>
 
@@ -782,9 +836,10 @@ Exercise Library
 <button class="back" onclick="goHome()">← Back</button>
 
 <h2 id="workoutTitle"></h2>
+<div class="workout-progress"><strong id="workoutProgressHeading">Ready to start</strong><p id="workoutProgressText">Log your first set when you're ready.</p><div class="progress-bar"><div id="workoutProgressFill" class="progress-fill"></div></div></div>
 <div class="workout-readiness"><strong>How are you feeling today?</strong><p>This is saved with your workout.</p><div class="readiness-options" id="readinessOptions"></div></div>
 <div class="rest-presets" id="workoutRestPresets" aria-label="Rest duration"></div>
-<div class="rest-strip" role="status"><div><strong>Rest between sets</strong><p id="workoutRestStatus">Starts when you mark a set done. Keep this page open for the alert.</p><button onclick="enableRestAlerts()" id="enableRestAlerts">Enable alerts</button></div><div><div id="workoutRestDisplay" class="rest-display">1:30</div><button onclick="skipWorkoutRest()">Skip</button></div></div>
+<div class="rest-strip"><div><strong>Rest between sets</strong><p id="workoutRestStatus" role="status" aria-live="polite">Starts when you mark a set done. Keep this page open for the alert.</p><button onclick="enableRestAlerts()" id="enableRestAlerts">Enable alerts</button></div><div><div id="workoutRestDisplay" class="rest-display" role="timer" aria-label="Rest time remaining">1:30</div><button onclick="skipWorkoutRest()">Skip</button></div></div>
 
 <div id="workoutCalorieCard" class="calorie-workout hidden"><strong>Workout time and calorie estimate</strong>
 <label for="workoutMinutes">Minutes you plan to exercise</label><input id="workoutMinutes" type="number" min="10" max="180" step="5" inputmode="numeric" onchange="updateWorkoutMinutes()">
@@ -793,19 +848,15 @@ Exercise Library
 
 <div class="workout-tabs">
 
-<button class="workout-tab active" id="tabWorkout" onclick="showWorkoutTab('workout')">🏋️<br>Workout</button>
+<button class="workout-tab active" id="tabWorkout" onclick="showWorkoutTab('workout')">Exercises</button>
 
-<button class="workout-tab" id="tabTimer" onclick="showWorkoutTab('timer')">⏱️<br>Timer</button>
+<button class="workout-tab" id="tabTimer" onclick="showWorkoutTab('timer')">Manual timer</button>
 
 </div>
 
 <div id="workoutTabContent">
 
 <div id="exerciseList"></div>
-
-<button id="completeWorkoutButton" class="workout-complete" onclick="toggleWorkoutComplete()">
-Mark Workout Complete
-</button>
 
 <button id="finishWorkoutButton" class="finish-workout" onclick="finishWorkout()">Finish Workout</button>
 
@@ -814,6 +865,8 @@ Mark Workout Complete
 <div id="workoutTimerContent" class="hidden"></div>
 
 </section>
+
+<section id="completionScreen" class="hidden"><div id="completionContent"></div><div class="summary-actions"><button onclick="showOverallProgress()">Weekly progress</button><button onclick="goHome()">Back to Today</button></div></section>
 
 <section id="libraryScreen" class="hidden">
 
@@ -971,7 +1024,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <button class="menu-link" id="navFood" onclick="showFood()">Food</button>
 <button class="menu-link" id="navWeight" onclick="showWeight()">Weight</button>
 <button class="menu-link" id="navGoals" onclick="showTrackingGoals()">Goals</button>
-<small class="menu-version">Version 9.0</small>
+<small class="menu-version">Version 9.1</small>
 </nav>
 
 <div id="pickerOverlay" class="picker-overlay hidden" onclick="closePicker()"></div>
@@ -1332,7 +1385,7 @@ function allScreens(){
 
 return ["home","setupScreen","workoutScreen","libraryScreen","builderScreen",
 
-"overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen","calendarScreen","recordsScreen","measurementsScreen","photosScreen"];
+"overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen","calendarScreen","recordsScreen","measurementsScreen","photosScreen","completionScreen"];
 
 }
 
@@ -1624,6 +1677,7 @@ function renderHome(){
 
 renderTodayDashboard();
 renderWeeklySummary("weeklySummaryHome");
+document.getElementById("lastSummaryShortcut").classList.toggle("hidden",!workoutHistory.length);
 renderSuggestedPlan();
 document.getElementById("homeProgressCard").classList.toggle("hidden",!workoutGoals||workoutGoals.skipped);
 
@@ -1768,9 +1822,10 @@ function openWorkout(title,ids,isCustom){
 
 showScreen("workoutScreen");setBottomNav("Workout");
 const savedIds=tracking.substitutions?.[activeWorkoutKey];
-if(Array.isArray(savedIds)&&savedIds.length===ids.length&&savedIds.every(id=>getExercise(id)))activeWorkoutExerciseIds=[...savedIds];
+if(Array.isArray(savedIds)&&savedIds.length&&savedIds.every(id=>getExercise(id))&&new Set(savedIds).size===savedIds.length)activeWorkoutExerciseIds=[...savedIds];
 
 document.getElementById("workoutTitle").textContent=title;
+document.querySelector(".workout-progress").classList.remove("hidden");
 const previous=tracking.calorieWorkout;
 const minutes=previous?.day===localDay()&&previous.key===activeWorkoutKey&&Number.isInteger(Number(previous.minutes))?Number(previous.minutes):Math.min(90,Math.max(20,ids.length*10));
 tracking.calorieWorkout={day:localDay(),key:activeWorkoutKey,title,minutes};saveTracking();
@@ -1781,16 +1836,15 @@ renderWorkoutCalorieEstimate();
 
 const list=document.getElementById("exerciseList");list.innerHTML="";
 renderActiveWorkoutExercises(isCustom);
+list.querySelector(".exercise .details")?.classList.add("open");
+list.querySelector(".exercise .exercise-header")?.setAttribute("aria-expanded","true");
+renderWorkoutProgress();
 document.querySelector(".workout-readiness").classList.remove("hidden");
 document.getElementById("workoutRestPresets").classList.remove("hidden");
 document.querySelector(".rest-strip").classList.remove("hidden");
 renderWorkoutReadiness();renderWorkoutRest();
 
 document.getElementById("finishWorkoutButton").classList.remove("hidden");
-
-document.getElementById("completeWorkoutButton").classList.remove("hidden");
-
-updateWorkoutCompleteButton();
 
 showWorkoutTab("workout");
 
@@ -1800,15 +1854,22 @@ const list=document.getElementById("exerciseList");list.replaceChildren();
 activeWorkoutExerciseIds.forEach(id=>{const ex=getExercise(id);if(ex)list.appendChild(createExerciseCard(ex,activeWorkoutKey+"-"+ex.id))});
 if(isCustom){const button=document.createElement("button");button.className="delete-button";button.textContent="Delete This Workout";button.onclick=()=>deleteCustomWorkout(activeCustomIndex);list.appendChild(button)}
 }
+function renderWorkoutProgress(){
+const planned=activeWorkoutExerciseIds.length*4;
+const recorded=activeWorkoutExerciseIds.reduce((count,id)=>count+[1,2,3,4].filter(set=>{const item=setHistory[`${activeWorkoutKey}-${id}-set${set}`];return item&&Number(item.weight)>0&&Number(item.reps)>0}).length,0);
+document.getElementById("workoutProgressHeading").textContent=recorded?`${recorded} of ${planned} sets logged`:"Ready to start";
+document.getElementById("workoutProgressText").textContent=recorded?"Save your workout when you've finished. Sets with both weight and reps count toward your summary.":"Open an exercise to choose your weight and reps.";
+document.getElementById("workoutProgressFill").style.width=`${planned?Math.round(recorded/planned*100):0}%`;
+}
 function replaceExercise(oldId,newId){
 const alternative=getExercise(newId),original=getExercise(oldId);
 if(!alternative||!original||alternative.muscle!==original.muscle||activeWorkoutExerciseIds.includes(newId))return;
-if(Object.keys(setHistory).some(key=>key.startsWith(`${activeWorkoutKey}-${oldId}-set`))&&!confirm("Replace this exercise? Its unsaved sets for this workout will be cleared."))return;
-for(let set=1;set<=4;set++)delete setHistory[`${activeWorkoutKey}-${oldId}-set${set}`];
-localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
-activeWorkoutExerciseIds=activeWorkoutExerciseIds.map(id=>id===oldId?newId:id);
+const hasSets=[1,2,3,4].some(set=>{const entry=setHistory[`${activeWorkoutKey}-${oldId}-set${set}`];return entry&&(entry.weight!==""&&entry.weight!==undefined||entry.reps!==""&&entry.reps!==undefined)});
+if(hasSets){const index=activeWorkoutExerciseIds.indexOf(oldId);activeWorkoutExerciseIds.splice(index+1,0,newId)}
+else activeWorkoutExerciseIds=activeWorkoutExerciseIds.map(id=>id===oldId?newId:id);
 tracking.substitutions[activeWorkoutKey]=[...activeWorkoutExerciseIds];saveTracking();
-renderActiveWorkoutExercises();updateWorkoutCompleteButton();
+renderActiveWorkoutExercises();renderWorkoutProgress();
+const detail=document.getElementById(safeId(activeWorkoutKey+"-"+newId));detail?.classList.add("open");detail?.parentElement.querySelector(".exercise-header")?.setAttribute("aria-expanded","true");detail?.parentElement.scrollIntoView({block:"start"});
 }
 function renderWorkoutReadiness(){
 const area=document.getElementById("readinessOptions");area.replaceChildren();
@@ -1855,7 +1916,8 @@ const diagram=exerciseMuscleDiagram(ex);
 const showGoal=activeWorkoutKey!=="library";
 const goal=showGoal?overloadGoal(ex.id):null;
 const suggestion=showGoal?progressionSuggestion(ex.id):null;
-const goalText=goal!==null?`Try ${goal} lb × 8–10 reps${suggestion?.reason?` · ${suggestion.reason}`:""}`:"Choose a starting weight · 8–10 reps";
+const manual=showGoal&&Number(tracking.manualTargets?.[overloadKey(ex.id)])>0;
+const goalText=goal!==null?`Today: ${goal} lb × 8–10 reps${manual?" · Your target":suggestion?.reason?` · ${suggestion.reason}`:""}`:"Choose a starting weight · 8–10 reps";
 card.innerHTML=`
 
 <div class="exercise-header" role="button" tabindex="0" aria-expanded="false" aria-controls="${detailId}"
@@ -1903,8 +1965,9 @@ onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
 
 ${showGoal?`<div class="overload-guide">
 <strong>Progressive overload goal</strong>
+${suggestion?`<p>Last time: ${suggestion.last}. ${suggestion.reason}.</p>`:""}
 <label for="${safeId(unique+"-goal")}">Target weight (lb)</label>
-<input class="goal-weight" id="${safeId(unique+"-goal")}" type="number" inputmode="decimal" min="0" max="1000" step="any" value="${goal??""}" placeholder="Set your starting weight">
+<div class="goal-controls"><input class="goal-weight" id="${safeId(unique+"-goal")}" type="number" inputmode="decimal" min="0" max="1000" step="any" value="${goal??""}" placeholder="Starting weight">${manual?'<button type="button" class="use-suggestion">Use suggestion</button>':""}</div>
 <p>Start with 8–10 reps. When you meet the target, the next suggestion can rise by 5 lb. After two difficult sessions it can drop by 5 lb. You can change the weight anytime.</p>
 <div class="warmup-guide"></div>
 </div>`:""}
@@ -1922,11 +1985,13 @@ ${createSetRows(unique)}
 if(showGoal){
 const input=card.querySelector(".goal-weight");
 input.onchange=()=>saveOverloadGoal(ex.id,input,card.querySelector(".goal-preview"));
+const suggestedButton=card.querySelector(".use-suggestion");if(suggestedButton)suggestedButton.onclick=()=>{delete tracking.manualTargets[overloadKey(ex.id)];saveTracking();input.value=overloadGoal(ex.id)??"";card.querySelector(".goal-preview").textContent=overloadGoal(ex.id)?`Today: ${overloadGoal(ex.id)} lb × 8–10 reps`:'Choose a starting weight · 8–10 reps';suggestedButton.remove();renderWarmupGuide(ex.id,card)};
 const toggle=card.querySelector(".swap-toggle"),options=card.querySelector(".exercise-swap-list");
 toggle.onclick=()=>{
 options.replaceChildren();options.classList.toggle("hidden");if(options.classList.contains("hidden"))return;
 const alternatives=exerciseLibrary.filter(other=>other.muscle===ex.muscle&&other.id!==ex.id&&!activeWorkoutExerciseIds.includes(other.id));
 if(!alternatives.length){options.textContent="No other exercises for this muscle yet.";return}
+const description=document.createElement("p");description.className="swap-description";description.textContent=`These work ${ex.muscle.toLowerCase()} too. If you've already logged sets, we'll keep them and add your choice.`;options.appendChild(description);
 alternatives.forEach(other=>{const button=document.createElement("button");button.textContent=other.name;button.onclick=()=>replaceExercise(ex.id,other.id);options.appendChild(button)})
 };
 renderWarmupGuide(ex.id,card);
@@ -1954,26 +2019,17 @@ const session=workoutHistory.find(s=>(s.exercises||[]).some(e=>e.id===exerciseId
 return session?.exercises.find(e=>e.id===exerciseId)||null;
 }
 
-function suggestedNextWeight(sets){
-const logged=sets.filter(s=>Number(s.weight)>0&&Number(s.reps)>0);
-if(!logged.length)return null;
-const weight=Number(logged[0].weight);
-const sameWeight=logged.filter(s=>Number(s.weight)===weight);
-const ready=logged.length>=2&&sameWeight.length===logged.length&&sameWeight.every(s=>Number(s.reps)>=12);
-return weight+(ready?5:0);
-}
-
 function progressionSuggestion(exerciseId){
-const recent=workoutHistory.filter(s=>(s.exercises||[]).some(ex=>ex.id===exerciseId)).slice(0,2).map(s=>s.exercises.find(ex=>ex.id===exerciseId));
+const recent=workoutHistory.map(session=>(session.exercises||[]).find(ex=>ex.id===exerciseId))
+.filter(ex=>ex&&(ex.sets||[]).some(s=>Number(s.weight)>0&&Number(s.reps)>0)).slice(0,2);
 if(!recent.length)return null;
-const sets=(recent[0].sets||[]).filter(s=>Number(s.weight)>0&&Number(s.reps)>0);
-if(!sets.length)return null;
-const weight=Number(sets[0].weight);
-const working=sets.filter(s=>Number(s.weight)===weight);
+const sets=recent[0].sets.filter(s=>Number(s.weight)>0&&Number(s.reps)>0);
+const weight=Number(sets[0].weight),working=sets.filter(s=>Number(s.weight)===weight);
 const previous=(recent[1]?.sets||[]).filter(s=>Number(s.weight)>0&&Number(s.reps)>0);
-const failed=working.length&&working.every(s=>Number(s.reps)<8)&&previous.length&&previous.every(s=>Number(s.weight)===weight&&Number(s.reps)<8);
-const passed=working.length&&working.every(s=>Number(s.reps)>=10);
-return {last:`${weight} lb × ${working[0].reps} reps`,weight:Math.max(2.5,weight+(failed?-5:passed?5:0)),reason:failed?"Two tough sessions; ease back":passed?"Target met; move up":"Keep building"};
+const previousWorking=previous.filter(s=>Number(s.weight)===weight);
+const failed=working.every(s=>Number(s.reps)<8)&&previousWorking.length>0&&previousWorking.length===previous.length&&previousWorking.every(s=>Number(s.reps)<8);
+const passed=working.every(s=>Number(s.reps)>=10);
+return {last:`${weight} lb × ${working[0].reps} reps`,weight:Math.max(2.5,weight+(failed?-5:passed?5:0)),reason:failed?"Two difficult sessions—try a lighter weight":passed?"You reached 10 reps—try a little more":"Stay here and build toward 10 reps"};
 }
 function overloadGoal(exerciseId){
 const manual=Number(tracking.manualTargets?.[overloadKey(exerciseId)]);
@@ -1997,6 +2053,9 @@ localStorage.setItem("overloadTargetsV1",JSON.stringify(overloadTargets));
 saveTracking();
 const next=overloadGoal(exerciseId);
 preview.textContent=next!==null?`Try ${next} lb × 8–10 reps`:"Choose a starting weight · 8–10 reps";
+const controls=input.closest(".goal-controls"),existing=controls?.querySelector(".use-suggestion");
+if(input.value!==""&&!existing){const button=document.createElement("button");button.type="button";button.className="use-suggestion";button.textContent="Use suggestion";button.onclick=()=>{delete tracking.manualTargets[overloadKey(exerciseId)];saveTracking();input.value=overloadGoal(exerciseId)??"";preview.textContent=overloadGoal(exerciseId)?`Today: ${overloadGoal(exerciseId)} lb × 8–10 reps`:"Choose a starting weight · 8–10 reps";button.remove();renderWarmupGuide(exerciseId,input.closest(".exercise"))};controls.appendChild(button)}
+if(input.value===""&&existing)existing.remove();
 renderWarmupGuide(exerciseId,input.closest(".exercise"));
 }
 function renderWarmupGuide(exerciseId,card){
@@ -2058,6 +2117,7 @@ onclick="openPicker('${escapeAttribute(key)}','reps')">${cr}</button>
 
 ${comparison?`<div class="compare ${comparison.cls}" id="${safeId(key+"-compare")}">${comparison.text}</div>`:""}
 <button class="set-done" type="button" aria-pressed="${Boolean(current.done)}" id="${safeId(key+"-done")}" onclick="toggleSetDone('${escapeAttribute(key)}')">${current.done?"Done ✓":"Mark set done"}</button>
+<button class="set-clear" type="button" onclick="clearSet('${escapeAttribute(key)}')">Clear</button>
 
 </div>`;
 
@@ -2123,6 +2183,7 @@ if(setHistory[key].done){setHistory[key].done=false;const done=document.getEleme
 localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
 const id=key.slice(activeWorkoutKey.length+1).replace(/-set[1-4]$/,"");
 renderWarmupGuide(id,document.getElementById(safeId(activeWorkoutKey+"-"+id))?.closest(".exercise"));
+renderWorkoutProgress();
 
 }
 function toggleSetDone(key){
@@ -2131,6 +2192,15 @@ if(!entry||!(Number(entry.weight)>0)||!(Number(entry.reps)>0)){alert("Choose bot
 entry.done=!entry.done;localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
 const button=document.getElementById(safeId(key+"-done"));button.textContent=entry.done?"Done ✓":"Mark set done";button.setAttribute("aria-pressed",String(entry.done));
 if(entry.done)startWorkoutRest();
+renderWorkoutProgress();
+}
+function clearSet(key){
+delete setHistory[key];localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
+for(const [type,label] of [["weight","Weight"],["reps","Reps"]]){const button=document.getElementById(safeId(key+"-"+type+"-button"));if(button)button.textContent=label}
+document.getElementById(safeId(key+"-compare"))?.remove();
+const button=document.getElementById(safeId(key+"-done"));if(button){button.textContent="Mark set done";button.setAttribute("aria-pressed","false")}
+const id=key.slice(activeWorkoutKey.length+1).replace(/-set[1-4]$/ ,"");
+renderWarmupGuide(id,document.getElementById(safeId(activeWorkoutKey+"-"+id))?.closest(".exercise"));renderWorkoutProgress();
 }
 
 /* PICKER */
@@ -2243,6 +2313,12 @@ else old.remove();
 function finishWorkout(){
 
 if(!activeWorkoutKey)return;
+for(const id of activeWorkoutExerciseIds)for(let set=1;set<=4;set++){
+const entry=setHistory[`${activeWorkoutKey}-${id}-set${set}`];if(!entry)continue;
+const hasWeight=entry.weight!==""&&entry.weight!==undefined,hasReps=entry.reps!==""&&entry.reps!==undefined;
+if(hasWeight!==hasReps){alert(`Finish the weight and reps for ${getExercise(id)?.name||"this exercise"}, set ${set}, or clear the unfinished entry.`);
+const card=document.getElementById(safeId(`${activeWorkoutKey}-${id}`));card?.classList.add("open");card?.parentElement.querySelector(".exercise-header")?.setAttribute("aria-expanded","true");card?.parentElement.scrollIntoView({block:"start"});return}
+}
 
 const session={
 
@@ -2271,7 +2347,7 @@ const key=`${activeWorkoutKey}-${exerciseId}-set${set}`;
 
 const current=setHistory[key]||{weight:"",reps:""};
 
-if(current.weight!==""||current.reps!==""){
+if(Number(current.weight)>0&&Number(current.reps)>0){
 
 exerciseSession.sets.push({
 
@@ -2285,7 +2361,7 @@ reps:current.reps??""
 
 }
 
-if(setHistory[key]){
+if(Number(current.weight)>0&&Number(current.reps)>0){
 
 previousHistory[key]={
 
@@ -2311,11 +2387,14 @@ return;
 
 }
 
+const previousBest={};
+for(const ex of session.exercises)previousBest[ex.id]=Math.max(0,...workoutHistory.flatMap(s=>(s.exercises||[]).filter(item=>item.id===ex.id).flatMap(item=>item.sets||[]).map(set=>Number(set.weight)||0)));
+session.recordIds=session.exercises.filter(ex=>Math.max(0,...ex.sets.map(set=>Number(set.weight)||0))>previousBest[ex.id]).map(ex=>ex.id);
 workoutHistory.unshift(session);
 
 session.exercises.forEach(ex=>{
-const next=suggestedNextWeight(ex.sets);
-if(next!==null)overloadTargets[overloadKey(ex.id)]=next;
+const next=progressionSuggestion(ex.id);
+if(next)overloadTargets[overloadKey(ex.id)]=next.weight;
 });
 
 localStorage.setItem("overloadTargetsV1",JSON.stringify(overloadTargets));
@@ -2323,65 +2402,33 @@ localStorage.setItem("overloadTargetsV1",JSON.stringify(overloadTargets));
 localStorage.setItem("workoutHistoryV52",JSON.stringify(workoutHistory));
 
 localStorage.setItem("previousHistoryV51",JSON.stringify(previousHistory));
+completedExercises=[...new Set([...completedExercises,...session.exercises.map(ex=>`${activeWorkoutKey}-${ex.id}`)])];
+localStorage.setItem("completedExercisesV5",JSON.stringify(completedExercises));
 
 activeWorkoutExerciseIds.forEach(id=>{
 for(let set=1;set<=4;set++)delete setHistory[`${activeWorkoutKey}-${id}-set${set}`];
 });
 localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
 delete tracking.substitutions[activeWorkoutKey];saveTracking();
-
-alert("Workout saved! Your next weight targets have been updated from the sets you logged.");
-
-goHome();
-
-}
-
-/* WORKOUT COMPLETION */
-
-function activeWorkoutCompletionIds(){
-
-return activeWorkoutExerciseIds.map(id=>`${activeWorkoutKey}-${id}`);
-
-}
-
-function updateWorkoutCompleteButton(){
-
-const button=document.getElementById("completeWorkoutButton");
-
-const ids=activeWorkoutCompletionIds();
-
-const completed=ids.length>0&&ids.every(id=>completedExercises.includes(id));
-
-button.textContent=completed?"✓ Workout Complete":"Mark Workout Complete";
-
-button.classList.toggle("done",completed);
-
-button.setAttribute("aria-pressed",String(completed));
-
-}
-
-function toggleWorkoutComplete(){
-
-const ids=activeWorkoutCompletionIds();
-
-const completed=ids.length>0&&ids.every(id=>completedExercises.includes(id));
-
-if(completed){
-
-completedExercises=completedExercises.filter(id=>!ids.includes(id));
-
-}else{
-
-completedExercises=[...new Set([...completedExercises,...ids])];
-
-}
-
-localStorage.setItem("completedExercisesV5",JSON.stringify(completedExercises));
-
-updateWorkoutCompleteButton();
-
+skipWorkoutRest();
 updateProgress();
+showWorkoutSummary(session);
 
+}
+
+function showLastWorkoutSummary(){if(workoutHistory.length)showWorkoutSummary(workoutHistory[0]);else goHome()}
+function showWorkoutSummary(session){
+showScreen("completionScreen");setBottomNav("Home");
+const sets=(session.exercises||[]).flatMap(ex=>ex.sets||[]).filter(s=>Number(s.weight)>0&&Number(s.reps)>0);
+const volume=sets.reduce((sum,s)=>sum+Number(s.weight)*Number(s.reps),0);
+const recordIds=Array.isArray(session.recordIds)?session.recordIds:[];
+const date=new Date(session.date),when=Number.isNaN(date.getTime())?"Saved workout":date.toLocaleDateString([],{month:"long",day:"numeric",year:"numeric"});
+const details=(session.exercises||[]).map(ex=>{
+const clean=(ex.sets||[]).filter(s=>Number(s.weight)>0&&Number(s.reps)>0),top=Math.max(0,...clean.map(s=>Number(s.weight)));
+const next=session===workoutHistory[0]?progressionSuggestion(ex.id):null;
+return `<div class="summary-exercise"><strong>${escapeHTML(ex.name||getExercise(ex.id)?.name||ex.id)}</strong><span>${clean.length} ${clean.length===1?"set":"sets"}${top?` · Top weight ${top} lb`:""}${recordIds.includes(ex.id)?" · New weight record":""}${next?` · Next: ${next.weight} lb × 8–10`:""}</span></div>`;
+}).join("");
+document.getElementById("completionContent").innerHTML=`<div class="summary-hero"><span>Workout saved · ${escapeHTML(when)}</span><h2>${escapeHTML(session.workoutTitle||"Your workout")}</h2><p>You showed up and logged your work. Here's what you did.</p></div><div class="summary-grid"><div class="summary-stat"><strong>${session.exercises?.length||0}</strong><span>Exercises</span></div><div class="summary-stat"><strong>${sets.length}</strong><span>Sets logged</span></div><div class="summary-stat"><strong>${Math.round(volume).toLocaleString()}</strong><span>Volume (lb)</span></div><div class="summary-stat"><strong>${recordIds.length}</strong><span>New weight records</span></div></div><div class="card"><h3>Your exercises</h3>${details}<p class="small">Next targets are suggestions based on your saved sets. You can change them in your next workout.</p></div>`;
 }
 
 function updateProgress(){
@@ -2476,22 +2523,26 @@ function weekStart(date){const start=new Date(date.getFullYear(),date.getMonth()
 function renderWeeklySummary(id){
 const area=document.getElementById(id);if(!area)return;
 const start=weekStart(new Date()),sessions=workoutHistory.filter(s=>sessionDay(s)>=start);
+const startDate=new Date(`${start}T12:00:00`),endDate=new Date(startDate);endDate.setDate(endDate.getDate()+6);
+const range=`${startDate.toLocaleDateString([],{month:"short",day:"numeric"})}–${endDate.toLocaleDateString([],{month:"short",day:"numeric"})}`;
 const target=workoutGoals&&!workoutGoals.skipped?Number(workoutGoals.days)||4:null;
-const sets=sessions.flatMap(s=>(s.exercises||[]).flatMap(ex=>ex.sets||[])).length;
+const sets=sessions.flatMap(s=>(s.exercises||[]).flatMap(ex=>ex.sets||[])).filter(s=>Number(s.weight)>0&&Number(s.reps)>0).length;
 let prs=0;const highest={};
 for(const session of workoutHistory.slice().reverse())for(const ex of session.exercises||[]){
-const best=Math.max(0,...(ex.sets||[]).map(s=>Number(s.weight)||0));
+const best=Math.max(0,...(ex.sets||[]).filter(s=>Number(s.reps)>0).map(s=>Number(s.weight)||0));
 if(best>(highest[ex.id]||0)){if(sessionDay(session)>=start)prs++;highest[ex.id]=best}
 }
 const weeklyWeights=weightEntriesNewestFirst().filter(w=>w.day>=start);
-const weightChange=weeklyWeights.length>1?Number(weeklyWeights[0].value)-Number(weeklyWeights[weeklyWeights.length-1].value):null;
+const priorWeight=weightEntriesNewestFirst().find(w=>w.day<start);
+const baseline=weeklyWeights.length>1?weeklyWeights[weeklyWeights.length-1]:priorWeight;
+const weightChange=weeklyWeights.length&&baseline?Number(weeklyWeights[0].value)-Number(baseline.value):null;
 const loggedDays=[...new Set(tracking.food.filter(entry=>entry.day>=start).map(entry=>entry.day))];
 const ratios=loggedDays.map(day=>{const goal=dailyCalorieTarget(day);return goal?tracking.food.filter(f=>f.day===day).reduce((sum,f)=>sum+Number(f.calories||0),0)/goal:null}).filter(x=>x!==null);
 const calorieText=ratios.length?`${Math.round(ratios.reduce((a,b)=>a+b,0)/ratios.length*100)}% of target on ${ratios.length} logged ${ratios.length===1?"day":"days"}`:"No food days logged";
 const weeks=new Map();for(const s of workoutHistory){const date=new Date(s.date);if(!Number.isNaN(date.getTime())){const key=weekStart(date);weeks.set(key,(weeks.get(key)||0)+1)}}
 let streak=0,weekDate=new Date();if((weeks.get(weekStart(weekDate))||0)<(target||1))weekDate.setDate(weekDate.getDate()-7);
 for(let i=0;i<52;i++){const key=weekStart(weekDate);if((weeks.get(key)||0)<(target||1))break;streak++;weekDate.setDate(weekDate.getDate()-7)}
-area.innerHTML=`<div class="card"><h3>This week</h3><div class="stat-grid"><div class="stat-card"><div class="stat-number">${sessions.length}${target?`/${target}`:""}</div><div class="stat-label">Workouts</div></div><div class="stat-card"><div class="stat-number">${sets}</div><div class="stat-label">Sets</div></div><div class="stat-card"><div class="stat-number">${prs}</div><div class="stat-label">New weight records</div></div><div class="stat-card"><div class="stat-number">${weightChange===null?"—":`${weightChange>0?"+":""}${weightChange.toFixed(1)}`}</div><div class="stat-label">Weight change (lb)</div></div></div><p class="small">${streak} ${streak===1?"week":"weeks"} meeting your workout goal · Calories: ${calorieText}. Rest days are part of training; workout counts are weekly goals, not scheduled dates.</p></div>`;
+area.innerHTML=`<div class="card weekly-dashboard"><h3>Your week</h3><p class="small">${range} · ${target?`${Math.min(sessions.length,target)} of ${target} planned workouts`:"Your workouts at a glance"}</p>${target?`<div class="progress-bar" role="progressbar" aria-label="Weekly workout goal" aria-valuemin="0" aria-valuemax="${target}" aria-valuenow="${Math.min(sessions.length,target)}"><div class="progress-fill" style="width:${Math.min(100,sessions.length/target*100)}%"></div></div>`:""}<div class="stat-grid"><div class="stat-card"><div class="stat-number">${sessions.length}${target?`/${target}`:""}</div><div class="stat-label">Workouts</div></div><div class="stat-card"><div class="stat-number">${sets}</div><div class="stat-label">Sets logged</div></div><div class="stat-card"><div class="stat-number">${prs}</div><div class="stat-label">Weight records</div></div><div class="stat-card"><div class="stat-number">${weightChange===null?"—":`${weightChange>0?"+":""}${weightChange.toFixed(1)}`}</div><div class="stat-label">Weight change (lb)</div></div></div><p class="small">${streak} ${streak===1?"week":"weeks"} reaching your workout goal · Calories: ${calorieText}.</p>${id==="weeklySummaryHome"?'<button class="dashboard-link" onclick="showOverallProgress()">See all progress →</button>':""}</div>`;
 }
 
 /* OVERALL PROGRESS */
@@ -2869,10 +2920,14 @@ workoutHistory.forEach(s=>area.appendChild(historyCard(s)));
 
 /* TIMER */
 
-let workoutRestEndsAt=0,workoutRestInterval=null;
+let workoutRestEndsAt=Number(sessionStorage.getItem("workoutRestEndsAt"))||0,workoutRestInterval=null;
 function renderWorkoutRest(){
 const choices=document.getElementById("workoutRestPresets");choices.replaceChildren();
 for(const seconds of [60,90,120,180]){const button=document.createElement("button");button.textContent=`${Math.floor(seconds/60)} min${seconds%60?" 30 sec":""}`;button.setAttribute("aria-pressed",String(tracking.restSeconds===seconds));button.onclick=()=>{tracking.restSeconds=seconds;saveTracking();renderWorkoutRest()};choices.appendChild(button)}
+if(workoutRestEndsAt>Date.now()){
+document.getElementById("workoutRestStatus").textContent="Rest timer running. You can leave this screen and return to it.";
+clearInterval(workoutRestInterval);workoutRestInterval=setInterval(updateWorkoutRestDisplay,1000);
+}else if(workoutRestEndsAt){workoutRestEndsAt=0;sessionStorage.removeItem("workoutRestEndsAt")}
 updateWorkoutRestDisplay();
 }
 function updateWorkoutRestDisplay(){
@@ -2880,6 +2935,7 @@ const remaining=workoutRestEndsAt?Math.max(0,Math.ceil((workoutRestEndsAt-Date.n
 document.getElementById("workoutRestDisplay").textContent=formatTimer(remaining);
 if(workoutRestEndsAt&&remaining===0){
 clearInterval(workoutRestInterval);workoutRestInterval=null;workoutRestEndsAt=0;
+sessionStorage.removeItem("workoutRestEndsAt");
 document.getElementById("workoutRestStatus").textContent="Rest complete. Ready for the next set.";
 if(navigator.vibrate)navigator.vibrate([180,100,180]);
 if(typeof Notification!=="undefined"&&Notification.permission==="granted"&&document.visibilityState!=="visible"){
@@ -2889,10 +2945,12 @@ try{new Notification("Rest complete",{body:"Ready for your next set."})}catch{}
 }
 function startWorkoutRest(){
 clearInterval(workoutRestInterval);workoutRestEndsAt=Date.now()+tracking.restSeconds*1000;
+sessionStorage.setItem("workoutRestEndsAt",String(workoutRestEndsAt));
 document.getElementById("workoutRestStatus").textContent="Rest timer running.";
 updateWorkoutRestDisplay();workoutRestInterval=setInterval(updateWorkoutRestDisplay,1000);
 }
-function skipWorkoutRest(){clearInterval(workoutRestInterval);workoutRestInterval=null;workoutRestEndsAt=0;document.getElementById("workoutRestStatus").textContent="Rest skipped.";updateWorkoutRestDisplay()}
+function skipWorkoutRest(){clearInterval(workoutRestInterval);workoutRestInterval=null;workoutRestEndsAt=0;sessionStorage.removeItem("workoutRestEndsAt");document.getElementById("workoutRestStatus").textContent="Rest skipped.";updateWorkoutRestDisplay()}
+document.addEventListener("visibilitychange",()=>{if(workoutRestEndsAt&&document.getElementById("workoutRestDisplay"))updateWorkoutRestDisplay()});
 async function enableRestAlerts(){
 const status=document.getElementById("workoutRestStatus");
 if(typeof Notification==="undefined"){status.textContent="This browser does not support notifications. Keep the workout open for the timer.";return}
@@ -3065,6 +3123,7 @@ document.getElementById("workoutCalorieCard").classList.add("hidden");
 document.querySelector(".workout-readiness").classList.add("hidden");
 document.getElementById("workoutRestPresets").classList.add("hidden");
 document.querySelector(".rest-strip").classList.add("hidden");
+document.querySelector(".workout-progress").classList.add("hidden");
 
 document.getElementById("workoutTitle").textContent=ex.name;
 
@@ -3076,8 +3135,6 @@ list.appendChild(card);card.querySelector(".details").classList.add("open");
 card.querySelector(".exercise-header").setAttribute("aria-expanded","true");
 
 document.getElementById("finishWorkoutButton").classList.add("hidden");
-
-document.getElementById("completeWorkoutButton").classList.add("hidden");
 
 showWorkoutTab("workout");
 
