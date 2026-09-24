@@ -472,7 +472,7 @@ padding:13px;font-size:15px;font-weight:700;margin-top:8px
 .menu-link.active{background:#ededf0;color:#111}
 .menu-group{margin:22px 12px 8px;font-size:12px;color:#666;text-transform:uppercase;letter-spacing:.05em}
 .tracker-form label{display:block;font-size:14px;font-weight:550;margin:14px 0 6px}
-.tracker-form input{display:block;width:100%;min-height:46px;padding:10px 12px;border:1px solid #c8c8d0;border-radius:10px;font:inherit}
+.tracker-form input,.tracker-form select{display:block;width:100%;min-height:46px;padding:10px 12px;border:1px solid #c8c8d0;border-radius:10px;background:#fff;font:inherit}
 .tracker-form button,.tracker-add{min-height:46px;padding:10px 16px;margin:14px 0;border:0;border-radius:11px;background:#e8e8ec;color:#111;font:inherit;font-weight:600}
 .tracker-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #eee}
 .tracker-row button{border:0;background:#f2f2f5;border-radius:9px;padding:9px;color:#333}
@@ -637,7 +637,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 8.0</p>
+<p>Version 8.1</p>
 
 </header>
 
@@ -654,6 +654,7 @@ header p{color:#222}
 <div class="setup-options">
 <label class="setup-option"><input type="radio" name="setupGoal" value="muscle" checked><span>Build muscle</span></label>
 <label class="setup-option"><input type="radio" name="setupGoal" value="strength"><span>Get stronger</span></label>
+<label class="setup-option"><input type="radio" name="setupGoal" value="fat-loss"><span>Lose body fat</span></label>
 <label class="setup-option"><input type="radio" name="setupGoal" value="consistency"><span>Get into a routine</span></label>
 </div>
 </fieldset>
@@ -698,18 +699,19 @@ Exercise Library
 
 </button>
 
-<h2 class="section-heading">My Workouts</h2>
+</section>
 
-<div id="customButtons"></div>
-
-<details class="data-reset" id="dataReset">
-<summary>Manage workout data</summary>
+<section id="manageWorkoutScreen" class="hidden">
+<h2>Manage workouts</h2>
+<button class="action-button primary" onclick="showBuilder()">Create a workout<span>Build your own from the exercise library</span></button>
+<button class="action-button" onclick="showGoalsSetup()">Change workout plan<span>Choose a different schedule, focus, or basic plan</span></button>
+<h3>My Workouts</h3><div id="customButtons"></div>
+<details class="data-reset" id="dataReset"><summary>Reset workout data</summary>
 <p>Saved on this device. Choose what to erase; your workout plans and exercise library stay available.</p>
 <button onclick="resetWorkoutData('history')">Reset workout history</button>
 <button onclick="resetWorkoutData('progress')">Reset workout progress</button>
 <button onclick="resetWorkoutData('both')">Reset history and progress</button>
 </details>
-
 </section>
 
 <section id="workoutScreen" class="hidden">
@@ -836,14 +838,26 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 </section>
 
 <section id="foodScreen" class="hidden">
-<h2>Food</h2><div class="card"><p class="small">Add foods and their calories from the label or serving you ate.</p><div id="foodSummary" class="tracker-value"></div>
-<form class="tracker-form" onsubmit="addFood(event)"><label for="foodName">Food or meal</label><input id="foodName" maxlength="100" required placeholder="For example, lunch"><label for="foodCalories">Calories</label><input id="foodCalories" type="number" min="0" max="10000" inputmode="numeric" required><button type="submit">Add food</button></form></div>
+<h2>Food</h2><div class="card"><p class="small">Choose a common food and enter how many servings you had. Calories are estimated automatically; brands and preparation can differ.</p><div id="foodSummary" class="tracker-value"></div>
+<form class="tracker-form" onsubmit="addFood(event)"><label for="foodChoice">Food</label><select id="foodChoice" onchange="updateFoodEstimate()" required><option value="">Select a food</option><option value="custom">Other food (use label calories)</option></select>
+<div id="servingFields" class="hidden"><label for="foodServings" id="servingLabel">Number of servings</label><input id="foodServings" type="number" min="0.25" max="100" step="0.25" inputmode="decimal" value="1" oninput="updateFoodEstimate()"><p id="foodEstimate" role="status" class="small"></p></div>
+<div id="customFoodFields" class="hidden"><label for="foodName">Food or meal</label><input id="foodName" maxlength="100" placeholder="For example, lunch"><label for="foodCalories">Calories from label or recipe</label><input id="foodCalories" type="number" min="0" max="10000" inputmode="numeric"></div>
+<button type="submit">Add food</button></form><p class="small">For packaged foods, the label is more accurate. For other foods, use the label or <a href="https://fdc.nal.usda.gov/" target="_blank" rel="noopener">look them up</a>.</p></div>
 <h3>Today's food</h3><div id="foodList"></div>
 </section>
 
 <section id="goalsScreen" class="hidden">
 <h2>Goals</h2><div class="card"><p class="small">Set daily water and calorie targets that work for you. These are tracking targets, not a prescribed diet.</p>
 <form class="tracker-form" onsubmit="saveTrackingGoals(event)"><label for="waterGoal">Daily water target (mL)</label><input id="waterGoal" type="number" min="1" max="10000" inputmode="numeric" required><label for="calorieGoal">Daily calorie target (optional)</label><input id="calorieGoal" type="number" min="1" max="10000" inputmode="numeric"><button type="submit">Save goals</button></form></div>
+<div class="card"><h3>Suggest a calorie target</h3><p id="calorieProfile" class="small"></p><p id="calorieWeightStatus" class="small"></p>
+<form class="tracker-form" onsubmit="calculateCalorieGoal(event)"><label for="calorieAge">Age (18 or older)</label><input id="calorieAge" type="number" min="18" max="100" inputmode="numeric" required>
+<label for="calorieFeet">Height (feet)</label><input id="calorieFeet" type="number" min="3" max="7" inputmode="numeric" required>
+<label for="calorieInches">Additional inches</label><input id="calorieInches" type="number" min="0" max="11" inputmode="numeric" required>
+<label for="calorieEquation">Estimate formula</label><select id="calorieEquation"><option value="neutral">Neutral estimate</option><option value="male">Male-based estimate</option><option value="female">Female-based estimate</option></select>
+<label for="calorieActivity">Daily activity</label><select id="calorieActivity"><option value="1.2">Mostly sitting</option><option value="1.4">Some daily movement</option><option value="1.6">Active most days</option></select>
+<button type="submit">Calculate suggestion</button></form>
+<div id="calorieSuggestion" role="status" class="tracker-value"></div><button id="useCalorieSuggestion" class="tracker-add hidden" onclick="useSuggestedCalories()">Use this target</button>
+<p class="small">A starting estimate based on your weight, height, age, activity, and chosen workout goal. Adjust it as needed.</p></div>
 <button class="action-button" onclick="showGoalsSetup()">Change my workout plan<span>Update your training goal and schedule</span></button>
 </section>
 
@@ -860,6 +874,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <div class="menu-head"><span>Menu</span><button class="menu-close" onclick="closeMenu()" aria-label="Close menu">×</button></div>
 <button class="menu-link active" id="navHome" onclick="goHome()" aria-current="page">Home</button>
 <button class="menu-link" id="navWorkout" onclick="bottomWorkout()">Workout</button>
+<button class="menu-link" id="navManage" onclick="showManageWorkouts()">Manage workouts</button>
 <button class="menu-link" id="navProgress" onclick="showOverallProgress()">Progress</button>
 <button class="menu-link" id="navHistory" onclick="showGlobalHistory()">History</button>
 <button class="menu-link" id="navTimer" onclick="showGlobalTimer()">Timer</button>
@@ -1197,7 +1212,7 @@ let workoutGoals=JSON.parse(localStorage.getItem("workoutGoalsV1")||"null");
 function readTrackingData(){
 try{
 const saved=JSON.parse(localStorage.getItem("dailyTrackingV1")||"{}");
-return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null};
+return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null,calorieAge:saved.calorieAge||"",calorieFeet:saved.calorieFeet||"",calorieInches:saved.calorieInches??"",calorieEquation:saved.calorieEquation||"",calorieActivity:saved.calorieActivity||"1.4"};
 }catch{return {water:[],food:[],weight:[],waterGoal:2000,calorieGoal:null}}
 }
 let tracking=readTrackingData();
@@ -1223,7 +1238,7 @@ function allScreens(){
 
 return ["home","setupScreen","workoutScreen","libraryScreen","builderScreen",
 
-"overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen"];
+"overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen"];
 
 }
 
@@ -1243,7 +1258,7 @@ window.scrollTo(0,0);
 
 function setBottomNav(name){
 
-["Home","Workout","Progress","History","Timer","Water","Food","Weight","Goals"].forEach(x=>{
+["Home","Workout","Manage","Progress","History","Timer","Water","Food","Weight","Goals"].forEach(x=>{
 
 const button=document.getElementById("nav"+x);
 
@@ -1350,7 +1365,7 @@ const goal=document.querySelector('input[name="setupGoal"]:checked')?.value;
 const days=Number(document.getElementById("setupDays").value);
 const gender=document.getElementById("setupGender").value;
 const focus=document.getElementById("setupFocus").value;
-if(!["muscle","strength","consistency"].includes(goal)||![2,3,4,5].includes(days))return;
+if(!["muscle","strength","fat-loss","consistency"].includes(goal)||![2,3,4,5].includes(days))return;
 if(!["male","female","prefer"].includes(gender)||!["balanced","upper","lower"].includes(focus))return;
 workoutGoals={goal,days,gender,focus};
 localStorage.setItem("workoutGoalsV1",JSON.stringify(workoutGoals));
@@ -1392,6 +1407,7 @@ return;
 const descriptions={
 muscle:"Balanced machine workouts for building muscle. Log your sets and adjust the target weight as you progress.",
 strength:"Start with the larger machine movements. Record your reps so your next weight target adapts to what you completed.",
+"fat-loss":"Workouts to help preserve strength while working toward your body composition goal. Log your sets and keep progressing.",
 consistency:"Shorter sessions to help you build a routine. Start with a comfortable weight and increase gradually."
 };
 const card=document.createElement("div");card.className="card plan-card";
@@ -1414,6 +1430,10 @@ closePicker();showScreen("home");setBottomNav("Home");
 
 renderHome();updateProgress();
 
+}
+
+function showManageWorkouts(){
+showScreen("manageWorkoutScreen");setBottomNav("Manage");renderCustomButtons();
 }
 
 function resetWorkoutData(scope){
@@ -1442,7 +1462,6 @@ function renderHome(){
 
 renderSuggestedPlan();
 document.getElementById("homeProgressCard").classList.toggle("hidden",!workoutGoals||workoutGoals.skipped);
-renderCustomButtons();
 
 }
 
@@ -2693,20 +2712,111 @@ customWorkouts.splice(index,1);
 
 localStorage.setItem("customWorkoutsV5",JSON.stringify(customWorkouts));
 
-goHome();
+showManageWorkouts();
 
 }
 
 /* DAILY TRACKING — stored on this device */
+// Typical serving sizes and approximate energy values; individual products can vary.
+const commonFoods=[
+{id:"apple",name:"Apple",serving:"1 medium (182 g)",grams:182,kcal100:52},
+{id:"banana",name:"Banana",serving:"1 medium (118 g)",grams:118,kcal100:89},
+{id:"egg",name:"Egg",serving:"1 large (50 g)",grams:50,kcal100:143},
+{id:"chicken",name:"Chicken breast, cooked",serving:"100 g",grams:100,kcal100:165},
+{id:"rice",name:"White rice, cooked",serving:"1 cup (158 g)",grams:158,kcal100:130},
+{id:"brown-rice",name:"Brown rice, cooked",serving:"1 cup (195 g)",grams:195,kcal100:111},
+{id:"oats",name:"Oatmeal, dry",serving:"½ cup (40 g)",grams:40,kcal100:389},
+{id:"bread",name:"Bread",serving:"1 slice (30 g)",grams:30,kcal100:265},
+{id:"pb",name:"Peanut butter",serving:"2 tbsp (32 g)",grams:32,kcal100:588},
+{id:"yogurt",name:"Greek yogurt, plain",serving:"¾ cup (170 g)",grams:170,kcal100:59},
+{id:"milk",name:"Whole milk",serving:"1 cup (244 g)",grams:244,kcal100:61},
+{id:"almonds",name:"Almonds",serving:"1 oz (28 g)",grams:28,kcal100:579},
+{id:"salmon",name:"Salmon, cooked",serving:"100 g",grams:100,kcal100:208},
+{id:"potato",name:"Potato, baked",serving:"1 medium (173 g)",grams:173,kcal100:93},
+{id:"broccoli",name:"Broccoli, cooked",serving:"1 cup (156 g)",grams:156,kcal100:35},
+{id:"beans",name:"Black beans, cooked",serving:"1 cup (172 g)",grams:172,kcal100:132}
+];
+function estimateFoodCalories(food,servings){return Math.round(food.grams*food.kcal100/100*servings)}
+function populateFoodChoices(){
+const select=document.getElementById("foodChoice");if(select.options.length>2)return;
+commonFoods.forEach(food=>{
+const option=document.createElement("option");option.value=food.id;
+option.textContent=`${food.name} · ${food.serving}`;
+select.insertBefore(option,select.lastElementChild);
+});
+}
+function updateFoodEstimate(){
+const choice=document.getElementById("foodChoice").value;
+const food=commonFoods.find(item=>item.id===choice);
+document.getElementById("servingFields").classList.toggle("hidden",!food);
+document.getElementById("customFoodFields").classList.toggle("hidden",choice!=="custom");
+document.getElementById("foodServings").required=Boolean(food);
+document.getElementById("foodName").required=choice==="custom";
+document.getElementById("foodCalories").required=choice==="custom";
+const servings=Number(document.getElementById("foodServings").value);
+document.getElementById("foodEstimate").textContent=food&&servings>=.25&&servings<=100?
+`Estimated ${estimateFoodCalories(food,servings)} calories`:(food?"Enter your number of servings.":"");
+}
 function localDay(){
 const now=new Date();
 return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
 }
 function newTrackingId(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function showWater(){showScreen("waterScreen");setBottomNav("Water");renderWater()}
-function showFood(){showScreen("foodScreen");setBottomNav("Food");renderFood()}
+function showFood(){showScreen("foodScreen");setBottomNav("Food");populateFoodChoices();updateFoodEstimate();renderFood()}
 function showWeight(){showScreen("weightScreen");setBottomNav("Weight");renderWeight()}
-function showTrackingGoals(){showScreen("goalsScreen");setBottomNav("Goals");document.getElementById("waterGoal").value=tracking.waterGoal;document.getElementById("calorieGoal").value=tracking.calorieGoal||""}
+let suggestedCalories=null;
+function showTrackingGoals(){
+showScreen("goalsScreen");setBottomNav("Goals");
+document.getElementById("waterGoal").value=tracking.waterGoal;
+document.getElementById("calorieGoal").value=tracking.calorieGoal||"";
+document.getElementById("calorieAge").value=tracking.calorieAge;
+document.getElementById("calorieFeet").value=tracking.calorieFeet;
+document.getElementById("calorieInches").value=tracking.calorieInches;
+document.getElementById("calorieEquation").value=tracking.calorieEquation||(["male","female"].includes(workoutGoals?.gender)?workoutGoals.gender:"neutral");
+document.getElementById("calorieActivity").value=tracking.calorieActivity;
+const latest=tracking.weight.slice().sort((a,b)=>b.day.localeCompare(a.day))[0];
+const status=document.getElementById("calorieWeightStatus");status.replaceChildren();
+if(latest)status.textContent=`Using your most recent weight: ${latest.value} lb (${latest.day}).`;
+else{status.textContent="Add your weight first. ";const button=document.createElement("button");button.type="button";button.textContent="Add weight";button.onclick=showWeight;status.appendChild(button)}
+const names={muscle:"Build muscle",strength:"Get stronger","fat-loss":"Lose body fat",consistency:"Get into a routine"};
+document.getElementById("calorieProfile").textContent=workoutGoals&&!workoutGoals.skipped?
+`Selected goal: ${workoutGoals.basic?"Build muscle (basic plan)":names[workoutGoals.goal]||"Choose a workout goal"}.`:
+"Choose a workout goal to calculate a suggestion.";
+suggestedCalories=null;document.getElementById("calorieSuggestion").textContent="";
+document.getElementById("useCalorieSuggestion").classList.add("hidden");
+}
+function calculateCalorieGoal(event){
+event.preventDefault();
+const latest=tracking.weight.slice().sort((a,b)=>b.day.localeCompare(a.day))[0];
+const status=document.getElementById("calorieSuggestion");
+if(!latest||!workoutGoals||workoutGoals.skipped){status.textContent="Add your weight and select a workout goal first.";return}
+const age=Number(document.getElementById("calorieAge").value);
+const feet=Number(document.getElementById("calorieFeet").value);
+const inches=Number(document.getElementById("calorieInches").value);
+const equation=document.getElementById("calorieEquation").value;
+const activity=Number(document.getElementById("calorieActivity").value);
+if(!Number.isInteger(age)||age<18||age>100||!Number.isInteger(feet)||feet<3||feet>7||!Number.isInteger(inches)||inches<0||inches>11||![1.2,1.4,1.6].includes(activity)||!["male","female","neutral"].includes(equation))return;
+const kg=Number(latest.value)/2.20462;
+if(!Number.isFinite(kg)||kg<=0)return;
+const cm=(feet*12+inches)*2.54;
+const offset=equation==="male"?5:equation==="female"?-161:-78;
+const resting=10*kg+6.25*cm-5*age+offset;
+const goalFactors={muscle:1.08,strength:1.04,"fat-loss":.90,consistency:1};
+const factor=goalFactors[workoutGoals.goal]||1;
+suggestedCalories=Math.round(Math.max(0,resting*activity*factor)/25)*25;
+tracking.calorieAge=age;tracking.calorieFeet=feet;tracking.calorieInches=inches;
+tracking.calorieEquation=equation;tracking.calorieActivity=String(activity);saveTracking();
+status.textContent=`Suggested starting target: about ${suggestedCalories} calories per day.`;
+document.getElementById("useCalorieSuggestion").classList.remove("hidden");
+}
+function useSuggestedCalories(){
+if(!Number.isInteger(suggestedCalories)||suggestedCalories<1)return;
+tracking.calorieGoal=suggestedCalories;saveTracking();
+document.getElementById("calorieGoal").value=suggestedCalories;
+document.getElementById("calorieSuggestion").textContent=`Daily target saved: ${suggestedCalories} calories. You can edit it above.`;
+document.getElementById("useCalorieSuggestion").classList.add("hidden");
+}
 function addWater(amount){
 amount=Number(amount);if(!Number.isInteger(amount)||amount<1||amount>5000)return;
 tracking.water.push({id:newTrackingId(),day:localDay(),amount});saveTracking();renderWater();
@@ -2714,10 +2824,14 @@ tracking.water.push({id:newTrackingId(),day:localDay(),amount});saveTracking();r
 function addCustomWater(event){event.preventDefault();addWater(document.getElementById("waterAmount").value);event.target.reset()}
 function addFood(event){
 event.preventDefault();
-const name=document.getElementById("foodName").value.trim();
-const calories=Number(document.getElementById("foodCalories").value);
+const choice=document.getElementById("foodChoice").value;
+const food=commonFoods.find(item=>item.id===choice);
+const servings=Number(document.getElementById("foodServings").value);
+const name=food?`${food.name} · ${servings} × ${food.serving}`:document.getElementById("foodName").value.trim();
+const calories=food?estimateFoodCalories(food,servings):Number(document.getElementById("foodCalories").value);
+if(!food&&choice!=="custom"||food&&(!Number.isFinite(servings)||servings<.25||servings>100))return;
 if(!name||!Number.isInteger(calories)||calories<0||calories>10000)return;
-tracking.food.push({id:newTrackingId(),day:localDay(),name,calories});saveTracking();event.target.reset();renderFood();
+tracking.food.push({id:newTrackingId(),day:localDay(),name,calories});saveTracking();event.target.reset();updateFoodEstimate();renderFood();
 }
 function addWeight(event){
 event.preventDefault();

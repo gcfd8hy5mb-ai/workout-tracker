@@ -50,7 +50,7 @@ class WorkoutTrackerTests(unittest.TestCase):
             self.assertIn(f'id="tab{tab}"', INDEX)
         self.assertNotIn('id="tabHistory"', INDEX)
         self.assertNotIn('id="workoutHistoryContent"', INDEX)
-        for destination in ("Home", "Workout", "Progress", "History", "Timer", "Water", "Food", "Weight", "Goals"):
+        for destination in ("Home", "Workout", "Manage", "Progress", "History", "Timer", "Water", "Food", "Weight", "Goals"):
             self.assertEqual(INDEX.count(f'id="nav{destination}"'), 1)
         self.assertIn('["Workout","Timer"].forEach', INDEX)
         self.assertIn('menu.inert=true', INDEX)
@@ -62,6 +62,27 @@ class WorkoutTrackerTests(unittest.TestCase):
             self.assertIn(f'id="{screen}"', INDEX)
         self.assertIn('tracking.weight.push({id:newTrackingId(),day,value:', INDEX)
         self.assertIn('tracking.weight.slice().sort((a,b)=>b.day.localeCompare(a.day))', INDEX)
+
+    def test_manage_workouts_moved_into_menu(self):
+        home = INDEX.split('<section id="home">', 1)[1].split('</section>', 1)[0]
+        self.assertNotIn('id="dataReset"', home)
+        self.assertNotIn('id="customButtons"', home)
+        self.assertIn('id="navManage" onclick="showManageWorkouts()"', INDEX)
+        self.assertIn('id="manageWorkoutScreen"', INDEX)
+        self.assertIn('function showManageWorkouts()', INDEX)
+
+    def test_food_calories_are_calculated_from_servings(self):
+        self.assertIn('function estimateFoodCalories(food,servings)', INDEX)
+        self.assertIn('Math.round(food.grams*food.kcal100/100*servings)', INDEX)
+        self.assertIn('id="foodChoice" onchange="updateFoodEstimate()"', INDEX)
+        self.assertIn('food?estimateFoodCalories(food,servings)', INDEX)
+        self.assertIn('id="customFoodFields" class="hidden"', INDEX)
+
+    def test_goal_uses_saved_weight_and_selected_training_goal(self):
+        self.assertIn('value="fat-loss"', INDEX)
+        self.assertIn('tracking.weight.slice().sort((a,b)=>b.day.localeCompare(a.day))[0]', INDEX)
+        self.assertIn('goalFactors={muscle:1.08,strength:1.04,"fat-loss":.90,consistency:1}', INDEX)
+        self.assertIn('function useSuggestedCalories()', INDEX)
 
     def test_basic_presets_appear_only_when_requested(self):
         self.assertNotIn('id="presetButtons"', INDEX)
@@ -92,8 +113,8 @@ class WorkoutTrackerTests(unittest.TestCase):
 
     def test_progress_and_release_version_are_not_animated(self):
         self.assertIn(".progress-fill{height:100%;width:0;background:#111;transition:none}", INDEX)
-        self.assertIn("<p>Version 8.0</p>", INDEX)
-        self.assertIn('const CACHE_NAME = "workout-tracker-v8.0";', SERVICE_WORKER)
+        self.assertIn("<p>Version 8.1</p>", INDEX)
+        self.assertIn('const CACHE_NAME = "workout-tracker-v8.1";', SERVICE_WORKER)
 
     def test_saved_data_storage_keys_remain_compatible(self):
         for storage_key in ("completedExercisesV5", "customWorkoutsV5", "workoutHistoryV52", "overloadTargetsV1", "workoutGoalsV1"):
