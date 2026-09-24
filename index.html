@@ -2757,10 +2757,13 @@ const weight=Math.max(...sets.map(s=>s.weight)),reps=Math.max(...sets.map(s=>s.r
 const volume=Math.max(...sets.map(s=>s.weight*s.reps));
 const oneRep=Math.max(0,...sets.filter(s=>s.reps<=10).map(s=>s.weight*(1+s.reps/30)));
 const latest=sets.slice().sort((a,b)=>b.day.localeCompare(a.day))[0];
+let runningBest=0;const recentRecords=[];
+for(const set of sets.slice().reverse())if(set.weight>runningBest){runningBest=set.weight;recentRecords.push(`${set.day}: ${set.weight} lb`)}
 const card=document.createElement("article");card.className="card";
 const heading=document.createElement("h3");heading.textContent=getExercise(id)?.name||id;card.appendChild(heading);
 const stats=document.createElement("p");stats.textContent=`Best weight: ${weight} lb · Best reps: ${reps} · Best set volume: ${Math.round(volume)} lb · Estimated 1RM: ${oneRep?Math.round(oneRep)+" lb":"—"}`;card.appendChild(stats);
 const note=document.createElement("p");note.className="small";note.textContent=`Last logged ${latest.day}. Records use your saved sets.`;card.appendChild(note);area.appendChild(card);
+const history=document.createElement("p");history.className="small";history.textContent=`Recent weight records: ${recentRecords.slice(-3).reverse().join(" · ")||"None yet"}`;card.appendChild(history);
 }
 if(!area.children.length)area.innerHTML='<div class="card empty">Log weighted sets and finish a workout to see your records.</div>';
 }
