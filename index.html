@@ -636,6 +636,7 @@ header p{color:#222}
 .setup-actions{display:flex;gap:10px;align-items:center}
 .setup-actions .save-button{flex:1;margin:0}
 .setup-skip{background:transparent;border:0;padding:12px;color:#555}
+.setup-basic{width:100%;margin-top:10px;padding:13px;border:1px solid #ccc;border-radius:12px;background:#fff;color:#111;text-align:center}
 .plan-card{margin-bottom:18px}
 .plan-card h2{font-size:20px;margin:0 0 8px}
 .plan-card p{color:#333;line-height:1.45;margin:6px 0 12px}
@@ -654,7 +655,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 7.0</p>
+<p>Version 7.1</p>
 
 </header>
 
@@ -680,6 +681,8 @@ header p{color:#222}
 <label for="setupDays">How many days per week can you train?</label>
 <select id="setupDays"><option value="2">2 days</option><option value="3">3 days</option><option value="4" selected>4 days</option><option value="5">5 days</option></select>
 <div class="setup-actions"><button class="save-button" onclick="saveWorkoutGoals()">See my plan</button><button class="setup-skip" onclick="skipWorkoutGoals()">Skip</button></div>
+<button class="setup-basic" onclick="useBasicPlan()">Stick with the basic 4-day plan</button>
+<p class="small">Start with the four preset workouts. You can choose a personalized plan later.</p>
 </div>
 </section>
 
@@ -713,7 +716,7 @@ Exercise Library
 
 </button>
 
-<h2 class="section-heading">Preset Workouts</h2>
+<h2 class="section-heading" id="presetHeading">Preset Workouts</h2>
 
 <div id="presetButtons"></div>
 
@@ -1341,10 +1344,30 @@ localStorage.setItem("workoutGoalsV1",JSON.stringify(workoutGoals));
 goHome();
 }
 
+function useBasicPlan(){
+workoutGoals={basic:true,goal:"muscle",days:4,gender:document.getElementById("setupGender").value,focus:"balanced"};
+localStorage.setItem("workoutGoalsV1",JSON.stringify(workoutGoals));
+goHome();
+}
+
 function renderSuggestedPlan(){
 const area=document.getElementById("suggestedPlan");area.innerHTML="";
 if(!workoutGoals||workoutGoals.skipped){
 area.innerHTML='<button class="action-button" onclick="showGoalsSetup()">Get a suggested plan<span>Answer two questions about your goals</span></button>';
+return;
+}
+if(workoutGoals.basic){
+const card=document.createElement("div");card.className="card plan-card";
+card.innerHTML="<h2>Your basic 4-day plan</h2><p>Start with these preset workouts. Tap a day to see its exercises and log your sets.</p>";
+Object.entries(presetWorkouts).forEach(([key,day])=>{
+const button=document.createElement("button");button.className="plan-day";
+button.innerHTML=`<strong>${escapeHTML(day.title)}</strong><span>${escapeHTML(day.subtitle)}</span>`;
+button.onclick=()=>openPresetWorkout(key);
+card.appendChild(button);
+});
+const edit=document.createElement("button");edit.className="plan-edit";
+edit.textContent="Choose a personalized plan";edit.onclick=showGoalsSetup;card.appendChild(edit);
+area.appendChild(card);
 return;
 }
 const descriptions={
@@ -1379,6 +1402,10 @@ function renderHome(){
 renderSuggestedPlan();
 
 const preset=document.getElementById("presetButtons");
+
+const basic=Boolean(workoutGoals?.basic);
+document.getElementById("presetHeading").classList.toggle("hidden",basic);
+preset.classList.toggle("hidden",basic);
 
 preset.innerHTML="";
 
@@ -2050,7 +2077,7 @@ updateProgress();
 
 function updateProgress(){
 
-if(workoutGoals&&!workoutGoals.skipped){
+if(workoutGoals&&!workoutGoals.skipped&&!workoutGoals.basic){
 const ids=suggestedWorkouts(workoutGoals).flatMap((day,index)=>day.exercises.map(id=>`${suggestedWorkoutKey(index)}-${id}`));
 const done=ids.filter(id=>completedExercises.includes(id)).length;
 document.getElementById("progressFill").style.width=(ids.length?Math.min(done/ids.length*100,100):0)+"%";
