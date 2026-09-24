@@ -492,6 +492,38 @@ padding:13px;font-size:15px;font-weight:700;margin-top:8px
 .today-meter{grid-column:1/-1;height:5px;border-radius:5px;background:#e8e8ec;overflow:hidden}
 .today-meter-fill{display:block;height:100%;background:#333;transition:none}
 .today-workout{border-top:1px solid #eee;padding-top:12px}
+.workout-readiness,.rest-strip{padding:13px;margin:10px 0 14px;background:#fff;border:1px solid var(--line);border-radius:14px}
+.workout-readiness p,.rest-strip p{margin:5px 0;font-size:13px;color:#555}
+.readiness-options,.rest-presets,.exercise-swap-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.readiness-options button,.rest-presets button,.exercise-swap-list button{min-height:44px;padding:9px 12px;border:1px solid #ddd;border-radius:11px;background:#fafafa;color:#111;font:inherit}
+.readiness-options button[aria-pressed="true"],.rest-presets button[aria-pressed="true"]{background:#e8e8ed;border-color:#aaa}
+.rest-strip{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rest-display{font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.rest-strip button{min-height:44px;padding:9px 12px;border:1px solid #ddd;border-radius:11px;background:#fafafa}
+.exercise-tools{margin:12px 0;border-top:1px solid #eee;padding-top:12px}
+.exercise-tools button,.set-done{min-height:44px;padding:9px 12px;border:1px solid #ddd;border-radius:10px;background:#fafafa;color:#111;font:inherit}
+.warmup-guide{margin:8px 0;color:#444;font-size:13px;line-height:1.5}
+.set-done[aria-pressed="true"]{background:#dcf2e3}
+.progress-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}
+.progress-links button{min-height:54px;border:1px solid #ddd;border-radius:13px;background:#fff;color:#111;font:inherit}
+.recovery-list{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.recovery-list span{padding:7px 10px;background:#f3f3f5;border-radius:11px;font-size:13px}
+.calendar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0}
+.calendar-toolbar button,.calendar-detail button{min-height:44px;border:1px solid #ddd;border-radius:11px;background:#fafafa;padding:8px 12px;font:inherit}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.calendar-weekday{text-align:center;font-size:12px;padding:6px 0;color:#555}
+.calendar-day{min-height:55px;padding:5px 2px;border:1px solid #e5e5e8;border-radius:9px;background:#fff;text-align:center;font:inherit;font-size:13px}
+.calendar-day.selected{border-color:#555;background:#f2f2f5}
+.calendar-day span{display:block;font-size:10px;line-height:1.15;color:#555;overflow-wrap:anywhere}
+.calendar-detail{margin-top:14px;border-top:1px solid #ddd;padding-top:12px}
+.calendar-detail button{margin:7px 7px 0 0}
+.records-list,.measure-list,.photo-list{display:grid;gap:10px}
+.measure-row,.record-row,.photo-card{border:1px solid #e5e5e8;border-radius:13px;padding:12px;background:#fff}
+.measure-row button,.photo-card button{min-height:44px;border:1px solid #ddd;border-radius:10px;background:#fff;padding:8px 12px;margin-top:8px}
+.photo-card img{display:block;width:100%;max-height:350px;object-fit:contain;border-radius:10px;background:#eee}
+.photo-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+.photo-compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.photo-compare img{width:100%;height:200px;object-fit:contain;background:#eee;border-radius:10px}
 .calorie-workout{margin:0 0 16px;padding:14px;border:1px solid #e5e5e8;border-radius:14px;background:#fafafa}
 .calorie-workout label{display:block;margin:8px 0}
 .calorie-workout input{max-width:130px}
@@ -698,6 +730,7 @@ header{background:#fff;color:#111;border-bottom:1px solid #e5e5e8}
 <section id="home">
 
 <div id="todayDashboard" class="card today-card"></div>
+<div id="weeklySummaryHome"></div>
 
 <div id="suggestedPlan"></div>
 
@@ -740,7 +773,7 @@ Exercise Library
 <button onclick="resetWorkoutData('progress')">Reset workout progress</button>
 <button onclick="resetWorkoutData('both')">Reset history and progress</button>
 </details>
-<div class="card"><h3>Back up your data</h3><p class="small">Download your workout, food, water, weight, and goals to a file. Restore replaces the data on this phone.</p>
+<div class="card"><h3>Back up your data</h3><p class="small">Download your workouts, tracking, measurements and private photos to a file. Photos stay on this device unless you save or share the backup yourself. Restore replaces data on this phone.</p>
 <div class="backup-actions"><button onclick="exportBackup()">Download backup</button><button onclick="document.getElementById('backupFile').click()">Restore backup</button><input id="backupFile" class="hidden" type="file" accept="application/json,.json" onchange="importBackup(event)"></div></div>
 </section>
 
@@ -749,6 +782,9 @@ Exercise Library
 <button class="back" onclick="goHome()">← Back</button>
 
 <h2 id="workoutTitle"></h2>
+<div class="workout-readiness"><strong>How are you feeling today?</strong><p>This is saved with your workout.</p><div class="readiness-options" id="readinessOptions"></div></div>
+<div class="rest-presets" id="workoutRestPresets" aria-label="Rest duration"></div>
+<div class="rest-strip" role="status"><div><strong>Rest between sets</strong><p id="workoutRestStatus">Starts when you mark a set done. Keep this page open for the alert.</p><button onclick="enableRestAlerts()" id="enableRestAlerts">Enable alerts</button></div><div><div id="workoutRestDisplay" class="rest-display">1:30</div><button onclick="skipWorkoutRest()">Skip</button></div></div>
 
 <div id="workoutCalorieCard" class="calorie-workout hidden"><strong>Workout time and calorie estimate</strong>
 <label for="workoutMinutes">Minutes you plan to exercise</label><input id="workoutMinutes" type="number" min="10" max="180" step="5" inputmode="numeric" onchange="updateWorkoutMinutes()">
@@ -842,12 +878,23 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <h2>Overall Progress</h2>
 
 <div id="overallStats"></div>
+<div id="weeklySummary"></div>
+<div class="progress-links"><button onclick="showWorkoutCalendar()">Workout calendar</button><button onclick="showPersonalRecords()">Personal records</button><button onclick="showMeasurements()">Measurements</button><button onclick="showProgressPhotos()">Progress photos</button></div>
+<div id="muscleRecoveryVisual"></div>
 <div id="muscleProgressVisual"></div>
 <div id="exerciseTrendVisual"></div>
 
 <div id="overallExerciseProgress"></div>
 
 </section>
+
+<section id="calendarScreen" class="hidden"><h2>Workout calendar</h2><div class="calendar-toolbar"><button onclick="changeCalendarMonth(-1)" aria-label="Previous month">←</button><strong id="calendarMonth"></strong><button onclick="changeCalendarMonth(1)" aria-label="Next month">→</button></div><div id="calendarGrid" class="calendar-grid"></div><div id="calendarDetail" class="card calendar-detail"></div><p class="small">Rest and missed days are marked by you. The calendar does not guess which days you planned to train.</p></section>
+
+<section id="recordsScreen" class="hidden"><h2>Personal records</h2><p class="small">Based on the sets you've logged. Estimated one-rep max is an approximation for sets of 10 reps or fewer.</p><div id="personalRecords" class="records-list"></div></section>
+
+<section id="measurementsScreen" class="hidden"><h2>Measurements</h2><div class="card"><form class="tracker-form" onsubmit="saveMeasurement(event)"><label for="measurementArea">Body area</label><select id="measurementArea"><option>Waist</option><option>Chest</option><option>Arm</option><option>Thigh</option><option>Hips</option></select><label for="measurementValue">Measurement (inches)</label><input id="measurementValue" type="number" min="1" max="200" step="0.1" inputmode="decimal" required><label for="measurementDay">Date</label><input id="measurementDay" type="date" required><button type="submit">Save measurement</button></form></div><div class="card"><label for="measurementChartArea">See trend for</label><select id="measurementChartArea" onchange="renderMeasurements()"><option>Waist</option><option>Chest</option><option>Arm</option><option>Thigh</option><option>Hips</option></select><div id="measurementChart"></div></div><div id="measurementList" class="measure-list"></div></section>
+
+<section id="photosScreen" class="hidden"><h2>Progress photos</h2><div class="card"><p class="small">Stored only on this device. Photos are not uploaded. Select two to compare them.</p><label for="progressPhotoInput">Add a photo</label><input id="progressPhotoInput" type="file" accept="image/*" onchange="addProgressPhoto(event)"><p id="photoStatus" class="small" role="status"></p></div><div id="photoComparison" class="card hidden"></div><div id="photoList" class="photo-list"></div></section>
 
 <section id="globalHistoryScreen" class="hidden">
 
@@ -913,6 +960,10 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <button class="menu-link" id="navWorkout" onclick="bottomWorkout()">Workout</button>
 <button class="menu-link" id="navManage" onclick="showManageWorkouts()">Manage workouts</button>
 <button class="menu-link" id="navProgress" onclick="showOverallProgress()">Progress</button>
+<button class="menu-link" id="navCalendar" onclick="showWorkoutCalendar()">Calendar</button>
+<button class="menu-link" id="navRecords" onclick="showPersonalRecords()">Records</button>
+<button class="menu-link" id="navMeasurements" onclick="showMeasurements()">Measurements</button>
+<button class="menu-link" id="navPhotos" onclick="showProgressPhotos()">Photos</button>
 <button class="menu-link" id="navHistory" onclick="showGlobalHistory()">History</button>
 <button class="menu-link" id="navTimer" onclick="showGlobalTimer()">Timer</button>
 <div class="menu-group">Daily tracking</div>
@@ -920,7 +971,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <button class="menu-link" id="navFood" onclick="showFood()">Food</button>
 <button class="menu-link" id="navWeight" onclick="showWeight()">Weight</button>
 <button class="menu-link" id="navGoals" onclick="showTrackingGoals()">Goals</button>
-<small class="menu-version">Version 8.6</small>
+<small class="menu-version">Version 9.0</small>
 </nav>
 
 <div id="pickerOverlay" class="picker-overlay hidden" onclick="closePicker()"></div>
@@ -1250,8 +1301,8 @@ let workoutGoals=JSON.parse(localStorage.getItem("workoutGoalsV1")||"null");
 function readTrackingData(){
 try{
 const saved=JSON.parse(localStorage.getItem("dailyTrackingV1")||"{}");
-return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],foodFavorites:Array.isArray(saved.foodFavorites)?saved.foodFavorites:[],waterUnit:saved.waterUnit==="oz"?"oz":"ml",waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null,calorieMode:["auto","manual"].includes(saved.calorieMode)?saved.calorieMode:null,calorieWorkout:saved.calorieWorkout&&typeof saved.calorieWorkout==="object"&&!Array.isArray(saved.calorieWorkout)?saved.calorieWorkout:null,calorieAge:saved.calorieAge||"",calorieFeet:saved.calorieFeet||"",calorieInches:saved.calorieInches??"",calorieEquation:saved.calorieEquation||"",calorieActivity:saved.calorieActivity||"1.4"};
-}catch{return {water:[],food:[],weight:[],foodFavorites:[],waterUnit:"ml",waterGoal:2000,calorieGoal:null,calorieMode:null,calorieWorkout:null,calorieAge:"",calorieFeet:"",calorieInches:"",calorieEquation:"",calorieActivity:"1.4"}}
+return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],foodFavorites:Array.isArray(saved.foodFavorites)?saved.foodFavorites:[],waterUnit:saved.waterUnit==="oz"?"oz":"ml",waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null,calorieMode:["auto","manual"].includes(saved.calorieMode)?saved.calorieMode:null,calorieWorkout:saved.calorieWorkout&&typeof saved.calorieWorkout==="object"&&!Array.isArray(saved.calorieWorkout)?saved.calorieWorkout:null,restSeconds:[60,90,120,180].includes(saved.restSeconds)?saved.restSeconds:90,readiness:saved.readiness&&typeof saved.readiness==="object"?saved.readiness:{},manualTargets:saved.manualTargets&&typeof saved.manualTargets==="object"?saved.manualTargets:{},substitutions:saved.substitutions&&typeof saved.substitutions==="object"?saved.substitutions:{},measurements:Array.isArray(saved.measurements)?saved.measurements:[],calendarNotes:saved.calendarNotes&&typeof saved.calendarNotes==="object"&&!Array.isArray(saved.calendarNotes)?saved.calendarNotes:{},calorieAge:saved.calorieAge||"",calorieFeet:saved.calorieFeet||"",calorieInches:saved.calorieInches??"",calorieEquation:saved.calorieEquation||"",calorieActivity:saved.calorieActivity||"1.4"};
+}catch{return {water:[],food:[],weight:[],foodFavorites:[],waterUnit:"ml",waterGoal:2000,calorieGoal:null,calorieMode:null,calorieWorkout:null,restSeconds:90,readiness:{},manualTargets:{},substitutions:{},measurements:[],calendarNotes:{},calorieAge:"",calorieFeet:"",calorieInches:"",calorieEquation:"",calorieActivity:"1.4"}}
 }
 let tracking=readTrackingData();
 function saveTracking(){localStorage.setItem("dailyTrackingV1",JSON.stringify(tracking))}
@@ -1281,7 +1332,7 @@ function allScreens(){
 
 return ["home","setupScreen","workoutScreen","libraryScreen","builderScreen",
 
-"overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen"];
+"overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen","calendarScreen","recordsScreen","measurementsScreen","photosScreen"];
 
 }
 
@@ -1302,7 +1353,7 @@ window.scrollTo(0,0);
 
 function setBottomNav(name){
 
-["Home","Workout","Manage","Progress","History","Timer","Water","Food","Weight","Goals"].forEach(x=>{
+["Home","Workout","Manage","Progress","History","Timer","Water","Food","Weight","Goals","Calendar","Records","Measurements","Photos"].forEach(x=>{
 
 const button=document.getElementById("nav"+x);
 
@@ -1506,8 +1557,13 @@ return ["water","food","weight","foodFavorites"].every(key=>trackingData[key]===
 &&data.workoutHistoryV52.every(entry=>entry&&typeof entry==="object"&&!Array.isArray(entry))
 &&data.customWorkoutsV5.every(entry=>entry&&typeof entry==="object"&&!Array.isArray(entry));
 }
-function exportBackup(){
-const backup=new Blob([JSON.stringify(makeBackup(),null,2)],{type:"application/json"});
+async function exportBackup(){
+let data=makeBackup();
+try{
+const photos=await allProgressPhotos();
+data.photos=await Promise.all(photos.map(async photo=>({id:photo.id,day:photo.day,weight:photo.weight,data:await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error);reader.readAsDataURL(photo.data)})})));
+}catch(error){alert("Could not include private photos in the backup. Please try again. "+(error.message||""));return}
+const backup=new Blob([JSON.stringify(data)],{type:"application/json"});
 const url=URL.createObjectURL(backup);
 const link=document.createElement("a");link.href=url;link.download=`workout-tracker-backup-${localDay()}.json`;
 document.body.appendChild(link);link.click();link.remove();
@@ -1516,10 +1572,24 @@ setTimeout(()=>URL.revokeObjectURL(url),60000);
 async function importBackup(event){
 const input=event.target,file=input.files?.[0];
 try{
-if(!file||file.size>3_000_000)throw Error("Select a backup under 3 MB.");
+if(!file||file.size>80_000_000)throw Error("Select a backup under 80 MB.");
 const backup=JSON.parse(await file.text());
 if(!validBackup(backup))throw Error("This is not a compatible workout tracker backup.");
+let restoredPhotos=null;
+if(backup.photos!==undefined){
+if(!Array.isArray(backup.photos)||backup.photos.length>200)throw Error("Invalid photos in backup.");
+restoredPhotos=backup.photos.map(photo=>{
+if(!photo||typeof photo.id!=="string"||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(photo.day)||typeof photo.data!=="string"||!photo.data.startsWith("data:image/jpeg;base64,"))throw Error("Invalid photo entry in backup.");
+const bytes=atob(photo.data.slice(photo.data.indexOf(",")+1));if(bytes.length>3_000_000)throw Error("Photo in backup exceeds 3 MB.");
+const array=new Uint8Array(bytes.length);for(let i=0;i<bytes.length;i++)array[i]=bytes.charCodeAt(i);
+return {id:photo.id,day:photo.day,weight:photo.weight,data:new Blob([array],{type:"image/jpeg"})};
+});
+}
 if(!confirm("Replace the workout and tracking data on this phone with this backup?"))return;
+if(restoredPhotos){
+const db=await photoDatabase();
+try{await new Promise((resolve,reject)=>{const transaction=db.transaction("photos","readwrite"),store=transaction.objectStore("photos");store.clear();restoredPhotos.forEach(photo=>store.put(photo));transaction.oncomplete=resolve;transaction.onerror=()=>reject(transaction.error);transaction.onabort=()=>reject(transaction.error)})}finally{db.close()}
+}
 const previous={};for(const key of Object.keys(backupKeys))previous[key]=localStorage.getItem(key);
 try{for(const key of Object.keys(backupKeys))localStorage.setItem(key,JSON.stringify(backup.data[key]))}
 catch(error){for(const key of Object.keys(backupKeys))localStorage.removeItem(key);for(const [key,value] of Object.entries(previous))if(value!==null)localStorage.setItem(key,value);throw error}
@@ -1553,6 +1623,7 @@ updateProgress();
 function renderHome(){
 
 renderTodayDashboard();
+renderWeeklySummary("weeklySummaryHome");
 renderSuggestedPlan();
 document.getElementById("homeProgressCard").classList.toggle("hidden",!workoutGoals||workoutGoals.skipped);
 
@@ -1696,6 +1767,8 @@ openWorkout(w.name,activeWorkoutExerciseIds,true);
 function openWorkout(title,ids,isCustom){
 
 showScreen("workoutScreen");setBottomNav("Workout");
+const savedIds=tracking.substitutions?.[activeWorkoutKey];
+if(Array.isArray(savedIds)&&savedIds.length===ids.length&&savedIds.every(id=>getExercise(id)))activeWorkoutExerciseIds=[...savedIds];
 
 document.getElementById("workoutTitle").textContent=title;
 const previous=tracking.calorieWorkout;
@@ -1707,24 +1780,11 @@ renderWorkoutCalorieEstimate();
 
 
 const list=document.getElementById("exerciseList");list.innerHTML="";
-
-ids.forEach(id=>{
-
-const ex=getExercise(id);
-
-if(ex) list.appendChild(createExerciseCard(ex,activeWorkoutKey+"-"+ex.id));
-
-});
-
-if(isCustom){
-
-const d=document.createElement("button");
-
-d.className="delete-button";d.textContent="Delete This Workout";
-
-d.onclick=()=>deleteCustomWorkout(activeCustomIndex);list.appendChild(d);
-
-}
+renderActiveWorkoutExercises(isCustom);
+document.querySelector(".workout-readiness").classList.remove("hidden");
+document.getElementById("workoutRestPresets").classList.remove("hidden");
+document.querySelector(".rest-strip").classList.remove("hidden");
+renderWorkoutReadiness();renderWorkoutRest();
 
 document.getElementById("finishWorkoutButton").classList.remove("hidden");
 
@@ -1734,6 +1794,26 @@ updateWorkoutCompleteButton();
 
 showWorkoutTab("workout");
 
+}
+function renderActiveWorkoutExercises(isCustom=activeCustomIndex!==null){
+const list=document.getElementById("exerciseList");list.replaceChildren();
+activeWorkoutExerciseIds.forEach(id=>{const ex=getExercise(id);if(ex)list.appendChild(createExerciseCard(ex,activeWorkoutKey+"-"+ex.id))});
+if(isCustom){const button=document.createElement("button");button.className="delete-button";button.textContent="Delete This Workout";button.onclick=()=>deleteCustomWorkout(activeCustomIndex);list.appendChild(button)}
+}
+function replaceExercise(oldId,newId){
+const alternative=getExercise(newId),original=getExercise(oldId);
+if(!alternative||!original||alternative.muscle!==original.muscle||activeWorkoutExerciseIds.includes(newId))return;
+if(Object.keys(setHistory).some(key=>key.startsWith(`${activeWorkoutKey}-${oldId}-set`))&&!confirm("Replace this exercise? Its unsaved sets for this workout will be cleared."))return;
+for(let set=1;set<=4;set++)delete setHistory[`${activeWorkoutKey}-${oldId}-set${set}`];
+localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
+activeWorkoutExerciseIds=activeWorkoutExerciseIds.map(id=>id===oldId?newId:id);
+tracking.substitutions[activeWorkoutKey]=[...activeWorkoutExerciseIds];saveTracking();
+renderActiveWorkoutExercises();updateWorkoutCompleteButton();
+}
+function renderWorkoutReadiness(){
+const area=document.getElementById("readinessOptions");area.replaceChildren();
+const key=`${localDay()}-${activeWorkoutKey}`;
+for(const feeling of ["Great","Normal","Tired"]){const button=document.createElement("button");button.textContent=feeling;button.setAttribute("aria-pressed",String((tracking.readiness[key]||"Normal")===feeling));button.onclick=()=>{tracking.readiness[key]=feeling;saveTracking();renderWorkoutReadiness()};area.appendChild(button)}
 }
 
 /* WORKOUT TABS */
@@ -1774,7 +1854,8 @@ const detailId=safeId(unique);
 const diagram=exerciseMuscleDiagram(ex);
 const showGoal=activeWorkoutKey!=="library";
 const goal=showGoal?overloadGoal(ex.id):null;
-const goalText=goal!==null?`Next target: ${goal} lb · 8–12 reps`:"Choose a starting weight · 8–12 reps";
+const suggestion=showGoal?progressionSuggestion(ex.id):null;
+const goalText=goal!==null?`Try ${goal} lb × 8–10 reps${suggestion?.reason?` · ${suggestion.reason}`:""}`:"Choose a starting weight · 8–10 reps";
 card.innerHTML=`
 
 <div class="exercise-header" role="button" tabindex="0" aria-expanded="false" aria-controls="${detailId}"
@@ -1793,6 +1874,8 @@ ${showGoal?`<div class="goal-preview">${goalText}</div>`:""}
 </div>
 
 <div class="details" id="${detailId}">
+
+${showGoal?'<div class="exercise-tools"><button type="button" class="swap-toggle">Replace exercise</button><div class="exercise-swap-list hidden"></div></div>':""}
 
 ${ex.image?`
 
@@ -1822,7 +1905,8 @@ ${showGoal?`<div class="overload-guide">
 <strong>Progressive overload goal</strong>
 <label for="${safeId(unique+"-goal")}">Target weight (lb)</label>
 <input class="goal-weight" id="${safeId(unique+"-goal")}" type="number" inputmode="decimal" min="0" max="1000" step="any" value="${goal??""}" placeholder="Set your starting weight">
-<p>Try 8–12 reps per set. After at least two sets at the same weight reach 12 reps, your next target increases by 5 lb. You can change it anytime.</p>
+<p>Start with 8–10 reps. When you meet the target, the next suggestion can rise by 5 lb. After two difficult sessions it can drop by 5 lb. You can change the weight anytime.</p>
+<div class="warmup-guide"></div>
 </div>`:""}
 
 <strong>Track Your Sets</strong>
@@ -1838,6 +1922,14 @@ ${createSetRows(unique)}
 if(showGoal){
 const input=card.querySelector(".goal-weight");
 input.onchange=()=>saveOverloadGoal(ex.id,input,card.querySelector(".goal-preview"));
+const toggle=card.querySelector(".swap-toggle"),options=card.querySelector(".exercise-swap-list");
+toggle.onclick=()=>{
+options.replaceChildren();options.classList.toggle("hidden");if(options.classList.contains("hidden"))return;
+const alternatives=exerciseLibrary.filter(other=>other.muscle===ex.muscle&&other.id!==ex.id&&!activeWorkoutExerciseIds.includes(other.id));
+if(!alternatives.length){options.textContent="No other exercises for this muscle yet.";return}
+alternatives.forEach(other=>{const button=document.createElement("button");button.textContent=other.name;button.onclick=()=>replaceExercise(ex.id,other.id);options.appendChild(button)})
+};
+renderWarmupGuide(ex.id,card);
 }
 
 return card;
@@ -1858,7 +1950,7 @@ if(header)header.setAttribute("aria-expanded",String(e.classList.contains("open"
 function overloadKey(exerciseId){return activeWorkoutKey+"-"+exerciseId}
 
 function lastLoggedExercise(exerciseId){
-const session=workoutHistory.find(s=>s.workoutKey===activeWorkoutKey&&(s.exercises||[]).some(e=>e.id===exerciseId));
+const session=workoutHistory.find(s=>(s.exercises||[]).some(e=>e.id===exerciseId));
 return session?.exercises.find(e=>e.id===exerciseId)||null;
 }
 
@@ -1871,11 +1963,25 @@ const ready=logged.length>=2&&sameWeight.length===logged.length&&sameWeight.ever
 return weight+(ready?5:0);
 }
 
+function progressionSuggestion(exerciseId){
+const recent=workoutHistory.filter(s=>(s.exercises||[]).some(ex=>ex.id===exerciseId)).slice(0,2).map(s=>s.exercises.find(ex=>ex.id===exerciseId));
+if(!recent.length)return null;
+const sets=(recent[0].sets||[]).filter(s=>Number(s.weight)>0&&Number(s.reps)>0);
+if(!sets.length)return null;
+const weight=Number(sets[0].weight);
+const working=sets.filter(s=>Number(s.weight)===weight);
+const previous=(recent[1]?.sets||[]).filter(s=>Number(s.weight)>0&&Number(s.reps)>0);
+const failed=working.length&&working.every(s=>Number(s.reps)<8)&&previous.length&&previous.every(s=>Number(s.weight)===weight&&Number(s.reps)<8);
+const passed=working.length&&working.every(s=>Number(s.reps)>=10);
+return {last:`${weight} lb × ${working[0].reps} reps`,weight:Math.max(2.5,weight+(failed?-5:passed?5:0)),reason:failed?"Two tough sessions; ease back":passed?"Target met; move up":"Keep building"};
+}
 function overloadGoal(exerciseId){
+const manual=Number(tracking.manualTargets?.[overloadKey(exerciseId)]);
+if(manual>0)return manual;
+const suggested=progressionSuggestion(exerciseId);
+if(suggested)return suggested.weight;
 const saved=Number(overloadTargets[overloadKey(exerciseId)]);
-if(saved>0&&Number.isFinite(saved))return saved;
-const previous=lastLoggedExercise(exerciseId);
-return previous?suggestedNextWeight(previous.sets||[]):null;
+return saved>0&&Number.isFinite(saved)?saved:null;
 }
 
 function saveOverloadGoal(exerciseId,input,preview){
@@ -1884,11 +1990,22 @@ if(input.value!==""&&(!Number.isFinite(weight)||weight<=0||weight>1000)){
 input.value=overloadGoal(exerciseId)??"";
 return;
 }
-if(input.value==="")delete overloadTargets[overloadKey(exerciseId)];
-else overloadTargets[overloadKey(exerciseId)]=weight;
+if(!tracking.manualTargets)tracking.manualTargets={};
+if(input.value===""){delete overloadTargets[overloadKey(exerciseId)];delete tracking.manualTargets[overloadKey(exerciseId)]}
+else{overloadTargets[overloadKey(exerciseId)]=weight;tracking.manualTargets[overloadKey(exerciseId)]=weight}
 localStorage.setItem("overloadTargetsV1",JSON.stringify(overloadTargets));
+saveTracking();
 const next=overloadGoal(exerciseId);
-preview.textContent=next!==null?`Next target: ${next} lb · 8–12 reps`:"Choose a starting weight · 8–12 reps";
+preview.textContent=next!==null?`Try ${next} lb × 8–10 reps`:"Choose a starting weight · 8–10 reps";
+renderWarmupGuide(exerciseId,input.closest(".exercise"));
+}
+function renderWarmupGuide(exerciseId,card){
+const area=card?.querySelector(".warmup-guide");if(!area)return;
+const first=setHistory[`${activeWorkoutKey}-${exerciseId}-set1`];
+const working=Number(first?.weight)||overloadGoal(exerciseId);
+if(!working){area.textContent="Set a working weight to see optional warm-up sets.";return}
+const steps=[[.4,8],[.6,5],[.8,3]].map(([fraction,reps])=>`${Math.max(2.5,Math.round(working*fraction/5)*5)} lb × ${reps}`);
+area.textContent=`Optional warm-ups (not counted): ${steps.join(" · ")}. Adjust to what feels comfortable.`;
 }
 
 function createSetRows(unique){
@@ -1940,6 +2057,7 @@ onclick="openPicker('${escapeAttribute(key)}','reps')">${cr}</button>
 <div class="previous">${prev}</div>
 
 ${comparison?`<div class="compare ${comparison.cls}" id="${safeId(key+"-compare")}">${comparison.text}</div>`:""}
+<button class="set-done" type="button" aria-pressed="${Boolean(current.done)}" id="${safeId(key+"-done")}" onclick="toggleSetDone('${escapeAttribute(key)}')">${current.done?"Done ✓":"Mark set done"}</button>
 
 </div>`;
 
@@ -2000,9 +2118,19 @@ function saveSet(key,type,value){
 if(!setHistory[key])setHistory[key]={weight:"",reps:""};
 
 setHistory[key][type]=value;
+if(setHistory[key].done){setHistory[key].done=false;const done=document.getElementById(safeId(key+"-done"));if(done){done.textContent="Mark set done";done.setAttribute("aria-pressed","false")}}
 
 localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
+const id=key.slice(activeWorkoutKey.length+1).replace(/-set[1-4]$/,"");
+renderWarmupGuide(id,document.getElementById(safeId(activeWorkoutKey+"-"+id))?.closest(".exercise"));
 
+}
+function toggleSetDone(key){
+const entry=setHistory[key];
+if(!entry||!(Number(entry.weight)>0)||!(Number(entry.reps)>0)){alert("Choose both weight and reps first.");return}
+entry.done=!entry.done;localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
+const button=document.getElementById(safeId(key+"-done"));button.textContent=entry.done?"Done ✓":"Mark set done";button.setAttribute("aria-pressed",String(entry.done));
+if(entry.done)startWorkoutRest();
 }
 
 /* PICKER */
@@ -2125,6 +2253,7 @@ date:new Date().toISOString(),
 workoutKey:activeWorkoutKey,
 
 workoutTitle:activeWorkoutTitle,
+readiness:tracking.readiness[`${localDay()}-${activeWorkoutKey}`]||"Normal",
 
 exercises:[]
 
@@ -2199,6 +2328,7 @@ activeWorkoutExerciseIds.forEach(id=>{
 for(let set=1;set<=4;set++)delete setHistory[`${activeWorkoutKey}-${id}-set${set}`];
 });
 localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
+delete tracking.substitutions[activeWorkoutKey];saveTracking();
 
 alert("Workout saved! Your next weight targets have been updated from the sets you logged.");
 
@@ -2341,6 +2471,28 @@ const maxVolume=Math.max(...records.map(x=>x.weight*x.reps));
 return `Best weight: ${maxWeight} lb · Best reps: ${maxReps} · Best set volume: ${maxVolume.toLocaleString()} lb`;
 
 }
+function sessionDay(session){const date=new Date(session.date);return Number.isNaN(date.getTime())?"":`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`}
+function weekStart(date){const start=new Date(date.getFullYear(),date.getMonth(),date.getDate());start.setDate(start.getDate()-(start.getDay()+6)%7);return `${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,"0")}-${String(start.getDate()).padStart(2,"0")}`}
+function renderWeeklySummary(id){
+const area=document.getElementById(id);if(!area)return;
+const start=weekStart(new Date()),sessions=workoutHistory.filter(s=>sessionDay(s)>=start);
+const target=workoutGoals&&!workoutGoals.skipped?Number(workoutGoals.days)||4:null;
+const sets=sessions.flatMap(s=>(s.exercises||[]).flatMap(ex=>ex.sets||[])).length;
+let prs=0;const highest={};
+for(const session of workoutHistory.slice().reverse())for(const ex of session.exercises||[]){
+const best=Math.max(0,...(ex.sets||[]).map(s=>Number(s.weight)||0));
+if(best>(highest[ex.id]||0)){if(sessionDay(session)>=start)prs++;highest[ex.id]=best}
+}
+const weeklyWeights=weightEntriesNewestFirst().filter(w=>w.day>=start);
+const weightChange=weeklyWeights.length>1?Number(weeklyWeights[0].value)-Number(weeklyWeights[weeklyWeights.length-1].value):null;
+const loggedDays=[...new Set(tracking.food.filter(entry=>entry.day>=start).map(entry=>entry.day))];
+const ratios=loggedDays.map(day=>{const goal=dailyCalorieTarget(day);return goal?tracking.food.filter(f=>f.day===day).reduce((sum,f)=>sum+Number(f.calories||0),0)/goal:null}).filter(x=>x!==null);
+const calorieText=ratios.length?`${Math.round(ratios.reduce((a,b)=>a+b,0)/ratios.length*100)}% of target on ${ratios.length} logged ${ratios.length===1?"day":"days"}`:"No food days logged";
+const weeks=new Map();for(const s of workoutHistory){const date=new Date(s.date);if(!Number.isNaN(date.getTime())){const key=weekStart(date);weeks.set(key,(weeks.get(key)||0)+1)}}
+let streak=0,weekDate=new Date();if((weeks.get(weekStart(weekDate))||0)<(target||1))weekDate.setDate(weekDate.getDate()-7);
+for(let i=0;i<52;i++){const key=weekStart(weekDate);if((weeks.get(key)||0)<(target||1))break;streak++;weekDate.setDate(weekDate.getDate()-7)}
+area.innerHTML=`<div class="card"><h3>This week</h3><div class="stat-grid"><div class="stat-card"><div class="stat-number">${sessions.length}${target?`/${target}`:""}</div><div class="stat-label">Workouts</div></div><div class="stat-card"><div class="stat-number">${sets}</div><div class="stat-label">Sets</div></div><div class="stat-card"><div class="stat-number">${prs}</div><div class="stat-label">New weight records</div></div><div class="stat-card"><div class="stat-number">${weightChange===null?"—":`${weightChange>0?"+":""}${weightChange.toFixed(1)}`}</div><div class="stat-label">Weight change (lb)</div></div></div><p class="small">${streak} ${streak===1?"week":"weeks"} meeting your workout goal · Calories: ${calorieText}. Rest days are part of training; workout counts are weekly goals, not scheduled dates.</p></div>`;
+}
 
 /* OVERALL PROGRESS */
 
@@ -2377,6 +2529,8 @@ stats.innerHTML=`
 </div>`;
 
 renderMuscleProgress();
+renderMuscleRecovery();
+renderWeeklySummary("weeklySummary");
 renderTrendPicker();
 const area=document.getElementById("overallExerciseProgress");
 
@@ -2491,6 +2645,24 @@ area.innerHTML=muscleVisual(ids,"Muscles you've trained");
 if(!ids.length)area.insertAdjacentHTML("beforeend",'<div class="visual-empty">Finish a workout after entering sets to light up the muscles you trained.</div>');
 }
 
+function renderMuscleRecovery(){
+const area=document.getElementById("muscleRecoveryVisual"),last={};
+for(const session of workoutHistory){
+const time=new Date(session.date).getTime();if(!Number.isFinite(time))continue;
+for(const exercise of session.exercises||[]){
+if(!(exercise.sets||[]).length)continue;
+const muscle=getExercise(exercise.id)?.muscle;
+if(muscle&&(!last[muscle]||time>last[muscle]))last[muscle]=time;
+}
+}
+const recent=Object.fromEntries(Object.entries(last).filter(([,time])=>Date.now()-time<72*3600000).map(([muscle])=>[muscle,1]));
+const labels=visualMuscles.filter(m=>last[m]).map(m=>{
+const days=Math.max(0,Math.floor((Date.now()-last[m])/86400000));
+return `<span>${escapeHTML(m)}: ${days===0?"today":days===1?"1 day ago":`${days} days ago`}</span>`;
+});
+area.innerHTML=`<div class="visual-card"><h3>Recently trained muscles</h3><p class="visual-note">Highlighted means trained within the last 72 hours. Time since your last logged session is not a recovery diagnosis.</p><div class="body-pair">${muscleFigure("Front",recent)}${muscleFigure("Back",recent)}</div><div class="muscle-key">${labels.join("")||"Log a workout to see when each muscle was last trained."}</div></div>`;
+}
+
 function renderTrendPicker(){
 const area=document.getElementById("exerciseTrendVisual");
 const ids=[...new Set(workoutHistory.flatMap(session=>(session.exercises||[]).map(ex=>ex.id)))].filter(id=>getExercise(id));
@@ -2538,6 +2710,140 @@ const chart='<svg class="trend-svg" viewBox="0 0 320 190" role="img" aria-label=
 area.innerHTML=chart+'<p class="trend-summary">'+records.length+' logged '+(records.length===1?'workout':'workouts')+' · Most recent: '+last.weight+' lb · Best: '+Math.max(...records.map(p=>p.weight))+' lb</p>';
 }
 
+/* CALENDAR, RECORDS AND MEASUREMENTS */
+let calendarMonthDate=new Date(new Date().getFullYear(),new Date().getMonth(),1);
+let calendarSelectedDay=localDay();
+function showWorkoutCalendar(){showScreen("calendarScreen");setBottomNav("Calendar");renderWorkoutCalendar()}
+function changeCalendarMonth(offset){calendarMonthDate=new Date(calendarMonthDate.getFullYear(),calendarMonthDate.getMonth()+offset,1);calendarSelectedDay=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,"0")}-01`;renderWorkoutCalendar()}
+function renderWorkoutCalendar(){
+const year=calendarMonthDate.getFullYear(),month=calendarMonthDate.getMonth();
+document.getElementById("calendarMonth").textContent=calendarMonthDate.toLocaleDateString([],{month:"long",year:"numeric"});
+const grid=document.getElementById("calendarGrid");grid.replaceChildren();
+for(const label of ["M","T","W","T","F","S","S"]){const cell=document.createElement("span");cell.className="calendar-weekday";cell.textContent=label;grid.appendChild(cell)}
+const count=new Date(year,month+1,0).getDate(),offset=(new Date(year,month,1).getDay()+6)%7;
+for(let i=0;i<offset;i++)grid.appendChild(document.createElement("span"));
+for(let n=1;n<=count;n++){
+const day=`${year}-${String(month+1).padStart(2,"0")}-${String(n).padStart(2,"0")}`;
+const sessions=workoutHistory.filter(s=>sessionDay(s)===day),weight=tracking.weight.some(w=>w.day===day),note=tracking.calendarNotes[day];
+const cell=document.createElement("button");cell.type="button";cell.className="calendar-day"+(day===calendarSelectedDay?" selected":"");cell.setAttribute("aria-label",`${day}: ${sessions.length} workouts${weight?", weight entry":""}${note?`, ${note} day`:""}`);
+cell.innerHTML=`<strong>${n}</strong><span>${sessions.length?"Workout ":""}${note==="rest"?"Rest ":note==="missed"?"Missed ":""}${weight?"Weight":""}</span>`;
+cell.onclick=()=>{calendarSelectedDay=day;renderWorkoutCalendar()};grid.appendChild(cell);
+}
+renderCalendarDetail();
+}
+function renderCalendarDetail(){
+const area=document.getElementById("calendarDetail"),day=calendarSelectedDay;
+const sessions=workoutHistory.filter(s=>sessionDay(s)===day),weights=tracking.weight.filter(w=>w.day===day);
+area.replaceChildren();const title=document.createElement("h3");title.textContent=new Date(`${day}T12:00:00`).toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"});area.appendChild(title);
+const detail=document.createElement("p");detail.textContent=[...sessions.map(s=>s.title||"Workout completed"),...weights.map(w=>`${w.value} lb recorded`)].join(" · ")||"No activity logged.";area.appendChild(detail);
+const label=document.createElement("label");label.textContent="Day note";label.htmlFor="calendarNote";area.appendChild(label);
+const select=document.createElement("select");select.id="calendarNote";
+for(const [value,text] of [["","No note"],["rest","Planned rest"],["missed","Missed workout"]]){const option=document.createElement("option");option.value=value;option.textContent=text;select.appendChild(option)}
+select.value=tracking.calendarNotes[day]||"";select.onchange=()=>setCalendarNote(day,select.value);area.appendChild(select);
+}
+function setCalendarNote(day,value){if(value)tracking.calendarNotes[day]=value;else delete tracking.calendarNotes[day];saveTracking();renderWorkoutCalendar()}
+
+function showPersonalRecords(){showScreen("recordsScreen");setBottomNav("Records");renderPersonalRecords()}
+function renderPersonalRecords(){
+const area=document.getElementById("personalRecords");area.replaceChildren();
+const byExercise={};
+for(const session of workoutHistory)for(const ex of session.exercises||[])for(const set of ex.sets||[]){
+const weight=Number(set.weight),reps=Number(set.reps);
+if(!Number.isFinite(weight)||weight<=0||!Number.isFinite(reps)||reps<=0)continue;
+(byExercise[ex.id]??=[]).push({weight,reps,day:sessionDay(session)});
+}
+for(const [id,sets] of Object.entries(byExercise).sort((a,b)=>(getExercise(a[0])?.name||a[0]).localeCompare(getExercise(b[0])?.name||b[0]))){
+const weight=Math.max(...sets.map(s=>s.weight)),reps=Math.max(...sets.map(s=>s.reps));
+const volume=Math.max(...sets.map(s=>s.weight*s.reps));
+const oneRep=Math.max(0,...sets.filter(s=>s.reps<=10).map(s=>s.weight*(1+s.reps/30)));
+const latest=sets.slice().sort((a,b)=>b.day.localeCompare(a.day))[0];
+const card=document.createElement("article");card.className="card";
+const heading=document.createElement("h3");heading.textContent=getExercise(id)?.name||id;card.appendChild(heading);
+const stats=document.createElement("p");stats.textContent=`Best weight: ${weight} lb · Best reps: ${reps} · Best set volume: ${Math.round(volume)} lb · Estimated 1RM: ${oneRep?Math.round(oneRep)+" lb":"—"}`;card.appendChild(stats);
+const note=document.createElement("p");note.className="small";note.textContent=`Last logged ${latest.day}. Records use your saved sets.`;card.appendChild(note);area.appendChild(card);
+}
+if(!area.children.length)area.innerHTML='<div class="card empty">Log weighted sets and finish a workout to see your records.</div>';
+}
+function showMeasurements(){showScreen("measurementsScreen");setBottomNav("Measurements");document.getElementById("measurementDay").value=localDay();renderMeasurements()}
+function saveMeasurement(event){
+event.preventDefault();const area=document.getElementById("measurementArea").value,value=Number(document.getElementById("measurementValue").value),day=document.getElementById("measurementDay").value;
+if(!["Waist","Chest","Arm","Thigh","Hips"].includes(area)||!Number.isFinite(value)||value<1||value>200||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(day))return;
+tracking.measurements.push({id:newTrackingId(),area,value:Math.round(value*10)/10,day});saveTracking();document.getElementById("measurementValue").value="";document.getElementById("measurementChartArea").value=area;renderMeasurements();
+}
+function deleteMeasurement(id){if(!confirm("Remove this measurement?"))return;tracking.measurements=tracking.measurements.filter(m=>m.id!==id);saveTracking();renderMeasurements()}
+function renderMeasurements(){
+const selected=document.getElementById("measurementChartArea").value;
+const points=tracking.measurements.filter(m=>m.area===selected&&Number.isFinite(Number(m.value))&&Number(m.value)>0).sort((a,b)=>a.day.localeCompare(b.day)).slice(-12);
+const chart=document.getElementById("measurementChart");
+if(!points.length)chart.innerHTML='<p class="small">Save a measurement to see its trend.</p>';
+else{
+const min=Math.min(...points.map(p=>p.value)),max=Math.max(...points.map(p=>p.value)),range=Math.max(1,max-min);
+const coords=points.map((p,i)=>({x:points.length===1?160:28+i*264/(points.length-1),y:132-(p.value-min)/range*104}));
+chart.innerHTML=`<svg class="trend-svg" viewBox="0 0 320 170" role="img" aria-label="${selected} measurement trend from ${points[0].value} to ${points[points.length-1].value} inches"><polyline fill="none" stroke="#b4493c" stroke-width="3" points="${coords.map(p=>`${p.x},${p.y}`).join(" ")}"/>${coords.map((p,i)=>`<circle cx="${p.x}" cy="${p.y}" r="5" fill="#b4493c"><title>${points[i].day}: ${points[i].value} inches</title></circle>`).join("")}</svg><p class="small">${points[0].day}: ${points[0].value} in · ${points[points.length-1].day}: ${points[points.length-1].value} in</p>`;
+}
+const list=document.getElementById("measurementList");list.replaceChildren();
+for(const m of tracking.measurements.slice().sort((a,b)=>b.day.localeCompare(a.day))){const row=document.createElement("div");row.className="card tracker-row";const text=document.createElement("span");text.textContent=`${m.day} · ${m.area}: ${m.value} in`;const button=document.createElement("button");button.textContent="Remove";button.onclick=()=>deleteMeasurement(m.id);row.append(text,button);list.appendChild(row)}
+}
+
+/* Photos remain in IndexedDB on this device; object URLs are released on redraw. */
+let photoObjectUrls=[],selectedPhotoIds=[];
+function photoDatabase(){
+return new Promise((resolve,reject)=>{
+if(!window.indexedDB){reject(Error("Photo storage is unavailable in this browser."));return}
+const request=indexedDB.open("workoutTrackerPhotosV1",1);
+request.onupgradeneeded=()=>request.result.createObjectStore("photos",{keyPath:"id"});
+request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+});
+}
+async function photoOperation(mode,action){
+const db=await photoDatabase();
+try{return await new Promise((resolve,reject)=>{
+const transaction=db.transaction("photos",mode),store=transaction.objectStore("photos");
+let value;const request=action(store);request.onsuccess=()=>{value=request.result};
+transaction.oncomplete=()=>resolve(value);transaction.onerror=()=>reject(transaction.error);transaction.onabort=()=>reject(transaction.error);
+})}finally{db.close()}
+}
+const allProgressPhotos=()=>photoOperation("readonly",store=>store.getAll());
+const saveProgressPhoto=record=>photoOperation("readwrite",store=>store.put(record));
+const removeProgressPhoto=id=>photoOperation("readwrite",store=>store.delete(id));
+function photoStatus(message){document.getElementById("photoStatus").textContent=message}
+async function showProgressPhotos(){showScreen("photosScreen");setBottomNav("Photos");await renderProgressPhotos()}
+async function addProgressPhoto(event){
+const file=event.target.files?.[0];if(!file)return;
+try{
+if(!file.type.startsWith("image/")||file.size>20_000_000)throw Error("Choose an image under 20 MB.");
+photoStatus("Saving photo on this device…");
+const bitmap=await createImageBitmap(file),scale=Math.min(1,1200/Math.max(bitmap.width,bitmap.height));
+const canvas=document.createElement("canvas");canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);
+canvas.getContext("2d").drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
+const data=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.8));if(!data)throw Error("Could not prepare that photo.");
+const latest=weightEntriesNewestFirst()[0];await saveProgressPhoto({id:newTrackingId(),day:localDay(),weight:latest?.value||null,data});
+photoStatus("Saved on this device. Include photos when you export a backup before switching phones.");await renderProgressPhotos();
+}catch(error){photoStatus(error.message||"Could not save photo.")}finally{event.target.value=""}
+}
+async function deleteProgressPhoto(id){
+if(!confirm("Delete this progress photo from this device?"))return;
+try{await removeProgressPhoto(id);selectedPhotoIds=selectedPhotoIds.filter(item=>item!==id);await renderProgressPhotos()}catch{photoStatus("Could not remove photo.")}
+}
+async function togglePhotoSelection(id){selectedPhotoIds=selectedPhotoIds.includes(id)?selectedPhotoIds.filter(x=>x!==id):[...selectedPhotoIds.slice(-1),id];await renderProgressPhotos()}
+async function renderProgressPhotos(){
+const list=document.getElementById("photoList"),comparison=document.getElementById("photoComparison");
+photoObjectUrls.forEach(url=>URL.revokeObjectURL(url));photoObjectUrls=[];list.replaceChildren();comparison.replaceChildren();comparison.classList.add("hidden");
+let photos;try{photos=(await allProgressPhotos()).sort((a,b)=>b.day.localeCompare(a.day)||b.id.localeCompare(a.id))}catch(error){photoStatus(error.message||"Photo storage is unavailable.");return}
+selectedPhotoIds=selectedPhotoIds.filter(id=>photos.some(p=>p.id===id));
+if(!photos.length){list.innerHTML='<div class="card empty">Your private photos will appear here.</div>';return}
+const makeImage=photo=>{const img=document.createElement("img");const url=URL.createObjectURL(photo.data);photoObjectUrls.push(url);img.src=url;img.alt=`Progress photo from ${photo.day}`;return img};
+for(const photo of photos){
+const card=document.createElement("div");card.className="photo-card";card.appendChild(makeImage(photo));
+const label=document.createElement("p");label.textContent=`${photo.day}${photo.weight?` · ${photo.weight} lb`:""}`;
+const choose=document.createElement("button");choose.textContent=selectedPhotoIds.includes(photo.id)?"Selected":"Compare";choose.setAttribute("aria-pressed",selectedPhotoIds.includes(photo.id));choose.onclick=()=>togglePhotoSelection(photo.id);
+const remove=document.createElement("button");remove.textContent="Delete";remove.onclick=()=>deleteProgressPhoto(photo.id);
+card.append(label,choose,remove);list.appendChild(card);
+}
+if(selectedPhotoIds.length===2){comparison.classList.remove("hidden");const heading=document.createElement("h3");heading.textContent="Compare photos";comparison.appendChild(heading);const pair=document.createElement("div");pair.className="photo-compare";
+for(const id of selectedPhotoIds){const p=photos.find(item=>item.id===id);const cell=document.createElement("div");cell.appendChild(makeImage(p));const label=document.createElement("p");label.textContent=`${p.day}${p.weight?` · ${p.weight} lb`:""}`;cell.appendChild(label);pair.appendChild(cell)}comparison.appendChild(pair)}
+}
+
 /* GLOBAL HISTORY */
 
 function showGlobalHistory(){
@@ -2559,6 +2865,37 @@ workoutHistory.forEach(s=>area.appendChild(historyCard(s)));
 }
 
 /* TIMER */
+
+let workoutRestEndsAt=0,workoutRestInterval=null;
+function renderWorkoutRest(){
+const choices=document.getElementById("workoutRestPresets");choices.replaceChildren();
+for(const seconds of [60,90,120,180]){const button=document.createElement("button");button.textContent=`${Math.floor(seconds/60)} min${seconds%60?" 30 sec":""}`;button.setAttribute("aria-pressed",String(tracking.restSeconds===seconds));button.onclick=()=>{tracking.restSeconds=seconds;saveTracking();renderWorkoutRest()};choices.appendChild(button)}
+updateWorkoutRestDisplay();
+}
+function updateWorkoutRestDisplay(){
+const remaining=workoutRestEndsAt?Math.max(0,Math.ceil((workoutRestEndsAt-Date.now())/1000)):tracking.restSeconds;
+document.getElementById("workoutRestDisplay").textContent=formatTimer(remaining);
+if(workoutRestEndsAt&&remaining===0){
+clearInterval(workoutRestInterval);workoutRestInterval=null;workoutRestEndsAt=0;
+document.getElementById("workoutRestStatus").textContent="Rest complete. Ready for the next set.";
+if(navigator.vibrate)navigator.vibrate([180,100,180]);
+if(typeof Notification!=="undefined"&&Notification.permission==="granted"&&document.visibilityState!=="visible"){
+try{new Notification("Rest complete",{body:"Ready for your next set."})}catch{}
+}
+}
+}
+function startWorkoutRest(){
+clearInterval(workoutRestInterval);workoutRestEndsAt=Date.now()+tracking.restSeconds*1000;
+document.getElementById("workoutRestStatus").textContent="Rest timer running.";
+updateWorkoutRestDisplay();workoutRestInterval=setInterval(updateWorkoutRestDisplay,1000);
+}
+function skipWorkoutRest(){clearInterval(workoutRestInterval);workoutRestInterval=null;workoutRestEndsAt=0;document.getElementById("workoutRestStatus").textContent="Rest skipped.";updateWorkoutRestDisplay()}
+async function enableRestAlerts(){
+const status=document.getElementById("workoutRestStatus");
+if(typeof Notification==="undefined"){status.textContent="This browser does not support notifications. Keep the workout open for the timer.";return}
+try{const permission=await Notification.requestPermission();status.textContent=permission==="granted"?"Alerts enabled while this workout stays open.":"Notifications are off. The countdown still works while the page is open."}
+catch{status.textContent="Notifications are unavailable here. Keep the workout open for the timer."}
+}
 
 let timerSeconds=90;
 
@@ -2722,6 +3059,9 @@ activeWorkoutKey="library";activeWorkoutTitle=ex.name;activeWorkoutExerciseIds=[
 
 showScreen("workoutScreen");setBottomNav("Workout");
 document.getElementById("workoutCalorieCard").classList.add("hidden");
+document.querySelector(".workout-readiness").classList.add("hidden");
+document.getElementById("workoutRestPresets").classList.add("hidden");
+document.querySelector(".rest-strip").classList.add("hidden");
 
 document.getElementById("workoutTitle").textContent=ex.name;
 
