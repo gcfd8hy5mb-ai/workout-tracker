@@ -2121,7 +2121,7 @@ const input=event.target,file=input.files?.[0];
 try{
 if(!file||file.size>80_000_000)throw Error("Select a backup under 80 MB.");
 const backup=JSON.parse(await file.text());
-if(!validBackup(backup))throw Error("This is not a compatible workout tracker backup.");
+if(!validBackup(backup))throw Error("This is not a compatible PRISM backup.");
 let restoredPhotos=null;
 if(backup.photos!==undefined){
 if(!Array.isArray(backup.photos)||backup.photos.length>200)throw Error("Invalid photos in backup.");
