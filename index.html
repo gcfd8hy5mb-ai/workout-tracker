@@ -821,12 +821,17 @@ body:has(#workoutScreen:not(.hidden)) .prism-bottom-nav,body:has(#prismRestScree
 .prism-segments{display:flex;gap:8px;margin:13px 0 18px}
 .prism-segments button{flex:1;background:#182637;border:1px solid var(--line);border-radius:12px;min-height:42px;font-size:13px}
 .prism-segments button[aria-pressed=true]{background:#307fcb;border-color:#4aa5f5;color:#fff}
-.prism-browser-row{width:100%;display:flex;text-align:left;align-items:center;gap:12px;margin:0 0 9px;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;min-height:78px}
-.prism-browser-row .exercise-mini-map{width:46px;height:52px;flex:0 0 46px}
-.prism-browser-row strong,.prism-browser-row small{display:block}
-.prism-browser-row strong{font-size:16px}
-.prism-browser-row small{margin-top:5px;color:var(--sub);font-size:12px}
-.prism-browser-row .chevron{margin-left:auto;font-size:24px;color:var(--sub)}
+.prism-browser-row{width:100%;display:grid;grid-template-columns:50px minmax(0,1fr) 18px;text-align:left;align-items:center;gap:12px;margin:0 0 12px;padding:10px 13px;background:var(--card);border:1px solid var(--line);border-radius:16px;min-height:78px}
+.prism-browser-row:focus-visible{border-color:var(--blue)}
+.prism-browser-thumb{display:block;width:50px;height:54px;overflow:hidden;border-radius:10px;background:#233247}
+.prism-browser-thumb>img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.prism-browser-thumb .exercise-mini-map,.prism-browser-thumb .body-figure{width:50px;height:54px;max-width:50px}
+.prism-browser-thumb .body-figure svg{width:100%;max-height:54px}
+.prism-browser-copy{display:block;min-width:0}
+.prism-browser-row strong,.prism-browser-row small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prism-browser-row strong{font-size:15px;line-height:1.25}
+.prism-browser-row small{margin-top:5px;color:var(--sub);font-size:12px;line-height:1.25}
+.prism-browser-row .chevron{width:18px;text-align:right;justify-self:end;font-size:24px;color:var(--sub)}
 .prism-browser-group{margin:20px 2px 11px;font-size:17px}
 .prism-plan-options{margin-top:26px}
 #homeProgressCard,#home>.action-button{display:none}
@@ -835,10 +840,11 @@ body:has(#workoutScreen:not(.hidden)) .prism-bottom-nav,body:has(#prismRestScree
 .prism-profile-links button{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line);padding:16px 18px;min-height:55px;font-size:15px}
 .prism-profile-links button:last-child{border-bottom:0}
 .prism-profile-links span{color:var(--blue);font-size:23px}
-.prism-today-hero{background:radial-gradient(circle at 100% 0,rgba(44,139,245,.21),transparent 60%),#152338;border:1px solid #305375;border-radius:22px;padding:22px;margin-bottom:14px}
+.prism-today-hero{background:radial-gradient(circle at 100% 0,rgba(44,139,245,.21),transparent 60%),#152338;border:1px solid #305375;border-radius:22px;padding:17px 19px;margin-bottom:12px}
 .prism-today-hero .eyebrow{font-size:11px;letter-spacing:.14em;color:#8fcaff;font-weight:800}
-.prism-today-hero h3{margin:8px 0 6px;font-size:24px}
-.prism-today-hero p{margin:0 0 17px;color:#b4c6d9}
+.prism-today-hero h3{margin:6px 0 4px;font-size:23px}
+.prism-today-hero p{margin:0 0 10px;color:#b4c6d9}
+.prism-today-hero .prism-primary.prism-wide{min-height:48px;margin:8px 0 0}
 .prism-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .prism-metric{padding:15px;background:#151f2d;border:1px solid var(--line);border-radius:17px}
 .prism-metric strong,.prism-metric small,.prism-metric b{display:block}
@@ -2016,8 +2022,8 @@ if(!filtered.length)continue;
 const heading=document.createElement("h3");heading.className="prism-browser-group";heading.textContent=label;area.appendChild(heading);
 for(const item of filtered){
 count++;const button=document.createElement("button");button.className="prism-browser-row";button.type="button";
-const visual=document.createElement("span");visual.innerHTML=prismExerciseVisual(getExercise(item.ids[0]));button.appendChild(visual);
-const text=document.createElement("span");const title=document.createElement("strong");title.textContent=item.title;
+const visual=document.createElement("span");visual.className="prism-browser-thumb";visual.innerHTML=prismExerciseVisual(getExercise(item.ids[0]));button.appendChild(visual);
+const text=document.createElement("span");text.className="prism-browser-copy";const title=document.createElement("strong");title.textContent=item.title;
 const detail=document.createElement("small");detail.textContent=`${item.ids.length} ${item.ids.length===1?"exercise":"exercises"} · about ${Math.max(20,item.ids.length*10)} min`;text.append(title,detail);button.appendChild(text);
 const chevron=document.createElement("span");chevron.className="chevron";chevron.textContent="›";button.appendChild(chevron);
 button.onclick=()=>showPrismWorkoutDetail(item);area.appendChild(button);
