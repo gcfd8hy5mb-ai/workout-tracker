@@ -44,11 +44,13 @@ class WorkoutTrackerTests(unittest.TestCase):
 
     def test_workout_and_bottom_navigation_destinations(self):
         self.assertEqual(len(re.findall(r"day[1-4]:\{title:", INDEX)), 4)
-        for tab in ("Workout", "History", "Timer"):
+        for tab in ("Workout", "Timer"):
             self.assertIn(f'id="tab{tab}"', INDEX)
+        self.assertNotIn('id="tabHistory"', INDEX)
+        self.assertNotIn('id="workoutHistoryContent"', INDEX)
         for destination in ("Home", "Workout", "Progress", "History", "Timer"):
             self.assertEqual(INDEX.count(f'id="nav{destination}"'), 1)
-        self.assertIn('["Workout","History","Timer"].forEach', INDEX)
+        self.assertIn('["Workout","Timer"].forEach', INDEX)
 
     def test_mobile_bars_stay_fixed_and_navigation_only_changes_color(self):
         self.assertRegex(INDEX, r"header\{[\s\S]*?position:fixed")
@@ -70,8 +72,8 @@ class WorkoutTrackerTests(unittest.TestCase):
 
     def test_progress_and_release_version_are_not_animated(self):
         self.assertIn(".progress-fill{height:100%;width:0;background:#111;transition:none}", INDEX)
-        self.assertIn("<p>Version 6.6</p>", INDEX)
-        self.assertIn('const CACHE_NAME = "workout-tracker-v6.6";', SERVICE_WORKER)
+        self.assertIn("<p>Version 6.7</p>", INDEX)
+        self.assertIn('const CACHE_NAME = "workout-tracker-v6.7";', SERVICE_WORKER)
 
     def test_saved_data_storage_keys_remain_compatible(self):
         for storage_key in ("completedExercisesV5", "customWorkoutsV5", "workoutHistoryV52"):
