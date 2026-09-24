@@ -73,8 +73,11 @@ class WorkoutTrackerTests(unittest.TestCase):
     def test_today_view_and_past_day_logs(self):
         self.assertIn('id="todayDashboard"', INDEX)
         self.assertIn('workoutHistory.find(session=>plans.some(plan=>plan.key===session.workoutKey))', INDEX)
-        self.assertIn('"Suggested calorie intake"', INDEX)
+        self.assertIn('"Suggested":', INDEX)
         self.assertIn('const target=dailyCalorieTarget(day);', INDEX)
+        self.assertIn('className="today-meter"', INDEX)
+        self.assertIn('action:"Log water",open:showWater', INDEX)
+        self.assertIn('action:"Log food",open:showFood', INDEX)
         self.assertIn('estimatedCalorieGoal({age:tracking.calorieAge', INDEX)
         self.assertIn('id="waterDay" type="date"', INDEX)
         self.assertIn('id="foodDay" type="date"', INDEX)
@@ -126,7 +129,7 @@ class WorkoutTrackerTests(unittest.TestCase):
         self.assertIn('id="headerToday" class="header-today" onclick="goHome()"', INDEX)
         self.assertIn('headerToday").classList.toggle("hidden",id==="setupScreen")', INDEX)
         self.assertIn('--header-height:72px', INDEX)
-        self.assertIn('class="menu-version">Version 8.5</small>', INDEX)
+        self.assertIn('class="menu-version">Version 8.6</small>', INDEX)
         self.assertIn('id="sideMenu" class="side-menu" aria-label="Main menu" aria-hidden="true" inert', INDEX)
         self.assertIn('.side-menu.open{transform:translateX(0);visibility:visible}', INDEX)
         self.assertIn('event.key==="Escape"', INDEX)
@@ -145,8 +148,8 @@ class WorkoutTrackerTests(unittest.TestCase):
 
     def test_progress_and_release_version_are_not_animated(self):
         self.assertIn(".progress-fill{height:100%;width:0;background:#111;transition:none}", INDEX)
-        self.assertIn('class="menu-version">Version 8.5</small>', INDEX)
-        self.assertIn('const CACHE_NAME = "workout-tracker-v8.5";', SERVICE_WORKER)
+        self.assertIn('class="menu-version">Version 8.6</small>', INDEX)
+        self.assertIn('const CACHE_NAME = "workout-tracker-v8.6";', SERVICE_WORKER)
 
     def test_saved_data_storage_keys_remain_compatible(self):
         for storage_key in ("completedExercisesV5", "customWorkoutsV5", "workoutHistoryV52", "overloadTargetsV1", "workoutGoalsV1"):
