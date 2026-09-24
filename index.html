@@ -466,11 +466,11 @@ padding:13px;font-size:15px;font-weight:700;margin-top:8px
 
 position:fixed;left:0;right:0;bottom:0;
 
-background:rgba(255,255,255,.96);
+background:#fff;
 
-backdrop-filter:blur(18px);
+backdrop-filter:none;
 
--webkit-backdrop-filter:blur(18px);
+-webkit-backdrop-filter:none;
 
 border-top:1px solid #ddd;
 
@@ -484,19 +484,19 @@ z-index:5000;contain:layout paint;transform:none
 
 .nav-button{
 
-border:0;background:transparent;color:#777;
+border:0;border-bottom:2px solid transparent;background:transparent;color:#444;
 
-font-size:10px;font-weight:700;line-height:12px;padding:3px 0;
+font-size:10px;font-weight:550;line-height:12px;padding:3px 0 1px;
 min-width:0;min-height:48px;touch-action:manipulation;
-transition:color .12s ease-out;transform:none;filter:none
+transition:none;animation:none;transform:none;filter:none
 
 }
 
 .nav-icon{display:block;height:24px;font-size:22px;line-height:24px;margin-bottom:2px}
 
-.nav-button.active{color:#111}
+.nav-button.active{color:#111;border-bottom-color:#111}
 
-.nav-button:active{color:var(--blue);background:transparent;transform:none;filter:none}
+.nav-button:active{background:transparent;transform:none;filter:none}
 
 .nav-button:focus-visible{outline:2px solid rgba(0,122,255,.45);outline-offset:-2px}
 
@@ -598,8 +598,8 @@ header p{color:#222}
 .primary span{color:#111}
 .workout-tab.active{background:#e8e8ec;color:#111}
 .finish-workout,.workout-complete.done{background:#dff2e4;color:#111}
-.bottom-nav .nav-button{color:#111}
-.bottom-nav .nav-button.active{background:#e8e8ec;border-radius:10px;color:#111}
+.bottom-nav .nav-button{border-radius:0}
+.bottom-nav .nav-button.active{background:transparent;color:#111}
 .picker-sheet{color:#111}
 .picker-sheet button{color:#111}
 
@@ -659,7 +659,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 7.2</p>
+<p>Version 7.3</p>
 
 </header>
 
