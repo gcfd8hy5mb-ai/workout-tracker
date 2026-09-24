@@ -629,6 +629,20 @@ header p{color:#222}
 .exercise-mini-map{flex:none;max-width:84px}
 .exercise-mini-map .body-figure{width:84px;font-size:11px}
 .exercise-mini-map .body-figure svg{width:100%;max-height:112px}
+.setup-options{display:grid;gap:9px;margin:10px 0 20px}
+.setup-option{display:flex;align-items:center;gap:10px;margin:0;padding:13px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.setup-option input{width:auto;margin:0;accent-color:#111}
+.setup-option span{font-weight:550}
+.setup-actions{display:flex;gap:10px;align-items:center}
+.setup-actions .save-button{flex:1;margin:0}
+.setup-skip{background:transparent;border:0;padding:12px;color:#555}
+.plan-card{margin-bottom:18px}
+.plan-card h2{font-size:20px;margin:0 0 8px}
+.plan-card p{color:#333;line-height:1.45;margin:6px 0 12px}
+.plan-day{display:block;width:100%;text-align:left;padding:13px;border:1px solid var(--line);background:#fff;border-radius:12px;margin-top:8px;color:#111}
+.plan-day strong{display:block;font-size:16px}
+.plan-day span{display:block;font-size:13px;margin-top:3px;color:#555}
+.plan-edit{display:block;margin-top:12px;background:transparent;border:0;padding:8px 0;color:#156ec0;text-align:left}
 
 </style>
 
@@ -640,13 +654,33 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 6.8</p>
+<p>Version 6.9</p>
 
 </header>
 
 <div class="container">
 
+<section id="setupScreen" class="hidden">
+<h2>Build your workout plan</h2>
+<p class="small">Two quick questions to help you choose a starting plan. You can change your answers anytime.</p>
+<div class="card">
+<fieldset style="border:0;padding:0;margin:0">
+<legend class="detail-title">What's your main goal?</legend>
+<div class="setup-options">
+<label class="setup-option"><input type="radio" name="setupGoal" value="muscle" checked><span>Build muscle</span></label>
+<label class="setup-option"><input type="radio" name="setupGoal" value="strength"><span>Get stronger</span></label>
+<label class="setup-option"><input type="radio" name="setupGoal" value="consistency"><span>Get into a routine</span></label>
+</div>
+</fieldset>
+<label for="setupDays">How many days per week can you train?</label>
+<select id="setupDays"><option value="2">2 days</option><option value="3">3 days</option><option value="4" selected>4 days</option></select>
+<div class="setup-actions"><button class="save-button" onclick="saveWorkoutGoals()">See my plan</button><button class="setup-skip" onclick="skipWorkoutGoals()">Skip</button></div>
+</div>
+</section>
+
 <section id="home">
+
+<div id="suggestedPlan"></div>
 
 <div class="card">
 
@@ -1159,6 +1193,8 @@ let workoutHistory=JSON.parse(localStorage.getItem("workoutHistoryV52")||"[]");
 
 let overloadTargets=JSON.parse(localStorage.getItem("overloadTargetsV1")||"{}");
 
+let workoutGoals=JSON.parse(localStorage.getItem("workoutGoalsV1")||"null");
+
 let builderSelected=[];
 
 let activeWorkoutKey=null;
@@ -1177,7 +1213,7 @@ function getExercise(id){return exerciseLibrary.find(x=>x.id===id)}
 
 function allScreens(){
 
-return ["home","workoutScreen","libraryScreen","builderScreen",
+return ["home","setupScreen","workoutScreen","libraryScreen","builderScreen",
 
 "overallProgressScreen","globalHistoryScreen","globalTimerScreen"];
 
@@ -1188,6 +1224,8 @@ function showScreen(id){
 allScreens().forEach(x=>document.getElementById(x).classList.add("hidden"));
 
 document.getElementById(id).classList.remove("hidden");
+
+document.querySelector(".bottom-nav").classList.toggle("hidden",id==="setupScreen");
 
 window.scrollTo(0,0);
 
@@ -1225,6 +1263,79 @@ function safeId(v){return "id-"+String(v).replace(/[^a-zA-Z0-9_-]/g,"-")}
 
 /* HOME */
 
+const shortPlans={
+2:[
+{title:"Full Body A",exercises:["machine-chest-press","seated-row","leg-press","seated-leg-curl","triceps-pushdown"]},
+{title:"Full Body B",exercises:["lat-pulldown","shoulder-press","leg-extension","seated-leg-curl","biceps-curl"]}
+],
+3:[
+{title:"Full Body A",exercises:["machine-chest-press","seated-row","leg-press","triceps-pushdown"]},
+{title:"Full Body B",exercises:["lat-pulldown","shoulder-press","seated-leg-curl","biceps-curl"]},
+{title:"Full Body C",exercises:["incline-chest-press","seated-row","leg-extension","calf-raise"]}
+]
+};
+
+function suggestedWorkouts(profile){
+if(!profile||!([2,3,4].includes(profile.days)))return [];
+const base=profile.days===4?Object.values(presetWorkouts):shortPlans[profile.days];
+return base.map((day,index)=>{
+let exercises=[...day.exercises];
+if(profile.goal==="consistency")exercises=profile.days===4&&index===2?
+[exercises[0],exercises[2]]:exercises.slice(0,profile.days===4?2:profile.days===2?4:3);
+else if(profile.goal==="strength")exercises=exercises.slice(0,profile.days===4?3:4);
+return {title:day.title,exercises};
+});
+}
+
+function suggestedWorkoutKey(index){return `plan-${workoutGoals.goal}-${workoutGoals.days}-day${index+1}`}
+
+function showGoalsSetup(){
+if(workoutGoals&&!workoutGoals.skipped){
+document.querySelector(`input[name="setupGoal"][value="${workoutGoals.goal}"]`)?.click();
+document.getElementById("setupDays").value=String(workoutGoals.days);
+}
+showScreen("setupScreen");
+}
+
+function saveWorkoutGoals(){
+const goal=document.querySelector('input[name="setupGoal"]:checked')?.value;
+const days=Number(document.getElementById("setupDays").value);
+if(!["muscle","strength","consistency"].includes(goal)||![2,3,4].includes(days))return;
+workoutGoals={goal,days};
+localStorage.setItem("workoutGoalsV1",JSON.stringify(workoutGoals));
+goHome();
+}
+
+function skipWorkoutGoals(){
+workoutGoals={skipped:true};
+localStorage.setItem("workoutGoalsV1",JSON.stringify(workoutGoals));
+goHome();
+}
+
+function renderSuggestedPlan(){
+const area=document.getElementById("suggestedPlan");area.innerHTML="";
+if(!workoutGoals||workoutGoals.skipped){
+area.innerHTML='<button class="action-button" onclick="showGoalsSetup()">Get a suggested plan<span>Answer two questions about your goals</span></button>';
+return;
+}
+const descriptions={
+muscle:"Balanced machine workouts for building muscle. Log your sets and adjust the target weight as you progress.",
+strength:"Start with the larger machine movements. Record your reps so your next weight target adapts to what you completed.",
+consistency:"Shorter sessions to help you build a routine. Start with a comfortable weight and increase gradually."
+};
+const card=document.createElement("div");card.className="card plan-card";
+card.innerHTML=`<h2>Your ${workoutGoals.days}-day plan</h2><p>${descriptions[workoutGoals.goal]}</p>`;
+suggestedWorkouts(workoutGoals).forEach((day,index)=>{
+const button=document.createElement("button");button.className="plan-day";
+button.innerHTML=`<strong>${escapeHTML(day.title)}</strong><span>${day.exercises.map(id=>escapeHTML(getExercise(id)?.name||id)).join(" · ")}</span>`;
+button.onclick=()=>openSuggestedWorkout(index);
+card.appendChild(button);
+});
+const edit=document.createElement("button");edit.className="plan-edit";
+edit.textContent="Change my goal or schedule";edit.onclick=showGoalsSetup;card.appendChild(edit);
+area.appendChild(card);
+}
+
 function goHome(){
 
 closePicker();showScreen("home");setBottomNav("Home");
@@ -1234,6 +1345,8 @@ renderHome();updateProgress();
 }
 
 function renderHome(){
+
+renderSuggestedPlan();
 
 const preset=document.getElementById("presetButtons");
 
@@ -1291,6 +1404,9 @@ if(lastWorkoutContext){
 
 if(lastWorkoutContext.type==="preset") openPresetWorkout(lastWorkoutContext.key);
 
+else if(lastWorkoutContext.type==="suggested"&&workoutGoals&&!workoutGoals.skipped)
+openSuggestedWorkout(lastWorkoutContext.index);
+
 else if(lastWorkoutContext.type==="custom" && customWorkouts[lastWorkoutContext.index])
 
 openCustomWorkout(lastWorkoutContext.index);
@@ -1302,6 +1418,16 @@ else goHome();
 }
 
 /* OPEN WORKOUT */
+
+function openSuggestedWorkout(index){
+const day=suggestedWorkouts(workoutGoals)[index];if(!day)return;
+activeWorkoutKey=suggestedWorkoutKey(index);
+activeWorkoutTitle=day.title;
+activeWorkoutExerciseIds=[...day.exercises];
+activeCustomIndex=null;
+lastWorkoutContext={type:"suggested",index};
+openWorkout(day.title,day.exercises,false);
+}
 
 function openPresetWorkout(key){
 
@@ -1893,6 +2019,14 @@ updateProgress();
 }
 
 function updateProgress(){
+
+if(workoutGoals&&!workoutGoals.skipped){
+const ids=suggestedWorkouts(workoutGoals).flatMap((day,index)=>day.exercises.map(id=>`${suggestedWorkoutKey(index)}-${id}`));
+const done=ids.filter(id=>completedExercises.includes(id)).length;
+document.getElementById("progressFill").style.width=(ids.length?Math.min(done/ids.length*100,100):0)+"%";
+document.getElementById("progressText").textContent=`${done} of ${ids.length} planned exercises completed`;
+return;
+}
 
 const total=Object.values(presetWorkouts).reduce((s,w)=>s+w.exercises.length,0);
 
@@ -2492,6 +2626,8 @@ goHome();
 renderHome();
 
 updateProgress();
+
+if(!workoutGoals)showGoalsSetup();
 
 if("serviceWorker" in navigator){
 
