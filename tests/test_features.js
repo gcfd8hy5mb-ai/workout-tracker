@@ -16,4 +16,55 @@ context.workoutHistory=[session(185,[8,9,8]),session(180,[10,10,10])];
 assert.equal(context.progressionSuggestion('press').weight,185);
 context.workoutHistory=[session(185,[6,7,6]),session(185,[6,6,7])];
 assert.equal(context.progressionSuggestion('press').weight,180);
+context.workoutHistory=[session(185,[7,8,6]),session(185,[6,7,6])];
+assert.equal(context.progressionSuggestion('press').weight,185,'a mixed session must not force a deload');
+context.workoutHistory=[{exercises:[{id:'press',sets:[{weight:'',reps:10}]}]},session(180,[10])];
+assert.equal(context.progressionSuggestion('press').weight,185,'skip incomplete sessions');
+
+const storage=new Map(),saved=[];
+const finishContext={
+activeWorkoutKey:'preset-day1',activeWorkoutTitle:'Chest day',activeWorkoutExerciseIds:['press'],
+tracking:{readiness:{},substitutions:{}},workoutHistory:[],previousHistory:{},
+setHistory:{'preset-day1-press-set1':{weight:180,reps:10}},overloadTargets:{},completedExercises:[],
+getExercise:()=>({name:'Chest press'}),localDay:()=> '2026-09-24',
+progressionSuggestion:()=>({weight:185}),overloadKey:id=>`preset-day1-${id}`,
+activeWorkoutCompletionIds:()=>['preset-day1-press'],saveTracking:()=>{},skipWorkoutRest:()=>{},
+updateProgress:()=>{},showWorkoutSummary:s=>saved.push(s),alert:msg=>{throw Error(msg)},
+localStorage:{setItem:(key,value)=>storage.set(key,value)}
+};
+vm.createContext(finishContext);
+const finishStart=source.indexOf('function finishWorkout(){');
+const finishEnd=source.indexOf('function showLastWorkoutSummary()',finishStart);
+assert(finishStart>0&&finishEnd>finishStart);
+vm.runInContext(source.slice(finishStart,finishEnd),finishContext);
+finishContext.finishWorkout();
+assert.equal(finishContext.workoutHistory.length,1);
+assert.equal(finishContext.completedExercises[0],'preset-day1-press');
+assert.equal(finishContext.overloadTargets['preset-day1-press'],185);
+assert.equal(saved.length,1,'show the saved workout summary');
+assert.equal(saved[0].recordIds[0],'press');
+assert.equal(finishContext.setHistory['preset-day1-press-set1'],undefined);
+assert.equal(JSON.parse(storage.get('workoutHistoryV52')).length,1);
+
+const partial={...finishContext,setHistory:{'preset-day1-press-set1':{weight:180,reps:''}},workoutHistory:[],alerts:[],safeId:id=>id,document:{getElementById:()=>null}};
+partial.alert=msg=>partial.alerts.push(msg);
+vm.createContext(partial);vm.runInContext(source.slice(finishStart,finishEnd),partial);
+partial.finishWorkout();
+assert.equal(partial.workoutHistory.length,0,'reject incomplete set before saving');
+assert.equal(partial.alerts.length,1);
+const weeklyStart=source.indexOf('function renderWeeklySummary(id){');
+const weeklyEnd=source.indexOf('/* OVERALL PROGRESS */',weeklyStart);
+const weeklyArea={innerHTML:''};
+const weekContext={
+document:{getElementById:()=>weeklyArea},workoutHistory:[{date:new Date().toISOString(),exercises:[{id:'press',sets:[{weight:185,reps:8}]}]}],
+workoutGoals:{days:4},tracking:{food:[]},weightEntriesNewestFirst:()=>[],dailyCalorieTarget:()=>2000,
+sessionDay:s=>s.date.slice(0,10),weekStart:date=>{const day=new Date(date);day.setDate(day.getDate()-(day.getDay()+6)%7);return day.toISOString().slice(0,10)}
+};
+vm.createContext(weekContext);vm.runInContext(source.slice(weeklyStart,weeklyEnd),weekContext);
+weekContext.renderWeeklySummary('weeklySummaryHome');
+assert.match(weeklyArea.innerHTML,/Weekly workout goal/);
+assert.match(weeklyArea.innerHTML,/1\/4/);
+assert.match(weeklyArea.innerHTML,/See all progress/);
 console.log('Smart progression: increase, repeat, and deload passed');
+console.log('Workout completion: saved summary, targets, and incomplete-set guard passed');
+console.log('Weekly dashboard: current-week tally and progress link passed');
