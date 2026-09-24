@@ -34,23 +34,34 @@ class WorkoutTrackerTests(unittest.TestCase):
         manifest = (ROOT / "manifest.json").read_text(encoding="utf-8")
         self.assertIn('"start_url": "./"', manifest)
 
-    def test_progress_is_only_in_bottom_navigation(self):
+    def test_progress_is_in_side_menu(self):
         self.assertNotIn('id="tabProgress"', INDEX)
         self.assertNotIn("showWorkoutTab('progress')", INDEX)
         self.assertNotIn('id="workoutProgressContent"', INDEX)
         self.assertEqual(INDEX.count('id="navProgress"'), 1)
+        self.assertIn('id="sideMenu" class="side-menu"', INDEX)
+        self.assertNotIn('class="bottom-nav"', INDEX)
         self.assertIn('id="navProgress" onclick="showOverallProgress()"', INDEX)
         self.assertIn('showScreen("overallProgressScreen");setBottomNav("Progress")', INDEX)
 
-    def test_workout_and_bottom_navigation_destinations(self):
+    def test_workout_and_menu_destinations(self):
         self.assertEqual(len(re.findall(r"day[1-4]:\{title:", INDEX)), 4)
         for tab in ("Workout", "Timer"):
             self.assertIn(f'id="tab{tab}"', INDEX)
         self.assertNotIn('id="tabHistory"', INDEX)
         self.assertNotIn('id="workoutHistoryContent"', INDEX)
-        for destination in ("Home", "Workout", "Progress", "History", "Timer"):
+        for destination in ("Home", "Workout", "Progress", "History", "Timer", "Water", "Food", "Weight", "Goals"):
             self.assertEqual(INDEX.count(f'id="nav{destination}"'), 1)
         self.assertIn('["Workout","Timer"].forEach', INDEX)
+        self.assertIn('menu.inert=true', INDEX)
+
+    def test_daily_tracking_and_weight_history_are_saved(self):
+        self.assertIn('localStorage.getItem("dailyTrackingV1")', INDEX)
+        self.assertIn('localStorage.setItem("dailyTrackingV1",JSON.stringify(tracking))', INDEX)
+        for screen in ("waterScreen", "foodScreen", "goalsScreen", "weightScreen"):
+            self.assertIn(f'id="{screen}"', INDEX)
+        self.assertIn('tracking.weight.push({id:newTrackingId(),day,value:', INDEX)
+        self.assertIn('tracking.weight.slice().sort((a,b)=>b.day.localeCompare(a.day))', INDEX)
 
     def test_basic_presets_appear_only_when_requested(self):
         self.assertNotIn('id="presetButtons"', INDEX)
@@ -60,15 +71,12 @@ class WorkoutTrackerTests(unittest.TestCase):
         self.assertIn('id="homeProgressCard"', INDEX)
         self.assertIn('classList.toggle("hidden",!workoutGoals||workoutGoals.skipped)', INDEX)
 
-    def test_mobile_bars_stay_fixed_and_navigation_only_changes_color(self):
+    def test_mobile_header_and_drawer_are_accessible(self):
         self.assertRegex(INDEX, r"header\{[\s\S]*?position:fixed")
-        self.assertRegex(INDEX, r"\.bottom-nav\{[\s\S]*?position:fixed")
-        self.assertIn("transition:none;animation:none;transform:none;filter:none", INDEX)
-        self.assertIn(".nav-button.active{color:#111;border-color:#dcdce1;background:#e8e8ec}", INDEX)
-        self.assertIn(".bottom-nav .nav-button.active{background:#e8e8ec;color:#111}", INDEX)
-        self.assertNotIn('class="nav-icon"', INDEX)
-        self.assertIn('width:min(100%,58px);height:58px', INDEX)
-        self.assertIn("background:#fff;\n\nbackdrop-filter:none;", INDEX)
+        self.assertIn('aria-controls="sideMenu" aria-expanded="false"', INDEX)
+        self.assertIn('id="sideMenu" class="side-menu" aria-label="Main menu" aria-hidden="true" inert', INDEX)
+        self.assertIn('.side-menu.open{transform:translateX(0);visibility:visible}', INDEX)
+        self.assertIn('event.key==="Escape"', INDEX)
         self.assertIn('button.setAttribute("aria-current","page")', INDEX)
 
     def test_buttons_only_animate_brief_color_changes(self):
@@ -84,8 +92,8 @@ class WorkoutTrackerTests(unittest.TestCase):
 
     def test_progress_and_release_version_are_not_animated(self):
         self.assertIn(".progress-fill{height:100%;width:0;background:#111;transition:none}", INDEX)
-        self.assertIn("<p>Version 7.5</p>", INDEX)
-        self.assertIn('const CACHE_NAME = "workout-tracker-v7.5";', SERVICE_WORKER)
+        self.assertIn("<p>Version 8.0</p>", INDEX)
+        self.assertIn('const CACHE_NAME = "workout-tracker-v8.0";', SERVICE_WORKER)
 
     def test_saved_data_storage_keys_remain_compatible(self):
         for storage_key in ("completedExercisesV5", "customWorkoutsV5", "workoutHistoryV52", "overloadTargetsV1", "workoutGoalsV1"):
