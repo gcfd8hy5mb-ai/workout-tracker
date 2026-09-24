@@ -73,6 +73,9 @@ class WorkoutTrackerTests(unittest.TestCase):
     def test_today_view_and_past_day_logs(self):
         self.assertIn('id="todayDashboard"', INDEX)
         self.assertIn('workoutHistory.find(session=>plans.some(plan=>plan.key===session.workoutKey))', INDEX)
+        self.assertIn('"Suggested calorie intake"', INDEX)
+        self.assertIn('target?`${target.toLocaleString()} cal / day`', INDEX)
+        self.assertIn('estimatedCalorieGoal({age:tracking.calorieAge', INDEX)
         self.assertIn('id="waterDay" type="date"', INDEX)
         self.assertIn('id="foodDay" type="date"', INDEX)
         self.assertIn('selectedDay("water")', INDEX)
@@ -135,8 +138,8 @@ class WorkoutTrackerTests(unittest.TestCase):
 
     def test_progress_and_release_version_are_not_animated(self):
         self.assertIn(".progress-fill{height:100%;width:0;background:#111;transition:none}", INDEX)
-        self.assertIn("<p>Version 8.2</p>", INDEX)
-        self.assertIn('const CACHE_NAME = "workout-tracker-v8.2";', SERVICE_WORKER)
+        self.assertIn("<p>Version 8.3</p>", INDEX)
+        self.assertIn('const CACHE_NAME = "workout-tracker-v8.3";', SERVICE_WORKER)
 
     def test_saved_data_storage_keys_remain_compatible(self):
         for storage_key in ("completedExercisesV5", "customWorkoutsV5", "workoutHistoryV52", "overloadTargetsV1", "workoutGoalsV1"):
