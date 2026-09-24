@@ -88,12 +88,14 @@ font-size:17px;font-weight:650;padding:5px 0 14px
 
 }
 
+.back:active{color:#0056b3;background:transparent}
+
 button{
-font-family:inherit;transition:transform .14s ease,filter .14s ease,background-color .18s ease,
-color .18s ease,box-shadow .18s ease
+font-family:inherit;transition:color .1s ease-out,background-color .1s ease-out;
+transform:none;filter:none;touch-action:manipulation
 }
 
-button:active{transform:scale(.99);filter:brightness(.97)}
+button:active{transform:none;filter:none}
 
 button:focus-visible{outline:3px solid rgba(0,122,255,.35);outline-offset:2px}
 
@@ -119,6 +121,10 @@ display:block;color:var(--sub);font-size:14px;font-weight:400;margin-top:5px
 
 .primary span{color:#ccc}
 
+.day-button:active,.action-button:not(.primary):active{background:#f2f2f7}
+
+.action-button.primary:active{background:#2c2c2e}
+
 .progress-bar{
 
 height:10px;background:#ddd;border-radius:10px;
@@ -127,7 +133,7 @@ overflow:hidden;margin-top:10px
 
 }
 
-.progress-fill{height:100%;width:0;background:#111;transition:width .22s ease}
+.progress-fill{height:100%;width:0;background:#111;transition:none}
 
 .exercise{
 
@@ -201,6 +207,8 @@ padding:12px 6px;font-size:15px;font-weight:650;min-height:46px
 
 }
 
+.picker-button:active{background:#f2f2f7}
+
 .previous{margin:7px 0 0 56px;font-size:12px;color:#777}
 
 .compare{
@@ -229,6 +237,10 @@ padding:14px;font-weight:700;font-size:15px;margin:4px 0 12px
 
 .workout-complete.done{background:var(--green)}
 
+.workout-complete:active{background:#2c2c2e}
+
+.workout-complete.done:active{background:#218838}
+
 .finish-workout{
 
 width:100%;border:0;border-radius:15px;padding:17px;
@@ -238,6 +250,8 @@ background:var(--green);color:white;font-size:17px;
 font-weight:800;margin:5px 0 20px
 
 }
+
+.finish-workout:active{background:#218838}
 
 input,select{
 
@@ -269,11 +283,15 @@ border-radius:9px;font-weight:700;white-space:nowrap
 
 }
 
+.add-small:active,.save-button:active,.timer-start:active{background:#2c2c2e}
+
 .remove-small{
 
 border:0;background:#eee;padding:8px 11px;border-radius:9px;font-weight:650
 
 }
+
+.remove-small:active,.timer-button:active,.timer-reset:active{background:#d8d8dc}
 
 .save-button{
 
@@ -290,6 +308,8 @@ width:100%;border:0;background:white;color:var(--red);
 padding:13px;border-radius:12px;font-weight:700;margin-top:8px
 
 }
+
+.delete-button:active{background:#f2f2f7;color:#b02a37}
 
 .search{margin-bottom:10px}
 
@@ -328,6 +348,10 @@ font-size:12px;font-weight:700;color:#777
 }
 
 .workout-tab.active{background:#111;color:white}
+
+.workout-tab:active{background:#e5e5ea;color:#555}
+
+.workout-tab.active:active{background:#2c2c2e;color:white}
 
 /* HISTORY */
 
@@ -461,7 +485,7 @@ transition:color .12s ease-out;transform:none;filter:none
 
 .nav-button.active{color:#111}
 
-.nav-button:active{color:var(--blue);transform:none;filter:none}
+.nav-button:active{color:var(--blue);background:transparent;transform:none;filter:none}
 
 .nav-button:focus-visible{outline:2px solid rgba(0,122,255,.45);outline-offset:-2px}
 
@@ -505,6 +529,8 @@ font-size:17px;font-weight:700
 
 }
 
+.picker-done:active{color:#0056b3;background:transparent}
+
 .wheel-wrap{position:relative;height:260px;overflow:hidden;background:#f8f8f8}
 
 .wheel{
@@ -543,7 +569,7 @@ height:52px;border-top:1px solid #bbb;border-bottom:1px solid #bbb
 
 @media(prefers-reduced-motion:reduce){
 
-button,.progress-fill{transition:none}
+button{transition:none}
 
 }
 
@@ -557,7 +583,7 @@ button,.progress-fill{transition:none}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 6.0</p>
+<p>Version 6.1</p>
 
 </header>
 
