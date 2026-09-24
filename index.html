@@ -31,7 +31,7 @@
 --line:#e5e5ea;--green:#28a745;--red:#dc3545;
 
 --blue:#007aff;--orange:#ff9500;
---header-height:92px;--bottom-nav-height:76px
+--header-height:92px;--bottom-nav-height:74px
 
 }
 
@@ -472,29 +472,29 @@ backdrop-filter:none;
 
 -webkit-backdrop-filter:none;
 
-border-top:1px solid #ddd;
+border-top:1px solid #ededf0;
 
 display:grid;grid-template-columns:repeat(5,minmax(0,1fr));justify-items:center;
 
 min-height:calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
-padding:7px 4px calc(7px + env(safe-area-inset-bottom));
+padding:8px 6px calc(8px + env(safe-area-inset-bottom));
 z-index:5000;contain:layout paint;transform:none
 
 }
 
 .nav-button{
 
-border:1px solid #d8d8dc;background:#fff;color:#333;
+border:1px solid #ececf0;background:#f7f7f9;color:#29292d;
 
 font-size:11px;font-weight:550;line-height:1.2;padding:0 2px;
-width:min(100%,60px);height:60px;min-width:0;touch-action:manipulation;
+width:min(100%,58px);height:58px;min-width:0;touch-action:manipulation;
 transition:none;animation:none;transform:none;filter:none
 
 }
 
-.nav-button.active{color:#111;border-color:#111;background:#e8e8ec}
+.nav-button.active{color:#111;border-color:#dcdce1;background:#e8e8ec}
 
-.nav-button:active{background:transparent;transform:none;filter:none}
+.nav-button:active{transform:none;filter:none}
 
 .nav-button:focus-visible{outline:2px solid rgba(0,122,255,.45);outline-offset:-2px}
 
@@ -596,7 +596,7 @@ header p{color:#222}
 .primary span{color:#111}
 .workout-tab.active{background:#e8e8ec;color:#111}
 .finish-workout,.workout-complete.done{background:#dff2e4;color:#111}
-.bottom-nav .nav-button{border-radius:9px}
+.bottom-nav .nav-button{border-radius:16px}
 .bottom-nav .nav-button.active{background:#e8e8ec;color:#111}
 .picker-sheet{color:#111}
 .picker-sheet button{color:#111}
@@ -657,7 +657,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 7.4</p>
+<p>Version 7.5</p>
 
 </header>
 
@@ -692,7 +692,7 @@ header p{color:#222}
 
 <div id="suggestedPlan"></div>
 
-<div class="card">
+<div class="card" id="homeProgressCard">
 
 <strong>Workout Progress</strong>
 
@@ -717,10 +717,6 @@ Exercise Library
 <span>Browse exercises and instructions</span>
 
 </button>
-
-<h2 class="section-heading" id="presetHeading">Preset Workouts</h2>
-
-<div id="presetButtons"></div>
 
 <h2 class="section-heading">My Workouts</h2>
 
@@ -1432,29 +1428,7 @@ updateProgress();
 function renderHome(){
 
 renderSuggestedPlan();
-
-const preset=document.getElementById("presetButtons");
-
-const basic=Boolean(workoutGoals?.basic);
-document.getElementById("presetHeading").classList.toggle("hidden",basic);
-preset.classList.toggle("hidden",basic);
-
-preset.innerHTML="";
-
-Object.entries(presetWorkouts).forEach(([key,w])=>{
-
-const b=document.createElement("button");
-
-b.className="day-button";
-
-b.innerHTML=`${w.title}<span>${w.subtitle}</span>`;
-
-b.onclick=()=>openPresetWorkout(key);
-
-preset.appendChild(b);
-
-});
-
+document.getElementById("homeProgressCard").classList.toggle("hidden",!workoutGoals||workoutGoals.skipped);
 renderCustomButtons();
 
 }
@@ -1491,7 +1465,7 @@ function bottomWorkout(){
 
 if(lastWorkoutContext){
 
-if(lastWorkoutContext.type==="preset") openPresetWorkout(lastWorkoutContext.key);
+if(lastWorkoutContext.type==="preset"&&workoutGoals?.basic) openPresetWorkout(lastWorkoutContext.key);
 
 else if(lastWorkoutContext.type==="suggested"&&workoutGoals&&!workoutGoals.skipped)
 openSuggestedWorkout(lastWorkoutContext.index);

@@ -52,14 +52,22 @@ class WorkoutTrackerTests(unittest.TestCase):
             self.assertEqual(INDEX.count(f'id="nav{destination}"'), 1)
         self.assertIn('["Workout","Timer"].forEach', INDEX)
 
+    def test_basic_presets_appear_only_when_requested(self):
+        self.assertNotIn('id="presetButtons"', INDEX)
+        self.assertNotIn('id="presetHeading"', INDEX)
+        self.assertIn('if(workoutGoals.basic){', INDEX)
+        self.assertIn('Object.entries(presetWorkouts).forEach(([key,day])=>{', INDEX)
+        self.assertIn('id="homeProgressCard"', INDEX)
+        self.assertIn('classList.toggle("hidden",!workoutGoals||workoutGoals.skipped)', INDEX)
+
     def test_mobile_bars_stay_fixed_and_navigation_only_changes_color(self):
         self.assertRegex(INDEX, r"header\{[\s\S]*?position:fixed")
         self.assertRegex(INDEX, r"\.bottom-nav\{[\s\S]*?position:fixed")
         self.assertIn("transition:none;animation:none;transform:none;filter:none", INDEX)
-        self.assertIn(".nav-button.active{color:#111;border-color:#111;background:#e8e8ec}", INDEX)
+        self.assertIn(".nav-button.active{color:#111;border-color:#dcdce1;background:#e8e8ec}", INDEX)
         self.assertIn(".bottom-nav .nav-button.active{background:#e8e8ec;color:#111}", INDEX)
         self.assertNotIn('class="nav-icon"', INDEX)
-        self.assertIn('width:min(100%,60px);height:60px', INDEX)
+        self.assertIn('width:min(100%,58px);height:58px', INDEX)
         self.assertIn("background:#fff;\n\nbackdrop-filter:none;", INDEX)
         self.assertIn('button.setAttribute("aria-current","page")', INDEX)
 
@@ -76,8 +84,8 @@ class WorkoutTrackerTests(unittest.TestCase):
 
     def test_progress_and_release_version_are_not_animated(self):
         self.assertIn(".progress-fill{height:100%;width:0;background:#111;transition:none}", INDEX)
-        self.assertIn("<p>Version 7.4</p>", INDEX)
-        self.assertIn('const CACHE_NAME = "workout-tracker-v7.4";', SERVICE_WORKER)
+        self.assertIn("<p>Version 7.5</p>", INDEX)
+        self.assertIn('const CACHE_NAME = "workout-tracker-v7.5";', SERVICE_WORKER)
 
     def test_saved_data_storage_keys_remain_compatible(self):
         for storage_key in ("completedExercisesV5", "customWorkoutsV5", "workoutHistoryV52", "overloadTargetsV1", "workoutGoalsV1"):
