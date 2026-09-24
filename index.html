@@ -222,6 +222,11 @@ border-radius:8px;font-size:12px;font-weight:750
 .compare.beat{background:#dff5e5;color:#137333}
 
 .compare.match{background:#e8f0fe;color:#174ea6}
+.overload-guide{margin:14px 0;padding:14px;border-radius:12px;background:#f2f2f5}
+.overload-guide label{font-size:14px;margin:8px 0 5px}
+.overload-guide input{max-width:170px}
+.overload-guide p{font-size:13px;line-height:1.4;margin:8px 0 0;color:#333}
+.goal-preview{margin-top:7px;font-size:13px;color:#222}
 
 .compare.below{background:#fde7e9;color:#b3261e}
 
@@ -635,7 +640,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 6.7</p>
+<p>Version 6.8</p>
 
 </header>
 
@@ -1152,6 +1157,8 @@ let previousHistory=JSON.parse(localStorage.getItem("previousHistoryV51")||"{}")
 
 let workoutHistory=JSON.parse(localStorage.getItem("workoutHistoryV52")||"[]");
 
+let overloadTargets=JSON.parse(localStorage.getItem("overloadTargetsV1")||"{}");
+
 let builderSelected=[];
 
 let activeWorkoutKey=null;
@@ -1403,6 +1410,9 @@ card.className="exercise";
 
 const detailId=safeId(unique);
 const diagram=exerciseMuscleDiagram(ex);
+const showGoal=activeWorkoutKey!=="library";
+const goal=showGoal?overloadGoal(ex.id):null;
+const goalText=goal!==null?`Next target: ${goal} lb · 8–12 reps`:"Choose a starting weight · 8–12 reps";
 card.innerHTML=`
 
 <div class="exercise-header" role="button" tabindex="0" aria-expanded="false" aria-controls="${detailId}"
@@ -1412,6 +1422,7 @@ onclick="toggleDetails('${detailId}')" onkeydown="if(event.key==='Enter'||event.
 <div class="exercise-text">
 <div class="exercise-title">${escapeHTML(ex.name)}</div>
 <div class="muscle">Primary muscle: ${escapeHTML(ex.muscle)}</div>
+${showGoal?`<div class="goal-preview">${goalText}</div>`:""}
 <div class="small">Tap for picture, instructions, and sets</div>
 </div>
 <div class="exercise-mini-map" aria-hidden="true">${diagram}</div>
@@ -1445,6 +1456,13 @@ onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
 
 <div class="tracking">
 
+${showGoal?`<div class="overload-guide">
+<strong>Progressive overload goal</strong>
+<label for="${safeId(unique+"-goal")}">Target weight (lb)</label>
+<input class="goal-weight" id="${safeId(unique+"-goal")}" type="number" inputmode="decimal" min="0" max="1000" step="any" value="${goal??""}" placeholder="Set your starting weight">
+<p>Try 8–12 reps per set. After at least two sets at the same weight reach 12 reps, your next target increases by 5 lb. You can change it anytime.</p>
+</div>`:""}
+
 <strong>Track Your Sets</strong>
 
 <div class="small">Tap Weight or Reps and scroll to select.</div>
@@ -1454,6 +1472,11 @@ ${createSetRows(unique)}
 </div>
 
 </div>`;
+
+if(showGoal){
+const input=card.querySelector(".goal-weight");
+input.onchange=()=>saveOverloadGoal(ex.id,input,card.querySelector(".goal-preview"));
+}
 
 return card;
 
@@ -1469,6 +1492,42 @@ if(header)header.setAttribute("aria-expanded",String(e.classList.contains("open"
 }
 
 /* SETS + COMPARISON */
+
+function overloadKey(exerciseId){return activeWorkoutKey+"-"+exerciseId}
+
+function lastLoggedExercise(exerciseId){
+const session=workoutHistory.find(s=>s.workoutKey===activeWorkoutKey&&(s.exercises||[]).some(e=>e.id===exerciseId));
+return session?.exercises.find(e=>e.id===exerciseId)||null;
+}
+
+function suggestedNextWeight(sets){
+const logged=sets.filter(s=>Number(s.weight)>0&&Number(s.reps)>0);
+if(!logged.length)return null;
+const weight=Number(logged[0].weight);
+const sameWeight=logged.filter(s=>Number(s.weight)===weight);
+const ready=logged.length>=2&&sameWeight.length===logged.length&&sameWeight.every(s=>Number(s.reps)>=12);
+return weight+(ready?5:0);
+}
+
+function overloadGoal(exerciseId){
+const saved=Number(overloadTargets[overloadKey(exerciseId)]);
+if(saved>0&&Number.isFinite(saved))return saved;
+const previous=lastLoggedExercise(exerciseId);
+return previous?suggestedNextWeight(previous.sets||[]):null;
+}
+
+function saveOverloadGoal(exerciseId,input,preview){
+const weight=Number(input.value);
+if(input.value!==""&&(!Number.isFinite(weight)||weight<=0||weight>1000)){
+input.value=overloadGoal(exerciseId)??"";
+return;
+}
+if(input.value==="")delete overloadTargets[overloadKey(exerciseId)];
+else overloadTargets[overloadKey(exerciseId)]=weight;
+localStorage.setItem("overloadTargetsV1",JSON.stringify(overloadTargets));
+const next=overloadGoal(exerciseId);
+preview.textContent=next!==null?`Next target: ${next} lb · 8–12 reps`:"Choose a starting weight · 8–12 reps";
+}
 
 function createSetRows(unique){
 
@@ -1600,7 +1659,7 @@ if(type==="weight"){
 
 document.getElementById("pickerTitle").textContent="Select Weight";
 
-for(let i=0;i<=500;i+=5)pickerValues.push(i);
+for(let i=0;i<=500;i+=2.5)pickerValues.push(i);
 
 }else{
 
@@ -1620,13 +1679,14 @@ o.textContent=type==="weight"?`${v} lb`:`${v} reps`;wheel.appendChild(o);
 
 const existing=setHistory[key]&&setHistory[key][type]!==""?
 
-Number(setHistory[key][type]):null;
+Number(setHistory[key][type]):type==="weight"?overloadGoal(key.replace(/-set[1-4]$/,"").slice(activeWorkoutKey.length+1)):null;
 
 let index=0;
 
-if(existing!==null&&pickerValues.indexOf(existing)>=0)
-
-index=pickerValues.indexOf(existing);
+if(existing!==null){
+const nearest=pickerValues.findIndex(v=>v>=existing);
+index=nearest<0?pickerValues.length-1:nearest;
+}
 
 pickerSelectedIndex=index;
 
@@ -1762,11 +1822,23 @@ return;
 
 workoutHistory.unshift(session);
 
+session.exercises.forEach(ex=>{
+const next=suggestedNextWeight(ex.sets);
+if(next!==null)overloadTargets[overloadKey(ex.id)]=next;
+});
+
+localStorage.setItem("overloadTargetsV1",JSON.stringify(overloadTargets));
+
 localStorage.setItem("workoutHistoryV52",JSON.stringify(workoutHistory));
 
 localStorage.setItem("previousHistoryV51",JSON.stringify(previousHistory));
 
-alert("Workout saved! It is now in your History and Progress.");
+activeWorkoutExerciseIds.forEach(id=>{
+for(let set=1;set<=4;set++)delete setHistory[`${activeWorkoutKey}-${id}-set${set}`];
+});
+localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
+
+alert("Workout saved! Your next weight targets have been updated from the sets you logged.");
 
 goHome();
 
