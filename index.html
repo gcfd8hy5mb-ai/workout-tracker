@@ -1033,7 +1033,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <button class="menu-link" id="navFood" onclick="showFood()">Food</button>
 <button class="menu-link" id="navWeight" onclick="showWeight()">Weight</button>
 <button class="menu-link" id="navGoals" onclick="showTrackingGoals()">Goals</button>
-<small class="menu-version">Version 9.2</small>
+<small class="menu-version">Version 9.3</small>
 </nav>
 
 <div id="pickerOverlay" class="picker-overlay hidden" onclick="closePicker()"></div>
@@ -1320,7 +1320,162 @@ how:"Kneel at the cable and flex your torso downward by contracting your abdomin
 
 tips:["Keep your hips relatively stable.","Focus on spinal flexion."],
 
-mistakes:["Turning it into a hip hinge.","Pulling with the arms."]}
+mistakes:["Turning it into a hip hinge.","Pulling with the arms."]},
+
+{id:"smith-bench-press",name:"Smith Machine Bench Press",muscle:"Chest",
+how:"Lie on a bench beneath the bar with your feet planted. Lower the bar toward your mid-chest, then press upward without bouncing.",
+tips:["Set safety stops before starting.","Keep your shoulder blades gently pulled together."],
+mistakes:["Bouncing the bar off your chest.","Flaring your elbows straight out."]},
+
+{id:"incline-dumbbell-press",name:"Incline Dumbbell Press",muscle:"Chest",
+how:"Set the bench to a modest incline. Lower the dumbbells beside your upper chest, then press upward with control.",
+tips:["Keep your feet planted.","Use a comfortable shoulder range."],
+mistakes:["Setting the bench too upright.","Clanging the weights together."]},
+
+{id:"push-up",name:"Push-Up",muscle:"Chest",
+how:"Start in a straight-body plank with hands slightly wider than shoulders. Lower your chest toward the floor and press back up.",
+tips:["Brace your stomach.","Use an elevated surface if needed."],
+mistakes:["Letting your hips sag.","Flaring your elbows wide."]},
+
+{id:"chest-press-cable",name:"Standing Cable Chest Press",muscle:"Chest",
+how:"Set the handles at chest height, step forward, and press them straight ahead while keeping your torso steady.",
+tips:["Use a staggered stance.","Return slowly."],
+mistakes:["Leaning excessively.","Letting the shoulders shrug."]},
+
+{id:"single-arm-cable-row",name:"Single-Arm Cable Row",muscle:"Back",
+how:"Sit or stand facing a cable at about waist height. Pull one handle toward your ribs, then slowly extend your arm.",
+tips:["Keep your shoulders level.","Lead with your elbow."],
+mistakes:["Twisting your torso to move the weight.","Shrugging."]},
+
+{id:"chest-supported-row",name:"Chest-Supported Row Machine",muscle:"Back",
+how:"Set the chest pad so you can reach the handles. Pull your elbows behind you, then lower the handles slowly.",
+tips:["Keep your chest against the pad.","Pause briefly at the top."],
+mistakes:["Lifting your torso from the pad.","Jerking the handles."]},
+
+{id:"close-grip-pulldown",name:"Close-Grip Lat Pulldown",muscle:"Back",
+how:"Sit with thighs secured and palms facing each other on a close-grip handle. Pull toward your upper chest and return slowly.",
+tips:["Keep your chest tall.","Drive your elbows toward your sides."],
+mistakes:["Leaning far back.","Pulling with momentum."]},
+
+{id:"dumbbell-row",name:"Single-Arm Dumbbell Row",muscle:"Back",
+how:"Support one hand on a bench and keep your back comfortably flat. Pull the dumbbell toward your hip, then lower slowly.",
+tips:["Keep your torso mostly still.","Let the shoulder blade move naturally."],
+mistakes:["Twisting to lift the weight.","Yanking with your arm."]},
+
+{id:"face-pull",name:"Cable Face Pull",muscle:"Shoulders",
+how:"Set a rope at face height. Pull the ends toward your face with elbows moving out, then return slowly.",
+tips:["Use light resistance.","Keep your neck relaxed."],
+mistakes:["Leaning back to move the weight.","Shrugging."]},
+
+{id:"dumbbell-shoulder-press",name:"Seated Dumbbell Shoulder Press",muscle:"Shoulders",
+how:"Sit with back support and dumbbells near shoulder height. Press upward, then lower to a comfortable depth.",
+tips:["Brace your torso.","Keep wrists over elbows."],
+mistakes:["Overarching your back.","Dropping too low for your shoulders."]},
+
+{id:"dumbbell-lateral-raise",name:"Dumbbell Lateral Raise",muscle:"Shoulders",
+how:"With a slight elbow bend, raise the dumbbells out to your sides to about shoulder height and lower slowly.",
+tips:["Start with light weights.","Lead with your upper arms."],
+mistakes:["Swinging your torso.","Shrugging the weights up."]},
+
+{id:"rear-delt-cable-fly",name:"Cable Rear Delt Fly",muscle:"Shoulders",
+how:"Cross the cable handles in front of you and pull your arms outward while keeping a soft bend in your elbows.",
+tips:["Keep your chest tall.","Use a controlled range."],
+mistakes:["Pulling primarily with your upper back.","Using momentum."]},
+
+{id:"incline-dumbbell-curl",name:"Incline Dumbbell Curl",muscle:"Biceps",
+how:"Sit back on an incline bench with arms hanging at your sides. Curl the weights without moving your upper arms, then lower slowly.",
+tips:["Keep your shoulders still.","Use a weight you can control."],
+mistakes:["Swinging the arms.","Rushing the lowering phase."]},
+
+{id:"rope-hammer-curl",name:"Rope Hammer Curl",muscle:"Biceps",
+how:"Attach a rope to a low cable. Curl the rope up with palms facing inward while keeping your elbows near your sides.",
+tips:["Keep your wrists neutral.","Pause briefly at the top."],
+mistakes:["Leaning backward.","Letting elbows drift forward."]},
+
+{id:"dumbbell-curl",name:"Standing Dumbbell Curl",muscle:"Biceps",
+how:"Stand tall with dumbbells by your sides. Curl them toward your shoulders, then lower under control.",
+tips:["Keep elbows close to your torso.","Turn palms upward if comfortable."],
+mistakes:["Swinging your back.","Dropping the weights quickly."]},
+
+{id:"assisted-dip",name:"Assisted Dip Machine",muscle:"Triceps",
+how:"Use the assistance platform and hold the parallel bars. Lower yourself to a comfortable elbow bend, then press back up.",
+tips:["Keep your elbows relatively close.","Start with enough assistance."],
+mistakes:["Dropping too deeply.","Swinging your body."]},
+
+{id:"rope-pushdown",name:"Rope Triceps Pushdown",muscle:"Triceps",
+how:"Keep your elbows at your sides and push the rope down. Separate the ends gently at the bottom, then return slowly.",
+tips:["Keep upper arms still.","Control the return."],
+mistakes:["Flaring elbows out.","Leaning on the rope."]},
+
+{id:"single-arm-triceps-pushdown",name:"Single-Arm Cable Triceps Pushdown",muscle:"Triceps",
+how:"Hold a single cable handle with one hand. Keep your elbow beside your torso and extend your arm downward.",
+tips:["Work both sides evenly.","Move only at the elbow."],
+mistakes:["Rotating your body.","Using too much weight."]},
+
+{id:"smith-squat",name:"Smith Machine Squat",muscle:"Quads",
+how:"Place the bar across your upper back, set the safety catches, and squat to a comfortable depth before standing.",
+tips:["Keep your feet planted.","Let your knees track with your toes."],
+mistakes:["Bouncing at the bottom.","Letting your knees cave inward."]},
+
+{id:"goblet-squat",name:"Goblet Squat",muscle:"Quads",
+how:"Hold one dumbbell close to your chest. Sit down between your legs, then push through your feet to stand.",
+tips:["Keep the weight close.","Choose a comfortable depth."],
+mistakes:["Rounding your back.","Lifting your heels."]},
+
+{id:"split-squat",name:"Stationary Split Squat",muscle:"Quads",
+how:"Stand with one foot forward and one behind. Lower straight down until your front knee bends comfortably, then push back up.",
+tips:["Keep most of your weight over your front foot.","Hold onto support for balance."],
+mistakes:["Stepping too narrow.","Bouncing at the bottom."]},
+
+{id:"romanian-deadlift",name:"Dumbbell Romanian Deadlift",muscle:"Hamstrings",
+how:"Hold dumbbells in front of your thighs. Push your hips back with soft knees until you feel a hamstring stretch, then stand tall.",
+tips:["Keep weights near your legs.","Move from your hips."],
+mistakes:["Rounding your back.","Turning it into a squat."]},
+
+{id:"standing-leg-curl",name:"Standing Leg Curl Machine",muscle:"Hamstrings",
+how:"Set the pad behind one lower leg and hold the supports. Curl your heel toward your glute, then lower slowly.",
+tips:["Keep hips facing forward.","Train both legs."],
+mistakes:["Arching your back.","Swinging the working leg."]},
+
+{id:"glute-kickback",name:"Cable Glute Kickback",muscle:"Glutes",
+how:"Attach an ankle cuff to a low cable and hold the frame. Extend your leg back using your hip, then return with control.",
+tips:["Keep your torso steady.","Use a small comfortable range."],
+mistakes:["Overarching your lower back.","Swinging the leg."]},
+
+{id:"glute-bridge",name:"Glute Bridge",muscle:"Glutes",
+how:"Lie on your back with knees bent and feet planted. Lift your hips by squeezing your glutes, pause, then lower slowly.",
+tips:["Keep your ribs down.","Push through your whole foot."],
+mistakes:["Overarching your lower back.","Pushing only through your toes."]},
+
+{id:"step-up",name:"Step-Up",muscle:"Glutes",
+how:"Place one foot on a stable step and push through that foot to stand on top. Step down slowly and repeat on both sides.",
+tips:["Start with a low step.","Keep your knee aligned with your foot."],
+mistakes:["Pushing off heavily with the trailing foot.","Dropping down quickly."]},
+
+{id:"seated-calf-raise",name:"Seated Calf Raise",muscle:"Calves",
+how:"Sit with the pads over your thighs and the balls of your feet on the platform. Raise your heels, pause, then lower.",
+tips:["Move through a comfortable range.","Keep the movement steady."],
+mistakes:["Bouncing at the bottom.","Using short, rushed reps."]},
+
+{id:"standing-calf-raise",name:"Standing Calf Raise",muscle:"Calves",
+how:"Stand on the machine platform with the balls of your feet supported. Rise onto your toes and lower your heels under control.",
+tips:["Keep knees softly extended.","Pause at the top."],
+mistakes:["Bouncing.","Rolling your ankles outward."]},
+
+{id:"cable-woodchop",name:"Cable Woodchop",muscle:"Core",
+how:"Set the cable around shoulder height. Pull the handle diagonally across your torso while turning through your upper body, then return slowly.",
+tips:["Keep the movement controlled.","Train both sides."],
+mistakes:["Yanking with your arms.","Twisting forcefully through your lower back."]},
+
+{id:"dead-bug",name:"Dead Bug",muscle:"Core",
+how:"Lie on your back with knees over hips and hands above shoulders. Slowly extend the opposite arm and leg, then return and switch sides.",
+tips:["Keep your lower back comfortable against the floor.","Move slowly."],
+mistakes:["Arching your lower back.","Rushing the movement."]},
+
+{id:"pallof-press",name:"Cable Pallof Press",muscle:"Core",
+how:"Stand side-on to a cable with the handle at chest height. Press it straight out while resisting rotation, then bring it back.",
+tips:["Keep hips and shoulders facing forward.","Train both sides."],
+mistakes:["Twisting toward the cable.","Holding your breath."]}
 
 ];
 
