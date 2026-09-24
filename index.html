@@ -274,6 +274,12 @@ gap:10px;border-bottom:1px solid var(--line);padding:13px 0
 .library-item:last-child{border-bottom:0}
 
 .library-name{font-weight:700}
+.library-preview{display:flex;align-items:center;gap:10px;min-width:0}
+.library-preview .exercise-mini-map{max-width:68px}
+.library-preview .exercise-mini-map .body-figure{width:68px;font-size:10px}
+.library-preview .exercise-mini-map .body-figure svg{max-height:91px}
+.library-preview-text{min-width:0}
+.library-preview-text .badge{display:inline-block;margin-top:5px}
 
 .add-small{
 
@@ -629,7 +635,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 6.5</p>
+<p>Version 6.6</p>
 
 </header>
 
@@ -1410,8 +1416,7 @@ const card=document.createElement("div");
 card.className="exercise";
 
 const detailId=safeId(unique);
-const side=["Back","Triceps","Glutes","Hamstrings","Calves"].includes(ex.muscle)?"Back":"Front";
-const diagram=muscleFigure(side,{[ex.muscle]:1});
+const diagram=exerciseMuscleDiagram(ex);
 card.innerHTML=`
 
 <div class="exercise-header" role="button" tabindex="0" aria-expanded="false" aria-controls="${detailId}"
@@ -2253,6 +2258,18 @@ document.querySelectorAll("[data-timer-start]").forEach(x=>x.textContent=timerIn
 
 /* LIBRARY */
 
+function exerciseMuscleDiagram(ex){
+const side=["Back","Triceps","Glutes","Hamstrings","Calves"].includes(ex.muscle)?"Back":"Front";
+return muscleFigure(side,{[ex.muscle]:1});
+}
+
+function libraryPreview(ex){
+return `<div class="library-preview">
+<div class="exercise-mini-map" aria-hidden="true">${exerciseMuscleDiagram(ex)}</div>
+<div class="library-preview-text"><div class="library-name">${escapeHTML(ex.name)}</div>
+<span class="badge">Primary muscle: ${escapeHTML(ex.muscle)}</span></div></div>`;
+}
+
 function showLibrary(){showScreen("libraryScreen");setBottomNav("Home");renderLibrary()}
 
 function renderLibrary(){
@@ -2275,11 +2292,7 @@ filtered.forEach(ex=>{
 
 const row=document.createElement("div");row.className="library-item";
 
-row.innerHTML=`<div><div class="library-name">${escapeHTML(ex.name)}</div>
-
-<span class="badge">${escapeHTML(ex.muscle)}</span></div>
-
-<button class="add-small">View</button>`;
+row.innerHTML=`${libraryPreview(ex)}<button class="add-small">View</button>`;
 
 row.querySelector("button").onclick=()=>viewLibraryExercise(ex.id);
 
@@ -2304,6 +2317,7 @@ const list=document.getElementById("exerciseList");list.innerHTML="";
 const card=createExerciseCard(ex,"library-"+ex.id);
 
 list.appendChild(card);card.querySelector(".details").classList.add("open");
+card.querySelector(".exercise-header").setAttribute("aria-expanded","true");
 
 document.getElementById("finishWorkoutButton").classList.add("hidden");
 
@@ -2345,11 +2359,7 @@ const row=document.createElement("div");row.className="library-item";
 
 const already=builderSelected.includes(ex.id);
 
-row.innerHTML=`<div><div class="library-name">${escapeHTML(ex.name)}</div>
-
-<span class="badge">${escapeHTML(ex.muscle)}</span></div>
-
-<button class="add-small">${already?"Added ✓":"Add"}</button>`;
+row.innerHTML=`${libraryPreview(ex)}<button class="add-small">${already?"Added ✓":"Add"}</button>`;
 
 row.querySelector("button").onclick=()=>addBuilderExercise(ex.id);
 
