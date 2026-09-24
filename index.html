@@ -31,7 +31,7 @@
 --line:#e5e5ea;--green:#28a745;--red:#dc3545;
 
 --blue:#007aff;--orange:#ff9500;
---header-height:92px
+--header-height:72px
 
 }
 
@@ -50,19 +50,16 @@ overscroll-behavior-y:none
 }
 
 header{
-
-background:#111;color:white;
-
+background:#fff;color:#111;
 position:fixed;top:0;left:0;right:0;z-index:5000;
 height:calc(var(--header-height) + env(safe-area-inset-top));
-padding:calc(18px + env(safe-area-inset-top)) 18px 18px;
-text-align:center;contain:layout paint;transform:none
-
+padding:env(safe-area-inset-top) 16px 0;
+display:flex;align-items:center;gap:12px;
+border-bottom:1px solid #e5e5e8;
+contain:layout paint;transform:none
 }
 
-header h1{margin:0;font-size:clamp(20px,5vw,28px);padding:0 42px}
-
-header p{margin:5px 0 0;color:#aaa;font-size:14px}
+header h1{margin:0;min-width:0;flex:1;font-size:19px;line-height:1.15;font-weight:650;letter-spacing:-.35px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .container{max-width:750px;margin:auto;padding:16px}
 
@@ -461,7 +458,11 @@ padding:13px;font-size:15px;font-weight:700;margin-top:8px
 }
 
 /* SIDE MENU */
-.menu-toggle{position:absolute;top:calc(23px + env(safe-area-inset-top));left:18px;width:46px;height:46px;border:1px solid #dedee3;border-radius:14px;background:#f7f7f9;color:#111;font-size:24px;line-height:1;transition:none}
+.menu-toggle{flex:none;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid #e5e5e8;border-radius:14px;background:#f7f7f9;color:#111;transition:none}
+.menu-toggle svg{display:block;width:22px;height:22px}
+.header-today{flex:none;min-width:62px;min-height:44px;padding:0 12px;border:1px solid #e5e5e8;border-radius:14px;background:#f7f7f9;color:#111;font-size:14px;font-weight:600;transition:none}
+.menu-toggle:active,.header-today:active{background:#ebebef}
+.menu-version{display:block;padding:14px 15px 6px;color:#686870;font-size:12px}
 .menu-scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:7000;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,visibility .18s}
 .menu-scrim.open{opacity:1;visibility:visible;pointer-events:auto}
 .side-menu{position:fixed;inset:0 auto 0 0;width:min(84vw,320px);z-index:7001;background:#fff;padding:calc(20px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));overflow-y:auto;transform:translateX(-105%);visibility:hidden;transition:transform .2s ease,visibility .2s;box-shadow:6px 0 24px rgba(0,0,0,.1)}
@@ -588,8 +589,7 @@ button{transition:none}
 :root{--text:#111;--sub:#222;--blue:#111}
 body{font-weight:500}
 h1,h2,h3,h4,strong{font-weight:600}
-header{background:#fff;color:#111;border-bottom:1px solid #dedee3}
-header p{color:#222}
+header{background:#fff;color:#111;border-bottom:1px solid #e5e5e8}
 .container :is(h1,h2,h3,h4,p,li,label,strong,span,div,button,input,select){color:#111}
 .container :is(.day-button,.action-button,.exercise-title,.detail-title,.history-title,.progress-name,.stat-number,.timer-display,.section-heading){font-weight:600}
 .container button,.picker-sheet button{font-weight:550}
@@ -654,11 +654,11 @@ header p{color:#222}
 <body>
 
 <header>
-<button id="menuToggle" class="menu-toggle" onclick="openMenu()" aria-label="Open menu" aria-controls="sideMenu" aria-expanded="false">☰</button>
+<button id="menuToggle" class="menu-toggle" onclick="openMenu()" aria-label="Open menu" aria-controls="sideMenu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h11"/></svg></button>
 
 <h1>Workout Tracker</h1>
 
-<p>Version 8.4</p>
+<button id="headerToday" class="header-today" onclick="goHome()" aria-label="Go to Today">Today</button>
 
 </header>
 
@@ -915,6 +915,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <button class="menu-link" id="navFood" onclick="showFood()">Food</button>
 <button class="menu-link" id="navWeight" onclick="showWeight()">Weight</button>
 <button class="menu-link" id="navGoals" onclick="showTrackingGoals()">Goals</button>
+<small class="menu-version">Version 8.5</small>
 </nav>
 
 <div id="pickerOverlay" class="picker-overlay hidden" onclick="closePicker()"></div>
@@ -1288,6 +1289,7 @@ allScreens().forEach(x=>document.getElementById(x).classList.add("hidden"));
 document.getElementById(id).classList.remove("hidden");
 
 document.getElementById("menuToggle").classList.toggle("hidden",id==="setupScreen");
+document.getElementById("headerToday").classList.toggle("hidden",id==="setupScreen");
 
 window.scrollTo(0,0);
 
