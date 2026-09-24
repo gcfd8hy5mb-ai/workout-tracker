@@ -6,7 +6,7 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 
@@ -22,819 +22,503 @@
 
 <style>
 
-*{
-
-  box-sizing:border-box;
-
-  -webkit-tap-highlight-color:transparent;
-
-}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
 :root{
 
-  --bg:#f2f2f7;
+--bg:#f2f2f7;--card:#fff;--text:#111;--sub:#6e6e73;
 
-  --card:#fff;
+--line:#e5e5ea;--green:#28a745;--red:#dc3545;
 
-  --text:#111;
-
-  --sub:#6e6e73;
-
-  --line:#e5e5ea;
-
-  --green:#28a745;
-
-  --red:#dc3545;
-
-  --blue:#007aff;
+--blue:#007aff;--orange:#ff9500
 
 }
 
 body{
 
-  margin:0;
+margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;
 
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;
+background:var(--bg);color:var(--text);
 
-  background:var(--bg);
-
-  color:var(--text);
-
-  padding-bottom:40px;
+padding-bottom:calc(95px + env(safe-area-inset-bottom))
 
 }
 
 header{
 
-  background:#111;
+background:#111;color:white;
 
-  color:#fff;
+padding:calc(18px + env(safe-area-inset-top)) 18px 18px;
 
-  padding:calc(18px + env(safe-area-inset-top)) 18px 18px;
-
-  text-align:center;
+text-align:center
 
 }
 
-header h1{
+header h1{margin:0;font-size:28px}
 
-  margin:0;
+header p{margin:5px 0 0;color:#aaa;font-size:14px}
 
-  font-size:28px;
+.container{max-width:750px;margin:auto;padding:16px}
 
-}
-
-header p{
-
-  margin:5px 0 0;
-
-  color:#aaa;
-
-  font-size:14px;
-
-}
-
-.container{
-
-  max-width:750px;
-
-  margin:auto;
-
-  padding:16px;
-
-}
-
-.hidden{
-
-  display:none !important;
-
-}
+.hidden{display:none!important}
 
 .card{
 
-  background:white;
+background:white;border-radius:18px;padding:16px;margin-bottom:14px;
 
-  border-radius:18px;
-
-  padding:16px;
-
-  margin-bottom:14px;
-
-  box-shadow:0 2px 8px rgba(0,0,0,.07);
+box-shadow:0 2px 8px rgba(0,0,0,.07)
 
 }
 
-.progress-bar{
+.small{color:var(--sub);font-size:13px}
 
-  height:10px;
-
-  background:#ddd;
-
-  border-radius:10px;
-
-  overflow:hidden;
-
-  margin-top:10px;
-
-}
-
-.progress-fill{
-
-  height:100%;
-
-  width:0%;
-
-  background:#111;
-
-  transition:.3s;
-
-}
-
-.small{
-
-  color:var(--sub);
-
-  font-size:13px;
-
-}
-
-.day-button,
-
-.action-button{
-
-  width:100%;
-
-  border:0;
-
-  background:white;
-
-  border-radius:17px;
-
-  padding:18px;
-
-  margin-bottom:12px;
-
-  text-align:left;
-
-  font-size:18px;
-
-  font-weight:750;
-
-  box-shadow:0 2px 8px rgba(0,0,0,.07);
-
-}
-
-.day-button span,
-
-.action-button span{
-
-  display:block;
-
-  color:var(--sub);
-
-  font-size:14px;
-
-  font-weight:400;
-
-  margin-top:5px;
-
-}
-
-.primary{
-
-  background:#111;
-
-  color:white;
-
-}
-
-.primary span{
-
-  color:#ccc;
-
-}
-
-.section-heading{
-
-  margin:24px 2px 12px;
-
-  font-size:20px;
-
-}
+.section-heading{margin:24px 2px 12px;font-size:20px}
 
 .back{
 
-  border:0;
+border:0;background:transparent;color:var(--blue);
 
-  background:transparent;
-
-  color:var(--blue);
-
-  font-size:17px;
-
-  font-weight:650;
-
-  padding:5px 0 14px;
+font-size:17px;font-weight:650;padding:5px 0 14px
 
 }
+
+button{font-family:inherit}
+
+.day-button,.action-button{
+
+width:100%;border:0;background:white;border-radius:17px;
+
+padding:18px;margin-bottom:12px;text-align:left;
+
+font-size:18px;font-weight:750;
+
+box-shadow:0 2px 8px rgba(0,0,0,.07)
+
+}
+
+.day-button span,.action-button span{
+
+display:block;color:var(--sub);font-size:14px;font-weight:400;margin-top:5px
+
+}
+
+.primary{background:#111;color:white}
+
+.primary span{color:#ccc}
+
+.progress-bar{
+
+height:10px;background:#ddd;border-radius:10px;
+
+overflow:hidden;margin-top:10px
+
+}
+
+.progress-fill{height:100%;width:0;background:#111;transition:.3s}
 
 .exercise{
 
-  background:white;
+background:white;border-radius:18px;overflow:hidden;
 
-  border-radius:18px;
-
-  overflow:hidden;
-
-  margin-bottom:14px;
-
-  box-shadow:0 2px 8px rgba(0,0,0,.07);
+margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07)
 
 }
 
-.exercise-header{
+.exercise-header{padding:16px}
 
-  padding:16px;
-
-}
-
-.exercise-title{
-
-  font-size:19px;
-
-  font-weight:750;
-
-}
+.exercise-title{font-size:19px;font-weight:750}
 
 .muscle{
 
-  display:inline-block;
+display:inline-block;background:#eee;color:#555;padding:5px 9px;
 
-  background:#eee;
-
-  color:#555;
-
-  padding:5px 9px;
-
-  border-radius:8px;
-
-  font-size:13px;
-
-  margin-top:7px;
+border-radius:8px;font-size:13px;margin-top:7px
 
 }
 
-.details{
+.details{display:none;border-top:1px solid var(--line);padding:0 16px 18px}
 
-  display:none;
-
-  border-top:1px solid var(--line);
-
-  padding:0 16px 18px;
-
-}
-
-.details.open{
-
-  display:block;
-
-}
+.details.open{display:block}
 
 .exercise-image{
 
-  width:100%;
+width:100%;max-height:350px;object-fit:contain;background:#eee;
 
-  max-height:350px;
-
-  object-fit:contain;
-
-  background:#eee;
-
-  border-radius:14px;
-
-  margin-top:16px;
+border-radius:14px;margin-top:16px
 
 }
 
 .image-placeholder{
 
-  width:100%;
+width:100%;min-height:190px;background:#eee;border-radius:14px;
 
-  min-height:190px;
+margin-top:16px;display:flex;justify-content:center;align-items:center;
 
-  background:#eee;
-
-  border-radius:14px;
-
-  margin-top:16px;
-
-  display:flex;
-
-  justify-content:center;
-
-  align-items:center;
-
-  text-align:center;
-
-  color:#777;
-
-  padding:20px;
+text-align:center;color:#777;padding:20px
 
 }
 
-.detail-title{
+.detail-title{font-weight:750;margin:18px 0 7px}
 
-  font-weight:750;
+.details p,.details li{color:#444;line-height:1.5;font-size:15px}
 
-  margin:18px 0 7px;
+.details ul{padding-left:20px}
 
-}
+.tracking{background:#f7f7f9;padding:13px;border-radius:14px;margin-top:17px}
 
-.details p,
+.set-block{padding:12px 0;border-bottom:1px solid #ddd}
 
-.details li{
-
-  color:#444;
-
-  line-height:1.5;
-
-  font-size:15px;
-
-}
-
-.details ul{
-
-  padding-left:20px;
-
-}
-
-.tracking{
-
-  background:#f7f7f9;
-
-  padding:13px;
-
-  border-radius:14px;
-
-  margin-top:17px;
-
-}
-
-.set-block{
-
-  padding:12px 0;
-
-  border-bottom:1px solid #ddd;
-
-}
-
-.set-block:last-of-type{
-
-  border-bottom:0;
-
-}
+.set-block:last-of-type{border-bottom:0}
 
 .set-row{
 
-  display:grid;
+display:grid;grid-template-columns:48px 1fr 1fr;
 
-  grid-template-columns:48px 1fr 1fr;
-
-  gap:8px;
-
-  align-items:center;
+gap:8px;align-items:center
 
 }
 
-.set-label{
-
-  font-weight:700;
-
-  font-size:14px;
-
-}
+.set-label{font-weight:700;font-size:14px}
 
 .picker-button{
 
-  border:1px solid #ccc;
+border:1px solid #ccc;background:white;border-radius:11px;
 
-  background:#fff;
-
-  border-radius:11px;
-
-  padding:12px 6px;
-
-  font-size:15px;
-
-  font-weight:650;
-
-  min-height:46px;
+padding:12px 6px;font-size:15px;font-weight:650;min-height:46px
 
 }
 
-.previous{
+.previous{margin:7px 0 0 56px;font-size:12px;color:#777}
 
-  margin:7px 0 0 56px;
+.compare{
 
-  font-size:12px;
+display:inline-block;margin:7px 0 0 56px;padding:5px 8px;
 
-  color:#777;
+border-radius:8px;font-size:12px;font-weight:750
 
 }
+
+.compare.beat{background:#dff5e5;color:#137333}
+
+.compare.match{background:#e8f0fe;color:#174ea6}
+
+.compare.below{background:#fde7e9;color:#b3261e}
+
+.compare.new{background:#eee;color:#555}
 
 .complete{
 
-  width:100%;
+width:100%;border:0;background:#111;color:white;border-radius:11px;
 
-  border:0;
-
-  background:#111;
-
-  color:#fff;
-
-  border-radius:11px;
-
-  padding:13px;
-
-  font-weight:700;
-
-  font-size:15px;
-
-  margin-top:12px;
+padding:13px;font-weight:700;font-size:15px;margin-top:12px
 
 }
 
-.complete.done{
-
-  background:var(--green);
-
-}
+.complete.done{background:var(--green)}
 
 .finish-workout{
 
-  width:100%;
+width:100%;border:0;border-radius:15px;padding:17px;
 
-  border:0;
+background:var(--green);color:white;font-size:17px;
 
-  border-radius:15px;
-
-  padding:17px;
-
-  background:var(--green);
-
-  color:#fff;
-
-  font-size:17px;
-
-  font-weight:800;
-
-  margin:5px 0 20px;
+font-weight:800;margin:5px 0 20px
 
 }
 
-input,
+input,select{
 
-select{
+width:100%;padding:13px;border:1px solid #ccc;
 
-  width:100%;
-
-  padding:13px;
-
-  border:1px solid #ccc;
-
-  border-radius:11px;
-
-  background:#fff;
-
-  font-size:16px;
+border-radius:11px;background:white;font-size:16px
 
 }
 
-label{
-
-  display:block;
-
-  font-weight:650;
-
-  margin:14px 0 6px;
-
-}
+label{display:block;font-weight:650;margin:14px 0 6px}
 
 .library-item{
 
-  display:flex;
+display:flex;justify-content:space-between;align-items:center;
 
-  justify-content:space-between;
-
-  align-items:center;
-
-  gap:10px;
-
-  border-bottom:1px solid var(--line);
-
-  padding:13px 0;
+gap:10px;border-bottom:1px solid var(--line);padding:13px 0
 
 }
 
-.library-item:last-child{
+.library-item:last-child{border-bottom:0}
 
-  border-bottom:0;
-
-}
-
-.library-name{
-
-  font-weight:700;
-
-}
+.library-name{font-weight:700}
 
 .add-small{
 
-  border:0;
+border:0;background:#111;color:white;padding:9px 13px;
 
-  background:#111;
-
-  color:#fff;
-
-  padding:9px 13px;
-
-  border-radius:9px;
-
-  font-weight:700;
-
-  white-space:nowrap;
+border-radius:9px;font-weight:700;white-space:nowrap
 
 }
 
 .remove-small{
 
-  border:0;
-
-  background:#eee;
-
-  padding:8px 11px;
-
-  border-radius:9px;
-
-  font-weight:650;
+border:0;background:#eee;padding:8px 11px;border-radius:9px;font-weight:650
 
 }
 
 .save-button{
 
-  width:100%;
+width:100%;border:0;background:#111;color:white;padding:15px;
 
-  border:0;
-
-  background:#111;
-
-  color:#fff;
-
-  padding:15px;
-
-  border-radius:12px;
-
-  font-size:16px;
-
-  font-weight:750;
-
-  margin-top:15px;
+border-radius:12px;font-size:16px;font-weight:750;margin-top:15px
 
 }
 
 .delete-button{
 
-  width:100%;
+width:100%;border:0;background:white;color:var(--red);
 
-  border:0;
-
-  background:#fff;
-
-  color:var(--red);
-
-  padding:13px;
-
-  border-radius:12px;
-
-  font-weight:700;
-
-  margin-top:8px;
+padding:13px;border-radius:12px;font-weight:700;margin-top:8px
 
 }
 
-.search{
+.search{margin-bottom:10px}
 
-  margin-bottom:10px;
-
-}
-
-.builder-list{
-
-  margin-top:10px;
-
-}
+.builder-list{margin-top:10px}
 
 .builder-exercise{
 
-  background:#f4f4f6;
-
-  border-radius:12px;
-
-  padding:12px;
-
-  margin-bottom:8px;
+background:#f4f4f6;border-radius:12px;padding:12px;margin-bottom:8px
 
 }
 
-.builder-exercise strong{
+.builder-exercise strong{display:block;margin-bottom:3px}
 
-  display:block;
+.badge{display:inline-block;font-size:12px;color:#666}
 
-  margin-bottom:3px;
+.empty{color:#777;text-align:center;padding:20px}
 
-}
+/* WORKOUT TABS */
 
-.badge{
+.workout-tabs{
 
-  display:inline-block;
+display:grid;grid-template-columns:repeat(4,1fr);
 
-  font-size:12px;
+background:white;border-radius:15px;padding:5px;
 
-  color:#666;
-
-}
-
-.empty{
-
-  color:#777;
-
-  text-align:center;
-
-  padding:20px;
+margin-bottom:15px;box-shadow:0 2px 8px rgba(0,0,0,.06)
 
 }
 
-/* =========================
+.workout-tab{
 
-   WHEEL PICKER
+border:0;background:transparent;padding:10px 3px;border-radius:11px;
 
-========================= */
+font-size:12px;font-weight:700;color:#777
+
+}
+
+.workout-tab.active{background:#111;color:white}
+
+/* HISTORY */
+
+.history-card{
+
+background:white;border-radius:17px;padding:16px;margin-bottom:12px;
+
+box-shadow:0 2px 8px rgba(0,0,0,.06)
+
+}
+
+.history-title{font-size:17px;font-weight:750}
+
+.history-date{color:#777;font-size:13px;margin-top:4px}
+
+.history-exercise{
+
+padding:12px 0;border-top:1px solid var(--line);margin-top:10px
+
+}
+
+.history-set{font-size:14px;color:#555;margin-top:4px}
+
+/* PROGRESS */
+
+.stat-grid{
+
+display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px
+
+}
+
+.stat-card{
+
+background:white;border-radius:16px;padding:16px;
+
+box-shadow:0 2px 8px rgba(0,0,0,.06)
+
+}
+
+.stat-number{font-size:26px;font-weight:800}
+
+.stat-label{font-size:12px;color:#777;margin-top:3px}
+
+.progress-exercise{
+
+background:white;border-radius:16px;padding:15px;margin-bottom:10px;
+
+box-shadow:0 2px 8px rgba(0,0,0,.06)
+
+}
+
+.progress-name{font-weight:750}
+
+.progress-detail{font-size:13px;color:#666;margin-top:5px}
+
+/* TIMER */
+
+.timer-card{text-align:center;padding:25px 16px}
+
+.timer-display{
+
+font-size:58px;font-weight:800;font-variant-numeric:tabular-nums;
+
+margin:15px 0 22px
+
+}
+
+.timer-presets{
+
+display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px
+
+}
+
+.timer-button{
+
+border:0;background:#eee;border-radius:12px;padding:13px 5px;
+
+font-weight:750;font-size:14px
+
+}
+
+.timer-start{
+
+width:100%;border:0;background:#111;color:white;border-radius:13px;
+
+padding:15px;font-size:17px;font-weight:750;margin-top:8px
+
+}
+
+.timer-reset{
+
+width:100%;border:0;background:#eee;border-radius:13px;
+
+padding:13px;font-size:15px;font-weight:700;margin-top:8px
+
+}
+
+/* BOTTOM NAV */
+
+.bottom-nav{
+
+position:fixed;left:0;right:0;bottom:0;
+
+background:rgba(255,255,255,.96);
+
+backdrop-filter:blur(18px);
+
+-webkit-backdrop-filter:blur(18px);
+
+border-top:1px solid #ddd;
+
+display:grid;grid-template-columns:repeat(5,1fr);
+
+padding:7px 4px calc(7px + env(safe-area-inset-bottom));
+
+z-index:5000
+
+}
+
+.nav-button{
+
+border:0;background:transparent;color:#777;
+
+font-size:10px;font-weight:650;padding:3px 0
+
+}
+
+.nav-icon{display:block;font-size:22px;line-height:24px;margin-bottom:2px}
+
+.nav-button.active{color:#111;font-weight:800}
+
+/* PICKER */
 
 .picker-overlay{
 
-  position:fixed;
-
-  inset:0;
-
-  background:rgba(0,0,0,.35);
-
-  z-index:9998;
+position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9998
 
 }
 
 .picker-sheet{
 
-  position:fixed;
+position:fixed;left:0;right:0;bottom:0;background:#f8f8f8;
 
-  left:0;
+border-radius:22px 22px 0 0;z-index:9999;
 
-  right:0;
+padding-bottom:calc(12px + env(safe-area-inset-bottom));
 
-  bottom:0;
-
-  background:#f8f8f8;
-
-  border-radius:22px 22px 0 0;
-
-  z-index:9999;
-
-  padding-bottom:calc(12px + env(safe-area-inset-bottom));
-
-  box-shadow:0 -8px 30px rgba(0,0,0,.18);
+box-shadow:0 -8px 30px rgba(0,0,0,.18)
 
 }
 
 .picker-toolbar{
 
-  display:flex;
+display:flex;justify-content:space-between;align-items:center;
 
-  justify-content:space-between;
+padding:14px 18px;background:white;border-radius:22px 22px 0 0;
 
-  align-items:center;
-
-  padding:14px 18px;
-
-  background:white;
-
-  border-radius:22px 22px 0 0;
-
-  border-bottom:1px solid #ddd;
+border-bottom:1px solid #ddd
 
 }
 
-.picker-toolbar strong{
-
-  font-size:17px;
-
-}
+.picker-toolbar strong{font-size:17px}
 
 .picker-done{
 
-  border:0;
+border:0;background:transparent;color:var(--blue);
 
-  background:transparent;
-
-  color:var(--blue);
-
-  font-size:17px;
-
-  font-weight:700;
+font-size:17px;font-weight:700
 
 }
 
-.wheel-wrap{
-
-  position:relative;
-
-  height:260px;
-
-  overflow:hidden;
-
-  background:#f8f8f8;
-
-}
+.wheel-wrap{position:relative;height:260px;overflow:hidden;background:#f8f8f8}
 
 .wheel{
 
-  height:260px;
+height:260px;overflow-y:scroll;scroll-snap-type:y mandatory;
 
-  overflow-y:scroll;
-
-  scroll-snap-type:y mandatory;
-
-  -webkit-overflow-scrolling:touch;
-
-  padding:104px 0;
+-webkit-overflow-scrolling:touch;padding:104px 0
 
 }
 
-.wheel::-webkit-scrollbar{
-
-  display:none;
-
-}
+.wheel::-webkit-scrollbar{display:none}
 
 .wheel-option{
 
-  height:52px;
+height:52px;display:flex;align-items:center;justify-content:center;
 
-  display:flex;
-
-  align-items:center;
-
-  justify-content:center;
-
-  scroll-snap-align:center;
-
-  font-size:24px;
-
-  font-weight:600;
+scroll-snap-align:center;font-size:24px;font-weight:600
 
 }
 
 .wheel-highlight{
 
-  pointer-events:none;
+pointer-events:none;position:absolute;top:104px;left:18px;right:18px;
 
-  position:absolute;
-
-  top:104px;
-
-  left:18px;
-
-  right:18px;
-
-  height:52px;
-
-  border-top:1px solid #bbb;
-
-  border-bottom:1px solid #bbb;
+height:52px;border-top:1px solid #bbb;border-bottom:1px solid #bbb
 
 }
 
 @media(max-width:390px){
 
-  .set-row{
+.set-row{grid-template-columns:42px 1fr 1fr}
 
-    grid-template-columns:42px 1fr 1fr;
-
-  }
-
-  .previous{
-
-    margin-left:50px;
-
-  }
+.previous,.compare{margin-left:50px}
 
 }
 
@@ -848,7 +532,7 @@ label{
 
 <h1>Workout Tracker</h1>
 
-<p>Version 5.1</p>
+<p>Version 5.2</p>
 
 </header>
 
@@ -862,11 +546,7 @@ label{
 
 <div class="small" id="progressText"></div>
 
-<div class="progress-bar">
-
-<div class="progress-fill" id="progressFill"></div>
-
-</div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
 </div>
 
@@ -902,19 +582,31 @@ Exercise Library
 
 <h2 id="workoutTitle"></h2>
 
+<div class="workout-tabs">
+
+<button class="workout-tab active" id="tabWorkout" onclick="showWorkoutTab('workout')">🏋️<br>Workout</button>
+
+<button class="workout-tab" id="tabProgress" onclick="showWorkoutTab('progress')">📈<br>Progress</button>
+
+<button class="workout-tab" id="tabHistory" onclick="showWorkoutTab('history')">🕘<br>History</button>
+
+<button class="workout-tab" id="tabTimer" onclick="showWorkoutTab('timer')">⏱️<br>Timer</button>
+
+</div>
+
+<div id="workoutTabContent">
+
 <div id="exerciseList"></div>
 
-<button
+<button id="finishWorkoutButton" class="finish-workout" onclick="finishWorkout()">Finish Workout</button>
 
- id="finishWorkoutButton"
+</div>
 
- class="finish-workout"
+<div id="workoutProgressContent" class="hidden"></div>
 
- onclick="finishWorkout()">
+<div id="workoutHistoryContent" class="hidden"></div>
 
- Finish Workout
-
-</button>
+<div id="workoutTimerContent" class="hidden"></div>
 
 </section>
 
@@ -924,39 +616,19 @@ Exercise Library
 
 <h2>Exercise Library</h2>
 
-<input
+<input id="librarySearch" class="search" type="search"
 
- id="librarySearch"
-
- class="search"
-
- type="search"
-
- placeholder="Search exercises..."
-
- oninput="renderLibrary()">
+placeholder="Search exercises..." oninput="renderLibrary()">
 
 <select id="muscleFilter" onchange="renderLibrary()">
 
 <option value="All">All Muscle Groups</option>
 
-<option>Chest</option>
+<option>Chest</option><option>Back</option><option>Shoulders</option>
 
-<option>Back</option>
+<option>Biceps</option><option>Triceps</option><option>Quads</option>
 
-<option>Shoulders</option>
-
-<option>Biceps</option>
-
-<option>Triceps</option>
-
-<option>Quads</option>
-
-<option>Hamstrings</option>
-
-<option>Glutes</option>
-
-<option>Calves</option>
+<option>Hamstrings</option><option>Glutes</option><option>Calves</option>
 
 <option>Core</option>
 
@@ -976,17 +648,9 @@ Exercise Library
 
 <label>Workout Name</label>
 
-<input
+<input id="customWorkoutName" placeholder="Example: Monday Push Day">
 
- id="customWorkoutName"
-
- placeholder="Example: Monday Push Day">
-
-<div class="detail-title">
-
-Exercises Added
-
-</div>
+<div class="detail-title">Exercises Added</div>
 
 <div id="builderExercises" class="builder-list"></div>
 
@@ -994,53 +658,87 @@ Exercises Added
 
 <h3>Choose Exercises</h3>
 
-<input
+<input id="builderSearch" class="search" type="search"
 
- id="builderSearch"
-
- class="search"
-
- type="search"
-
- placeholder="Search exercise library..."
-
- oninput="renderBuilderLibrary()">
+placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 <div class="card" id="builderLibrary"></div>
 
-<button class="save-button" onclick="saveCustomWorkout()">
+<button class="save-button" onclick="saveCustomWorkout()">Save Workout</button>
 
-Save Workout
+</section>
 
-</button>
+<section id="overallProgressScreen" class="hidden">
+
+<h2>Overall Progress</h2>
+
+<div id="overallStats"></div>
+
+<div id="overallExerciseProgress"></div>
+
+</section>
+
+<section id="globalHistoryScreen" class="hidden">
+
+<h2>Workout History</h2>
+
+<div id="globalHistoryList"></div>
+
+</section>
+
+<section id="globalTimerScreen" class="hidden">
+
+<h2>Rest Timer</h2>
+
+<div id="globalTimerContent"></div>
 
 </section>
 
 </div>
 
-<!-- Wheel picker -->
+<nav class="bottom-nav">
 
-<div id="pickerOverlay"
+<button class="nav-button active" id="navHome" onclick="goHome()">
 
-     class="picker-overlay hidden"
+<span class="nav-icon">🏠</span>Home
 
-     onclick="closePicker()"></div>
+</button>
+
+<button class="nav-button" id="navWorkout" onclick="bottomWorkout()">
+
+<span class="nav-icon">🏋️</span>Workout
+
+</button>
+
+<button class="nav-button" id="navProgress" onclick="showOverallProgress()">
+
+<span class="nav-icon">📈</span>Progress
+
+</button>
+
+<button class="nav-button" id="navHistory" onclick="showGlobalHistory()">
+
+<span class="nav-icon">🕘</span>History
+
+</button>
+
+<button class="nav-button" id="navTimer" onclick="showGlobalTimer()">
+
+<span class="nav-icon">⏱️</span>Timer
+
+</button>
+
+</nav>
+
+<div id="pickerOverlay" class="picker-overlay hidden" onclick="closePicker()"></div>
 
 <div id="pickerSheet" class="picker-sheet hidden">
 
 <div class="picker-toolbar">
 
-<strong id="pickerTitle">
+<strong id="pickerTitle">Select</strong>
 
-Select
-
-</strong>
-
-<button class="picker-done" onclick="confirmPicker()">
-
-Done
-
-</button>
+<button class="picker-done" onclick="confirmPicker()">Done</button>
 
 </div>
 
@@ -1062,887 +760,361 @@ Done
 
 ========================= */
 
-const exerciseLibrary = [
+const exerciseLibrary=[
 
-{
-
-id:"machine-chest-press",
-
-name:"Machine Chest Press",
-
-muscle:"Chest",
+{id:"machine-chest-press",name:"Machine Chest Press",muscle:"Chest",
 
 image:"images/machine-chest-press.png",
 
-how:"Adjust the seat so the handles are around mid-chest height. Keep your back against the pad. Press the handles forward until your arms are almost straight, then slowly return to the starting position.",
+how:"Adjust the seat so the handles are around mid-chest height. Keep your back against the pad. Press the handles forward until your arms are almost straight, then slowly return.",
 
-tips:[
+tips:["Keep your chest up and back against the pad.","Keep your wrists straight.","Control the weight through the entire repetition."],
 
-"Keep your chest up and back against the pad.",
+mistakes:["Using momentum.","Letting the shoulders roll forward.","Locking the elbows aggressively."]},
 
-"Keep your wrists straight.",
-
-"Control the weight through the entire repetition."
-
-],
-
-mistakes:[
-
-"Using momentum.",
-
-"Letting the shoulders roll forward.",
-
-"Locking the elbows aggressively."
-
-]
-
-},
-
-{
-
-id:"pec-deck",
-
-name:"Pec Deck",
-
-muscle:"Chest",
+{id:"pec-deck",name:"Pec Deck",muscle:"Chest",
 
 image:"images/pec-deck.png",
 
 how:"Sit with your back against the pad. Position your arms on the pads or handles and bring them together in front of your chest. Squeeze your chest, then slowly return.",
 
-tips:[
+tips:["Keep your chest lifted.","Maintain a slight bend in your elbows.","Control the return."],
 
-"Keep your chest lifted.",
+mistakes:["Swinging the weight.","Going excessively heavy.","Letting the shoulders roll forward."]},
 
-"Maintain a slight bend in your elbows.",
-
-"Control the return."
-
-],
-
-mistakes:[
-
-"Swinging the weight.",
-
-"Going excessively heavy.",
-
-"Letting the shoulders roll forward."
-
-]
-
-},
-
-{
-
-id:"triceps-pushdown",
-
-name:"Triceps Pushdown",
-
-muscle:"Triceps",
+{id:"triceps-pushdown",name:"Triceps Pushdown",muscle:"Triceps",
 
 image:"images/triceps-pushdown.png",
 
 how:"Stand facing the cable. Keep your elbows close to your sides and push the attachment downward until your arms are nearly straight. Slowly return.",
 
-tips:[
+tips:["Keep your elbows tucked.","Keep your upper arms still.","Squeeze the triceps at the bottom."],
 
-"Keep your elbows tucked.",
+mistakes:["Swinging your torso.","Moving your elbows forward.","Using momentum."]},
 
-"Keep your upper arms still.",
-
-"Squeeze the triceps at the bottom."
-
-],
-
-mistakes:[
-
-"Swinging your torso.",
-
-"Moving your elbows forward.",
-
-"Using momentum."
-
-]
-
-},
-
-{
-
-id:"lat-pulldown",
-
-name:"Lat Pulldown",
-
-muscle:"Back",
+{id:"lat-pulldown",name:"Lat Pulldown",muscle:"Back",
 
 image:"images/lat-pulldown.png",
 
 how:"Secure your legs under the pads and grip the bar slightly wider than shoulder width. Pull the bar toward your upper chest while driving your elbows downward. Slowly return.",
 
-tips:[
+tips:["Keep your chest up.","Think about pulling with your elbows.","Control the upward portion."],
 
-"Keep your chest up.",
+mistakes:["Pulling behind the neck.","Swinging backward excessively.","Jerking the weight."]},
 
-"Think about pulling with your elbows.",
-
-"Control the upward portion."
-
-],
-
-mistakes:[
-
-"Pulling behind the neck.",
-
-"Swinging backward excessively.",
-
-"Jerking the weight."
-
-]
-
-},
-
-{
-
-id:"seated-row",
-
-name:"Seated Row Machine",
-
-muscle:"Back",
+{id:"seated-row",name:"Seated Row Machine",muscle:"Back",
 
 image:"images/seated-row.png",
 
 how:"Sit upright and grip the handles. Pull them toward your torso while squeezing your shoulder blades together. Slowly extend your arms.",
 
-tips:[
+tips:["Keep your chest tall.","Drive your elbows backward.","Control each repetition."],
 
-"Keep your chest tall.",
+mistakes:["Rounding your back.","Shrugging your shoulders.","Jerking the weight."]},
 
-"Drive your elbows backward.",
-
-"Control each repetition."
-
-],
-
-mistakes:[
-
-"Rounding your back.",
-
-"Shrugging your shoulders.",
-
-"Jerking the weight."
-
-]
-
-},
-
-{
-
-id:"preacher-curl",
-
-name:"Preacher Curl Machine",
-
-muscle:"Biceps",
+{id:"preacher-curl",name:"Preacher Curl Machine",muscle:"Biceps",
 
 image:"images/preacher-curl.png",
 
 how:"Place your upper arms firmly against the pad. Curl the handles upward while keeping your upper arms planted. Slowly lower until your arms are nearly straight.",
 
-tips:[
+tips:["Keep your upper arms on the pad.","Lower the weight slowly.","Squeeze your biceps at the top."],
 
-"Keep your upper arms on the pad.",
+mistakes:["Lifting your elbows.","Dropping the weight.","Using excessive weight."]},
 
-"Lower the weight slowly.",
-
-"Squeeze your biceps at the top."
-
-],
-
-mistakes:[
-
-"Lifting your elbows.",
-
-"Dropping the weight.",
-
-"Using excessive weight."
-
-]
-
-},
-
-{
-
-id:"leg-press",
-
-name:"Leg Press",
-
-muscle:"Quads",
+{id:"leg-press",name:"Leg Press",muscle:"Quads",
 
 image:"images/leg-press.png",
 
 how:"Place your feet about shoulder width apart. Lower the platform under control while keeping your back against the pad. Press through your feet to return.",
 
-tips:[
+tips:["Keep your feet planted.","Keep your knees aligned with your toes.","Control the descent."],
 
-"Keep your feet planted.",
+mistakes:["Letting the knees collapse inward.","Allowing the lower back to round.","Aggressively locking the knees."]},
 
-"Keep your knees aligned with your toes.",
-
-"Control the descent."
-
-],
-
-mistakes:[
-
-"Letting the knees collapse inward.",
-
-"Allowing the lower back to round.",
-
-"Aggressively locking the knees."
-
-]
-
-},
-
-{
-
-id:"leg-extension",
-
-name:"Leg Extension",
-
-muscle:"Quads",
+{id:"leg-extension",name:"Leg Extension",muscle:"Quads",
 
 image:"images/leg-extension.png",
 
 how:"Position your ankles behind the roller. Extend your knees until your legs are nearly straight. Squeeze your quads briefly and lower under control.",
 
-tips:[
+tips:["Keep your hips against the seat.","Use controlled repetitions.","Squeeze the quads at the top."],
 
-"Keep your hips against the seat.",
+mistakes:["Kicking the weight.","Using momentum.","Dropping the weight quickly."]},
 
-"Use controlled repetitions.",
-
-"Squeeze the quads at the top."
-
-],
-
-mistakes:[
-
-"Kicking the weight.",
-
-"Using momentum.",
-
-"Dropping the weight quickly."
-
-]
-
-},
-
-{
-
-id:"seated-leg-curl",
-
-name:"Seated Leg Curl",
-
-muscle:"Hamstrings",
+{id:"seated-leg-curl",name:"Seated Leg Curl",muscle:"Hamstrings",
 
 image:"images/seated-leg-curl.png",
 
 how:"Position your legs against the machine rollers. Curl your heels downward and back as far as comfortably possible. Slowly return.",
 
-tips:[
+tips:["Keep your hips against the seat.","Squeeze your hamstrings.","Control the return."],
 
-"Keep your hips against the seat.",
+mistakes:["Lifting your hips.","Using momentum.","Moving too quickly."]},
 
-"Squeeze your hamstrings.",
-
-"Control the return."
-
-],
-
-mistakes:[
-
-"Lifting your hips.",
-
-"Using momentum.",
-
-"Moving too quickly."
-
-]
-
-},
-
-{
-
-id:"calf-raise",
-
-name:"Calf Raise Machine",
-
-muscle:"Calves",
+{id:"calf-raise",name:"Calf Raise Machine",muscle:"Calves",
 
 image:"images/calf-raise.png",
 
 how:"Position the balls of your feet on the platform. Lower your heels for a controlled stretch, then raise your heels as high as comfortably possible.",
 
-tips:[
+tips:["Use a full comfortable range of motion.","Pause briefly at the top.","Control the bottom stretch."],
 
-"Use a full comfortable range of motion.",
+mistakes:["Bouncing.","Using short repetitions.","Moving too quickly."]},
 
-"Pause briefly at the top.",
-
-"Control the bottom stretch."
-
-],
-
-mistakes:[
-
-"Bouncing.",
-
-"Using short repetitions.",
-
-"Moving too quickly."
-
-]
-
-},
-
-{
-
-id:"shoulder-press",
-
-name:"Shoulder Press Machine",
-
-muscle:"Shoulders",
+{id:"shoulder-press",name:"Shoulder Press Machine",muscle:"Shoulders",
 
 image:"images/shoulder-press.png",
 
 how:"Adjust the seat so the handles begin around shoulder height. Press upward until your arms are nearly straight and slowly lower.",
 
-tips:[
+tips:["Keep your back against the pad.","Keep your wrists straight.","Control the lowering phase."],
 
-"Keep your back against the pad.",
+mistakes:["Excessively arching the lower back.","Using momentum.","Dropping the weight."]},
 
-"Keep your wrists straight.",
-
-"Control the lowering phase."
-
-],
-
-mistakes:[
-
-"Excessively arching the lower back.",
-
-"Using momentum.",
-
-"Dropping the weight."
-
-]
-
-},
-
-{
-
-id:"lateral-raise",
-
-name:"Lateral Raise Machine",
-
-muscle:"Shoulders",
+{id:"lateral-raise",name:"Lateral Raise Machine",muscle:"Shoulders",
 
 image:"images/lateral-raise.png",
 
 how:"Position your arms against the pads and raise them outward until approximately shoulder height. Slowly lower.",
 
-tips:[
+tips:["Keep the movement controlled.","Focus on the side delts.","Keep your shoulders down."],
 
-"Keep the movement controlled.",
+mistakes:["Shrugging.","Swinging the weight.","Going excessively heavy."]},
 
-"Focus on the side delts.",
-
-"Keep your shoulders down."
-
-],
-
-mistakes:[
-
-"Shrugging.",
-
-"Swinging the weight.",
-
-"Going excessively heavy."
-
-]
-
-},
-
-{
-
-id:"biceps-curl",
-
-name:"Biceps Curl Machine",
-
-muscle:"Biceps",
+{id:"biceps-curl",name:"Biceps Curl Machine",muscle:"Biceps",
 
 image:"images/biceps-curl.png",
 
 how:"Position your upper arms against the pad. Curl the handles upward, squeeze your biceps, and slowly lower.",
 
-tips:[
+tips:["Keep your elbows planted.","Squeeze at the top.","Lower slowly."],
 
-"Keep your elbows planted.",
+mistakes:["Lifting the elbows.","Swinging.","Using momentum."]},
 
-"Squeeze at the top.",
-
-"Lower slowly."
-
-],
-
-mistakes:[
-
-"Lifting the elbows.",
-
-"Swinging.",
-
-"Using momentum."
-
-]
-
-},
-
-{
-
-id:"triceps-extension",
-
-name:"Triceps Extension Machine",
-
-muscle:"Triceps",
+{id:"triceps-extension",name:"Triceps Extension Machine",muscle:"Triceps",
 
 image:"images/triceps-extension.png",
 
 how:"Position yourself securely in the machine. Extend your arms against the resistance until nearly straight and slowly return.",
 
-tips:[
+tips:["Keep your shoulders stable.","Move through the elbows.","Use controlled repetitions."],
 
-"Keep your shoulders stable.",
+mistakes:["Moving the shoulders excessively.","Using momentum.","Going too heavy."]},
 
-"Move through the elbows.",
-
-"Use controlled repetitions."
-
-],
-
-mistakes:[
-
-"Moving the shoulders excessively.",
-
-"Using momentum.",
-
-"Going too heavy."
-
-]
-
-},
-
-{
-
-id:"incline-chest-press",
-
-name:"Incline Chest Press Machine",
-
-muscle:"Chest",
+{id:"incline-chest-press",name:"Incline Chest Press Machine",muscle:"Chest",
 
 how:"Press the handles upward and forward while keeping your back against the pad.",
 
 tips:["Control the weight.","Keep your shoulders down."],
 
-mistakes:["Using momentum.","Overarching your back."]
+mistakes:["Using momentum.","Overarching your back."]},
 
-},
-
-{
-
-id:"cable-fly",
-
-name:"Cable Fly",
-
-muscle:"Chest",
+{id:"cable-fly",name:"Cable Fly",muscle:"Chest",
 
 how:"Bring the cable handles together in front of your chest while maintaining a slight elbow bend.",
 
 tips:["Keep tension on the chest.","Move smoothly."],
 
-mistakes:["Turning it into a press.","Using too much weight."]
+mistakes:["Turning it into a press.","Using too much weight."]},
 
-},
-
-{
-
-id:"assisted-pullup",
-
-name:"Assisted Pull-Up",
-
-muscle:"Back",
+{id:"assisted-pullup",name:"Assisted Pull-Up",muscle:"Back",
 
 how:"Use the assistance platform and pull your chest upward while driving your elbows down.",
 
-tips:["Keep your chest tall.","Control the descent."],
+tips:["Keep your chest tall.","Control the descent."],mistakes:["Swinging.","Shrugging."]},
 
-mistakes:["Swinging.","Shrugging."]
-
-},
-
-{
-
-id:"straight-arm-pulldown",
-
-name:"Straight-Arm Pulldown",
-
-muscle:"Back",
+{id:"straight-arm-pulldown",name:"Straight-Arm Pulldown",muscle:"Back",
 
 how:"Keep your arms mostly straight and pull the cable attachment toward your thighs.",
 
 tips:["Focus on your lats.","Keep your torso stable."],
 
-mistakes:["Bending the elbows excessively.","Swinging."]
+mistakes:["Bending the elbows excessively.","Swinging."]},
 
-},
-
-{
-
-id:"reverse-pec-deck",
-
-name:"Reverse Pec Deck",
-
-muscle:"Shoulders",
+{id:"reverse-pec-deck",name:"Reverse Pec Deck",muscle:"Shoulders",
 
 how:"Face the machine and move your arms outward and backward under control.",
 
-tips:["Keep your chest supported.","Control the return."],
+tips:["Keep your chest supported.","Control the return."],mistakes:["Shrugging.","Using momentum."]},
 
-mistakes:["Shrugging.","Using momentum."]
-
-},
-
-{
-
-id:"cable-lateral-raise",
-
-name:"Cable Lateral Raise",
-
-muscle:"Shoulders",
+{id:"cable-lateral-raise",name:"Cable Lateral Raise",muscle:"Shoulders",
 
 how:"Raise the cable outward until your arm reaches approximately shoulder height.",
 
-tips:["Keep tension on the delt.","Move slowly."],
+tips:["Keep tension on the delt.","Move slowly."],mistakes:["Shrugging.","Swinging."]},
 
-mistakes:["Shrugging.","Swinging."]
-
-},
-
-{
-
-id:"cable-curl",
-
-name:"Cable Curl",
-
-muscle:"Biceps",
+{id:"cable-curl",name:"Cable Curl",muscle:"Biceps",
 
 how:"Keep your elbows close to your sides and curl the attachment toward your shoulders.",
 
 tips:["Keep elbows stationary.","Squeeze at the top."],
 
-mistakes:["Swinging.","Moving the elbows forward."]
+mistakes:["Swinging.","Moving the elbows forward."]},
 
-},
-
-{
-
-id:"hammer-curl",
-
-name:"Hammer Curl",
-
-muscle:"Biceps",
+{id:"hammer-curl",name:"Hammer Curl",muscle:"Biceps",
 
 how:"Hold the weights with palms facing inward and curl them toward your shoulders.",
 
-tips:["Keep elbows tucked.","Control the lowering phase."],
+tips:["Keep elbows tucked.","Control the lowering phase."],mistakes:["Swinging.","Using momentum."]},
 
-mistakes:["Swinging.","Using momentum."]
-
-},
-
-{
-
-id:"overhead-triceps",
-
-name:"Overhead Cable Triceps Extension",
-
-muscle:"Triceps",
+{id:"overhead-triceps",name:"Overhead Cable Triceps Extension",muscle:"Triceps",
 
 how:"With the cable behind you, extend your elbows until your arms are nearly straight.",
 
 tips:["Keep elbows stable.","Control the stretch."],
 
-mistakes:["Flaring excessively.","Moving the upper arms."]
+mistakes:["Flaring excessively.","Moving the upper arms."]},
 
-},
-
-{
-
-id:"hack-squat",
-
-name:"Hack Squat Machine",
-
-muscle:"Quads",
+{id:"hack-squat",name:"Hack Squat Machine",muscle:"Quads",
 
 how:"Lower yourself under control by bending your knees and hips, then drive through your feet to stand.",
 
 tips:["Keep your back against the pad.","Track knees with toes."],
 
-mistakes:["Knees collapsing inward.","Bouncing at the bottom."]
+mistakes:["Knees collapsing inward.","Bouncing at the bottom."]},
 
-},
-
-{
-
-id:"lying-leg-curl",
-
-name:"Lying Leg Curl",
-
-muscle:"Hamstrings",
+{id:"lying-leg-curl",name:"Lying Leg Curl",muscle:"Hamstrings",
 
 how:"Curl your heels toward your glutes while keeping your hips against the pad.",
 
 tips:["Control the movement.","Squeeze the hamstrings."],
 
-mistakes:["Lifting the hips.","Using momentum."]
+mistakes:["Lifting the hips.","Using momentum."]},
 
-},
-
-{
-
-id:"hip-thrust",
-
-name:"Hip Thrust Machine",
-
-muscle:"Glutes",
+{id:"hip-thrust",name:"Hip Thrust Machine",muscle:"Glutes",
 
 how:"Drive your hips upward against the resistance and squeeze your glutes at the top.",
 
 tips:["Keep your ribs controlled.","Squeeze your glutes."],
 
-mistakes:["Overextending your lower back.","Moving too quickly."]
+mistakes:["Overextending your lower back.","Moving too quickly."]},
 
-},
-
-{
-
-id:"hip-abduction",
-
-name:"Hip Abduction Machine",
-
-muscle:"Glutes",
+{id:"hip-abduction",name:"Hip Abduction Machine",muscle:"Glutes",
 
 how:"Push your knees outward against the pads and slowly return.",
 
 tips:["Control both directions.","Keep your torso stable."],
 
-mistakes:["Bouncing.","Using momentum."]
+mistakes:["Bouncing.","Using momentum."]},
 
-},
-
-{
-
-id:"ab-crunch",
-
-name:"Ab Crunch Machine",
-
-muscle:"Core",
+{id:"ab-crunch",name:"Ab Crunch Machine",muscle:"Core",
 
 how:"Contract your abdominal muscles to curl your torso forward against the resistance.",
 
 tips:["Move through your abs.","Use controlled repetitions."],
 
-mistakes:["Pulling with your arms.","Using momentum."]
+mistakes:["Pulling with your arms.","Using momentum."]},
 
-},
-
-{
-
-id:"cable-crunch",
-
-name:"Cable Crunch",
-
-muscle:"Core",
+{id:"cable-crunch",name:"Cable Crunch",muscle:"Core",
 
 how:"Kneel at the cable and flex your torso downward by contracting your abdominal muscles.",
 
 tips:["Keep your hips relatively stable.","Focus on spinal flexion."],
 
-mistakes:["Turning it into a hip hinge.","Pulling with the arms."]
-
-}
+mistakes:["Turning it into a hip hinge.","Pulling with the arms."]}
 
 ];
 
-/* =========================
-
-   PRESET WORKOUTS
-
-========================= */
+/* PRESETS */
 
 const presetWorkouts={
 
-day1:{
+day1:{title:"Day 1 — Chest & Triceps",subtitle:"Chest and triceps",
 
-title:"Day 1 — Chest & Triceps",
+exercises:["machine-chest-press","pec-deck","triceps-pushdown"]},
 
-subtitle:"Chest and triceps",
+day2:{title:"Day 2 — Back & Biceps",subtitle:"Back and biceps",
 
-exercises:[
+exercises:["lat-pulldown","seated-row","preacher-curl"]},
 
-"machine-chest-press",
+day3:{title:"Day 3 — Legs",subtitle:"Quads, hamstrings and calves",
 
-"pec-deck",
+exercises:["leg-press","leg-extension","seated-leg-curl","calf-raise"]},
 
-"triceps-pushdown"
+day4:{title:"Day 4 — Shoulders & Arms",subtitle:"Shoulders, biceps and triceps",
 
-]
-
-},
-
-day2:{
-
-title:"Day 2 — Back & Biceps",
-
-subtitle:"Back and biceps",
-
-exercises:[
-
-"lat-pulldown",
-
-"seated-row",
-
-"preacher-curl"
-
-]
-
-},
-
-day3:{
-
-title:"Day 3 — Legs",
-
-subtitle:"Quads, hamstrings and calves",
-
-exercises:[
-
-"leg-press",
-
-"leg-extension",
-
-"seated-leg-curl",
-
-"calf-raise"
-
-]
-
-},
-
-day4:{
-
-title:"Day 4 — Shoulders & Arms",
-
-subtitle:"Shoulders, biceps and triceps",
-
-exercises:[
-
-"shoulder-press",
-
-"lateral-raise",
-
-"biceps-curl",
-
-"triceps-extension"
-
-]
-
-}
+exercises:["shoulder-press","lateral-raise","biceps-curl","triceps-extension"]}
 
 };
 
-/* =========================
+/* STORAGE — preserves V5/V5.1 data */
 
-   STORAGE
+let completedExercises=JSON.parse(localStorage.getItem("completedExercisesV5")||"[]");
 
-========================= */
+let customWorkouts=JSON.parse(localStorage.getItem("customWorkoutsV5")||"[]");
 
-let completedExercises=
+let setHistory=JSON.parse(localStorage.getItem("setHistoryV5")||"{}");
 
-JSON.parse(localStorage.getItem("completedExercisesV5")||"[]");
+let previousHistory=JSON.parse(localStorage.getItem("previousHistoryV51")||"{}");
 
-let customWorkouts=
-
-JSON.parse(localStorage.getItem("customWorkoutsV5")||"[]");
-
-let setHistory=
-
-JSON.parse(localStorage.getItem("setHistoryV5")||"{}");
-
-let previousHistory=
-
-JSON.parse(localStorage.getItem("previousHistoryV51")||"{}");
+let workoutHistory=JSON.parse(localStorage.getItem("workoutHistoryV52")||"[]");
 
 let builderSelected=[];
 
 let activeWorkoutKey=null;
 
+let activeWorkoutTitle="";
+
 let activeWorkoutExerciseIds=[];
 
 let activeCustomIndex=null;
 
-/* =========================
+let lastWorkoutContext=null;
 
-   HELPERS
+/* HELPERS */
 
-========================= */
+function getExercise(id){return exerciseLibrary.find(x=>x.id===id)}
 
-function getExercise(id){
+function allScreens(){
 
-return exerciseLibrary.find(ex=>ex.id===id);
+return ["home","workoutScreen","libraryScreen","builderScreen",
+
+"overallProgressScreen","globalHistoryScreen","globalTimerScreen"];
 
 }
 
-function showScreen(screen){
+function showScreen(id){
 
-["home","workoutScreen","libraryScreen","builderScreen"]
+allScreens().forEach(x=>document.getElementById(x).classList.add("hidden"));
 
-.forEach(id=>{
-
-document.getElementById(id).classList.add("hidden");
-
-});
-
-document.getElementById(screen).classList.remove("hidden");
+document.getElementById(id).classList.remove("hidden");
 
 window.scrollTo(0,0);
 
 }
 
-function goHome(){
+function setBottomNav(name){
 
-closePicker();
+["Home","Workout","Progress","History","Timer"].forEach(x=>{
 
-showScreen("home");
+document.getElementById("nav"+x).classList.toggle("active",x===name);
 
-renderHome();
-
-updateProgress();
+});
 
 }
 
-/* =========================
+function escapeHTML(v){
 
-   HOME
+return String(v).replaceAll("&","&amp;").replaceAll("<","&lt;")
 
-========================= */
+.replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+
+}
+
+function escapeAttribute(v){return String(v).replaceAll("\\","\\\\").replaceAll("'","\\'")}
+
+function safeId(v){return "id-"+String(v).replace(/[^a-zA-Z0-9_-]/g,"-")}
+
+/* HOME */
+
+function goHome(){
+
+closePicker();showScreen("home");setBottomNav("Home");
+
+renderHome();updateProgress();
+
+}
 
 function renderHome(){
 
@@ -1952,17 +1124,15 @@ preset.innerHTML="";
 
 Object.entries(presetWorkouts).forEach(([key,w])=>{
 
-const button=document.createElement("button");
+const b=document.createElement("button");
 
-button.className="day-button";
+b.className="day-button";
 
-button.innerHTML=
+b.innerHTML=`${w.title}<span>${w.subtitle}</span>`;
 
-`${w.title}<span>${w.subtitle}</span>`;
+b.onclick=()=>openPresetWorkout(key);
 
-button.onclick=()=>openPresetWorkout(key);
-
-preset.appendChild(button);
+preset.appendChild(b);
 
 });
 
@@ -1972,279 +1142,215 @@ renderCustomButtons();
 
 function renderCustomButtons(){
 
-const area=document.getElementById("customButtons");
-
-area.innerHTML="";
+const area=document.getElementById("customButtons");area.innerHTML="";
 
 if(!customWorkouts.length){
 
-area.innerHTML=
-
-`<div class="card empty">
-
-You haven't created a custom workout yet.
-
-</div>`;
+area.innerHTML='<div class="card empty">You haven\'t created a custom workout yet.</div>';
 
 return;
 
 }
 
-customWorkouts.forEach((w,index)=>{
+customWorkouts.forEach((w,i)=>{
 
-const button=document.createElement("button");
+const b=document.createElement("button");
 
-button.className="day-button";
+b.className="day-button";
 
-button.innerHTML=
+b.innerHTML=`${escapeHTML(w.name)}<span>${w.exercises.length} exercises</span>`;
 
-`${escapeHTML(w.name)}
+b.onclick=()=>openCustomWorkout(i);
 
-<span>${w.exercises.length} exercises</span>`;
-
-button.onclick=()=>openCustomWorkout(index);
-
-area.appendChild(button);
+area.appendChild(b);
 
 });
 
 }
 
-/* =========================
+function bottomWorkout(){
 
-   OPEN WORKOUTS
+if(lastWorkoutContext){
 
-========================= */
+if(lastWorkoutContext.type==="preset") openPresetWorkout(lastWorkoutContext.key);
+
+else if(lastWorkoutContext.type==="custom" && customWorkouts[lastWorkoutContext.index])
+
+openCustomWorkout(lastWorkoutContext.index);
+
+else goHome();
+
+}else goHome();
+
+}
+
+/* OPEN WORKOUT */
 
 function openPresetWorkout(key){
 
 activeWorkoutKey="preset-"+key;
 
-activeWorkoutExerciseIds=[
+activeWorkoutTitle=presetWorkouts[key].title;
 
-...presetWorkouts[key].exercises
-
-];
+activeWorkoutExerciseIds=[...presetWorkouts[key].exercises];
 
 activeCustomIndex=null;
 
-openWorkout(
+lastWorkoutContext={type:"preset",key};
 
-presetWorkouts[key].title,
-
-activeWorkoutExerciseIds,
-
-false
-
-);
+openWorkout(activeWorkoutTitle,activeWorkoutExerciseIds,false);
 
 }
 
 function openCustomWorkout(index){
 
-const workout=customWorkouts[index];
+const w=customWorkouts[index];
 
-activeWorkoutKey="custom-"+workout.id;
+activeWorkoutKey="custom-"+w.id;
 
-activeWorkoutExerciseIds=[
+activeWorkoutTitle=w.name;
 
-...workout.exercises
-
-];
+activeWorkoutExerciseIds=[...w.exercises];
 
 activeCustomIndex=index;
 
-openWorkout(
+lastWorkoutContext={type:"custom",index};
 
-workout.name,
-
-activeWorkoutExerciseIds,
-
-true
-
-);
+openWorkout(w.name,activeWorkoutExerciseIds,true);
 
 }
 
-function openWorkout(title,exerciseIds,isCustom){
+function openWorkout(title,ids,isCustom){
 
-showScreen("workoutScreen");
+showScreen("workoutScreen");setBottomNav("Workout");
 
 document.getElementById("workoutTitle").textContent=title;
 
-const list=document.getElementById("exerciseList");
+const list=document.getElementById("exerciseList");list.innerHTML="";
 
-list.innerHTML="";
+ids.forEach(id=>{
 
-exerciseIds.forEach((id,i)=>{
+const ex=getExercise(id);
 
-const exercise=getExercise(id);
-
-if(!exercise)return;
-
-const unique=
-
-activeWorkoutKey+"-"+exercise.id;
-
-list.appendChild(
-
-createExerciseCard(exercise,unique,i)
-
-);
+if(ex) list.appendChild(createExerciseCard(ex,activeWorkoutKey+"-"+ex.id));
 
 });
 
 if(isCustom){
 
-const deleteButton=document.createElement("button");
+const d=document.createElement("button");
 
-deleteButton.className="delete-button";
+d.className="delete-button";d.textContent="Delete This Workout";
 
-deleteButton.textContent="Delete This Workout";
-
-deleteButton.onclick=()=>deleteCustomWorkout(activeCustomIndex);
-
-list.appendChild(deleteButton);
+d.onclick=()=>deleteCustomWorkout(activeCustomIndex);list.appendChild(d);
 
 }
 
-document.getElementById("finishWorkoutButton")
+document.getElementById("finishWorkoutButton").classList.remove("hidden");
 
-.classList.remove("hidden");
+showWorkoutTab("workout");
 
 }
 
-/* =========================
+/* WORKOUT TABS */
 
-   EXERCISE CARD
+function showWorkoutTab(tab){
 
-========================= */
+["Workout","Progress","History","Timer"].forEach(x=>{
 
-function createExerciseCard(exercise,unique,index){
+document.getElementById("tab"+x).classList.toggle("active",x.toLowerCase()===tab);
+
+});
+
+document.getElementById("workoutTabContent").classList.add("hidden");
+
+document.getElementById("workoutProgressContent").classList.add("hidden");
+
+document.getElementById("workoutHistoryContent").classList.add("hidden");
+
+document.getElementById("workoutTimerContent").classList.add("hidden");
+
+if(tab==="workout") document.getElementById("workoutTabContent").classList.remove("hidden");
+
+if(tab==="progress"){
+
+document.getElementById("workoutProgressContent").classList.remove("hidden");
+
+renderWorkoutProgress();
+
+}
+
+if(tab==="history"){
+
+document.getElementById("workoutHistoryContent").classList.remove("hidden");
+
+renderWorkoutHistory();
+
+}
+
+if(tab==="timer"){
+
+document.getElementById("workoutTimerContent").classList.remove("hidden");
+
+renderTimer("workoutTimerContent");
+
+}
+
+}
+
+/* EXERCISE CARD */
+
+function createExerciseCard(ex,unique){
 
 const card=document.createElement("div");
 
 card.className="exercise";
 
-const completed=
-
-completedExercises.includes(unique);
+const completed=completedExercises.includes(unique);
 
 card.innerHTML=`
 
-<div class="exercise-header"
+<div class="exercise-header" onclick="toggleDetails('${safeId(unique)}')">
 
-onclick="toggleDetails('${safeId(unique)}')">
+<div class="exercise-title">${escapeHTML(ex.name)}</div>
 
-<div class="exercise-title">
-
-${escapeHTML(exercise.name)}
-
-</div>
-
-<div class="muscle">
-
-${escapeHTML(exercise.muscle)}
-
-</div>
+<div class="muscle">${escapeHTML(ex.muscle)}</div>
 
 </div>
 
 <div class="details" id="${safeId(unique)}">
 
-${exercise.image ?
+${ex.image?`
 
-`
+<img class="exercise-image" src="${ex.image}" alt="${escapeHTML(ex.name)}"
 
-<img
+onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
 
-class="exercise-image"
+<div class="image-placeholder" style="display:none">Exercise picture coming soon</div>`
 
-src="${exercise.image}"
+:`<div class="image-placeholder">Exercise picture will be added to the library later</div>`}
 
-alt="${escapeHTML(exercise.name)}"
+<div class="detail-title">How to Perform</div>
 
-onerror="this.style.display='none';
+<p>${escapeHTML(ex.how)}</p>
 
-this.nextElementSibling.style.display='flex';">
+<div class="detail-title">Form Tips</div>
 
-<div class="image-placeholder"
+<ul>${(ex.tips||[]).map(x=>`<li>${escapeHTML(x)}</li>`).join("")}</ul>
 
-style="display:none">
+<div class="detail-title">Common Mistakes</div>
 
-Exercise picture coming soon
-
-</div>
-
-`
-
-:
-
-`
-
-<div class="image-placeholder">
-
-Exercise picture will be added to the library later
-
-</div>
-
-`}
-
-<div class="detail-title">
-
-How to Perform
-
-</div>
-
-<p>${escapeHTML(exercise.how)}</p>
-
-<div class="detail-title">
-
-Form Tips
-
-</div>
-
-<ul>
-
-${(exercise.tips||[])
-
-.map(x=>`<li>${escapeHTML(x)}</li>`)
-
-.join("")}
-
-</ul>
-
-<div class="detail-title">
-
-Common Mistakes
-
-</div>
-
-<ul>
-
-${(exercise.mistakes||[])
-
-.map(x=>`<li>${escapeHTML(x)}</li>`)
-
-.join("")}
-
-</ul>
+<ul>${(ex.mistakes||[]).map(x=>`<li>${escapeHTML(x)}</li>`).join("")}</ul>
 
 <div class="tracking">
 
 <strong>Track Your Sets</strong>
 
-<div class="small">
-
-Tap Weight or Reps and scroll to select.
-
-</div>
+<div class="small">Tap Weight or Reps and scroll to select.</div>
 
 ${createSetRows(unique)}
 
-<button
-
-class="complete ${completed?"done":""}"
+<button class="complete ${completed?"done":""}"
 
 onclick="toggleComplete('${escapeAttribute(unique)}',this)">
 
@@ -2254,9 +1360,7 @@ ${completed?"✓ Completed":"Mark Exercise Complete"}
 
 </div>
 
-</div>
-
-`;
+</div>`;
 
 return card;
 
@@ -2264,17 +1368,11 @@ return card;
 
 function toggleDetails(id){
 
-const el=document.getElementById(id);
-
-if(el)el.classList.toggle("open");
+const e=document.getElementById(id);if(e)e.classList.toggle("open");
 
 }
 
-/* =========================
-
-   SET TRACKING
-
-========================= */
+/* SETS + COMPARISON */
 
 function createSetRows(unique){
 
@@ -2284,73 +1382,25 @@ for(let set=1;set<=4;set++){
 
 const key=unique+"-set"+set;
 
-const current=
+const current=setHistory[key]||{weight:"",reps:""};
 
-setHistory[key]||{weight:"",reps:""};
+const previous=previousHistory[key]||{weight:"",reps:""};
 
-const previous=
+const cw=current.weight!==""&&current.weight!==undefined?`${current.weight} lb`:"Weight";
 
-previousHistory[key]||{weight:"",reps:""};
+const cr=current.reps!==""&&current.reps!==undefined?`${current.reps} reps`:"Reps";
 
-const currentWeight=
+let prev="No previous workout";
 
-current.weight!==undefined && current.weight!==""
+if(previous.weight!==""&&previous.weight!==undefined&&previous.reps!==""&&previous.reps!==undefined)
 
-? `${current.weight} lb`
+prev=`Previous: ${previous.weight} lb × ${previous.reps}`;
 
-: "Weight";
+else if(previous.weight!==""&&previous.weight!==undefined) prev=`Previous: ${previous.weight} lb`;
 
-const currentReps=
+else if(previous.reps!==""&&previous.reps!==undefined) prev=`Previous: ${previous.reps} reps`;
 
-current.reps!==undefined && current.reps!==""
-
-? `${current.reps} reps`
-
-: "Reps";
-
-let previousText="No previous workout";
-
-if(
-
-previous.weight!==undefined &&
-
-previous.weight!=="" &&
-
-previous.reps!==undefined &&
-
-previous.reps!==""
-
-){
-
-previousText=
-
-`Previous: ${previous.weight} lb × ${previous.reps}`;
-
-}else if(
-
-previous.weight!==undefined &&
-
-previous.weight!==""
-
-){
-
-previousText=
-
-`Previous: ${previous.weight} lb`;
-
-}else if(
-
-previous.reps!==undefined &&
-
-previous.reps!==""
-
-){
-
-previousText=
-
-`Previous: ${previous.reps} reps`;
-
-}
+const comparison=compareSet(current,previous);
 
 html+=`
 
@@ -2358,47 +1408,23 @@ html+=`
 
 <div class="set-row">
 
-<span class="set-label">
+<span class="set-label">Set ${set}</span>
 
-Set ${set}
+<button class="picker-button" id="${safeId(key+"-weight-button")}"
 
-</span>
+onclick="openPicker('${escapeAttribute(key)}','weight')">${cw}</button>
 
-<button
+<button class="picker-button" id="${safeId(key+"-reps-button")}"
 
-class="picker-button"
-
-id="${safeId(key+"-weight-button")}"
-
-onclick="openPicker('${escapeAttribute(key)}','weight')">
-
-${currentWeight}
-
-</button>
-
-<button
-
-class="picker-button"
-
-id="${safeId(key+"-reps-button")}"
-
-onclick="openPicker('${escapeAttribute(key)}','reps')">
-
-${currentReps}
-
-</button>
+onclick="openPicker('${escapeAttribute(key)}','reps')">${cr}</button>
 
 </div>
 
-<div class="previous">
+<div class="previous">${prev}</div>
 
-${previousText}
+${comparison?`<div class="compare ${comparison.cls}" id="${safeId(key+"-compare")}">${comparison.text}</div>`:""}
 
-</div>
-
-</div>
-
-`;
+</div>`;
 
 }
 
@@ -2406,271 +1432,219 @@ return html;
 
 }
 
-function saveSet(key,type,value){
+function compareSet(current,previous){
 
-if(!setHistory[key]){
+const cw=Number(current.weight),cr=Number(current.reps);
 
-setHistory[key]={weight:"",reps:""};
+const pw=Number(previous.weight),pr=Number(previous.reps);
+
+if(current.weight===""||current.reps==="") return null;
+
+if(previous.weight===""||previous.reps===""||
+
+previous.weight===undefined||previous.reps===undefined)
+
+return {text:"NEW",cls:"new"};
+
+if(cw===pw&&cr===pr) return {text:"= Matched Previous",cls:"match"};
+
+/* Improvement:
+
+   heavier with same/more reps OR same weight with more reps.
+
+   If one rises while the other falls, estimated volume decides. */
+
+if((cw>pw&&cr>=pr)||(cw===pw&&cr>pr))
+
+return {text:"↑ Beat Previous",cls:"beat"};
+
+if((cw<pw&&cr<=pr)||(cw===pw&&cr<pr))
+
+return {text:"↓ Below Previous",cls:"below"};
+
+const currentVolume=cw*cr;
+
+const previousVolume=pw*pr;
+
+if(currentVolume>previousVolume)
+
+return {text:"↑ Beat Previous",cls:"beat"};
+
+if(currentVolume===previousVolume)
+
+return {text:"= Matched Previous",cls:"match"};
+
+return {text:"↓ Below Previous",cls:"below"};
 
 }
+
+function saveSet(key,type,value){
+
+if(!setHistory[key])setHistory[key]={weight:"",reps:""};
 
 setHistory[key][type]=value;
 
-localStorage.setItem(
-
-"setHistoryV5",
-
-JSON.stringify(setHistory)
-
-);
+localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
 
 }
 
-/* =========================
+/* PICKER */
 
-   WHEEL PICKER
-
-========================= */
-
-let pickerKey=null;
-
-let pickerType=null;
-
-let pickerValues=[];
-
-let pickerSelectedIndex=0;
+let pickerKey=null,pickerType=null,pickerValues=[],pickerSelectedIndex=0;
 
 function openPicker(key,type){
 
-pickerKey=key;
+pickerKey=key;pickerType=type;
 
-pickerType=type;
+const wheel=document.getElementById("wheel");wheel.innerHTML="";
 
-const wheel=document.getElementById("wheel");
-
-wheel.innerHTML="";
+pickerValues=[];
 
 if(type==="weight"){
 
-document.getElementById("pickerTitle")
+document.getElementById("pickerTitle").textContent="Select Weight";
 
-.textContent="Select Weight";
-
-pickerValues=[];
-
-for(let i=0;i<=500;i+=5){
-
-pickerValues.push(i);
-
-}
+for(let i=0;i<=500;i+=5)pickerValues.push(i);
 
 }else{
 
-document.getElementById("pickerTitle")
+document.getElementById("pickerTitle").textContent="Select Reps";
 
-.textContent="Select Reps";
-
-pickerValues=[];
-
-for(let i=1;i<=50;i++){
-
-pickerValues.push(i);
+for(let i=1;i<=50;i++)pickerValues.push(i);
 
 }
 
-}
+pickerValues.forEach(v=>{
 
-pickerValues.forEach(value=>{
+const o=document.createElement("div");o.className="wheel-option";
 
-const option=document.createElement("div");
-
-option.className="wheel-option";
-
-option.textContent=
-
-type==="weight"
-
-? `${value} lb`
-
-: `${value} reps`;
-
-wheel.appendChild(option);
+o.textContent=type==="weight"?`${v} lb`:`${v} reps`;wheel.appendChild(o);
 
 });
 
-const existing=
+const existing=setHistory[key]&&setHistory[key][type]!==""?
 
-setHistory[key] &&
-
-setHistory[key][type]!==undefined &&
-
-setHistory[key][type]!==""
-
-? Number(setHistory[key][type])
-
-: null;
+Number(setHistory[key][type]):null;
 
 let index=0;
 
-if(existing!==null){
+if(existing!==null&&pickerValues.indexOf(existing)>=0)
 
-const found=
-
-pickerValues.indexOf(existing);
-
-if(found>=0)index=found;
-
-}
+index=pickerValues.indexOf(existing);
 
 pickerSelectedIndex=index;
 
-document.getElementById("pickerOverlay")
+document.getElementById("pickerOverlay").classList.remove("hidden");
 
-.classList.remove("hidden");
+document.getElementById("pickerSheet").classList.remove("hidden");
 
-document.getElementById("pickerSheet")
-
-.classList.remove("hidden");
-
-requestAnimationFrame(()=>{
-
-wheel.scrollTop=index*52;
-
-});
+requestAnimationFrame(()=>wheel.scrollTop=index*52);
 
 }
 
 function closePicker(){
 
-document.getElementById("pickerOverlay")
+document.getElementById("pickerOverlay").classList.add("hidden");
 
-.classList.add("hidden");
-
-document.getElementById("pickerSheet")
-
-.classList.add("hidden");
+document.getElementById("pickerSheet").classList.add("hidden");
 
 }
 
-document.getElementById("wheel")
+document.getElementById("wheel").addEventListener("scroll",()=>{
 
-.addEventListener("scroll",()=>{
+const index=Math.round(document.getElementById("wheel").scrollTop/52);
 
-const wheel=document.getElementById("wheel");
-
-const index=
-
-Math.round(wheel.scrollTop/52);
-
-pickerSelectedIndex=
-
-Math.max(
-
-0,
-
-Math.min(index,pickerValues.length-1)
-
-);
+pickerSelectedIndex=Math.max(0,Math.min(index,pickerValues.length-1));
 
 });
 
 function confirmPicker(){
 
-if(
+if(pickerKey===null||pickerType===null||!pickerValues.length){closePicker();return}
 
-pickerKey===null ||
+const value=pickerValues[pickerSelectedIndex];
 
-pickerType===null ||
+saveSet(pickerKey,pickerType,value);
 
-!pickerValues.length
+const b=document.getElementById(safeId(pickerKey+"-"+pickerType+"-button"));
 
-){
+if(b)b.textContent=pickerType==="weight"?`${value} lb`:`${value} reps`;
 
-closePicker();
-
-return;
-
-}
-
-const value=
-
-pickerValues[pickerSelectedIndex];
-
-saveSet(
-
-pickerKey,
-
-pickerType,
-
-value
-
-);
-
-const button=
-
-document.getElementById(
-
-safeId(
-
-pickerKey+"-"+pickerType+"-button"
-
-)
-
-);
-
-if(button){
-
-button.textContent=
-
-pickerType==="weight"
-
-? `${value} lb`
-
-: `${value} reps`;
-
-}
+refreshComparison(pickerKey);
 
 closePicker();
 
 }
 
-/* =========================
+function refreshComparison(key){
 
-   FINISH WORKOUT
+const old=document.getElementById(safeId(key+"-compare"));
 
-========================= */
+const c=compareSet(setHistory[key]||{},previousHistory[key]||{});
+
+if(old){
+
+if(c){old.className="compare "+c.cls;old.textContent=c.text}
+
+else old.remove();
+
+}
+
+}
+
+/* FINISH WORKOUT + HISTORY */
 
 function finishWorkout(){
 
 if(!activeWorkoutKey)return;
 
+const session={
+
+id:Date.now(),
+
+date:new Date().toISOString(),
+
+workoutKey:activeWorkoutKey,
+
+workoutTitle:activeWorkoutTitle,
+
+exercises:[]
+
+};
+
 activeWorkoutExerciseIds.forEach(exerciseId=>{
+
+const ex=getExercise(exerciseId);
+
+const exerciseSession={id:exerciseId,name:ex?ex.name:exerciseId,sets:[]};
 
 for(let set=1;set<=4;set++){
 
-const key=
+const key=`${activeWorkoutKey}-${exerciseId}-set${set}`;
 
-activeWorkoutKey+
+const current=setHistory[key]||{weight:"",reps:""};
 
-"-"+
+if(current.weight!==""||current.reps!==""){
 
-exerciseId+
+exerciseSession.sets.push({
 
-"-set"+
+set,
 
-set;
+weight:current.weight??"",
+
+reps:current.reps??""
+
+});
+
+}
 
 if(setHistory[key]){
 
 previousHistory[key]={
 
-weight:
+weight:setHistory[key].weight??"",
 
-setHistory[key].weight ?? "",
-
-reps:
-
-setHistory[key].reps ?? ""
+reps:setHistory[key].reps??""
 
 };
 
@@ -2678,65 +1652,47 @@ setHistory[key].reps ?? ""
 
 }
 
+if(exerciseSession.sets.length)session.exercises.push(exerciseSession);
+
 });
 
-localStorage.setItem(
+if(!session.exercises.length){
 
-"previousHistoryV51",
+alert("Enter at least one set before finishing your workout.");
 
-JSON.stringify(previousHistory)
+return;
 
-);
+}
 
-alert(
+workoutHistory.unshift(session);
 
-"Workout finished! Your sets are saved for comparison next time."
+localStorage.setItem("workoutHistoryV52",JSON.stringify(workoutHistory));
 
-);
+localStorage.setItem("previousHistoryV51",JSON.stringify(previousHistory));
+
+alert("Workout saved! It is now in your History and Progress.");
 
 goHome();
 
 }
 
-/* =========================
-
-   COMPLETION
-
-========================= */
+/* COMPLETE */
 
 function toggleComplete(id,button){
 
 if(completedExercises.includes(id)){
 
-completedExercises=
+completedExercises=completedExercises.filter(x=>x!==id);
 
-completedExercises.filter(x=>x!==id);
-
-button.textContent=
-
-"Mark Exercise Complete";
-
-button.classList.remove("done");
+button.textContent="Mark Exercise Complete";button.classList.remove("done");
 
 }else{
 
-completedExercises.push(id);
-
-button.textContent=
-
-"✓ Completed";
-
-button.classList.add("done");
+completedExercises.push(id);button.textContent="✓ Completed";button.classList.add("done");
 
 }
 
-localStorage.setItem(
-
-"completedExercisesV5",
-
-JSON.stringify(completedExercises)
-
-);
+localStorage.setItem("completedExercisesV5",JSON.stringify(completedExercises));
 
 updateProgress();
 
@@ -2744,147 +1700,407 @@ updateProgress();
 
 function updateProgress(){
 
-const total=
+const total=Object.values(presetWorkouts).reduce((s,w)=>s+w.exercises.length,0);
 
-Object.values(presetWorkouts)
+const done=completedExercises.filter(id=>id.startsWith("preset-")).length;
 
-.reduce(
+const percent=total?Math.min(done/total*100,100):0;
 
-(sum,w)=>sum+w.exercises.length,
+document.getElementById("progressFill").style.width=percent+"%";
 
-0
-
-);
-
-const presetCompleted=
-
-completedExercises.filter(
-
-id=>id.startsWith("preset-")
-
-).length;
-
-const percent=
-
-total
-
-? Math.min((presetCompleted/total)*100,100)
-
-:0;
-
-document.getElementById("progressFill")
-
-.style.width=percent+"%";
-
-document.getElementById("progressText")
-
-.textContent=
-
-`${presetCompleted} of ${total} preset exercises completed`;
+document.getElementById("progressText").textContent=`${done} of ${total} preset exercises completed`;
 
 }
 
-/* =========================
+/* WORKOUT HISTORY */
 
-   LIBRARY
+function sessionsForActiveWorkout(){
 
-========================= */
-
-function showLibrary(){
-
-showScreen("libraryScreen");
-
-renderLibrary();
+return workoutHistory.filter(x=>x.workoutKey===activeWorkoutKey);
 
 }
 
-function renderLibrary(){
+function renderWorkoutHistory(){
 
-const search=
+const area=document.getElementById("workoutHistoryContent");
 
-document.getElementById("librarySearch")
+const sessions=sessionsForActiveWorkout();
 
-.value.toLowerCase();
+area.innerHTML="<h3>"+escapeHTML(activeWorkoutTitle)+" History</h3>";
 
-const muscle=
+if(!sessions.length){
 
-document.getElementById("muscleFilter").value;
-
-const filtered=
-
-exerciseLibrary.filter(ex=>{
-
-const matchesSearch=
-
-ex.name.toLowerCase().includes(search) ||
-
-ex.muscle.toLowerCase().includes(search);
-
-const matchesMuscle=
-
-muscle==="All" ||
-
-ex.muscle===muscle;
-
-return matchesSearch && matchesMuscle;
-
-});
-
-const list=
-
-document.getElementById("libraryList");
-
-list.innerHTML="";
-
-if(!filtered.length){
-
-list.innerHTML=
-
-`<div class="empty">
-
-No exercises found.
-
-</div>`;
+area.innerHTML+='<div class="card empty">Finish this workout once and it will appear here.</div>';
 
 return;
 
 }
 
+sessions.forEach(s=>area.appendChild(historyCard(s)));
+
+}
+
+function historyCard(session){
+
+const card=document.createElement("div");card.className="history-card";
+
+let html=`<div class="history-title">${escapeHTML(session.workoutTitle)}</div>
+
+<div class="history-date">${formatDate(session.date)}</div>`;
+
+session.exercises.forEach(ex=>{
+
+html+=`<div class="history-exercise"><strong>${escapeHTML(ex.name)}</strong>`;
+
+ex.sets.forEach(s=>{
+
+html+=`<div class="history-set">Set ${s.set}: ${s.weight!==""?s.weight+" lb":"—"} × ${s.reps!==""?s.reps+" reps":"—"}</div>`;
+
+});
+
+html+="</div>";
+
+});
+
+card.innerHTML=html;return card;
+
+}
+
+function formatDate(date){
+
+return new Date(date).toLocaleString([],{
+
+month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"
+
+});
+
+}
+
+/* WORKOUT PROGRESS */
+
+function renderWorkoutProgress(){
+
+const area=document.getElementById("workoutProgressContent");
+
+const sessions=sessionsForActiveWorkout();
+
+area.innerHTML=`<h3>${escapeHTML(activeWorkoutTitle)} Progress</h3>`;
+
+area.innerHTML+=`
+
+<div class="stat-grid">
+
+<div class="stat-card"><div class="stat-number">${sessions.length}</div><div class="stat-label">Workouts Logged</div></div>
+
+<div class="stat-card"><div class="stat-number">${countImprovedExercises(activeWorkoutExerciseIds)}</div><div class="stat-label">Exercises Improved</div></div>
+
+</div>`;
+
+activeWorkoutExerciseIds.forEach(id=>{
+
+const ex=getExercise(id);if(!ex)return;
+
+const stats=getExerciseStats(id,sessions);
+
+const div=document.createElement("div");div.className="progress-exercise";
+
+div.innerHTML=`<div class="progress-name">${escapeHTML(ex.name)}</div>
+
+<div class="progress-detail">${stats}</div>`;
+
+area.appendChild(div);
+
+});
+
+}
+
+function getExerciseStats(id,sessions){
+
+const records=[];
+
+sessions.forEach(session=>{
+
+const ex=session.exercises.find(x=>x.id===id);
+
+if(ex)ex.sets.forEach(s=>{
+
+if(s.weight!==""&&s.reps!=="")records.push({weight:Number(s.weight),reps:Number(s.reps)});
+
+});
+
+});
+
+if(!records.length)return "No completed sets recorded yet.";
+
+const maxWeight=Math.max(...records.map(x=>x.weight));
+
+const maxReps=Math.max(...records.map(x=>x.reps));
+
+const maxVolume=Math.max(...records.map(x=>x.weight*x.reps));
+
+return `Best weight: ${maxWeight} lb · Best reps: ${maxReps} · Best set volume: ${maxVolume.toLocaleString()} lb`;
+
+}
+
+function countImprovedExercises(ids){
+
+let count=0;
+
+ids.forEach(id=>{
+
+const sessions=workoutHistory.filter(s=>s.exercises.some(e=>e.id===id));
+
+if(sessions.length<2)return;
+
+const latest=bestExerciseVolume(sessions[0],id);
+
+const previous=bestExerciseVolume(sessions[1],id);
+
+if(latest>previous)count++;
+
+});
+
+return count;
+
+}
+
+function bestExerciseVolume(session,id){
+
+const ex=session.exercises.find(x=>x.id===id);
+
+if(!ex)return 0;
+
+return Math.max(0,...ex.sets.map(s=>Number(s.weight||0)*Number(s.reps||0)));
+
+}
+
+/* OVERALL PROGRESS */
+
+function showOverallProgress(){
+
+showScreen("overallProgressScreen");setBottomNav("Progress");
+
+renderOverallProgress();
+
+}
+
+function renderOverallProgress(){
+
+const stats=document.getElementById("overallStats");
+
+const allSets=workoutHistory.flatMap(s=>s.exercises.flatMap(e=>e.sets));
+
+const totalVolume=allSets.reduce((sum,s)=>sum+(Number(s.weight||0)*Number(s.reps||0)),0);
+
+const uniqueExercises=new Set(workoutHistory.flatMap(s=>s.exercises.map(e=>e.id))).size;
+
+stats.innerHTML=`
+
+<div class="stat-grid">
+
+<div class="stat-card"><div class="stat-number">${workoutHistory.length}</div><div class="stat-label">Workouts Completed</div></div>
+
+<div class="stat-card"><div class="stat-number">${uniqueExercises}</div><div class="stat-label">Exercises Tracked</div></div>
+
+<div class="stat-card"><div class="stat-number">${allSets.length}</div><div class="stat-label">Sets Logged</div></div>
+
+<div class="stat-card"><div class="stat-number">${Math.round(totalVolume).toLocaleString()}</div><div class="stat-label">Total Volume (lb)</div></div>
+
+</div>`;
+
+const area=document.getElementById("overallExerciseProgress");
+
+area.innerHTML="<h3>Exercise Progress</h3>";
+
+const usedIds=[...new Set(workoutHistory.flatMap(s=>s.exercises.map(e=>e.id)))];
+
+if(!usedIds.length){
+
+area.innerHTML+='<div class="card empty">Your overall progression will appear after you finish workouts.</div>';
+
+return;
+
+}
+
+usedIds.forEach(id=>{
+
+const ex=getExercise(id);
+
+const sessions=workoutHistory.filter(s=>s.exercises.some(e=>e.id===id));
+
+const div=document.createElement("div");div.className="progress-exercise";
+
+div.innerHTML=`<div class="progress-name">${escapeHTML(ex?ex.name:id)}</div>
+
+<div class="progress-detail">${getExerciseStats(id,sessions)}</div>`;
+
+area.appendChild(div);
+
+});
+
+}
+
+/* GLOBAL HISTORY */
+
+function showGlobalHistory(){
+
+showScreen("globalHistoryScreen");setBottomNav("History");
+
+const area=document.getElementById("globalHistoryList");area.innerHTML="";
+
+if(!workoutHistory.length){
+
+area.innerHTML='<div class="card empty">Your completed workouts will appear here.</div>';
+
+return;
+
+}
+
+workoutHistory.forEach(s=>area.appendChild(historyCard(s)));
+
+}
+
+/* TIMER */
+
+let timerSeconds=90;
+
+let timerRemaining=90;
+
+let timerInterval=null;
+
+function renderTimer(target){
+
+const area=document.getElementById(target);
+
+area.innerHTML=`
+
+<div class="card timer-card">
+
+<div class="small">REST TIMER</div>
+
+<div class="timer-display" data-timer-display>${formatTimer(timerRemaining)}</div>
+
+<div class="timer-presets">
+
+<button class="timer-button" onclick="setTimer(60)">1:00</button>
+
+<button class="timer-button" onclick="setTimer(90)">1:30</button>
+
+<button class="timer-button" onclick="setTimer(120)">2:00</button>
+
+</div>
+
+<button class="timer-start" onclick="toggleTimer()" data-timer-start>${timerInterval?"Pause":"Start Timer"}</button>
+
+<button class="timer-reset" onclick="resetTimer()">Reset</button>
+
+</div>`;
+
+}
+
+function showGlobalTimer(){
+
+showScreen("globalTimerScreen");setBottomNav("Timer");
+
+renderTimer("globalTimerContent");
+
+}
+
+function setTimer(seconds){
+
+clearInterval(timerInterval);timerInterval=null;
+
+timerSeconds=seconds;timerRemaining=seconds;updateTimerDisplays();
+
+}
+
+function toggleTimer(){
+
+if(timerInterval){
+
+clearInterval(timerInterval);timerInterval=null;updateTimerDisplays();return;
+
+}
+
+if(timerRemaining<=0)timerRemaining=timerSeconds;
+
+timerInterval=setInterval(()=>{
+
+timerRemaining--;
+
+updateTimerDisplays();
+
+if(timerRemaining<=0){
+
+clearInterval(timerInterval);timerInterval=null;
+
+if(navigator.vibrate)navigator.vibrate([200,100,200]);
+
+updateTimerDisplays();
+
+}
+
+},1000);
+
+updateTimerDisplays();
+
+}
+
+function resetTimer(){
+
+clearInterval(timerInterval);timerInterval=null;
+
+timerRemaining=timerSeconds;updateTimerDisplays();
+
+}
+
+function formatTimer(sec){
+
+const m=Math.floor(sec/60),s=sec%60;
+
+return `${m}:${String(s).padStart(2,"0")}`;
+
+}
+
+function updateTimerDisplays(){
+
+document.querySelectorAll("[data-timer-display]").forEach(x=>x.textContent=formatTimer(timerRemaining));
+
+document.querySelectorAll("[data-timer-start]").forEach(x=>x.textContent=timerInterval?"Pause":"Start Timer");
+
+}
+
+/* LIBRARY */
+
+function showLibrary(){showScreen("libraryScreen");setBottomNav("Home");renderLibrary()}
+
+function renderLibrary(){
+
+const search=document.getElementById("librarySearch").value.toLowerCase();
+
+const muscle=document.getElementById("muscleFilter").value;
+
+const filtered=exerciseLibrary.filter(ex=>
+
+(ex.name.toLowerCase().includes(search)||ex.muscle.toLowerCase().includes(search))&&
+
+(muscle==="All"||ex.muscle===muscle));
+
+const list=document.getElementById("libraryList");list.innerHTML="";
+
+if(!filtered.length){list.innerHTML='<div class="empty">No exercises found.</div>';return}
+
 filtered.forEach(ex=>{
 
-const row=document.createElement("div");
+const row=document.createElement("div");row.className="library-item";
 
-row.className="library-item";
+row.innerHTML=`<div><div class="library-name">${escapeHTML(ex.name)}</div>
 
-row.innerHTML=`
+<span class="badge">${escapeHTML(ex.muscle)}</span></div>
 
-<div>
+<button class="add-small">View</button>`;
 
-<div class="library-name">
-
-${escapeHTML(ex.name)}
-
-</div>
-
-<span class="badge">
-
-${escapeHTML(ex.muscle)}
-
-</span>
-
-</div>
-
-<button class="add-small">
-
-View
-
-</button>
-
-`;
-
-row.querySelector("button").onclick=
-
-()=>viewLibraryExercise(ex.id);
+row.querySelector("button").onclick=()=>viewLibraryExercise(ex.id);
 
 list.appendChild(row);
 
@@ -2894,139 +2110,65 @@ list.appendChild(row);
 
 function viewLibraryExercise(id){
 
-const ex=getExercise(id);
+const ex=getExercise(id);if(!ex)return;
 
-if(!ex)return;
+activeWorkoutKey="library";activeWorkoutTitle=ex.name;activeWorkoutExerciseIds=[id];
 
-activeWorkoutKey="library";
+showScreen("workoutScreen");setBottomNav("Workout");
 
-activeWorkoutExerciseIds=[id];
+document.getElementById("workoutTitle").textContent=ex.name;
 
-showScreen("workoutScreen");
+const list=document.getElementById("exerciseList");list.innerHTML="";
 
-document.getElementById("workoutTitle")
+const card=createExerciseCard(ex,"library-"+ex.id);
 
-.textContent=ex.name;
+list.appendChild(card);card.querySelector(".details").classList.add("open");
 
-const list=
+document.getElementById("finishWorkoutButton").classList.add("hidden");
 
-document.getElementById("exerciseList");
-
-list.innerHTML="";
-
-const card=
-
-createExerciseCard(
-
-ex,
-
-"library-"+ex.id,
-
-0
-
-);
-
-list.appendChild(card);
-
-card.querySelector(".details")
-
-.classList.add("open");
-
-document.getElementById("finishWorkoutButton")
-
-.classList.add("hidden");
+showWorkoutTab("workout");
 
 }
 
-/* =========================
-
-   CUSTOM WORKOUT BUILDER
-
-========================= */
+/* CUSTOM BUILDER */
 
 function showBuilder(){
 
 builderSelected=[];
 
-document.getElementById("customWorkoutName")
+document.getElementById("customWorkoutName").value="";
 
-.value="";
+document.getElementById("builderSearch").value="";
 
-document.getElementById("builderSearch")
+showScreen("builderScreen");setBottomNav("Home");
 
-.value="";
-
-showScreen("builderScreen");
-
-renderBuilderSelected();
-
-renderBuilderLibrary();
+renderBuilderSelected();renderBuilderLibrary();
 
 }
 
 function renderBuilderLibrary(){
 
-const search=
+const search=document.getElementById("builderSearch").value.toLowerCase();
 
-document.getElementById("builderSearch")
+const exercises=exerciseLibrary.filter(ex=>
 
-.value.toLowerCase();
+ex.name.toLowerCase().includes(search)||ex.muscle.toLowerCase().includes(search));
 
-const exercises=
-
-exerciseLibrary.filter(ex=>
-
-ex.name.toLowerCase().includes(search) ||
-
-ex.muscle.toLowerCase().includes(search)
-
-);
-
-const list=
-
-document.getElementById("builderLibrary");
-
-list.innerHTML="";
+const list=document.getElementById("builderLibrary");list.innerHTML="";
 
 exercises.forEach(ex=>{
 
-const row=document.createElement("div");
+const row=document.createElement("div");row.className="library-item";
 
-row.className="library-item";
+const already=builderSelected.includes(ex.id);
 
-const already=
+row.innerHTML=`<div><div class="library-name">${escapeHTML(ex.name)}</div>
 
-builderSelected.includes(ex.id);
+<span class="badge">${escapeHTML(ex.muscle)}</span></div>
 
-row.innerHTML=`
+<button class="add-small">${already?"Added ✓":"Add"}</button>`;
 
-<div>
-
-<div class="library-name">
-
-${escapeHTML(ex.name)}
-
-</div>
-
-<span class="badge">
-
-${escapeHTML(ex.muscle)}
-
-</span>
-
-</div>
-
-<button class="add-small">
-
-${already?"Added ✓":"Add"}
-
-</button>
-
-`;
-
-row.querySelector("button").onclick=
-
-()=>addBuilderExercise(ex.id);
+row.querySelector("button").onclick=()=>addBuilderExercise(ex.id);
 
 list.appendChild(row);
 
@@ -3036,91 +2178,43 @@ list.appendChild(row);
 
 function addBuilderExercise(id){
 
-if(!builderSelected.includes(id)){
+if(!builderSelected.includes(id))builderSelected.push(id);
 
-builderSelected.push(id);
-
-}
-
-renderBuilderSelected();
-
-renderBuilderLibrary();
+renderBuilderSelected();renderBuilderLibrary();
 
 }
 
 function removeBuilderExercise(id){
 
-builderSelected=
+builderSelected=builderSelected.filter(x=>x!==id);
 
-builderSelected.filter(x=>x!==id);
-
-renderBuilderSelected();
-
-renderBuilderLibrary();
+renderBuilderSelected();renderBuilderLibrary();
 
 }
 
 function renderBuilderSelected(){
 
-const area=
-
-document.getElementById("builderExercises");
-
-area.innerHTML="";
+const area=document.getElementById("builderExercises");area.innerHTML="";
 
 if(!builderSelected.length){
 
-area.innerHTML=
-
-`<div class="small">
-
-No exercises added yet.
-
-</div>`;
-
-return;
+area.innerHTML='<div class="small">No exercises added yet.</div>';return;
 
 }
 
 builderSelected.forEach((id,index)=>{
 
-const ex=getExercise(id);
+const ex=getExercise(id);if(!ex)return;
 
-if(!ex)return;
+const item=document.createElement("div");item.className="builder-exercise";
 
-const item=document.createElement("div");
+item.innerHTML=`<strong>${index+1}. ${escapeHTML(ex.name)}</strong>
 
-item.className="builder-exercise";
+<span class="badge">${escapeHTML(ex.muscle)}</span>
 
-item.innerHTML=`
+<button class="remove-small" style="float:right">Remove</button>`;
 
-<strong>
-
-${index+1}. ${escapeHTML(ex.name)}
-
-</strong>
-
-<span class="badge">
-
-${escapeHTML(ex.muscle)}
-
-</span>
-
-<button
-
-class="remove-small"
-
-style="float:right">
-
-Remove
-
-</button>
-
-`;
-
-item.querySelector("button").onclick=
-
-()=>removeBuilderExercise(id);
+item.querySelector("button").onclick=()=>removeBuilderExercise(id);
 
 area.appendChild(item);
 
@@ -3130,45 +2224,15 @@ area.appendChild(item);
 
 function saveCustomWorkout(){
 
-const name=
+const name=document.getElementById("customWorkoutName").value.trim();
 
-document.getElementById("customWorkoutName")
+if(!name){alert("Give your workout a name first.");return}
 
-.value.trim();
+if(!builderSelected.length){alert("Add at least one exercise.");return}
 
-if(!name){
+customWorkouts.push({id:Date.now(),name,exercises:[...builderSelected]});
 
-alert("Give your workout a name first.");
-
-return;
-
-}
-
-if(!builderSelected.length){
-
-alert("Add at least one exercise.");
-
-return;
-
-}
-
-customWorkouts.push({
-
-id:Date.now(),
-
-name:name,
-
-exercises:[...builderSelected]
-
-});
-
-localStorage.setItem(
-
-"customWorkoutsV5",
-
-JSON.stringify(customWorkouts)
-
-);
+localStorage.setItem("customWorkoutsV5",JSON.stringify(customWorkouts));
 
 goHome();
 
@@ -3176,81 +2240,19 @@ goHome();
 
 function deleteCustomWorkout(index){
 
-const workout=
+const workout=customWorkouts[index];if(!workout)return;
 
-customWorkouts[index];
-
-if(!workout)return;
-
-const yes=
-
-confirm(
-
-`Delete "${workout.name}"?`
-
-);
-
-if(!yes)return;
+if(!confirm(`Delete "${workout.name}"?`))return;
 
 customWorkouts.splice(index,1);
 
-localStorage.setItem(
-
-"customWorkoutsV5",
-
-JSON.stringify(customWorkouts)
-
-);
+localStorage.setItem("customWorkoutsV5",JSON.stringify(customWorkouts));
 
 goHome();
 
 }
 
-/* =========================
-
-   ESCAPE HELPERS
-
-========================= */
-
-function escapeHTML(value){
-
-return String(value)
-
-.replaceAll("&","&amp;")
-
-.replaceAll("<","&lt;")
-
-.replaceAll(">","&gt;")
-
-.replaceAll('"',"&quot;")
-
-.replaceAll("'","&#039;");
-
-}
-
-function escapeAttribute(value){
-
-return String(value)
-
-.replaceAll("\\","\\\\")
-
-.replaceAll("'","\\'");
-
-}
-
-function safeId(value){
-
-return "id-"+String(value)
-
-.replace(/[^a-zA-Z0-9_-]/g,"-");
-
-}
-
-/* =========================
-
-   START
-
-========================= */
+/* START */
 
 renderHome();
 
