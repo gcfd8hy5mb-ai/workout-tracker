@@ -84,7 +84,7 @@ box-shadow:0 2px 8px rgba(0,0,0,.07)
 
 border:0;background:transparent;color:var(--blue);
 
-font-size:17px;font-weight:650;padding:5px 0 14px
+font-size:17px;font-weight:650;padding:5px 0 14px;min-height:44px
 
 }
 
@@ -475,8 +475,18 @@ padding:13px;font-size:15px;font-weight:700;margin-top:8px
 .tracker-form input,.tracker-form select{display:block;width:100%;min-height:46px;padding:10px 12px;border:1px solid #c8c8d0;border-radius:10px;background:#fff;font:inherit}
 .tracker-form button,.tracker-add{min-height:46px;padding:10px 16px;margin:14px 0;border:0;border-radius:11px;background:#e8e8ec;color:#111;font:inherit;font-weight:600}
 .tracker-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #eee}
-.tracker-row button{border:0;background:#f2f2f5;border-radius:9px;padding:9px;color:#333}
+.tracker-row button{border:0;background:#f2f2f5;border-radius:9px;padding:9px;color:#333;min-height:44px}
 .tracker-value{font-size:23px;font-weight:600;margin:8px 0}
+.today-card{margin-bottom:16px}
+.today-card h2{margin:0 0 8px;font-size:22px}
+.today-card p{margin:6px 0;color:#222}
+.today-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.today-actions button,.tracking-shortcut{min-height:44px;padding:10px 14px;border:1px solid #dedee3;border-radius:12px;background:#f7f7f9;color:#111;font:inherit;font-weight:550}
+.tracker-form input[type="date"]{max-width:260px}
+.tracker-shortcuts{display:flex;flex-wrap:wrap;gap:8px;margin:9px 0 16px}
+.tracker-shortcut{font-size:14px}
+.backup-actions{display:flex;flex-wrap:wrap;gap:10px}
+.backup-actions button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;border:1px solid #ddd;border-radius:11px;background:#f4f4f6;color:#111;font:inherit;cursor:pointer}
 
 /* PICKER */
 
@@ -514,7 +524,7 @@ border-bottom:1px solid #ddd
 
 border:0;background:transparent;color:var(--blue);
 
-font-size:17px;font-weight:700
+font-size:17px;font-weight:700;min-width:44px;min-height:44px
 
 }
 
@@ -620,9 +630,9 @@ header p{color:#222}
 .plan-day{display:block;width:100%;text-align:left;padding:13px;border:1px solid var(--line);background:#fff;border-radius:12px;margin-top:8px;color:#111}
 .plan-day strong{display:block;font-size:16px}
 .plan-day span{display:block;font-size:13px;margin-top:3px;color:#555}
-.plan-edit{display:block;margin-top:12px;background:transparent;border:0;padding:8px 0;color:#156ec0;text-align:left}
+.plan-edit{display:block;margin-top:12px;background:transparent;border:0;padding:8px 0;color:#156ec0;text-align:left;min-height:44px}
 .data-reset{margin:24px 0;color:#333}
-.data-reset summary{cursor:pointer;padding:13px 0;font-size:15px;font-weight:600}
+.data-reset summary{cursor:pointer;padding:13px 0;font-size:15px;font-weight:600;min-height:44px}
 .data-reset p{font-size:13px;line-height:1.4;margin:0 0 10px}
 .data-reset button{display:block;width:100%;margin:8px 0;padding:12px;border:1px solid #c8c8cf;border-radius:11px;background:white;color:#8e2626;text-align:left}
 
@@ -637,7 +647,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 8.1</p>
+<p>Version 8.2</p>
 
 </header>
 
@@ -670,6 +680,8 @@ header p{color:#222}
 </section>
 
 <section id="home">
+
+<div id="todayDashboard" class="card today-card"></div>
 
 <div id="suggestedPlan"></div>
 
@@ -712,6 +724,8 @@ Exercise Library
 <button onclick="resetWorkoutData('progress')">Reset workout progress</button>
 <button onclick="resetWorkoutData('both')">Reset history and progress</button>
 </details>
+<div class="card"><h3>Back up your data</h3><p class="small">Download your workout, food, water, weight, and goals to a file. Restore replaces the data on this phone.</p>
+<div class="backup-actions"><button onclick="exportBackup()">Download backup</button><button onclick="document.getElementById('backupFile').click()">Restore backup</button><input id="backupFile" class="hidden" type="file" accept="application/json,.json" onchange="importBackup(event)"></div></div>
 </section>
 
 <section id="workoutScreen" class="hidden">
@@ -832,18 +846,18 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 </section>
 
 <section id="waterScreen" class="hidden">
-<h2>Water</h2><div class="card"><p class="small">Track how much you drink today.</p><div id="waterSummary" class="tracker-value"></div><button class="tracker-add" onclick="addWater(250)">Add 250 mL</button>
-<form class="tracker-form" onsubmit="addCustomWater(event)"><label for="waterAmount">Other amount (mL)</label><input id="waterAmount" type="number" min="1" max="5000" inputmode="numeric" required><button type="submit">Add water</button></form></div>
-<h3>Today's water</h3><div id="waterList"></div>
+<h2>Water</h2><div class="card"><p class="small">Track your water for any day.</p><label for="waterDay">Date</label><input id="waterDay" type="date" onchange="renderWater()"><label for="waterUnit">Units</label><select id="waterUnit" onchange="setWaterUnit(this.value)"><option value="ml">mL</option><option value="oz">fl oz</option></select><div id="waterSummary" class="tracker-value"></div><button id="quickWaterButton" class="tracker-add" onclick="addQuickWater()">Add 250 mL</button>
+<form class="tracker-form" onsubmit="addCustomWater(event)"><label for="waterAmount" id="waterAmountLabel">Other amount (mL)</label><input id="waterAmount" type="number" min="0.1" max="5000" step="any" inputmode="decimal" required><button type="submit">Add water</button></form></div>
+<h3 id="waterListTitle">Water logged</h3><div id="waterList"></div>
 </section>
 
 <section id="foodScreen" class="hidden">
-<h2>Food</h2><div class="card"><p class="small">Choose a common food and enter how many servings you had. Calories are estimated automatically; brands and preparation can differ.</p><div id="foodSummary" class="tracker-value"></div>
+<h2>Food</h2><div class="card"><p class="small">Choose a common food and enter how many servings you had. Calories are estimated automatically; brands and preparation can differ.</p><label for="foodDay">Date</label><input id="foodDay" type="date" onchange="renderFood()"><div id="foodSummary" class="tracker-value"></div>
 <form class="tracker-form" onsubmit="addFood(event)"><label for="foodChoice">Food</label><select id="foodChoice" onchange="updateFoodEstimate()" required><option value="">Select a food</option><option value="custom">Other food (use label calories)</option></select>
 <div id="servingFields" class="hidden"><label for="foodServings" id="servingLabel">Number of servings</label><input id="foodServings" type="number" min="0.25" max="100" step="0.25" inputmode="decimal" value="1" oninput="updateFoodEstimate()"><p id="foodEstimate" role="status" class="small"></p></div>
 <div id="customFoodFields" class="hidden"><label for="foodName">Food or meal</label><input id="foodName" maxlength="100" placeholder="For example, lunch"><label for="foodCalories">Calories from label or recipe</label><input id="foodCalories" type="number" min="0" max="10000" inputmode="numeric"></div>
 <button type="submit">Add food</button></form><p class="small">For packaged foods, the label is more accurate. For other foods, use the label or <a href="https://fdc.nal.usda.gov/" target="_blank" rel="noopener">look them up</a>.</p></div>
-<h3>Today's food</h3><div id="foodList"></div>
+<h3 id="foodListTitle">Food logged</h3><div id="foodList"></div><h3>Favorites</h3><div id="foodFavorites" class="tracker-shortcuts"></div><h3>Recent foods</h3><div id="foodRecent" class="tracker-shortcuts"></div>
 </section>
 
 <section id="goalsScreen" class="hidden">
@@ -1212,8 +1226,8 @@ let workoutGoals=JSON.parse(localStorage.getItem("workoutGoalsV1")||"null");
 function readTrackingData(){
 try{
 const saved=JSON.parse(localStorage.getItem("dailyTrackingV1")||"{}");
-return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null,calorieAge:saved.calorieAge||"",calorieFeet:saved.calorieFeet||"",calorieInches:saved.calorieInches??"",calorieEquation:saved.calorieEquation||"",calorieActivity:saved.calorieActivity||"1.4"};
-}catch{return {water:[],food:[],weight:[],waterGoal:2000,calorieGoal:null}}
+return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],foodFavorites:Array.isArray(saved.foodFavorites)?saved.foodFavorites:[],waterUnit:saved.waterUnit==="oz"?"oz":"ml",waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null,calorieAge:saved.calorieAge||"",calorieFeet:saved.calorieFeet||"",calorieInches:saved.calorieInches??"",calorieEquation:saved.calorieEquation||"",calorieActivity:saved.calorieActivity||"1.4"};
+}catch{return {water:[],food:[],weight:[],foodFavorites:[],waterUnit:"ml",waterGoal:2000,calorieGoal:null,calorieAge:"",calorieFeet:"",calorieInches:"",calorieEquation:"",calorieActivity:"1.4"}}
 }
 let tracking=readTrackingData();
 function saveTracking(){localStorage.setItem("dailyTrackingV1",JSON.stringify(tracking))}
@@ -1436,6 +1450,54 @@ function showManageWorkouts(){
 showScreen("manageWorkoutScreen");setBottomNav("Manage");renderCustomButtons();
 }
 
+const backupKeys={
+completedExercisesV5:[],customWorkoutsV5:[],setHistoryV5:{},previousHistoryV51:{},
+workoutHistoryV52:[],overloadTargetsV1:{},workoutGoalsV1:null,dailyTrackingV1:{}
+};
+function makeBackup(){
+const data={};
+for(const [key,fallback] of Object.entries(backupKeys)){
+try{data[key]=JSON.parse(localStorage.getItem(key)??JSON.stringify(fallback))}
+catch{data[key]=fallback}
+}
+return {format:"workout-tracker-backup",version:1,exportedAt:new Date().toISOString(),data};
+}
+function validBackup(backup){
+if(!backup||backup.format!=="workout-tracker-backup"||backup.version!==1||!backup.data||typeof backup.data!=="object")return false;
+const validTopLevel=Object.entries(backupKeys).every(([key,expected])=>{
+if(!Object.hasOwn(backup.data,key))return false;
+const value=backup.data[key];
+if(expected===null)return value===null||value!==null&&typeof value==="object"&&!Array.isArray(value);
+return Array.isArray(expected)?Array.isArray(value):value!==null&&typeof value==="object"&&!Array.isArray(value);
+});
+if(!validTopLevel)return false;
+const data=backup.data,trackingData=data.dailyTrackingV1;
+return ["water","food","weight","foodFavorites"].every(key=>trackingData[key]===undefined||Array.isArray(trackingData[key]))
+&&data.workoutHistoryV52.every(entry=>entry&&typeof entry==="object"&&!Array.isArray(entry))
+&&data.customWorkoutsV5.every(entry=>entry&&typeof entry==="object"&&!Array.isArray(entry));
+}
+function exportBackup(){
+const backup=new Blob([JSON.stringify(makeBackup(),null,2)],{type:"application/json"});
+const url=URL.createObjectURL(backup);
+const link=document.createElement("a");link.href=url;link.download=`workout-tracker-backup-${localDay()}.json`;
+document.body.appendChild(link);link.click();link.remove();
+setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+async function importBackup(event){
+const input=event.target,file=input.files?.[0];
+try{
+if(!file||file.size>3_000_000)throw Error("Select a backup under 3 MB.");
+const backup=JSON.parse(await file.text());
+if(!validBackup(backup))throw Error("This is not a compatible workout tracker backup.");
+if(!confirm("Replace the workout and tracking data on this phone with this backup?"))return;
+const previous={};for(const key of Object.keys(backupKeys))previous[key]=localStorage.getItem(key);
+try{for(const key of Object.keys(backupKeys))localStorage.setItem(key,JSON.stringify(backup.data[key]))}
+catch(error){for(const key of Object.keys(backupKeys))localStorage.removeItem(key);for(const [key,value] of Object.entries(previous))if(value!==null)localStorage.setItem(key,value);throw error}
+location.reload();
+}catch(error){alert(error.message||"Could not restore that backup.")}
+finally{input.value=""}
+}
+
 function resetWorkoutData(scope){
 const messages={
 history:"Delete all saved workout history, logged sets, and weight targets on this device? Progress checkmarks will stay.",
@@ -1460,9 +1522,35 @@ updateProgress();
 
 function renderHome(){
 
+renderTodayDashboard();
 renderSuggestedPlan();
 document.getElementById("homeProgressCard").classList.toggle("hidden",!workoutGoals||workoutGoals.skipped);
 
+}
+
+function renderTodayDashboard(){
+const area=document.getElementById("todayDashboard");area.replaceChildren();
+const heading=document.createElement("h2");heading.textContent="Today";area.appendChild(heading);
+const plans=workoutGoals&&!workoutGoals.skipped?
+(workoutGoals.basic?Object.entries(presetWorkouts).map(([key,day])=>({key:"preset-"+key,title:day.title,open:()=>openPresetWorkout(key)})):
+suggestedWorkouts(workoutGoals).map((day,index)=>({key:suggestedWorkoutKey(index),title:day.title,open:()=>openSuggestedWorkout(index)}))):[];
+if(plans.length){
+const last=workoutHistory.find(session=>plans.some(plan=>plan.key===session.workoutKey));
+const lastIndex=plans.findIndex(plan=>plan.key===last?.workoutKey);
+const next=plans[(lastIndex+1)%plans.length];
+const label=document.createElement("p");label.textContent=`Next workout: ${next.title}`;area.appendChild(label);
+const actions=document.createElement("div");actions.className="today-actions";
+const start=document.createElement("button");start.textContent="Open workout";start.onclick=next.open;actions.appendChild(start);area.appendChild(actions);
+}else{const note=document.createElement("p");note.textContent="Choose a workout plan to see your next session here.";area.appendChild(note)}
+const day=localDay();
+const water=tracking.water.filter(entry=>entry.day===day).reduce((sum,entry)=>sum+Number(entry.amount||0),0);
+const food=tracking.food.filter(entry=>entry.day===day).reduce((sum,entry)=>sum+Number(entry.calories||0),0);
+const summary=document.createElement("p");summary.textContent=`Water: ${formatWater(water)} of ${formatWater(tracking.waterGoal)} · Food: ${food} calories${tracking.calorieGoal?` of ${tracking.calorieGoal}`:""}`;
+area.appendChild(summary);
+const quick=document.createElement("div");quick.className="today-actions";
+for(const [label,action] of [["Log water",showWater],["Log food",showFood]]){
+const button=document.createElement("button");button.textContent=label;button.onclick=action;quick.appendChild(button)
+}area.appendChild(quick);
 }
 
 function renderCustomButtons(){
@@ -2761,14 +2849,24 @@ function localDay(){
 const now=new Date();
 return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
 }
+function selectedDay(type){return document.getElementById(type+"Day").value||localDay()}
+function formatWater(amount){return tracking.waterUnit==="oz"?`${(amount/29.5735).toFixed(1)} fl oz`:`${Math.round(amount)} mL`}
+function setWaterUnit(unit){
+if(!["oz","ml"].includes(unit))return;
+tracking.waterUnit=unit;saveTracking();
+document.getElementById("waterAmount").value="";
+renderWater();
+}
 function newTrackingId(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
-function showWater(){showScreen("waterScreen");setBottomNav("Water");renderWater()}
-function showFood(){showScreen("foodScreen");setBottomNav("Food");populateFoodChoices();updateFoodEstimate();renderFood()}
+function showWater(){showScreen("waterScreen");setBottomNav("Water");document.getElementById("waterDay").value=localDay();document.getElementById("waterUnit").value=tracking.waterUnit;renderWater()}
+function showFood(){showScreen("foodScreen");setBottomNav("Food");document.getElementById("foodDay").value=localDay();populateFoodChoices();updateFoodEstimate();renderFood()}
 function showWeight(){showScreen("weightScreen");setBottomNav("Weight");renderWeight()}
 let suggestedCalories=null;
 function showTrackingGoals(){
 showScreen("goalsScreen");setBottomNav("Goals");
-document.getElementById("waterGoal").value=tracking.waterGoal;
+document.getElementById("waterGoal").value=tracking.waterUnit==="oz"?Math.round(tracking.waterGoal/29.5735):tracking.waterGoal;
+document.getElementById("waterGoal").max=tracking.waterUnit==="oz"?"338":"10000";
+document.querySelector('label[for="waterGoal"]').textContent=`Daily water target (${tracking.waterUnit==="oz"?"fl oz":"mL"})`;
 document.getElementById("calorieGoal").value=tracking.calorieGoal||"";
 document.getElementById("calorieAge").value=tracking.calorieAge;
 document.getElementById("calorieFeet").value=tracking.calorieFeet;
@@ -2819,9 +2917,14 @@ document.getElementById("useCalorieSuggestion").classList.add("hidden");
 }
 function addWater(amount){
 amount=Number(amount);if(!Number.isInteger(amount)||amount<1||amount>5000)return;
-tracking.water.push({id:newTrackingId(),day:localDay(),amount});saveTracking();renderWater();
+tracking.water.push({id:newTrackingId(),day:selectedDay("water"),amount});saveTracking();renderWater();
 }
-function addCustomWater(event){event.preventDefault();addWater(document.getElementById("waterAmount").value);event.target.reset()}
+function addQuickWater(){addWater(tracking.waterUnit==="oz"?Math.round(8*29.5735):250)}
+function addCustomWater(event){
+event.preventDefault();const raw=Number(document.getElementById("waterAmount").value);
+if(!Number.isFinite(raw)||raw<(tracking.waterUnit==="oz"?.1:1))return;
+addWater(tracking.waterUnit==="oz"?Math.round(raw*29.5735):Math.round(raw));event.target.reset();
+}
 function addFood(event){
 event.preventDefault();
 const choice=document.getElementById("foodChoice").value;
@@ -2831,7 +2934,30 @@ const name=food?`${food.name} · ${servings} × ${food.serving}`:document.getEle
 const calories=food?estimateFoodCalories(food,servings):Number(document.getElementById("foodCalories").value);
 if(!food&&choice!=="custom"||food&&(!Number.isFinite(servings)||servings<.25||servings>100))return;
 if(!name||!Number.isInteger(calories)||calories<0||calories>10000)return;
-tracking.food.push({id:newTrackingId(),day:localDay(),name,calories});saveTracking();event.target.reset();updateFoodEstimate();renderFood();
+tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name,calories});saveTracking();event.target.reset();updateFoodEstimate();renderFood();
+}
+function repeatFood(name,calories){
+tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name,calories});saveTracking();renderFood();
+}
+function foodFavoriteKey(entry){return `${entry.name}|${entry.calories}`}
+function toggleFoodFavorite(entry){
+const key=foodFavoriteKey(entry);
+const index=tracking.foodFavorites.findIndex(food=>foodFavoriteKey(food)===key);
+if(index<0)tracking.foodFavorites.push({name:entry.name,calories:entry.calories});
+else tracking.foodFavorites.splice(index,1);
+saveTracking();renderFood();
+}
+function renderFoodShortcuts(){
+const favorites=document.getElementById("foodFavorites"),recent=document.getElementById("foodRecent");
+favorites.replaceChildren();recent.replaceChildren();
+const seen=new Set(),previous=[];
+tracking.food.slice().reverse().forEach(food=>{
+const key=foodFavoriteKey(food);if(seen.has(key))return;seen.add(key);previous.push(food);
+});
+for(const [area,items] of [[favorites,tracking.foodFavorites],[recent,previous.slice(0,8)]]){
+if(!items.length){const note=document.createElement("p");note.className="small";note.textContent=area===favorites?"Tap Save on a logged food to keep it here.":"Foods you log will appear here.";area.appendChild(note);continue}
+items.forEach(food=>{const button=document.createElement("button");button.className="tracker-shortcut";button.textContent=`${food.name} · ${food.calories} cal`;button.onclick=()=>repeatFood(food.name,Number(food.calories));area.appendChild(button)});
+}
 }
 function addWeight(event){
 event.preventDefault();
@@ -2855,20 +2981,36 @@ const row=document.createElement("div");row.className="tracker-row";
 const label=document.createElement("span");label.textContent=describe(entry);
 const remove=document.createElement("button");remove.type="button";remove.textContent="Remove";
 remove.setAttribute("aria-label","Remove "+describe(entry));remove.onclick=()=>deleteTracking(type,entry.id);
-row.append(label,remove);card.appendChild(row);
+row.appendChild(label);
+if(type==="food"){
+const favorite=document.createElement("button");favorite.type="button";
+const saved=tracking.foodFavorites.some(food=>foodFavoriteKey(food)===foodFavoriteKey(entry));
+favorite.textContent=saved?"Saved":"Save";favorite.setAttribute("aria-label",`${saved?"Remove favorite":"Save favorite"} ${entry.name}`);
+favorite.onclick=()=>toggleFoodFavorite(entry);row.appendChild(favorite);
+}
+row.appendChild(remove);card.appendChild(row);
 });area.appendChild(card);
 }
 function renderWater(){
-const entries=tracking.water.filter(entry=>entry.day===localDay());
+const day=selectedDay("water");
+const entries=tracking.water.filter(entry=>entry.day===day);
 const total=entries.reduce((sum,entry)=>sum+Number(entry.amount||0),0);
-document.getElementById("waterSummary").textContent=`${total} of ${tracking.waterGoal} mL today`;
-trackingRows("water",entries.slice().reverse(),entry=>`${entry.amount} mL`);
+document.getElementById("waterSummary").textContent=`${formatWater(total)} of ${formatWater(tracking.waterGoal)} on ${day}`;
+document.getElementById("quickWaterButton").textContent=tracking.waterUnit==="oz"?"Add 8 fl oz":"Add 250 mL";
+document.getElementById("waterAmountLabel").textContent=`Other amount (${tracking.waterUnit==="oz"?"fl oz":"mL"})`;
+document.getElementById("waterAmount").max=tracking.waterUnit==="oz"?"169":"5000";
+document.getElementById("waterAmount").min=tracking.waterUnit==="oz"?"0.1":"1";
+document.getElementById("waterListTitle").textContent=`Water logged · ${day}`;
+trackingRows("water",entries.slice().reverse(),entry=>formatWater(entry.amount));
 }
 function renderFood(){
-const entries=tracking.food.filter(entry=>entry.day===localDay());
+const day=selectedDay("food");
+const entries=tracking.food.filter(entry=>entry.day===day);
 const total=entries.reduce((sum,entry)=>sum+Number(entry.calories||0),0);
-document.getElementById("foodSummary").textContent=`${total} calories today${tracking.calorieGoal?` · target ${tracking.calorieGoal}`:""}`;
+document.getElementById("foodSummary").textContent=`${total} calories on ${day}${tracking.calorieGoal?` · target ${tracking.calorieGoal}`:""}`;
+document.getElementById("foodListTitle").textContent=`Food logged · ${day}`;
 trackingRows("food",entries.slice().reverse(),entry=>`${entry.name} · ${entry.calories} cal`);
+renderFoodShortcuts();
 }
 function renderWeight(){
 const entries=tracking.weight.slice().sort((a,b)=>b.day.localeCompare(a.day));
@@ -2878,7 +3020,8 @@ trackingRows("weight",entries,entry=>`${entry.day} · ${entry.value} lb`);
 }
 function saveTrackingGoals(event){
 event.preventDefault();
-const water=Number(document.getElementById("waterGoal").value);
+const rawWater=Number(document.getElementById("waterGoal").value);
+const water=tracking.waterUnit==="oz"?Math.round(rawWater*29.5735):rawWater;
 const rawCalories=document.getElementById("calorieGoal").value;
 const calories=rawCalories===""?null:Number(rawCalories);
 if(!Number.isInteger(water)||water<1||water>10000||calories!==null&&(!Number.isInteger(calories)||calories<1||calories>10000))return;

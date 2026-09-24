@@ -63,6 +63,28 @@ class WorkoutTrackerTests(unittest.TestCase):
         self.assertIn('tracking.weight.push({id:newTrackingId(),day,value:', INDEX)
         self.assertIn('tracking.weight.slice().sort((a,b)=>b.day.localeCompare(a.day))', INDEX)
 
+    def test_backup_and_restore_include_every_data_group(self):
+        for key in ("completedExercisesV5", "customWorkoutsV5", "workoutHistoryV52", "workoutGoalsV1", "dailyTrackingV1"):
+            self.assertIn(key, INDEX.split('const backupKeys=', 1)[1].split('};', 1)[0])
+        self.assertIn('backup.format!=="workout-tracker-backup"', INDEX)
+        self.assertIn('if(!confirm("Replace the workout and tracking data on this phone with this backup?"))return;', INDEX)
+        self.assertIn('location.reload();', INDEX)
+
+    def test_today_view_and_past_day_logs(self):
+        self.assertIn('id="todayDashboard"', INDEX)
+        self.assertIn('workoutHistory.find(session=>plans.some(plan=>plan.key===session.workoutKey))', INDEX)
+        self.assertIn('id="waterDay" type="date"', INDEX)
+        self.assertIn('id="foodDay" type="date"', INDEX)
+        self.assertIn('selectedDay("water")', INDEX)
+        self.assertIn('selectedDay("food")', INDEX)
+
+    def test_food_shortcuts_and_water_units(self):
+        self.assertIn('id="foodFavorites"', INDEX)
+        self.assertIn('id="foodRecent"', INDEX)
+        self.assertIn('function repeatFood(name,calories)', INDEX)
+        self.assertIn('function setWaterUnit(unit)', INDEX)
+        self.assertIn('tracking.waterUnit==="oz"?Math.round(rawWater*29.5735):rawWater', INDEX)
+
     def test_manage_workouts_moved_into_menu(self):
         home = INDEX.split('<section id="home">', 1)[1].split('</section>', 1)[0]
         self.assertNotIn('id="dataReset"', home)
@@ -113,8 +135,8 @@ class WorkoutTrackerTests(unittest.TestCase):
 
     def test_progress_and_release_version_are_not_animated(self):
         self.assertIn(".progress-fill{height:100%;width:0;background:#111;transition:none}", INDEX)
-        self.assertIn("<p>Version 8.1</p>", INDEX)
-        self.assertIn('const CACHE_NAME = "workout-tracker-v8.1";', SERVICE_WORKER)
+        self.assertIn("<p>Version 8.2</p>", INDEX)
+        self.assertIn('const CACHE_NAME = "workout-tracker-v8.2";', SERVICE_WORKER)
 
     def test_saved_data_storage_keys_remain_compatible(self):
         for storage_key in ("completedExercisesV5", "customWorkoutsV5", "workoutHistoryV52", "overloadTargetsV1", "workoutGoalsV1"):
