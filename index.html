@@ -12,13 +12,14 @@
 
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<meta name="apple-mobile-web-app-title" content="Workout">
+<meta name="apple-mobile-web-app-title" content="PRISM">
+<meta name="theme-color" content="#0b111b">
 
 <link rel="manifest" href="manifest.json">
 
 <link rel="apple-touch-icon" href="images/app-icon.png">
 
-<title>Workout Tracker</title>
+<title>PRISM · Train · Track · Progress</title>
 
 <style>
 
@@ -746,6 +747,192 @@ header{background:#fff;color:#111;border-bottom:1px solid #e5e5e8}
 .wheel-option{cursor:pointer}
 .wheel-option:focus-visible{outline:2px solid #355d75;outline-offset:-3px}
 
+/* PRISM · presentation layer over the existing workout and tracking logic */
+:root{color-scheme:dark;--bg:#0b111b;--card:#151e2b;--text:#f7faff;--sub:#aab6c8;--line:#29384b;--blue:#53adff;--green:#23bd7a;--red:#fb6578;--orange:#f5b44b;--header-height:64px}
+html,body{background:var(--bg);color:var(--text);max-width:100%;overflow-x:hidden}
+body{min-height:100dvh;padding-bottom:calc(85px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased}
+body:has(#workoutScreen:not(.hidden)),body:has(#prismRestScreen:not(.hidden)),body:has(#setupScreen:not(.hidden)){padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+header{background:rgba(11,17,27,.94);color:var(--text);border-bottom:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+header h1{font-size:21px;letter-spacing:.06em}
+header h1 small{display:block;font-size:10px;line-height:1.2;letter-spacing:.1em;font-weight:500;color:var(--sub)}
+.prism-wordmark{font-weight:850;letter-spacing:.13em}
+.prism-wordmark::before{content:"";display:inline-block;width:15px;height:15px;margin-right:10px;vertical-align:-1px;border:3px solid var(--blue);border-radius:4px;transform:rotate(45deg);box-shadow:0 0 12px rgba(82,173,255,.28)}
+.container{max-width:760px;padding:20px 16px 36px}
+.container > section h2{letter-spacing:-.035em;font-size:27px;line-height:1.17}
+.container h3{letter-spacing:-.02em}
+.small,.container .weekly-dashboard .small,.container .summary-stat span,.container .summary-exercise span,.container .workout-progress p,.container .today-metric small{color:var(--sub)}
+.card,.container .card,.exercise,.day-button,.action-button,.library-item,.progress-exercise,.stat-card,.plan-card,.tracker-row,.photo-card,.summary-stat,.summary-exercise{background:var(--card);color:var(--text);border:1px solid var(--line);box-shadow:0 12px 28px rgba(0,0,0,.12);border-radius:19px}
+.card{padding:19px;margin-bottom:15px}
+.day-button,.action-button{font-weight:630;font-size:17px}
+.day-button span,.action-button span,.plan-day span{color:var(--sub)}
+.primary,.action-button.primary,.save-button,.prism-primary,.container .finish-workout,.tracker-form button[type=submit],.timer-start{background:linear-gradient(145deg,#62bcff,#268af2);color:#061423;border:1px solid #74c3ff;box-shadow:0 8px 22px rgba(39,143,250,.17);font-weight:760}
+.primary span,.action-button.primary span{color:#d7efff}
+.container .finish-workout:active,.prism-primary:active{background:#369dec;color:#061423}
+button{color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+button:active{opacity:.85}
+.back,.dashboard-link,.plan-edit,.prism-text-link{color:var(--blue)}
+.menu-toggle,.header-today,.menu-close,.prism-icon-button{background:#162232;color:var(--text);border:1px solid var(--line)}
+.menu-toggle svg{stroke:currentColor}
+.menu-scrim{background:rgba(0,0,0,.7)}
+.side-menu{background:#111b29;color:var(--text);border-right:1px solid var(--line)}
+.menu-link,.menu-head,.menu-group,.menu-version{color:var(--text)}
+.menu-link.active{color:var(--blue);background:#172c43}
+input,select,textarea,.search,.picker-button,.tracker-form input,.tracker-form select{background:#1b2939;color:var(--text);border:1px solid #36465b;min-height:48px}
+input::placeholder{color:#8fa0b4}
+select option{background:#172334;color:var(--text)}
+.progress-bar,.today-meter{background:#263447}
+.progress-fill,.today-meter-fill{background:linear-gradient(90deg,#288cf2,#71c8ff)}
+.container .weekly-dashboard h3{font-weight:730}
+.stat-number,.metric-value,.tracker-value{color:var(--text)}
+.stat-label,.previous,.details p,.details li,.container .plan-card p,.goal-preview{color:var(--sub)}
+.muscle,.badge{background:#203650;color:#aad9ff;border-radius:8px}
+.exercise,.exercise-header{background:var(--card);color:var(--text)}
+.details{border-color:var(--line)}
+.tracking,.overload-guide,.rest-strip,.workout-progress,.workout-readiness,.calorie-workout,.timer-card{background:#151f2e;border:1px solid var(--line);color:var(--text);border-radius:18px}
+.overload-guide p,.rest-strip p,.workout-readiness p{color:var(--sub)}
+.set-block,.exercise-instructions,.summary-exercise{border-color:var(--line)}
+.picker-button,.set-done,.set-clear,.rest-presets button,.readiness-options button,.workout-tab,.tracker-add,.summary-actions button,.progress-links button,.timer-button,.timer-reset,.plan-day,.library-item button{background:#202e40;color:var(--text);border:1px solid #34455b}
+.set-done[aria-pressed=true],.readiness-options button[aria-pressed=true],.rest-presets button[aria-pressed=true],.workout-tab.active{color:var(--blue);background:#17344f;border-color:#3974ae}
+.picker-button{min-height:58px;font-size:17px}
+.picker-sheet{background:#131e2c;color:var(--text)}
+.picker-toolbar{background:#162435}
+.picker-overlay{background:rgba(0,0,0,.68)}
+.wheel-highlight{border-color:#406a98}
+.image-placeholder,.exercise-image{background:#1d2c3e;color:var(--sub)}
+.empty{color:var(--sub)}
+.prism-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:4900;display:flex;justify-content:space-around;align-items:flex-start;gap:3px;height:calc(70px + env(safe-area-inset-bottom));padding:8px max(8px,env(safe-area-inset-left)) env(safe-area-inset-bottom) max(8px,env(safe-area-inset-right));background:rgba(13,22,34,.96);border-top:1px solid #33445b;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.prism-bottom-nav button{flex:1;min-width:0;max-width:135px;height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:transparent;border:0;border-radius:12px;color:#aab6c8;font-size:10px;letter-spacing:.01em}
+.prism-bottom-nav svg{width:23px;height:23px}
+.prism-bottom-nav button[aria-current=page]{color:var(--blue);background:#193049}
+.prism-bottom-nav button:active{background:#20354b}
+body:has(#workoutScreen:not(.hidden)) .prism-bottom-nav,body:has(#prismRestScreen:not(.hidden)) .prism-bottom-nav,body:has(#setupScreen:not(.hidden)) .prism-bottom-nav,body:has(#completionScreen:not(.hidden)) .prism-bottom-nav{display:none}
+.prism-eyebrow{font-size:11px;letter-spacing:.13em;font-weight:760;color:var(--blue)}
+.prism-greeting{margin:5px 2px 17px}
+.prism-greeting h2{margin:0 0 3px;font-size:25px}
+.prism-greeting p{margin:0;color:var(--sub)}
+.prism-section-head{display:flex;align-items:center;justify-content:space-between;margin:5px 0 16px}
+.prism-section-head h2{margin:4px 0 0}
+.prism-icon-button{min-width:46px;min-height:46px;border-radius:14px;font-size:17px}
+.prism-primary{border-radius:14px;min-height:52px;padding:12px 18px}
+.prism-wide{width:100%;margin:12px 0}
+.prism-text-link{display:block;background:transparent;border:0;min-height:44px;margin:8px auto;font-weight:650}
+.prism-search-label{display:block;font-size:13px;color:var(--sub);margin-bottom:8px}
+.prism-segments{display:flex;gap:8px;margin:13px 0 18px}
+.prism-segments button{flex:1;background:#182637;border:1px solid var(--line);border-radius:12px;min-height:42px;font-size:13px}
+.prism-segments button[aria-pressed=true]{background:#307fcb;border-color:#4aa5f5;color:#fff}
+.prism-browser-row{width:100%;display:flex;text-align:left;align-items:center;gap:12px;margin:0 0 9px;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;min-height:78px}
+.prism-browser-row .exercise-mini-map{width:46px;height:52px;flex:0 0 46px}
+.prism-browser-row strong,.prism-browser-row small{display:block}
+.prism-browser-row strong{font-size:16px}
+.prism-browser-row small{margin-top:5px;color:var(--sub);font-size:12px}
+.prism-browser-row .chevron{margin-left:auto;font-size:24px;color:var(--sub)}
+.prism-browser-group{margin:20px 2px 11px;font-size:17px}
+.prism-plan-options{margin-top:26px}
+.prism-plan-options .card{margin-bottom:12px}
+.prism-profile-links{overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;margin:18px 0}
+.prism-profile-links button{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line);padding:16px 18px;min-height:55px;font-size:15px}
+.prism-profile-links button:last-child{border-bottom:0}
+.prism-profile-links span{color:var(--blue);font-size:23px}
+.prism-today-hero{background:radial-gradient(circle at 100% 0,rgba(44,139,245,.21),transparent 60%),#152338;border:1px solid #305375;border-radius:22px;padding:22px;margin-bottom:14px}
+.prism-today-hero .eyebrow{font-size:11px;letter-spacing:.14em;color:#8fcaff;font-weight:800}
+.prism-today-hero h3{margin:8px 0 6px;font-size:24px}
+.prism-today-hero p{margin:0 0 17px;color:#b4c6d9}
+.prism-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.prism-metric{padding:15px;background:#151f2d;border:1px solid var(--line);border-radius:17px}
+.prism-metric strong,.prism-metric small,.prism-metric b{display:block}
+.prism-metric b{font-size:19px;margin:7px 0}
+.prism-metric small{font-size:11px;color:var(--sub);min-height:28px}
+.prism-metric button{min-height:38px;margin-top:12px;padding:6px 10px;background:#20344a;border:1px solid #34506b;border-radius:10px;color:var(--blue)}
+.prism-recent{padding:16px;background:var(--card);border:1px solid var(--line);border-radius:17px;margin:0 0 15px}
+.prism-recent strong,.prism-recent span{display:block}
+.prism-recent span{color:var(--sub);margin-top:6px}
+.prism-resume{margin-bottom:15px;padding:16px;background:#132b45;border:1px solid #3d76ae;border-radius:17px}
+.prism-resume p{color:var(--sub);margin:6px 0 12px}
+.prism-detail-hero{padding:20px;background:linear-gradient(155deg,#152e48,#18232f);border:1px solid #375373;border-radius:20px;margin-bottom:16px}
+.prism-detail-hero .exercise-mini-map{width:100px;height:145px;float:right}
+.prism-detail-hero h2{margin:11px 0 6px}
+.prism-detail-hero p{color:var(--sub)}
+.prism-detail-actions{display:flex;gap:9px;clear:both;padding-top:16px}
+.prism-detail-actions button{flex:1;min-height:48px;border-radius:12px}
+.prism-detail-actions button:not(.prism-primary){background:#1d3045;border:1px solid var(--line)}
+.prism-detail-list{display:grid;gap:9px;margin:17px 0}
+.prism-detail-list button{display:flex;width:100%;text-align:left;align-items:center;gap:10px;padding:11px;background:var(--card);border:1px solid var(--line);border-radius:14px;min-height:70px}
+.prism-detail-list img{width:47px;height:47px;object-fit:cover;border-radius:9px}
+.prism-detail-list .exercise-mini-map{width:47px;height:47px}
+.prism-detail-list small{display:block;color:var(--sub);margin-top:4px}
+.prism-workout-focus{background:#17293d;border:1px solid #355a81;border-radius:17px;padding:14px 16px;margin:0 0 13px}
+.prism-workout-focus strong,.prism-workout-focus small{display:block}
+.prism-workout-focus small{color:var(--sub);margin-top:4px}
+.prism-workout-focus button{margin-top:10px;border:0;background:transparent;color:var(--blue);padding:7px 0}
+#workoutScreen .exercise.prism-out-of-focus{display:none}
+.prism-next-exercise{width:100%;text-align:left;padding:16px;background:#162b41;color:var(--text);border:1px solid #355878;border-radius:16px;margin:0 0 15px}
+.prism-next-exercise small{display:block;color:var(--sub);margin-bottom:5px}
+.prism-rest-expand{background:transparent;border:0;color:var(--blue);display:grid;justify-items:center}
+.prism-rest-expand small{font-size:11px;color:var(--sub)}
+.prism-rest-stage{text-align:center;padding:28px 0}
+.prism-rest-ring{width:min(74vw,300px);height:min(74vw,300px);display:grid;place-items:center;border-radius:50%;margin:34px auto;background:radial-gradient(circle,#101b2b 58%,transparent 60%),conic-gradient(var(--blue) var(--rest-progress,100%),#2a384a 0);box-shadow:0 0 30px rgba(59,156,244,.1)}
+.prism-rest-ring strong{font-size:51px;font-variant-numeric:tabular-nums}
+.prism-rest-actions{display:flex;gap:8px;margin-top:20px}
+.prism-rest-actions button{flex:1;min-height:50px;border-radius:13px;background:#202f41;border:1px solid #3a4e65}
+.prism-info-photo{display:block;width:100%;max-height:340px;object-fit:contain;border-radius:16px;background:#1b2838}
+.prism-info-map{display:flex;justify-content:center;gap:12px;padding:14px;background:#172334;border:1px solid var(--line);border-radius:16px}
+.prism-info-map svg{max-height:210px}
+.prism-info-map .exercise-mini-map{width:110px;height:210px}
+.prism-info-step{padding:14px 0;border-bottom:1px solid var(--line)}
+.prism-info-step b{display:inline-grid;place-items:center;background:#214362;color:var(--blue);width:27px;height:27px;border-radius:50%;margin-right:8px}
+.container :is(h1,h2,h3,h4,p,li,label,strong,span,div,button,input,select){color:var(--text)}
+.container :is(.small,.stat-label,.progress-detail,.previous,.history-date,.history-set,.prism-eyebrow,.prism-browser-row small,.prism-metric small,.prism-greeting p,.prism-detail-hero p,.prism-info-step){color:var(--sub)}
+.container :is(.prism-primary,.finish-workout,.save-button,.timer-start){color:#071623}
+.container :is(.back,.dashboard-link,.plan-edit,.prism-text-link,.prism-profile-links span){color:var(--blue)}
+.container :is(.badge,.muscle,.goal-preview){color:#a9d9ff}
+.container :is(.primary span,.action-button.primary span){color:#d7efff}
+.container .prism-home-dashboard{background:transparent;border:0;box-shadow:none;padding:0}
+.container #weeklySummaryHome .weekly-dashboard{padding:17px}
+.container #weeklySummaryHome .weekly-dashboard .stat-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.container #weeklySummaryHome .weekly-dashboard .stat-card{padding:9px;border-radius:10px}
+.container #weeklySummaryHome .weekly-dashboard .stat-number{font-size:17px}
+.container #weeklySummaryHome .weekly-dashboard .stat-label{font-size:10px}
+.container .prism-today-hero{background:radial-gradient(circle at 100% 0,rgba(44,139,245,.21),transparent 60%),#152338}
+.container .prism-metric{background:#151f2d}
+.container .prism-detail-hero{background:linear-gradient(155deg,#152e48,#18232f)}
+.container :is(.workout-tabs,.visual-card,.history-card,.stat-card,.weekly-dashboard .stat-card,.visual-empty,.exercise-swap-list,.setup-option,.picker-direct,.wheel-wrap){background:var(--card);color:var(--text);border-color:var(--line)}
+.container :is(.workout-readiness,.rest-strip,.workout-progress,.tracking,.overload-guide,.calorie-workout){background:#151f2e;border-color:var(--line)}
+.container :is(.exercise-tools button,.set-done,.rest-strip button,.readiness-options button,.rest-presets button,.goal-controls button,.today-actions button,.tracking-shortcut,.backup-actions button,.progress-links button,.dashboard-link,.summary-actions button,.calendar-toolbar button,.calendar-detail button,.measure-row button,.photo-card button){background:#203047;color:var(--text);border-color:#354a60}
+.container :is(.readiness-options button[aria-pressed=true],.rest-presets button[aria-pressed=true],.set-done[aria-pressed=true]){background:#1b4969;color:var(--blue);border-color:#3f88bd}
+.container .set-done{min-height:48px;margin:10px 4px 3px 56px;padding:10px 15px;background:#12815d;border-color:#24a77c;color:#fff;border-radius:12px;font-weight:700}
+.container .set-done[aria-pressed=true]{background:#194834;border-color:#287957;color:#b6f1d4}
+.container .summary-hero{background:linear-gradient(135deg,#164778,#15283f)}
+.container .summary-actions button:first-child{background:#276db0;color:#fff;border-color:#4b9ad9}
+.container :is(.visual-card,.stat-card,.history-card,.record-row,.measure-row,.photo-card,.plan-day){border:1px solid var(--line);border-radius:16px}
+.container :is(.visual-note,.visual-empty,.warmup-guide,.swap-description,.calorie-mode-note){color:var(--sub)}
+.container .muscle-key span{background:#24364a;color:var(--text)}
+.container :is(.timer-display,.rest-display,.stat-number){color:var(--text)}
+.container .prism-history-card{background:var(--card);border-color:var(--line);margin-bottom:10px;overflow:hidden}
+.prism-history-card summary{padding:16px;cursor:pointer;list-style:none}
+.prism-history-card summary::-webkit-details-marker{display:none}
+.prism-history-card summary strong,.prism-history-card summary span{display:block}
+.prism-history-card summary span{margin-top:5px;color:var(--sub)}
+.prism-history-card .history-exercise{padding:12px 16px;border-top:1px solid var(--line)}
+.prism-volume-row{display:grid;grid-template-columns:1fr auto;gap:4px 10px;margin:13px 0;font-size:14px}
+.prism-volume-row .progress-bar{grid-column:1/-1;margin-top:2px;height:6px}
+.container .exercise-tools{display:flex;flex-wrap:wrap;gap:8px}
+.container .exercise-tools .exercise-swap-list{flex-basis:100%}
+.container .exercise-instructions:not([open]) summary{color:var(--sub)}
+.container .prism-next-exercise{background:#162b41;color:var(--text);border-color:#355878}
+.prism-library-thumb{width:52px;height:58px;object-fit:cover;border-radius:10px;background:#23334a;flex:0 0 52px}
+.container .library-item{background:var(--card);border-color:var(--line);border-radius:15px;margin-bottom:9px}
+.container .library-item .library-name{color:var(--text)}
+.container .library-item .badge{color:#aad9ff}
+.picker-sheet,.picker-toolbar,.picker-direct,.wheel-wrap{background:#142031;color:var(--text)}
+.picker-sheet :is(button,label,input,strong){color:var(--text)}
+.picker-sheet .picker-done{color:var(--blue)}
+.side-menu :is(.menu-link,.menu-group,.menu-version){color:var(--text)}
+.side-menu .menu-link.active{color:var(--blue)}
+@media(max-width:420px){.container{padding:14px 12px 30px}.prism-metric{padding:12px}.prism-metric b{font-size:17px}.prism-bottom-nav button{font-size:9px}.prism-detail-hero .exercise-mini-map{width:75px}}
+@media(max-width:600px){body:has(input:focus) .prism-bottom-nav{display:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
 </style>
 
 </head>
@@ -755,7 +942,7 @@ header{background:#fff;color:#111;border-bottom:1px solid #e5e5e8}
 <header>
 <button id="menuToggle" class="menu-toggle" onclick="openMenu()" aria-label="Open menu" aria-controls="sideMenu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h11"/></svg></button>
 
-<h1>Workout Tracker</h1>
+<h1><span class="prism-wordmark">PRISM</span><small>Train · Track · Progress</small></h1>
 
 <button id="headerToday" class="header-today" onclick="goHome()" aria-label="Go to Today">Today</button>
 
@@ -791,11 +978,10 @@ header{background:#fff;color:#111;border-bottom:1px solid #e5e5e8}
 
 <section id="home">
 
+<div class="prism-greeting"><h2 id="prismGreeting">Your day, your pace.</h2><p>Let's get it done.</p></div>
 <div id="todayDashboard" class="card today-card"></div>
 <div id="weeklySummaryHome"></div>
 <button id="lastSummaryShortcut" class="action-button hidden" onclick="showLastWorkoutSummary()">Last workout summary<span>See your sets and what to try next</span></button>
-
-<div id="suggestedPlan"></div>
 
 <div class="card" id="homeProgressCard">
 
@@ -825,6 +1011,24 @@ Exercise Library
 
 </section>
 
+<section id="workoutsScreen" class="hidden">
+<div class="prism-section-head"><div><span class="prism-eyebrow">YOUR TRAINING</span><h2>Workouts</h2></div><button type="button" class="prism-icon-button" onclick="showManageWorkouts()" aria-label="Manage workouts">•••</button></div>
+<label class="prism-search-label" for="workoutBrowserSearch">Search workouts</label><input id="workoutBrowserSearch" type="search" placeholder="Search workouts or exercises" oninput="renderWorkoutBrowser()">
+<div class="prism-segments" aria-label="Workout types"><button type="button" data-browser-filter="all" aria-pressed="true" onclick="setWorkoutBrowserFilter('all')">All</button><button type="button" data-browser-filter="plans" aria-pressed="false" onclick="setWorkoutBrowserFilter('plans')">Plans</button><button type="button" data-browser-filter="mine" aria-pressed="false" onclick="setWorkoutBrowserFilter('mine')">My workouts</button></div>
+<div id="workoutBrowserList"></div>
+<div id="suggestedPlan" class="prism-plan-options"></div>
+<button class="prism-primary prism-wide" onclick="showBuilder()">＋ Create Workout</button>
+<button class="prism-text-link" onclick="showLibrary()">Browse exercise library →</button>
+</section>
+
+<section id="workoutDetailScreen" class="hidden"><button class="back" onclick="showWorkouts()">← Workouts</button><div id="prismWorkoutDetail"></div></section>
+
+<section id="exerciseInfoScreen" class="hidden"><button class="back" onclick="returnFromExerciseInfo()">← Back</button><div id="prismExerciseInfo"></div></section>
+
+<section id="profileScreen" class="hidden"><div class="prism-section-head"><div><span class="prism-eyebrow">YOUR SPACE</span><h2>Profile</h2></div></div><p class="small">Your goals, tracking and settings stay saved on this device.</p><div class="prism-profile-links">
+<button onclick="showTrackingGoals()">Goals & calorie targets <span>›</span></button><button onclick="showWeight()">Body weight <span>›</span></button><button onclick="showWater()">Water intake <span>›</span></button><button onclick="showFood()">Food tracking <span>›</span></button><button onclick="showWorkoutCalendar()">Workout calendar <span>›</span></button><button onclick="showPersonalRecords()">Personal records <span>›</span></button><button onclick="showMeasurements()">Measurements <span>›</span></button><button onclick="showProgressPhotos()">Private progress photos <span>›</span></button><button onclick="showManageWorkouts()">Manage workouts & data <span>›</span></button>
+</div><div class="card"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
+
 <section id="manageWorkoutScreen" class="hidden">
 <h2>Manage workouts</h2>
 <button class="action-button primary" onclick="showBuilder()">Create a workout<span>Build your own from the exercise library</span></button>
@@ -842,13 +1046,14 @@ Exercise Library
 
 <section id="workoutScreen" class="hidden">
 
-<button class="back" onclick="goHome()">← Back</button>
+<button class="back" onclick="showWorkouts()">← Workouts</button>
 
 <h2 id="workoutTitle"></h2>
+<div id="prismWorkoutFocus" class="prism-workout-focus hidden"></div>
 <div class="workout-progress"><strong id="workoutProgressHeading">Ready to start</strong><p id="workoutProgressText">Log your first set when you're ready.</p><div class="progress-bar"><div id="workoutProgressFill" class="progress-fill"></div></div></div>
 <div class="workout-readiness"><strong>How are you feeling today?</strong><p>This is saved with your workout.</p><div class="readiness-options" id="readinessOptions"></div></div>
 <div class="rest-presets" id="workoutRestPresets" aria-label="Rest duration"></div>
-<div class="rest-strip"><div><strong>Rest between sets</strong><p id="workoutRestStatus" role="status" aria-live="polite">Starts when you mark a set done. Keep this page open for the alert.</p><button onclick="enableRestAlerts()" id="enableRestAlerts">Enable alerts</button></div><div><div id="workoutRestDisplay" class="rest-display" role="timer" aria-label="Rest time remaining">1:30</div><button onclick="skipWorkoutRest()">Skip</button></div></div>
+<div class="rest-strip"><div><strong>Rest between sets</strong><p id="workoutRestStatus" role="status" aria-live="polite">Starts when you mark a set done. Keep this page open for the alert.</p><button onclick="enableRestAlerts()" id="enableRestAlerts">Enable alerts</button></div><div><button class="prism-rest-expand" onclick="showPrismRestTimer()" aria-label="Expand rest timer"><span id="workoutRestDisplay" class="rest-display" role="timer" aria-label="Rest time remaining">1:30</span><small>View timer</small></button><button onclick="skipWorkoutRest()">Skip</button></div></div>
 
 <div id="workoutCalorieCard" class="calorie-workout hidden"><strong>Workout time and calorie estimate</strong>
 <label for="workoutMinutes">Minutes you plan to exercise</label><input id="workoutMinutes" type="number" min="10" max="180" step="5" inputmode="numeric" onchange="updateWorkoutMinutes()">
@@ -866,6 +1071,7 @@ Exercise Library
 <div id="workoutTabContent">
 
 <div id="exerciseList"></div>
+<button id="prismNextExercise" class="prism-next-exercise hidden" onclick="focusNextExercise()"></button>
 
 <button id="finishWorkoutButton" class="finish-workout" onclick="finishWorkout()">Finish Workout</button>
 
@@ -875,11 +1081,13 @@ Exercise Library
 
 </section>
 
-<section id="completionScreen" class="hidden"><div id="completionContent"></div><div class="summary-actions"><button onclick="showOverallProgress()">Weekly progress</button><button onclick="goHome()">Back to Today</button></div></section>
+<section id="prismRestScreen" class="hidden"><button class="back" onclick="returnFromPrismRest()">← Workout</button><div class="prism-rest-stage"><span class="prism-eyebrow">REST BETWEEN SETS</span><div id="prismRestRing" class="prism-rest-ring"><strong id="prismRestLarge">1:30</strong></div><p id="prismRestNext">Take a breath. You've got this.</p><div class="prism-rest-actions"><button onclick="extendPrismRest(30)">＋ 30 sec</button><button onclick="extendPrismRest(60)">＋ 1 min</button><button onclick="skipWorkoutRest();returnFromPrismRest()">Skip</button></div></div></section>
+
+<section id="completionScreen" class="hidden"><div id="completionContent"></div><div class="summary-actions"><button onclick="showGlobalHistory()">View history</button><button onclick="goHome()">Done</button></div></section>
 
 <section id="libraryScreen" class="hidden">
 
-<button class="back" onclick="goHome()">← Back</button>
+<button class="back" onclick="showWorkouts()">← Workouts</button>
 
 <h2>Exercise Library</h2>
 
@@ -907,7 +1115,7 @@ placeholder="Search exercises..." oninput="renderLibrary()">
 
 <section id="builderScreen" class="hidden">
 
-<button class="back" onclick="goHome()">← Cancel</button>
+<button class="back" onclick="showWorkouts()">← Cancel</button>
 
 <h2>Create Workout</h2>
 
@@ -937,7 +1145,10 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 <section id="overallProgressScreen" class="hidden">
 
-<h2>Overall Progress</h2>
+<h2>Progress</h2>
+<div class="prism-segments" aria-label="Progress period"><button data-period="week" aria-pressed="true" onclick="setPrismProgressPeriod('week')">Week</button><button data-period="month" aria-pressed="false" onclick="setPrismProgressPeriod('month')">Month</button><button data-period="year" aria-pressed="false" onclick="setPrismProgressPeriod('year')">Year</button></div>
+<div id="prismPeriodStats"></div>
+<h3>All-time insights</h3>
 
 <div id="overallStats"></div>
 <div id="weeklySummary"></div>
@@ -1015,6 +1226,14 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 </div>
 
+<nav id="prismBottomNav" class="prism-bottom-nav" aria-label="Primary navigation">
+<button type="button" data-prism-tab="Home" onclick="goHome()" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></svg><span>Home</span></button>
+<button type="button" data-prism-tab="Workouts" onclick="showWorkouts()" aria-label="Workouts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9v6m3-8v10m12-10v10m3-8v6M6 12h12"/></svg><span>Workouts</span></button>
+<button type="button" data-prism-tab="Progress" onclick="showOverallProgress()" aria-label="Progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V12m6 8V8m6 12V4m4 16H2"/></svg><span>Progress</span></button>
+<button type="button" data-prism-tab="History" onclick="showGlobalHistory()" aria-label="History"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>History</span></button>
+<button type="button" data-prism-tab="Profile" onclick="showProfile()" aria-label="Profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 21c0-4 3-6 7-6s7 2 7 6"/></svg><span>Profile</span></button>
+</nav>
+
 <div id="menuScrim" class="menu-scrim" onclick="closeMenu()"></div>
 <nav id="sideMenu" class="side-menu" aria-label="Main menu" aria-hidden="true" inert>
 <div class="menu-head"><span>Menu</span><button class="menu-close" onclick="closeMenu()" aria-label="Close menu">×</button></div>
@@ -1033,7 +1252,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <button class="menu-link" id="navFood" onclick="showFood()">Food</button>
 <button class="menu-link" id="navWeight" onclick="showWeight()">Weight</button>
 <button class="menu-link" id="navGoals" onclick="showTrackingGoals()">Goals</button>
-<small class="menu-version">Version 9.3</small>
+<small class="menu-version">PRISM · Version 10.0</small>
 </nav>
 
 <div id="pickerOverlay" class="picker-overlay hidden" onclick="closePicker()"></div>
@@ -1549,7 +1768,7 @@ function getExercise(id){return exerciseLibrary.find(x=>x.id===id)}
 
 function allScreens(){
 
-return ["home","setupScreen","workoutScreen","libraryScreen","builderScreen",
+return ["home","workoutsScreen","workoutDetailScreen","exerciseInfoScreen","profileScreen","prismRestScreen","setupScreen","workoutScreen","libraryScreen","builderScreen",
 
 "overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen","calendarScreen","recordsScreen","measurementsScreen","photosScreen","completionScreen"];
 
@@ -1584,6 +1803,12 @@ if(isActive)button.setAttribute("aria-current","page");
 
 else button.removeAttribute("aria-current");
 
+});
+
+const section=({Home:"Home",Workout:"Workouts",Manage:"Workouts",Progress:"Progress",History:"History",Timer:"Profile",Water:"Profile",Food:"Profile",Weight:"Profile",Goals:"Profile",Calendar:"Progress",Records:"Progress",Measurements:"Profile",Photos:"Profile"})[name]||name;
+document.querySelectorAll("#prismBottomNav [data-prism-tab]").forEach(button=>{
+if(button.dataset.prismTab===section)button.setAttribute("aria-current","page");
+else button.removeAttribute("aria-current");
 });
 
 }
@@ -1746,6 +1971,107 @@ renderHome();updateProgress();
 
 }
 
+let prismWorkoutBrowserFilter="all",prismDetailContext=null,prismInfoReturn="libraryScreen";
+function prismExerciseVisual(ex){
+if(!ex)return '<div class="exercise-mini-map" aria-hidden="true"></div>';
+return ex.image?`<img src="${escapeHTML(ex.image)}" alt="" loading="lazy">`:
+`<div class="exercise-mini-map" aria-hidden="true">${exerciseMuscleDiagram(ex)}</div>`;
+}
+function prismEquipment(ex){
+const name=ex.name.toLowerCase();
+if(name.includes("cable")||name.includes("pulldown")||name.includes("pushdown"))return "Cable";
+if(name.includes("dumbbell")||name.includes("goblet")||name.includes("hammer curl"))return "Dumbbell";
+if(name.includes("smith"))return "Smith machine";
+if(name.includes("machine")||name.includes("leg press")||name.includes("pec deck"))return "Machine";
+if(name.includes("bodyweight")||name.includes("push-up")||name.includes("dead bug"))return "Bodyweight";
+return "";
+}
+function availableWorkoutPlans(){
+const plans=[];
+if(workoutGoals&&!workoutGoals.skipped&&!workoutGoals.basic)
+suggestedWorkouts(workoutGoals).forEach((day,index)=>plans.push({kind:"suggested",index,title:day.title,ids:day.exercises}));
+Object.entries(presetWorkouts).forEach(([key,day])=>plans.push({kind:"preset",key,title:day.title,ids:day.exercises}));
+return plans;
+}
+function showWorkouts(){showScreen("workoutsScreen");setBottomNav("Workouts");renderWorkoutBrowser()}
+function showProfile(){showScreen("profileScreen");setBottomNav("Profile")}
+function setWorkoutBrowserFilter(filter){
+prismWorkoutBrowserFilter=filter;
+document.querySelectorAll("[data-browser-filter]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.browserFilter===filter)));
+renderWorkoutBrowser();
+}
+function renderWorkoutBrowser(){
+const area=document.getElementById("workoutBrowserList");area.replaceChildren();
+const query=document.getElementById("workoutBrowserSearch").value.trim().toLowerCase();
+const plans=availableWorkoutPlans();
+const personal=customWorkouts.map((w,index)=>({kind:"custom",index,title:w.name,ids:w.exercises}));
+const groups=prismWorkoutBrowserFilter==="mine"?[["My workouts",personal]]:
+prismWorkoutBrowserFilter==="plans"?[["Workout plans",plans]]:
+[["Workout plans",plans],["My workouts",personal]];
+let count=0;
+for(const [label,items] of groups){
+const filtered=items.filter(item=>item.title.toLowerCase().includes(query)||item.ids.some(id=>getExercise(id)?.name.toLowerCase().includes(query)));
+if(!filtered.length)continue;
+const heading=document.createElement("h3");heading.className="prism-browser-group";heading.textContent=label;area.appendChild(heading);
+for(const item of filtered){
+count++;const button=document.createElement("button");button.className="prism-browser-row";button.type="button";
+const visual=document.createElement("span");visual.innerHTML=prismExerciseVisual(getExercise(item.ids[0]));button.appendChild(visual);
+const text=document.createElement("span");const title=document.createElement("strong");title.textContent=item.title;
+const detail=document.createElement("small");detail.textContent=`${item.ids.length} exercises · about ${Math.max(20,item.ids.length*10)} min`;text.append(title,detail);button.appendChild(text);
+const chevron=document.createElement("span");chevron.className="chevron";chevron.textContent="›";button.appendChild(chevron);
+button.onclick=()=>showPrismWorkoutDetail(item);area.appendChild(button);
+}
+}
+if(!count)area.innerHTML='<div class="card empty">No workouts match your search. Try a muscle or exercise name.</div>';
+}
+function showPrismWorkoutDetail(item){
+if(!item||!Array.isArray(item.ids))return;
+prismDetailContext=item;showScreen("workoutDetailScreen");setBottomNav("Workouts");
+const area=document.getElementById("prismWorkoutDetail");area.replaceChildren();
+const hero=document.createElement("div");hero.className="prism-detail-hero";
+const visual=document.createElement("div");visual.innerHTML=prismExerciseVisual(getExercise(item.ids[0]));hero.appendChild(visual);
+const eyebrow=document.createElement("span");eyebrow.className="prism-eyebrow";eyebrow.textContent=item.kind==="custom"?"MY WORKOUT":"WORKOUT PLAN";hero.appendChild(eyebrow);
+const heading=document.createElement("h2");heading.textContent=item.title;hero.appendChild(heading);
+const description=document.createElement("p");description.textContent=`${item.ids.length} exercises · about ${Math.max(20,item.ids.length*10)} minutes`;hero.appendChild(description);
+const actions=document.createElement("div");actions.className="prism-detail-actions";
+const start=document.createElement("button");start.className="prism-primary";start.textContent="Start Workout";start.onclick=()=>startPrismWorkout(item);actions.appendChild(start);
+if(item.kind==="custom"){const manage=document.createElement("button");manage.textContent="Manage Workout";manage.onclick=showManageWorkouts;actions.appendChild(manage)}
+hero.appendChild(actions);area.appendChild(hero);
+const label=document.createElement("h3");label.textContent="Exercises";area.appendChild(label);
+const list=document.createElement("div");list.className="prism-detail-list";
+item.ids.forEach((id,index)=>{
+const ex=getExercise(id);if(!ex)return;
+const button=document.createElement("button");button.type="button";button.innerHTML=`<strong>${index+1}</strong>${prismExerciseVisual(ex)}<span>${escapeHTML(ex.name)}<small>4 sets · 8–10 reps · ${escapeHTML(ex.muscle)}</small></span>`;
+button.onclick=()=>showExerciseInfo(id,"workoutDetailScreen");list.appendChild(button);
+});area.appendChild(list);
+}
+function startPrismWorkout(item){
+if(item.kind==="custom")openCustomWorkout(item.index);
+else if(item.kind==="suggested")openSuggestedWorkout(item.index);
+else openPresetWorkout(item.key);
+}
+function showExerciseInfo(id,returnTo="libraryScreen"){
+const ex=getExercise(id);if(!ex)return;
+prismInfoReturn=returnTo;showScreen("exerciseInfoScreen");setBottomNav(returnTo==="workoutScreen"?"Workout":"Workouts");
+const area=document.getElementById("prismExerciseInfo");area.replaceChildren();
+const heading=document.createElement("h2");heading.textContent=ex.name;area.appendChild(heading);
+const subtitle=document.createElement("p");subtitle.className="small";subtitle.textContent=`Primary muscle: ${ex.muscle}${prismEquipment(ex)?` · ${prismEquipment(ex)}`:""}`;area.appendChild(subtitle);
+if(ex.image){const picture=document.createElement("img");picture.src=ex.image;picture.alt=ex.name;picture.className="prism-info-photo";area.appendChild(picture)}
+const map=document.createElement("div");map.className="prism-info-map";map.innerHTML=exerciseMuscleDiagram(ex);area.appendChild(map);
+const instructions=document.createElement("div");instructions.className="card";
+const title=document.createElement("h3");title.textContent="How to perform";instructions.appendChild(title);
+const how=document.createElement("p");how.textContent=ex.how;instructions.appendChild(how);
+for(const [name,values] of [["Form tips",ex.tips],["Common mistakes",ex.mistakes]]){
+if(!values?.length)continue;const label=document.createElement("h3");label.textContent=name;instructions.appendChild(label);
+const list=document.createElement("ul");for(const value of values){const li=document.createElement("li");li.textContent=value;list.appendChild(li)}instructions.appendChild(list)
+}area.appendChild(instructions);
+}
+function returnFromExerciseInfo(){
+if(prismInfoReturn==="workoutScreen"){showScreen("workoutScreen");setBottomNav("Workout")}
+else if(prismInfoReturn==="workoutDetailScreen"&&prismDetailContext)showPrismWorkoutDetail(prismDetailContext);
+else showLibrary();
+}
+
 function showManageWorkouts(){
 showScreen("manageWorkoutScreen");setBottomNav("Manage");renderCustomButtons();
 }
@@ -1760,6 +2086,7 @@ for(const [key,fallback] of Object.entries(backupKeys)){
 try{data[key]=JSON.parse(localStorage.getItem(key)??JSON.stringify(fallback))}
 catch{data[key]=fallback}
 }
+data.prismActiveWorkoutV1=readPrismActiveWorkout();
 return {format:"workout-tracker-backup",version:1,exportedAt:new Date().toISOString(),data};
 }
 function validBackup(backup){
@@ -1812,6 +2139,11 @@ try{await new Promise((resolve,reject)=>{const transaction=db.transaction("photo
 const previous={};for(const key of Object.keys(backupKeys))previous[key]=localStorage.getItem(key);
 try{for(const key of Object.keys(backupKeys))localStorage.setItem(key,JSON.stringify(backup.data[key]))}
 catch(error){for(const key of Object.keys(backupKeys))localStorage.removeItem(key);for(const [key,value] of Object.entries(previous))if(value!==null)localStorage.setItem(key,value);throw error}
+if(Object.hasOwn(backup.data,"prismActiveWorkoutV1")){
+const active=backup.data.prismActiveWorkoutV1;
+if(active&&typeof active.key==="string"&&Array.isArray(active.ids))localStorage.setItem("prismActiveWorkoutV1",JSON.stringify(active));
+else localStorage.removeItem("prismActiveWorkoutV1");
+}
 location.reload();
 }catch(error){alert(error.message||"Could not restore that backup.")}
 finally{input.value=""}
@@ -1830,6 +2162,7 @@ localStorage.setItem("workoutHistoryV52","[]");
 localStorage.setItem("previousHistoryV51","{}");
 localStorage.setItem("setHistoryV5","{}");
 localStorage.setItem("overloadTargetsV1","{}");
+localStorage.removeItem("prismActiveWorkoutV1");localStorage.removeItem("prismRestEndsAtV1");
 }
 if(scope==="progress"||scope==="both"){
 completedExercises=[];
@@ -1841,12 +2174,37 @@ updateProgress();
 
 function renderHome(){
 
-renderTodayDashboard();
+document.getElementById("prismGreeting").textContent=localGreeting();
+renderPrismTodayDashboard();
 renderWeeklySummary("weeklySummaryHome");
-document.getElementById("lastSummaryShortcut").classList.toggle("hidden",!workoutHistory.length);
+document.getElementById("lastSummaryShortcut").classList.add("hidden");
 renderSuggestedPlan();
 document.getElementById("homeProgressCard").classList.toggle("hidden",!workoutGoals||workoutGoals.skipped);
 
+}
+
+function localGreeting(){const hour=new Date().getHours();return hour<12?"Good morning":hour<17?"Good afternoon":"Good evening"}
+function renderPrismTodayDashboard(){
+const area=document.getElementById("todayDashboard");area.replaceChildren();area.classList.add("prism-home-dashboard");
+const plans=workoutGoals&&!workoutGoals.skipped?
+(workoutGoals.basic?Object.entries(presetWorkouts).map(([key,day])=>({kind:"preset",key,title:day.title,ids:day.exercises,workoutKey:"preset-"+key})):
+suggestedWorkouts(workoutGoals).map((day,index)=>({kind:"suggested",index,title:day.title,ids:day.exercises,workoutKey:suggestedWorkoutKey(index)}))):[];
+const last=workoutHistory.find(session=>plans.some(plan=>plan.workoutKey===session.workoutKey));
+const lastIndex=plans.findIndex(plan=>plan.workoutKey===last?.workoutKey);
+const next=plans.length?plans[(lastIndex+1)%plans.length]:null;
+const hero=document.createElement("div");hero.className="prism-today-hero";
+const eyebrow=document.createElement("span");eyebrow.className="eyebrow";eyebrow.textContent="TODAY'S WORKOUT";hero.appendChild(eyebrow);
+const name=document.createElement("h3");name.textContent=next?.title||"Make today count";hero.appendChild(name);
+const detail=document.createElement("p");detail.textContent=next?`${next.ids.length} exercises · about ${Math.max(20,next.ids.length*10)} min`:"Choose a plan or build your own workout.";hero.appendChild(detail);
+const start=document.createElement("button");start.className="prism-primary prism-wide";start.textContent=next?"Start Workout":"Explore Workouts";start.onclick=next?()=>startPrismWorkout(next):showWorkouts;hero.appendChild(start);area.appendChild(hero);
+const active=readPrismActiveWorkout();
+if(active){const resume=document.createElement("div");resume.className="prism-resume";const title=document.createElement("strong");title.textContent="Continue your workout";const desc=document.createElement("p");desc.textContent=active.title;const button=document.createElement("button");button.className="prism-primary";button.textContent="Resume Workout";button.onclick=resumePrismWorkout;resume.append(title,desc,button);area.appendChild(resume)}
+const day=localDay(),water=tracking.water.filter(entry=>entry.day===day).reduce((n,e)=>n+Number(e.amount||0),0),food=tracking.food.filter(entry=>entry.day===day).reduce((n,e)=>n+Number(e.calories||0),0),calorieGoal=dailyCalorieTarget(day);
+const metrics=document.createElement("div");metrics.className="prism-metrics";
+for(const item of [{label:"Water",value:formatWater(water),detail:`Goal ${formatWater(tracking.waterGoal)}`,action:"Log water",open:showWater},{label:"Calories",value:`${food.toLocaleString()} cal`,detail:calorieGoal?`Target ${calorieGoal.toLocaleString()} cal`:"Set your target in Goals",action:"Log food",open:showFood}]){
+const cell=document.createElement("div");cell.className="prism-metric";const label=document.createElement("strong");label.textContent=item.label;const value=document.createElement("b");value.textContent=item.value;const caption=document.createElement("small");caption.textContent=item.detail;const button=document.createElement("button");button.textContent=item.action;button.onclick=item.open;cell.append(label,value,caption,button);metrics.appendChild(cell)
+}area.appendChild(metrics);
+if(workoutHistory.length){const latest=workoutHistory[0],recent=document.createElement("button");recent.className="prism-recent";recent.type="button";recent.style.width="100%";recent.style.textAlign="left";recent.innerHTML=`<strong>Recent Workout</strong><span>${escapeHTML(latest.workoutTitle||"Workout")} · ${new Date(latest.date).toLocaleDateString()}</span>`;recent.onclick=()=>showWorkoutSummary(latest);area.appendChild(recent)}
 }
 
 function renderTodayDashboard(){
@@ -1986,6 +2344,11 @@ openWorkout(w.name,activeWorkoutExerciseIds,true);
 
 function openWorkout(title,ids,isCustom){
 
+if(activeWorkoutKey!=="library"){
+const existing=readPrismActiveWorkout();
+const index=existing?.key===activeWorkoutKey?existing.index||0:0;
+localStorage.setItem("prismActiveWorkoutV1",JSON.stringify({key:activeWorkoutKey,title,ids:[...activeWorkoutExerciseIds],isCustom,index,context:lastWorkoutContext,startedAt:existing?.key===activeWorkoutKey?existing.startedAt:Date.now()}));
+}
 showScreen("workoutScreen");setBottomNav("Workout");
 const savedIds=tracking.substitutions?.[activeWorkoutKey];
 if(Array.isArray(savedIds)&&savedIds.length&&savedIds.every(id=>getExercise(id))&&new Set(savedIds).size===savedIds.length)activeWorkoutExerciseIds=[...savedIds];
@@ -2002,8 +2365,7 @@ renderWorkoutCalorieEstimate();
 
 const list=document.getElementById("exerciseList");list.innerHTML="";
 renderActiveWorkoutExercises(isCustom);
-list.querySelector(".exercise .details")?.classList.add("open");
-list.querySelector(".exercise .exercise-header")?.setAttribute("aria-expanded","true");
+focusWorkoutExercise(readPrismActiveWorkout()?.key===activeWorkoutKey?readPrismActiveWorkout().index:0);
 renderWorkoutProgress();
 document.querySelector(".workout-readiness").classList.remove("hidden");
 document.getElementById("workoutRestPresets").classList.remove("hidden");
@@ -2019,7 +2381,35 @@ function renderActiveWorkoutExercises(isCustom=activeCustomIndex!==null){
 const list=document.getElementById("exerciseList");list.replaceChildren();
 activeWorkoutExerciseIds.forEach(id=>{const ex=getExercise(id);if(ex)list.appendChild(createExerciseCard(ex,activeWorkoutKey+"-"+ex.id))});
 if(isCustom){const button=document.createElement("button");button.className="delete-button";button.textContent="Delete This Workout";button.onclick=()=>deleteCustomWorkout(activeCustomIndex);list.appendChild(button)}
+focusWorkoutExercise(Math.min(readPrismActiveWorkout()?.index||0,activeWorkoutExerciseIds.length-1));
 }
+function readPrismActiveWorkout(){
+try{const saved=JSON.parse(localStorage.getItem("prismActiveWorkoutV1")||"null");return saved&&typeof saved.key==="string"&&saved.key!=="library"&&Array.isArray(saved.ids)&&saved.ids.every(id=>getExercise(id))?saved:null}catch{return null}
+}
+function resumePrismWorkout(){
+const saved=readPrismActiveWorkout();if(!saved){showWorkouts();return}
+activeWorkoutKey=saved.key;activeWorkoutTitle=saved.title;activeWorkoutExerciseIds=[...saved.ids];activeCustomIndex=saved.context?.type==="custom"?saved.context.index:null;lastWorkoutContext=saved.context||null;
+openWorkout(saved.title,saved.ids,Boolean(saved.isCustom));
+}
+function focusWorkoutExercise(index){
+if(!activeWorkoutExerciseIds?.length||activeWorkoutKey==="library")return;
+index=Math.max(0,Math.min(activeWorkoutExerciseIds.length-1,Number(index)||0));
+const saved=readPrismActiveWorkout();if(saved?.key===activeWorkoutKey){saved.index=index;saved.ids=[...activeWorkoutExerciseIds];localStorage.setItem("prismActiveWorkoutV1",JSON.stringify(saved))}
+const cards=[...document.querySelectorAll("#exerciseList > .exercise")];
+cards.forEach((card,position)=>{card.classList.toggle("prism-out-of-focus",position!==index);const details=card.querySelector(".details");if(details){details.classList.toggle("open",position===index);card.querySelector(".exercise-header")?.setAttribute("aria-expanded",String(position===index))}});
+const ex=getExercise(activeWorkoutExerciseIds[index]);const heading=document.getElementById("prismWorkoutFocus");
+heading.classList.remove("hidden");heading.replaceChildren();
+const title=document.createElement("strong");title.textContent=`Exercise ${index+1} of ${activeWorkoutExerciseIds.length} · ${ex?.name||"Exercise"}`;
+const description=document.createElement("small");description.textContent=`${ex?.muscle||""}${ex?prismEquipment(ex)?` · ${prismEquipment(ex)}`:"":""} · 4 sets`;
+const controls=document.createElement("div");controls.className="prism-focus-controls";
+if(index>0){const prior=document.createElement("button");prior.textContent="← Previous";prior.onclick=()=>focusWorkoutExercise(index-1);controls.appendChild(prior)}
+const all=document.createElement("button");all.textContent="All exercises";all.onclick=()=>{cards.forEach(c=>c.classList.remove("prism-out-of-focus"));heading.classList.add("hidden");document.getElementById("prismNextExercise").classList.add("hidden")};controls.appendChild(all);
+heading.append(title,description,controls);
+const next=document.getElementById("prismNextExercise");
+if(index+1<activeWorkoutExerciseIds.length){next.classList.remove("hidden");next.innerHTML=`<small>NEXT EXERCISE</small><strong>${escapeHTML(getExercise(activeWorkoutExerciseIds[index+1])?.name||"Next")}</strong> →`;next.onclick=()=>{focusWorkoutExercise(index+1);window.scrollTo({top:0,behavior:"instant"})}}
+else next.classList.add("hidden");
+}
+function focusNextExercise(){const current=readPrismActiveWorkout()?.index||0;focusWorkoutExercise(current+1)}
 function renderWorkoutProgress(){
 const planned=activeWorkoutExerciseIds.length*4;
 const recorded=activeWorkoutExerciseIds.reduce((count,id)=>count+[1,2,3,4].filter(set=>{const item=setHistory[`${activeWorkoutKey}-${id}-set${set}`];return item&&Number(item.weight)>0&&Number(item.reps)>0}).length,0);
@@ -2035,6 +2425,7 @@ if(hasSets){const index=activeWorkoutExerciseIds.indexOf(oldId);activeWorkoutExe
 else activeWorkoutExerciseIds=activeWorkoutExerciseIds.map(id=>id===oldId?newId:id);
 tracking.substitutions[activeWorkoutKey]=[...activeWorkoutExerciseIds];saveTracking();
 renderActiveWorkoutExercises();renderWorkoutProgress();
+focusWorkoutExercise(activeWorkoutExerciseIds.indexOf(newId));
 const detail=document.getElementById(safeId(activeWorkoutKey+"-"+newId));detail?.classList.add("open");detail?.parentElement.querySelector(".exercise-header")?.setAttribute("aria-expanded","true");detail?.parentElement.scrollIntoView({block:"start"});
 }
 function renderWorkoutReadiness(){
@@ -2103,7 +2494,7 @@ ${showGoal?`<div class="goal-preview">${goalText}</div>`:""}
 
 <div class="details" id="${detailId}">
 
-${showGoal?'<div class="exercise-tools"><button type="button" class="swap-toggle">Replace exercise</button><div class="exercise-swap-list hidden"></div></div>':""}
+${showGoal?'<div class="exercise-tools"><button type="button" class="swap-toggle">Replace exercise</button><button type="button" class="prism-info-toggle">Exercise info</button><div class="exercise-swap-list hidden"></div></div>':""}
 
 ${showGoal?'<div class="tracking">':""}
 
@@ -2142,6 +2533,7 @@ onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
 </div>`;
 
 if(showGoal){
+card.querySelector(".prism-info-toggle").onclick=()=>showExerciseInfo(ex.id,"workoutScreen");
 const input=card.querySelector(".goal-weight");
 input.addEventListener("input",()=>saveOverloadGoal(ex.id,input,card.querySelector(".goal-preview")));
 input.addEventListener("change",()=>saveOverloadGoal(ex.id,input,card.querySelector(".goal-preview")));
@@ -2276,7 +2668,7 @@ onclick="openPicker('${escapeAttribute(key)}','reps')">${cr}</button>
 <div class="previous">${prev}</div>
 
 ${comparison?`<div class="compare ${comparison.cls}" id="${safeId(key+"-compare")}">${comparison.text}</div>`:""}
-<button class="set-done" type="button" aria-pressed="${Boolean(current.done)}" id="${safeId(key+"-done")}" onclick="toggleSetDone('${escapeAttribute(key)}')">${current.done?"Done ✓":"Mark set done"}</button>
+<button class="set-done" type="button" aria-pressed="${Boolean(current.done)}" id="${safeId(key+"-done")}" onclick="toggleSetDone('${escapeAttribute(key)}')">${current.done?"Done ✓":"Complete Set"}</button>
 <button class="set-clear" type="button" onclick="clearSet('${escapeAttribute(key)}')">Clear</button>
 
 </div>`;
@@ -2338,7 +2730,7 @@ function saveSet(key,type,value){
 if(!setHistory[key])setHistory[key]={weight:"",reps:""};
 
 setHistory[key][type]=value;
-if(setHistory[key].done){setHistory[key].done=false;const done=document.getElementById(safeId(key+"-done"));if(done){done.textContent="Mark set done";done.setAttribute("aria-pressed","false")}}
+if(setHistory[key].done){setHistory[key].done=false;const done=document.getElementById(safeId(key+"-done"));if(done){done.textContent="Complete Set";done.setAttribute("aria-pressed","false")}}
 
 localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
 const id=key.slice(activeWorkoutKey.length+1).replace(/-set[1-4]$/,"");
@@ -2350,7 +2742,7 @@ function toggleSetDone(key){
 const entry=setHistory[key];
 if(!entry||!(Number(entry.weight)>0)||!(Number(entry.reps)>0)){alert("Choose both weight and reps first.");return}
 entry.done=!entry.done;localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
-const button=document.getElementById(safeId(key+"-done"));button.textContent=entry.done?"Done ✓":"Mark set done";button.setAttribute("aria-pressed",String(entry.done));
+const button=document.getElementById(safeId(key+"-done"));button.textContent=entry.done?"Done ✓":"Complete Set";button.setAttribute("aria-pressed",String(entry.done));
 if(entry.done)startWorkoutRest();
 renderWorkoutProgress();
 }
@@ -2358,7 +2750,7 @@ function clearSet(key){
 delete setHistory[key];localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
 for(const [type,label] of [["weight","Weight"],["reps","Reps"]]){const button=document.getElementById(safeId(key+"-"+type+"-button"));if(button)button.textContent=label}
 document.getElementById(safeId(key+"-compare"))?.remove();
-const button=document.getElementById(safeId(key+"-done"));if(button){button.textContent="Mark set done";button.setAttribute("aria-pressed","false")}
+const button=document.getElementById(safeId(key+"-done"));if(button){button.textContent="Complete Set";button.setAttribute("aria-pressed","false")}
 const id=key.slice(activeWorkoutKey.length+1).replace(/-set[1-4]$/ ,"");
 renderWarmupGuide(id,document.getElementById(safeId(activeWorkoutKey+"-"+id))?.closest(".exercise"));renderWorkoutProgress();
 }
@@ -2500,6 +2892,7 @@ date:new Date().toISOString(),
 workoutKey:activeWorkoutKey,
 
 workoutTitle:activeWorkoutTitle,
+durationMinutes:readPrismActiveWorkout()?.startedAt?Math.max(1,Math.round((Date.now()-readPrismActiveWorkout().startedAt)/60000)):null,
 readiness:tracking.readiness[`${localDay()}-${activeWorkoutKey}`]||"Normal",
 
 exercises:[]
@@ -2580,6 +2973,7 @@ activeWorkoutExerciseIds.forEach(id=>{
 for(let set=1;set<=4;set++)delete setHistory[`${activeWorkoutKey}-${id}-set${set}`];
 });
 localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
+localStorage.removeItem("prismActiveWorkoutV1");
 delete tracking.substitutions[activeWorkoutKey];saveTracking();
 skipWorkoutRest();
 updateProgress();
@@ -2599,7 +2993,7 @@ const clean=(ex.sets||[]).filter(s=>Number(s.weight)>0&&Number(s.reps)>0),top=Ma
 const next=session===workoutHistory[0]?progressionSuggestion(ex.id):null;
 return `<div class="summary-exercise"><strong>${escapeHTML(ex.name||getExercise(ex.id)?.name||ex.id)}</strong><span>${clean.length} ${clean.length===1?"set":"sets"}${top?` · Top weight ${top} lb`:""}${recordIds.includes(ex.id)?" · New weight record":""}${next?` · Next: ${next.weight} lb × 8–10`:""}</span></div>`;
 }).join("");
-document.getElementById("completionContent").innerHTML=`<div class="summary-hero"><span>Workout saved · ${escapeHTML(when)}</span><h2>${escapeHTML(session.workoutTitle||"Your workout")}</h2><p>You showed up and logged your work. Here's what you did.</p></div><div class="summary-grid"><div class="summary-stat"><strong>${session.exercises?.length||0}</strong><span>Exercises</span></div><div class="summary-stat"><strong>${sets.length}</strong><span>Sets logged</span></div><div class="summary-stat"><strong>${Math.round(volume).toLocaleString()}</strong><span>Volume (lb)</span></div><div class="summary-stat"><strong>${recordIds.length}</strong><span>New weight records</span></div></div><div class="card"><h3>Your exercises</h3>${details}<p class="small">Next targets are suggestions based on your saved sets. You can change them in your next workout.</p></div>`;
+document.getElementById("completionContent").innerHTML=`<div class="summary-hero"><span>WORKOUT COMPLETE · ${escapeHTML(when)}</span><h2>${escapeHTML(session.workoutTitle||"Your workout")}</h2><p>${session.durationMinutes?`${Number(session.durationMinutes)} min · `:""}You showed up and logged your work.</p></div><div class="summary-grid"><div class="summary-stat"><strong>${session.exercises?.length||0}</strong><span>Exercises</span></div><div class="summary-stat"><strong>${sets.length}</strong><span>Sets logged</span></div><div class="summary-stat"><strong>${Math.round(volume).toLocaleString()}</strong><span>Volume (lb)</span></div><div class="summary-stat"><strong>${recordIds.length}</strong><span>New weight records</span></div></div><div class="card"><h3>Your summary</h3>${details}<p class="small">Next targets are suggestions based on your saved sets. You can change them in your next workout.</p></div>`;
 }
 
 function updateProgress(){
@@ -2627,29 +3021,21 @@ document.getElementById("progressText").textContent=`${done} of ${total} preset 
 /* WORKOUT HISTORY */
 
 function historyCard(session){
-
-const card=document.createElement("div");card.className="history-card";
-
-let html=`<div class="history-title">${escapeHTML(session.workoutTitle)}</div>
-
-<div class="history-date">${formatDate(session.date)}</div>`;
-
-session.exercises.forEach(ex=>{
-
-html+=`<div class="history-exercise"><strong>${escapeHTML(ex.name)}</strong>`;
-
-ex.sets.forEach(s=>{
-
-html+=`<div class="history-set">Set ${s.set}: ${s.weight!==""?s.weight+" lb":"—"} × ${s.reps!==""?s.reps+" reps":"—"}</div>`;
-
-});
-
-html+="</div>";
-
-});
-
-card.innerHTML=html;return card;
-
+const card=document.createElement("details");card.className="history-card prism-history-card";
+const sets=(session.exercises||[]).flatMap(ex=>ex.sets||[]);
+const volume=sets.reduce((total,set)=>total+Number(set.weight||0)*Number(set.reps||0),0);
+const summary=document.createElement("summary");
+const title=document.createElement("strong");title.textContent=session.workoutTitle||"Workout";
+const date=document.createElement("span");date.className="history-date";date.textContent=formatDate(session.date);
+const stats=document.createElement("span");stats.className="history-date";stats.textContent=`${session.exercises?.length||0} exercises · ${sets.length} sets · ${Math.round(volume).toLocaleString()} lb${session.durationMinutes?` · ${session.durationMinutes} min`:""}${session.recordIds?.length?` · ${session.recordIds.length} PR${session.recordIds.length>1?"s":""}`:""}`;
+summary.append(title,date,stats);card.appendChild(summary);
+for(const ex of session.exercises||[]){
+const group=document.createElement("div");group.className="history-exercise";
+const name=document.createElement("strong");name.textContent=ex.name||getExercise(ex.id)?.name||ex.id;group.appendChild(name);
+for(const set of ex.sets||[]){const row=document.createElement("div");row.className="history-set";row.textContent=`Set ${set.set}: ${set.weight} lb × ${set.reps} reps`;group.appendChild(row)}
+card.appendChild(group);
+}
+return card;
 }
 
 function formatDate(date){
@@ -2713,7 +3099,7 @@ const calorieText=ratios.length?`${Math.round(ratios.reduce((a,b)=>a+b,0)/ratios
 const weeks=new Map();for(const s of workoutHistory){const date=new Date(s.date);if(!Number.isNaN(date.getTime())){const key=weekStart(date);weeks.set(key,(weeks.get(key)||0)+1)}}
 let streak=0,weekDate=new Date();if((weeks.get(weekStart(weekDate))||0)<(target||1))weekDate.setDate(weekDate.getDate()-7);
 for(let i=0;i<52;i++){const key=weekStart(weekDate);if((weeks.get(key)||0)<(target||1))break;streak++;weekDate.setDate(weekDate.getDate()-7)}
-area.innerHTML=`<div class="card weekly-dashboard"><h3>Your week</h3><p class="small">${range} · ${target?`${Math.min(sessions.length,target)} of ${target} planned workouts`:"Your workouts at a glance"}</p>${target?`<div class="progress-bar" role="progressbar" aria-label="Weekly workout goal" aria-valuemin="0" aria-valuemax="${target}" aria-valuenow="${Math.min(sessions.length,target)}"><div class="progress-fill" style="width:${Math.min(100,sessions.length/target*100)}%"></div></div>`:""}<div class="stat-grid"><div class="stat-card"><div class="stat-number">${sessions.length}${target?`/${target}`:""}</div><div class="stat-label">Workouts</div></div><div class="stat-card"><div class="stat-number">${sets}</div><div class="stat-label">Sets logged</div></div><div class="stat-card"><div class="stat-number">${prs}</div><div class="stat-label">Weight records</div></div><div class="stat-card"><div class="stat-number">${weightChange===null?"—":`${weightChange>0?"+":""}${weightChange.toFixed(1)}`}</div><div class="stat-label">Weight change (lb)</div></div></div><p class="small">${streak} ${streak===1?"week":"weeks"} reaching your workout goal · Calories: ${calorieText}.</p>${id==="weeklySummaryHome"?'<button class="dashboard-link" onclick="showOverallProgress()">See all progress →</button>':""}</div>`;
+area.innerHTML=`<div class="card weekly-dashboard"><h3>${id==="weeklySummaryHome"?"Weekly Progress":"Your week"}</h3><p class="small">${range} · ${target?`${Math.min(sessions.length,target)} of ${target} planned workouts`:"Your workouts at a glance"}</p>${target?`<div class="progress-bar" role="progressbar" aria-label="Weekly workout goal" aria-valuemin="0" aria-valuemax="${target}" aria-valuenow="${Math.min(sessions.length,target)}"><div class="progress-fill" style="width:${Math.min(100,sessions.length/target*100)}%"></div></div>`:""}<div class="stat-grid"><div class="stat-card"><div class="stat-number">${sessions.length}${target?`/${target}`:""}</div><div class="stat-label">Workouts</div></div><div class="stat-card"><div class="stat-number">${sets}</div><div class="stat-label">Sets logged</div></div><div class="stat-card"><div class="stat-number">${prs}</div><div class="stat-label">Weight records</div></div><div class="stat-card"><div class="stat-number">${weightChange===null?"—":`${weightChange>0?"+":""}${weightChange.toFixed(1)}`}</div><div class="stat-label">Weight change (lb)</div></div></div><p class="small">${streak} ${streak===1?"week":"weeks"} reaching your workout goal · Calories: ${calorieText}.</p>${id==="weeklySummaryHome"?'<button class="dashboard-link" onclick="showOverallProgress()">See all progress →</button>':""}</div>`;
 }
 
 /* OVERALL PROGRESS */
@@ -2723,7 +3109,25 @@ function showOverallProgress(){
 showScreen("overallProgressScreen");setBottomNav("Progress");
 
 renderOverallProgress();
+renderPrismPeriodStats();
 
+}
+let prismProgressPeriod="week";
+function setPrismProgressPeriod(period){
+if(!["week","month","year"].includes(period))return;
+prismProgressPeriod=period;
+document.querySelectorAll("[data-period]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.period===period)));
+renderPrismPeriodStats();
+}
+function renderPrismPeriodStats(){
+const area=document.getElementById("prismPeriodStats");if(!area)return;
+const now=new Date(),start=prismProgressPeriod==="week"?new Date(weekStart(now)+"T00:00:00"):prismProgressPeriod==="month"?new Date(now.getFullYear(),now.getMonth(),1):new Date(now.getFullYear(),0,1);
+const sessions=workoutHistory.filter(s=>{const date=new Date(s.date);return !Number.isNaN(date.getTime())&&date>=start&&date<=now});
+const sets=sessions.flatMap(s=>(s.exercises||[]).flatMap(ex=>ex.sets||[])).filter(set=>Number(set.weight)>0&&Number(set.reps)>0);
+const volume=sets.reduce((sum,set)=>sum+Number(set.weight)*Number(set.reps),0);
+const days=new Set(sessions.map(sessionDay).filter(Boolean)).size;
+const muscleVolume={};for(const session of sessions)for(const ex of session.exercises||[]){const muscle=getExercise(ex.id)?.muscle||"Other";muscleVolume[muscle]=(muscleVolume[muscle]||0)+(ex.sets||[]).reduce((sum,set)=>sum+Number(set.weight||0)*Number(set.reps||0),0)}
+area.innerHTML=`<div class="stat-grid"><div class="stat-card"><div class="stat-number">${sessions.length}</div><div class="stat-label">Workouts</div></div><div class="stat-card"><div class="stat-number">${sets.length}</div><div class="stat-label">Sets</div></div><div class="stat-card"><div class="stat-number">${Math.round(volume).toLocaleString()}</div><div class="stat-label">Volume (lb)</div></div><div class="stat-card"><div class="stat-number">${days}</div><div class="stat-label">Training days</div></div></div><div class="card"><h3>Muscle group volume</h3>${Object.entries(muscleVolume).sort((a,b)=>b[1]-a[1]).map(([name,amount])=>`<div class="prism-volume-row"><span>${escapeHTML(name)}</span><span>${Math.round(amount).toLocaleString()} lb</span><div class="progress-bar"><div class="progress-fill" style="width:${volume?Math.min(100,amount/volume*100):0}%"></div></div></div>`).join("")||'<p class="small">Log a workout to see muscle group volume.</p>'}</div>`;
 }
 
 function renderOverallProgress(){
@@ -3091,22 +3495,34 @@ workoutHistory.forEach(s=>area.appendChild(historyCard(s)));
 
 /* TIMER */
 
-let workoutRestEndsAt=Number(sessionStorage.getItem("workoutRestEndsAt"))||0,workoutRestInterval=null;
+let workoutRestEndsAt=Number(localStorage.getItem("prismRestEndsAtV1")||sessionStorage.getItem("workoutRestEndsAt"))||0,workoutRestInterval=null;
+function showPrismRestTimer(){if(!activeWorkoutKey||activeWorkoutKey==="library")return;showScreen("prismRestScreen");setBottomNav("Workout");updateWorkoutRestDisplay()}
+function returnFromPrismRest(){showScreen("workoutScreen");setBottomNav("Workout");updateWorkoutRestDisplay()}
+function extendPrismRest(seconds){
+workoutRestEndsAt=Math.max(Date.now(),workoutRestEndsAt||0)+seconds*1000;
+sessionStorage.setItem("workoutRestEndsAt",String(workoutRestEndsAt));localStorage.setItem("prismRestEndsAtV1",String(workoutRestEndsAt));
+clearInterval(workoutRestInterval);workoutRestInterval=setInterval(updateWorkoutRestDisplay,1000);
+document.getElementById("workoutRestStatus").textContent="Rest timer running.";updateWorkoutRestDisplay();
+}
 function renderWorkoutRest(){
 const choices=document.getElementById("workoutRestPresets");choices.replaceChildren();
 for(const seconds of [60,90,120,180]){const button=document.createElement("button");button.textContent=`${Math.floor(seconds/60)} min${seconds%60?" 30 sec":""}`;button.setAttribute("aria-pressed",String(tracking.restSeconds===seconds));button.onclick=()=>{tracking.restSeconds=seconds;saveTracking();renderWorkoutRest()};choices.appendChild(button)}
 if(workoutRestEndsAt>Date.now()){
 document.getElementById("workoutRestStatus").textContent="Rest timer running. You can leave this screen and return to it.";
 clearInterval(workoutRestInterval);workoutRestInterval=setInterval(updateWorkoutRestDisplay,1000);
-}else if(workoutRestEndsAt){workoutRestEndsAt=0;sessionStorage.removeItem("workoutRestEndsAt")}
+}else if(workoutRestEndsAt){workoutRestEndsAt=0;sessionStorage.removeItem("workoutRestEndsAt");localStorage.removeItem("prismRestEndsAtV1")}
 updateWorkoutRestDisplay();
 }
 function updateWorkoutRestDisplay(){
 const remaining=workoutRestEndsAt?Math.max(0,Math.ceil((workoutRestEndsAt-Date.now())/1000)):tracking.restSeconds;
 document.getElementById("workoutRestDisplay").textContent=formatTimer(remaining);
+const large=document.getElementById("prismRestLarge");if(large)large.textContent=formatTimer(remaining);
+const ring=document.getElementById("prismRestRing");if(ring)ring.style.setProperty("--rest-progress",`${Math.min(100,Math.max(0,remaining/(tracking.restSeconds||90)*100))}%`);
+const next=document.getElementById("prismRestNext");if(next&&activeWorkoutExerciseIds?.length)next.textContent=`Next: ${getExercise(activeWorkoutExerciseIds[Math.min(activeWorkoutExerciseIds.length-1,(readPrismActiveWorkout()?.index||0)+1)])?.name||"Your next set"}`;
 if(workoutRestEndsAt&&remaining===0){
 clearInterval(workoutRestInterval);workoutRestInterval=null;workoutRestEndsAt=0;
 sessionStorage.removeItem("workoutRestEndsAt");
+localStorage.removeItem("prismRestEndsAtV1");
 document.getElementById("workoutRestStatus").textContent="Rest complete. Ready for the next set.";
 if(navigator.vibrate)navigator.vibrate([180,100,180]);
 if(typeof Notification!=="undefined"&&Notification.permission==="granted"&&document.visibilityState!=="visible"){
@@ -3117,10 +3533,11 @@ try{new Notification("Rest complete",{body:"Ready for your next set."})}catch{}
 function startWorkoutRest(){
 clearInterval(workoutRestInterval);workoutRestEndsAt=Date.now()+tracking.restSeconds*1000;
 sessionStorage.setItem("workoutRestEndsAt",String(workoutRestEndsAt));
+localStorage.setItem("prismRestEndsAtV1",String(workoutRestEndsAt));
 document.getElementById("workoutRestStatus").textContent="Rest timer running.";
 updateWorkoutRestDisplay();workoutRestInterval=setInterval(updateWorkoutRestDisplay,1000);
 }
-function skipWorkoutRest(){clearInterval(workoutRestInterval);workoutRestInterval=null;workoutRestEndsAt=0;sessionStorage.removeItem("workoutRestEndsAt");document.getElementById("workoutRestStatus").textContent="Rest skipped.";updateWorkoutRestDisplay()}
+function skipWorkoutRest(){clearInterval(workoutRestInterval);workoutRestInterval=null;workoutRestEndsAt=0;sessionStorage.removeItem("workoutRestEndsAt");localStorage.removeItem("prismRestEndsAtV1");document.getElementById("workoutRestStatus").textContent="Rest skipped.";updateWorkoutRestDisplay()}
 document.addEventListener("visibilitychange",()=>{if(workoutRestEndsAt&&document.getElementById("workoutRestDisplay"))updateWorkoutRestDisplay()});
 async function enableRestAlerts(){
 const status=document.getElementById("workoutRestStatus");
@@ -3246,12 +3663,12 @@ return muscleFigure(side,{[ex.muscle]:1});
 
 function libraryPreview(ex){
 return `<div class="library-preview">
-<div class="exercise-mini-map" aria-hidden="true">${exerciseMuscleDiagram(ex)}</div>
+${ex.image?`<img class="prism-library-thumb" src="${escapeHTML(ex.image)}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div class="exercise-mini-map" style="display:none" aria-hidden="true">${exerciseMuscleDiagram(ex)}</div>`:`<div class="exercise-mini-map" aria-hidden="true">${exerciseMuscleDiagram(ex)}</div>`}
 <div class="library-preview-text"><div class="library-name">${escapeHTML(ex.name)}</div>
-<span class="badge">Primary muscle: ${escapeHTML(ex.muscle)}</span></div></div>`;
+<span class="badge">${escapeHTML(ex.muscle)}${prismEquipment(ex)?` · ${prismEquipment(ex)}`:""}</span></div></div>`;
 }
 
-function showLibrary(){showScreen("libraryScreen");setBottomNav("Home");renderLibrary()}
+function showLibrary(){showScreen("libraryScreen");setBottomNav("Workouts");renderLibrary()}
 
 function renderLibrary(){
 
@@ -3275,7 +3692,7 @@ const row=document.createElement("div");row.className="library-item";
 
 row.innerHTML=`${libraryPreview(ex)}<button class="add-small">View</button>`;
 
-row.querySelector("button").onclick=()=>viewLibraryExercise(ex.id);
+row.querySelector("button").onclick=()=>showExerciseInfo(ex.id,"libraryScreen");
 
 list.appendChild(row);
 
@@ -3321,7 +3738,7 @@ document.getElementById("customWorkoutName").value="";
 
 document.getElementById("builderSearch").value="";
 
-showScreen("builderScreen");setBottomNav("Home");
+showScreen("builderScreen");setBottomNav("Workouts");
 
 renderBuilderSelected();renderBuilderLibrary();
 

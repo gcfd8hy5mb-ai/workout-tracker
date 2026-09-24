@@ -9,6 +9,20 @@ SERVICE_WORKER = (ROOT / "sw.js").read_text(encoding="utf-8")
 
 
 class WorkoutTrackerTests(unittest.TestCase):
+    def test_prism_navigation_and_branding_keep_existing_data_keys(self):
+        self.assertIn('<title>PRISM · Train · Track · Progress</title>', INDEX)
+        for tab in ('Home', 'Workouts', 'Progress', 'History', 'Profile'):
+            self.assertIn(f'data-prism-tab="{tab}"', INDEX)
+        for screen in ('home', 'workoutsScreen', 'workoutDetailScreen', 'workoutScreen', 'overallProgressScreen', 'globalHistoryScreen', 'profileScreen', 'prismRestScreen'):
+            self.assertIn(f'id="{screen}"', INDEX)
+        for key in ('completedExercisesV5', 'customWorkoutsV5', 'setHistoryV5', 'previousHistoryV51', 'workoutHistoryV52', 'overloadTargetsV1', 'workoutGoalsV1', 'dailyTrackingV1'):
+            self.assertIn(f'localStorage.getItem("{key}"', INDEX)
+        self.assertIn('localStorage.setItem("prismActiveWorkoutV1"', INDEX)
+        self.assertIn('function resumePrismWorkout()', INDEX)
+        self.assertIn('localStorage.removeItem("prismActiveWorkoutV1")', INDEX)
+        self.assertIn('env(safe-area-inset-bottom)', INDEX)
+        self.assertIn('"display": "standalone"', (ROOT / 'manifest.json').read_text(encoding='utf-8'))
+
     def test_custom_builder_has_broad_documented_exercise_choices(self):
         library = INDEX.split('const exerciseLibrary=[', 1)[1].split('/* PRESETS */', 1)[0]
         entries = re.findall(r'\{id:"([^"]+)",name:"([^"]+)",muscle:"([^"]+)"(.*?)\}(?=,|\s*\])', library, re.S)
@@ -141,7 +155,7 @@ class WorkoutTrackerTests(unittest.TestCase):
         self.assertIn('id="headerToday" class="header-today" onclick="goHome()"', INDEX)
         self.assertIn('headerToday").classList.toggle("hidden",id==="setupScreen")', INDEX)
         self.assertIn('--header-height:72px', INDEX)
-        self.assertIn('class="menu-version">Version 9.3</small>', INDEX)
+        self.assertIn('class="menu-version">PRISM · Version 10.0</small>', INDEX)
         self.assertIn('id="sideMenu" class="side-menu" aria-label="Main menu" aria-hidden="true" inert', INDEX)
         self.assertIn('.side-menu.open{transform:translateX(0);visibility:visible}', INDEX)
         self.assertIn('event.key==="Escape"', INDEX)
@@ -160,8 +174,8 @@ class WorkoutTrackerTests(unittest.TestCase):
 
     def test_progress_and_release_version_are_not_animated(self):
         self.assertIn(".progress-fill{height:100%;width:0;background:#111;transition:none}", INDEX)
-        self.assertIn('class="menu-version">Version 9.3</small>', INDEX)
-        self.assertIn('const CACHE_NAME = "workout-tracker-v9.3";', SERVICE_WORKER)
+        self.assertIn('class="menu-version">PRISM · Version 10.0</small>', INDEX)
+        self.assertIn('const CACHE_NAME = "prism-v10.0";', SERVICE_WORKER)
 
     def test_saved_data_storage_keys_remain_compatible(self):
         for storage_key in ("completedExercisesV5", "customWorkoutsV5", "workoutHistoryV52", "overloadTargetsV1", "workoutGoalsV1"):

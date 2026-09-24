@@ -30,7 +30,8 @@ getExercise:()=>({name:'Chest press'}),localDay:()=> '2026-09-24',
 progressionSuggestion:()=>({weight:185}),overloadKey:id=>`preset-day1-${id}`,
 activeWorkoutCompletionIds:()=>['preset-day1-press'],saveTracking:()=>{},skipWorkoutRest:()=>{},
 updateProgress:()=>{},showWorkoutSummary:s=>saved.push(s),alert:msg=>{throw Error(msg)},
-localStorage:{setItem:(key,value)=>storage.set(key,value)}
+readPrismActiveWorkout:()=>null,
+localStorage:{setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)}
 };
 vm.createContext(finishContext);
 const finishStart=source.indexOf('function finishWorkout(){');
@@ -74,7 +75,17 @@ safeId:id=>id,saveSet:(_,__,value)=>{chosen=value},refreshComparison:()=>{},clos
 vm.createContext(pickerContext);vm.runInContext(source.slice(pickerStart,pickerEnd),pickerContext);
 pickerContext.confirmPicker();assert.equal(chosen,185);assert.equal(closed,1);
 direct.value='0';chosen=null;pickerContext.confirmPicker();assert.equal(chosen,null,'zero weight is not a valid logged set');
+const restoreStart=source.indexOf('function readPrismActiveWorkout(){'),restoreEnd=source.indexOf('function resumePrismWorkout(){',restoreStart);
+assert(restoreStart>0&&restoreEnd>restoreStart);
+let activeValue=JSON.stringify({key:'preset-day1',title:'Chest day',ids:['press'],index:1});
+const restoreContext={localStorage:{getItem:()=>activeValue},getExercise:id=>id==='press'?{id}:null};
+vm.createContext(restoreContext);vm.runInContext(source.slice(restoreStart,restoreEnd),restoreContext);
+assert.equal(restoreContext.readPrismActiveWorkout().index,1);
+activeValue=JSON.stringify({key:'preset-day1',ids:['unknown']});
+assert.equal(restoreContext.readPrismActiveWorkout(),null,'invalid saved exercises should not reopen a broken workout');
+assert.match(source,/localStorage\.setItem\("prismRestEndsAtV1"/);
 console.log('Smart progression: increase, repeat, and deload passed');
 console.log('Workout completion: saved summary, targets, and incomplete-set guard passed');
 console.log('Weekly dashboard: current-week tally and progress link passed');
 console.log('Direct set entry: accepts valid weight and rejects zero passed');
+console.log('Active workout and rest timer persistence passed');
