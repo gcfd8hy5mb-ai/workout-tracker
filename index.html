@@ -936,6 +936,34 @@ body:has(#workoutScreen:not(.hidden)) .prism-bottom-nav,body:has(#prismRestScree
 .picker-sheet .picker-done{color:var(--blue)}
 .side-menu :is(.menu-link,.menu-group,.menu-version){color:var(--text)}
 .side-menu .menu-link.active{color:var(--blue)}
+/* PRISM navigation drawer. The five-tab bottom navigation remains independent. */
+#menuScrim{background:rgba(2,7,14,.72);transition:opacity .22s ease,visibility .22s}
+body.prism-drawer-open{overflow:hidden}
+#sideMenu{width:min(84vw,360px);height:100dvh;max-height:100dvh;padding:calc(15px + env(safe-area-inset-top)) 15px calc(18px + env(safe-area-inset-bottom));background:linear-gradient(160deg,#142131,#0e1826 68%);border-right:1px solid #34475e;box-shadow:14px 0 38px rgba(0,0,0,.34);overscroll-behavior:contain;-webkit-overflow-scrolling:touch;transition:transform .23s ease,visibility .23s}
+#sideMenu .menu-head{display:flex;align-items:center;gap:11px;position:sticky;top:0;z-index:1;margin:0 -3px 13px;padding:5px 3px 15px;background:#142131;border-bottom:1px solid var(--line)}
+#sideMenu .menu-brand{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+#sideMenu .menu-brand strong{font-size:20px;letter-spacing:.1em;font-weight:800;line-height:1.1}
+#sideMenu .menu-brand small{font-size:11px;letter-spacing:.035em;color:var(--sub)}
+#sideMenu .menu-brand-mark{width:16px;height:16px;margin-right:9px;display:inline-block;vertical-align:-1px;border:2px solid var(--blue);border-radius:4px;transform:rotate(45deg)}
+#sideMenu .menu-close{flex:none;display:grid;place-items:center;width:44px;height:44px;background:#1c2b3d;border:1px solid #364960;border-radius:13px;color:var(--text);font-size:25px;line-height:1}
+#sideMenu .drawer-section{margin:0 0 7px}
+#sideMenu .drawer-section+.drawer-section{border-top:1px solid #2b3b4e;padding-top:9px}
+#sideMenu .menu-group{margin:9px 11px 5px;padding:0;font-size:11px;font-weight:760;line-height:24px;letter-spacing:.13em;color:#8499b1}
+#sideMenu .menu-group-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;margin:0;padding:9px 11px;min-height:42px;border:0;background:transparent;text-align:left;font:inherit;font-size:11px;font-weight:760;letter-spacing:.13em;color:#8499b1}
+#sideMenu .menu-group-toggle .drawer-chevron{width:16px;height:16px;transition:transform .18s ease}
+#sideMenu .menu-group-toggle[aria-expanded=true] .drawer-chevron{transform:rotate(90deg)}
+#sideMenu .drawer-section-body{display:grid;grid-template-rows:1fr;opacity:1;transition:grid-template-rows .18s ease,opacity .18s ease}
+#sideMenu .drawer-section-body.collapsed{grid-template-rows:0fr;opacity:0}
+#sideMenu .drawer-section-inner{min-height:0;overflow:hidden}
+#sideMenu .menu-link{width:100%;display:flex;align-items:center;gap:14px;min-height:48px;margin:2px 0;padding:9px 12px;border:1px solid transparent;border-radius:13px;background:transparent;color:#f3f7fc;text-align:left;font-size:15px;font-weight:560;line-height:1.2}
+#sideMenu .menu-link .menu-icon{flex:none;width:21px;height:21px;color:#afc2d6;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+#sideMenu .menu-link.active{background:#163550;border-color:#28557b;color:#69baff;font-weight:690}
+#sideMenu .menu-link.active .menu-icon{color:#69baff}
+#sideMenu .menu-link:active,#sideMenu .menu-close:active{background:#234563}
+#sideMenu .menu-link:focus-visible,#sideMenu .menu-group-toggle:focus-visible,#sideMenu .menu-close:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+#sideMenu .menu-version{margin:15px 2px 0;padding:16px 11px 0;border-top:1px solid var(--line);color:#8da0b6;font-size:12px}
+#profileSettings,#dataBackupSection{scroll-margin-top:calc(var(--header-height) + 20px)}
+@media(prefers-reduced-motion:reduce){#sideMenu,#menuScrim,#sideMenu .drawer-section-body,#sideMenu .drawer-chevron{transition:none!important}}
 @media(max-width:420px){.container{padding:14px 12px 30px}.prism-metric{padding:12px}.prism-metric b{font-size:17px}.prism-bottom-nav button{font-size:9px}.prism-detail-hero .exercise-mini-map{width:75px}}
 @media(max-width:600px){body:has(input:focus) .prism-bottom-nav{display:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
@@ -1034,7 +1062,9 @@ Exercise Library
 
 <section id="profileScreen" class="hidden"><div class="prism-section-head"><div><span class="prism-eyebrow">YOUR SPACE</span><h2>Profile</h2></div></div><p class="small">Your goals, tracking and settings stay saved on this device.</p><div class="prism-profile-links">
 <button onclick="showTrackingGoals()">Goals & calorie targets <span>›</span></button><button onclick="showWeight()">Body weight <span>›</span></button><button onclick="showWater()">Water intake <span>›</span></button><button onclick="showFood()">Food tracking <span>›</span></button><button onclick="showWorkoutCalendar()">Workout calendar <span>›</span></button><button onclick="showPersonalRecords()">Personal records <span>›</span></button><button onclick="showMeasurements()">Measurements <span>›</span></button><button onclick="showProgressPhotos()">Private progress photos <span>›</span></button><button onclick="showManageWorkouts()">Manage workouts & data <span>›</span></button>
-</div><div class="card"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
+</div><div class="card" id="profileSettings"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
+
+<section id="helpScreen" class="hidden"><h2>Help &amp; Support</h2><div class="card"><h3>Workouts</h3><p class="small">Open a workout, enter weight and reps, and mark each set complete. Your active workout can be resumed from Home if you leave the app.</p></div><div class="card"><h3>Your saved data</h3><p class="small">Workouts and tracking are saved on this device. Download a backup before switching phones or clearing browser data.</p><button onclick="showDataBackup()">Open Data &amp; Backup</button></div><div class="card"><h3>Need more help?</h3><p class="small">Report an app issue through the project’s GitHub page. Please leave personal health information out of public issues.</p><a href="https://github.com/gcfd8hy5mb-ai/workout-tracker/issues" target="_blank" rel="noopener noreferrer">Open project support ↗</a></div></section>
 
 <section id="manageWorkoutScreen" class="hidden">
 <h2>Manage workouts</h2>
@@ -1047,7 +1077,7 @@ Exercise Library
 <button onclick="resetWorkoutData('progress')">Reset workout progress</button>
 <button onclick="resetWorkoutData('both')">Reset history and progress</button>
 </details>
-<div class="card"><h3>Back up your data</h3><p class="small">Download your workouts, tracking, measurements and private photos to a file. Photos stay on this device unless you save or share the backup yourself. Restore replaces data on this phone.</p>
+<div class="card" id="dataBackupSection"><h3>Back up your data</h3><p class="small">Download your workouts, tracking, measurements and private photos to a file. Photos stay on this device unless you save or share the backup yourself. Restore replaces data on this phone.</p>
 <div class="backup-actions"><button onclick="exportBackup()">Download backup</button><button onclick="document.getElementById('backupFile').click()">Restore backup</button><input id="backupFile" class="hidden" type="file" accept="application/json,.json" onchange="importBackup(event)"></div></div>
 </section>
 
@@ -1243,22 +1273,53 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 <div id="menuScrim" class="menu-scrim" onclick="closeMenu()"></div>
 <nav id="sideMenu" class="side-menu" aria-label="Main menu" aria-hidden="true" inert>
-<div class="menu-head"><span>Menu</span><button class="menu-close" onclick="closeMenu()" aria-label="Close menu">×</button></div>
-<button class="menu-link active" id="navHome" onclick="goHome()" aria-current="page">Home</button>
-<button class="menu-link" id="navWorkout" onclick="bottomWorkout()">Workout</button>
-<button class="menu-link" id="navManage" onclick="showManageWorkouts()">Manage workouts</button>
-<button class="menu-link" id="navProgress" onclick="showOverallProgress()">Progress</button>
-<button class="menu-link" id="navCalendar" onclick="showWorkoutCalendar()">Calendar</button>
-<button class="menu-link" id="navRecords" onclick="showPersonalRecords()">Records</button>
-<button class="menu-link" id="navMeasurements" onclick="showMeasurements()">Measurements</button>
-<button class="menu-link" id="navPhotos" onclick="showProgressPhotos()">Photos</button>
-<button class="menu-link" id="navHistory" onclick="showGlobalHistory()">History</button>
-<button class="menu-link" id="navTimer" onclick="showGlobalTimer()">Timer</button>
-<div class="menu-group">Daily tracking</div>
-<button class="menu-link" id="navWater" onclick="showWater()">Water</button>
-<button class="menu-link" id="navFood" onclick="showFood()">Food</button>
-<button class="menu-link" id="navWeight" onclick="showWeight()">Weight</button>
-<button class="menu-link" id="navGoals" onclick="showTrackingGoals()">Goals</button>
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+<symbol id="drawer-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10H3zM9 20v-7h6v7"/></symbol>
+<symbol id="drawer-workout" viewBox="0 0 24 24"><path d="M3 9v6m3-8v10m12-10v10m3-8v6M6 12h12"/></symbol>
+<symbol id="drawer-book" viewBox="0 0 24 24"><path d="M12 5c-3-2-6-2-9-1v15c3-1 6-1 9 1 3-2 6-2 9-1V4c-3-1-6-1-9 1Zm0 0v15"/></symbol>
+<symbol id="drawer-manage" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16M8 4v4m8 2v4m-5 2v4"/></symbol>
+<symbol id="drawer-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 13V9m0 4 3 2M9 2h6m4 3 2-2"/></symbol>
+<symbol id="drawer-progress" viewBox="0 0 24 24"><path d="M3 20h18M5 17v-4m5 4V9m5 8V5m5 12v-7"/></symbol>
+<symbol id="drawer-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4m8-4v4m-8 8h3"/></symbol>
+<symbol id="drawer-records" viewBox="0 0 24 24"><path d="M7 3h10v4a5 5 0 0 1-10 0V3ZM7 5H4v2a4 4 0 0 0 4 4m9-6h3v2a4 4 0 0 1-4 4m-4 1v5m-5 4h10m-8-4h6v4H9z"/></symbol>
+<symbol id="drawer-measure" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 7v4m4-4v3m4-3v4m4-4v3"/></symbol>
+<symbol id="drawer-photo" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1"/><path d="m4 17 5-5 3 3 3-4 5 6"/></symbol>
+<symbol id="drawer-water" viewBox="0 0 24 24"><path d="M12 3c-3 5-7 9-7 13a7 7 0 0 0 14 0c0-4-4-8-7-13Z"/></symbol>
+<symbol id="drawer-food" viewBox="0 0 24 24"><path d="M5 3v8m3-8v8m3-8v8M8 11v10m10-18c-3 2-4 6-4 10h4v8m0-18v10"/></symbol>
+<symbol id="drawer-weight" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 10a4 4 0 0 1 8 0m-4 0v3"/></symbol>
+<symbol id="drawer-goals" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+<symbol id="drawer-profile" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 21c0-4 3-6 7-6s7 2 7 6"/></symbol>
+<symbol id="drawer-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M10 2h4l1 3 2 1 3-1 2 4-2 2v2l2 2-2 4-3-1-2 1-1 3h-4l-1-3-2-1-3 1-2-4 2-2v-2L2 9l2-4 3 1 2-1z"/></symbol>
+<symbol id="drawer-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.9c-1.1.8-1.7 1.3-1.7 2.6m0 3h.01"/></symbol>
+<symbol id="drawer-backup" viewBox="0 0 24 24"><path d="M7 18a5 5 0 0 1-1-10 7 7 0 0 1 13 2 4 4 0 0 1-1 8H7Zm5-7v9m-3-3 3 3 3-3"/></symbol>
+</svg>
+<div class="menu-head"><div class="menu-brand"><strong><span class="menu-brand-mark" aria-hidden="true"></span>PRISM</strong><small>Train · Track · Progress</small></div><button type="button" class="menu-close" onclick="closeMenu()" aria-label="Close menu">×</button></div>
+<section class="drawer-section" aria-label="Home"><div class="menu-group">HOME</div><button type="button" class="menu-link active" id="navHome" onclick="goHome()" aria-current="page"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-home"/></svg>Home</button></section>
+<section class="drawer-section" aria-label="Training"><button type="button" class="menu-group-toggle" aria-expanded="true" aria-controls="menuTrainingItems" onclick="toggleMenuSection('Training')">TRAINING <svg class="drawer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button><div class="drawer-section-body" id="menuTrainingItems"><div class="drawer-section-inner">
+<button type="button" class="menu-link" id="navWorkout" onclick="showWorkouts()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-workout"/></svg>Workouts</button>
+<button type="button" class="menu-link" id="navLibrary" onclick="showLibrary()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-book"/></svg>Exercise Library</button>
+<button type="button" class="menu-link" id="navManage" onclick="showManageWorkouts()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-manage"/></svg>Manage Workouts</button>
+<button type="button" class="menu-link" id="navTimer" onclick="showGlobalTimer()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-timer"/></svg>Timer</button>
+</div></div></section>
+<section class="drawer-section" aria-label="Progress"><button type="button" class="menu-group-toggle" aria-expanded="true" aria-controls="menuProgressItems" onclick="toggleMenuSection('Progress')">PROGRESS <svg class="drawer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button><div class="drawer-section-body" id="menuProgressItems"><div class="drawer-section-inner">
+<button type="button" class="menu-link" id="navProgress" onclick="showOverallProgress()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-progress"/></svg>Progress</button>
+<button type="button" class="menu-link" id="navCalendar" onclick="showWorkoutCalendar()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-calendar"/></svg>Calendar</button>
+<button type="button" class="menu-link" id="navRecords" onclick="showPersonalRecords()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-records"/></svg>Records</button>
+<button type="button" class="menu-link" id="navMeasurements" onclick="showMeasurements()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-measure"/></svg>Measurements</button>
+<button type="button" class="menu-link" id="navPhotos" onclick="showProgressPhotos()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-photo"/></svg>Photos</button>
+</div></div></section>
+<section class="drawer-section" aria-label="Daily Tracking"><button type="button" class="menu-group-toggle" aria-expanded="true" aria-controls="menuTrackingItems" onclick="toggleMenuSection('Tracking')">DAILY TRACKING <svg class="drawer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button><div class="drawer-section-body" id="menuTrackingItems"><div class="drawer-section-inner">
+<button type="button" class="menu-link" id="navWater" onclick="showWater()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-water"/></svg>Water</button>
+<button type="button" class="menu-link" id="navFood" onclick="showFood()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-food"/></svg>Food</button>
+<button type="button" class="menu-link" id="navWeight" onclick="showWeight()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-weight"/></svg>Weight</button>
+<button type="button" class="menu-link" id="navGoals" onclick="showTrackingGoals()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-goals"/></svg>Goals</button>
+</div></div></section>
+<section class="drawer-section" aria-label="Account"><div class="menu-group">ACCOUNT</div>
+<button type="button" class="menu-link" id="navProfile" onclick="showProfile()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-profile"/></svg>Profile</button>
+<button type="button" class="menu-link" id="navSettings" onclick="showSettings()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-settings"/></svg>Settings</button></section>
+<section class="drawer-section" aria-label="Other"><div class="menu-group">OTHER</div>
+<button type="button" class="menu-link" id="navHelp" onclick="showHelp()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-help"/></svg>Help &amp; Support</button>
+<button type="button" class="menu-link" id="navBackup" onclick="showDataBackup()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-backup"/></svg>Data &amp; Backup</button></section>
 <small class="menu-version">PRISM · Version 10.0</small>
 </nav>
 
@@ -1777,7 +1838,7 @@ function allScreens(){
 
 return ["home","workoutsScreen","workoutDetailScreen","exerciseInfoScreen","profileScreen","prismRestScreen","setupScreen","workoutScreen","libraryScreen","builderScreen",
 
-"overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen","calendarScreen","recordsScreen","measurementsScreen","photosScreen","completionScreen"];
+"overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen","calendarScreen","recordsScreen","measurementsScreen","photosScreen","completionScreen","helpScreen"];
 
 }
 
@@ -1798,12 +1859,13 @@ window.scrollTo(0,0);
 
 function setBottomNav(name){
 
-["Home","Workout","Manage","Progress","History","Timer","Water","Food","Weight","Goals","Calendar","Records","Measurements","Photos"].forEach(x=>{
+["Home","Workout","Library","Manage","Progress","History","Timer","Water","Food","Weight","Goals","Calendar","Records","Measurements","Photos","Profile","Settings","Help","Backup"].forEach(x=>{
 
 const button=document.getElementById("nav"+x);
 
-const isActive=x===name;
+const isActive=x===name||(name==="Workouts"&&x==="Workout");
 
+if(!button)return;
 button.classList.toggle("active",isActive);
 
 if(isActive)button.setAttribute("aria-current","page");
@@ -1812,7 +1874,7 @@ else button.removeAttribute("aria-current");
 
 });
 
-const section=({Home:"Home",Workout:"Workouts",Manage:"Workouts",Progress:"Progress",History:"History",Timer:"Profile",Water:"Profile",Food:"Profile",Weight:"Profile",Goals:"Profile",Calendar:"Progress",Records:"Progress",Measurements:"Profile",Photos:"Profile"})[name]||name;
+const section=({Home:"Home",Workout:"Workouts",Library:"Workouts",Manage:"Workouts",Progress:"Progress",History:"History",Timer:"Profile",Water:"Profile",Food:"Profile",Weight:"Profile",Goals:"Profile",Calendar:"Progress",Records:"Progress",Measurements:"Profile",Photos:"Profile",Settings:"Profile",Help:"Profile",Backup:"Profile"})[name]||name;
 document.querySelectorAll("#prismBottomNav [data-prism-tab]").forEach(button=>{
 if(button.dataset.prismTab===section)button.setAttribute("aria-current","page");
 else button.removeAttribute("aria-current");
@@ -1825,6 +1887,7 @@ const menu=document.getElementById("sideMenu");
 menu.inert=false;menu.setAttribute("aria-hidden","false");menu.classList.add("open");
 document.getElementById("menuScrim").classList.add("open");
 document.getElementById("menuToggle").setAttribute("aria-expanded","true");
+document.body.classList.add("prism-drawer-open");
 menu.querySelector(".menu-close").focus();
 }
 function closeMenu(){
@@ -1834,8 +1897,36 @@ if(menu.contains(document.activeElement))document.getElementById("menuToggle").f
 menu.classList.remove("open");menu.inert=true;menu.setAttribute("aria-hidden","true");
 document.getElementById("menuScrim").classList.remove("open");
 document.getElementById("menuToggle").setAttribute("aria-expanded","false");
+document.body.classList.remove("prism-drawer-open");
 }
 document.addEventListener("keydown",event=>{if(event.key==="Escape")closeMenu()});
+
+const drawerSections=["Training","Progress","Tracking"];
+let drawerSectionState=(()=>{try{const value=JSON.parse(localStorage.getItem("prismDrawerSectionsV1")||"{}");return value&&typeof value==="object"&&!Array.isArray(value)?value:{}}catch{return {}}})();
+function syncMenuSection(name){
+if(!drawerSections.includes(name))return;
+const body=document.getElementById("menu"+name+"Items");
+const toggle=document.querySelector(`#sideMenu [aria-controls="menu${name}Items"]`);
+const expanded=drawerSectionState[name]!==false;
+body.classList.toggle("collapsed",!expanded);body.inert=!expanded;
+toggle.setAttribute("aria-expanded",String(expanded));
+}
+function toggleMenuSection(name){
+if(!drawerSections.includes(name))return;
+drawerSectionState[name]=drawerSectionState[name]===false;
+localStorage.setItem("prismDrawerSectionsV1",JSON.stringify(drawerSectionState));
+syncMenuSection(name);
+}
+drawerSections.forEach(syncMenuSection);
+let drawerTouchStart=null;
+const drawerElement=document.getElementById("sideMenu");
+drawerElement.addEventListener("touchstart",event=>{if(event.touches.length===1)drawerTouchStart={x:event.touches[0].clientX,y:event.touches[0].clientY}},{passive:true});
+drawerElement.addEventListener("touchend",event=>{
+if(!drawerTouchStart||!event.changedTouches.length)return;
+const dx=event.changedTouches[0].clientX-drawerTouchStart.x,dy=event.changedTouches[0].clientY-drawerTouchStart.y;
+drawerTouchStart=null;
+if(dx< -65&&Math.abs(dx)>Math.abs(dy)*1.3)closeMenu();
+},{passive:true});
 
 function escapeHTML(v){
 
@@ -2002,6 +2093,9 @@ return plans;
 }
 function showWorkouts(){showScreen("workoutsScreen");setBottomNav("Workouts");renderWorkoutBrowser()}
 function showProfile(){showScreen("profileScreen");setBottomNav("Profile")}
+function showSettings(){showProfile();setBottomNav("Settings");document.getElementById("profileSettings").scrollIntoView({block:"start"})}
+function showHelp(){showScreen("helpScreen");setBottomNav("Help")}
+function showDataBackup(){showManageWorkouts();setBottomNav("Backup");document.getElementById("dataBackupSection").scrollIntoView({block:"start"})}
 function setWorkoutBrowserFilter(filter){
 prismWorkoutBrowserFilter=filter;
 document.querySelectorAll("[data-browser-filter]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.browserFilter===filter)));
