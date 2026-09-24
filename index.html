@@ -82,7 +82,14 @@ font-size:17px;font-weight:650;padding:5px 0 14px
 
 }
 
-button{font-family:inherit}
+button{
+font-family:inherit;transition:transform .14s ease,filter .14s ease,background-color .18s ease,
+color .18s ease,box-shadow .18s ease
+}
+
+button:active{transform:scale(.99);filter:brightness(.97)}
+
+button:focus-visible{outline:3px solid rgba(0,122,255,.35);outline-offset:2px}
 
 .day-button,.action-button{
 
@@ -114,7 +121,7 @@ overflow:hidden;margin-top:10px
 
 }
 
-.progress-fill{height:100%;width:0;background:#111;transition:.3s}
+.progress-fill{height:100%;width:0;background:#111;transition:width .22s ease}
 
 .exercise{
 
@@ -206,15 +213,15 @@ border-radius:8px;font-size:12px;font-weight:750
 
 .compare.new{background:#eee;color:#555}
 
-.complete{
+.workout-complete{
 
 width:100%;border:0;background:#111;color:white;border-radius:11px;
 
-padding:13px;font-weight:700;font-size:15px;margin-top:12px
+padding:14px;font-weight:700;font-size:15px;margin:4px 0 12px
 
 }
 
-.complete.done{background:var(--green)}
+.workout-complete.done{background:var(--green)}
 
 .finish-workout{
 
@@ -522,6 +529,12 @@ height:52px;border-top:1px solid #bbb;border-bottom:1px solid #bbb
 
 }
 
+@media(prefers-reduced-motion:reduce){
+
+button,.progress-fill{transition:none}
+
+}
+
 </style>
 
 </head>
@@ -532,7 +545,7 @@ height:52px;border-top:1px solid #bbb;border-bottom:1px solid #bbb
 
 <h1>Workout Tracker</h1>
 
-<p>Version 5.2</p>
+<p>Version 6.0</p>
 
 </header>
 
@@ -597,6 +610,10 @@ Exercise Library
 <div id="workoutTabContent">
 
 <div id="exerciseList"></div>
+
+<button id="completeWorkoutButton" class="workout-complete" onclick="toggleWorkoutComplete()">
+Mark Workout Complete
+</button>
 
 <button id="finishWorkoutButton" class="finish-workout" onclick="finishWorkout()">Finish Workout</button>
 
@@ -1248,6 +1265,10 @@ d.onclick=()=>deleteCustomWorkout(activeCustomIndex);list.appendChild(d);
 
 document.getElementById("finishWorkoutButton").classList.remove("hidden");
 
+document.getElementById("completeWorkoutButton").classList.remove("hidden");
+
+updateWorkoutCompleteButton();
+
 showWorkoutTab("workout");
 
 }
@@ -1306,8 +1327,6 @@ const card=document.createElement("div");
 
 card.className="exercise";
 
-const completed=completedExercises.includes(unique);
-
 card.innerHTML=`
 
 <div class="exercise-header" onclick="toggleDetails('${safeId(unique)}')">
@@ -1349,14 +1368,6 @@ onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
 <div class="small">Tap Weight or Reps and scroll to select.</div>
 
 ${createSetRows(unique)}
-
-<button class="complete ${completed?"done":""}"
-
-onclick="toggleComplete('${escapeAttribute(unique)}',this)">
-
-${completed?"✓ Completed":"Mark Exercise Complete"}
-
-</button>
 
 </div>
 
@@ -1676,23 +1687,49 @@ goHome();
 
 }
 
-/* COMPLETE */
+/* WORKOUT COMPLETION */
 
-function toggleComplete(id,button){
+function activeWorkoutCompletionIds(){
 
-if(completedExercises.includes(id)){
+return activeWorkoutExerciseIds.map(id=>`${activeWorkoutKey}-${id}`);
 
-completedExercises=completedExercises.filter(x=>x!==id);
+}
 
-button.textContent="Mark Exercise Complete";button.classList.remove("done");
+function updateWorkoutCompleteButton(){
+
+const button=document.getElementById("completeWorkoutButton");
+
+const ids=activeWorkoutCompletionIds();
+
+const completed=ids.length>0&&ids.every(id=>completedExercises.includes(id));
+
+button.textContent=completed?"✓ Workout Complete":"Mark Workout Complete";
+
+button.classList.toggle("done",completed);
+
+button.setAttribute("aria-pressed",String(completed));
+
+}
+
+function toggleWorkoutComplete(){
+
+const ids=activeWorkoutCompletionIds();
+
+const completed=ids.length>0&&ids.every(id=>completedExercises.includes(id));
+
+if(completed){
+
+completedExercises=completedExercises.filter(id=>!ids.includes(id));
 
 }else{
 
-completedExercises.push(id);button.textContent="✓ Completed";button.classList.add("done");
+completedExercises=[...new Set([...completedExercises,...ids])];
 
 }
 
 localStorage.setItem("completedExercisesV5",JSON.stringify(completedExercises));
+
+updateWorkoutCompleteButton();
 
 updateProgress();
 
@@ -2126,6 +2163,8 @@ list.appendChild(card);card.querySelector(".details").classList.add("open");
 
 document.getElementById("finishWorkoutButton").classList.add("hidden");
 
+document.getElementById("completeWorkoutButton").classList.add("hidden");
+
 showWorkoutTab("workout");
 
 }
@@ -2257,6 +2296,12 @@ goHome();
 renderHome();
 
 updateProgress();
+
+if("serviceWorker" in navigator){
+
+window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
+
+}
 
 </script>
 
