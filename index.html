@@ -480,6 +480,12 @@ padding:13px;font-size:15px;font-weight:700;margin-top:8px
 .today-card{margin-bottom:16px}
 .today-card h2{margin:0 0 8px;font-size:22px}
 .today-card p{margin:6px 0;color:#222}
+.today-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 16px}
+.today-metric{min-width:0;padding:12px;border:1px solid #e5e5e8;border-radius:14px;background:#fafafa}
+.today-metric strong{display:block;font-size:14px;font-weight:600}
+.today-metric span{display:block;font-size:17px;margin-top:6px;overflow-wrap:anywhere}
+.today-metric small{display:block;color:#555;line-height:1.35;margin-top:4px}
+.today-metric button{margin-top:6px;min-height:44px}
 .today-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
 .today-actions button,.tracking-shortcut{min-height:44px;padding:10px 14px;border:1px solid #dedee3;border-radius:12px;background:#f7f7f9;color:#111;font:inherit;font-weight:550}
 .tracker-form input[type="date"]{max-width:260px}
@@ -647,7 +653,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 8.2</p>
+<p>Version 8.3</p>
 
 </header>
 
@@ -1531,6 +1537,24 @@ document.getElementById("homeProgressCard").classList.toggle("hidden",!workoutGo
 function renderTodayDashboard(){
 const area=document.getElementById("todayDashboard");area.replaceChildren();
 const heading=document.createElement("h2");heading.textContent="Today";area.appendChild(heading);
+const day=localDay();
+const water=tracking.water.filter(entry=>entry.day===day).reduce((sum,entry)=>sum+Number(entry.amount||0),0);
+const food=tracking.food.filter(entry=>entry.day===day).reduce((sum,entry)=>sum+Number(entry.calories||0),0);
+const estimate=estimatedCalorieGoal({age:tracking.calorieAge,feet:tracking.calorieFeet,inches:tracking.calorieInches,equation:tracking.calorieEquation,activity:tracking.calorieActivity});
+const target=tracking.calorieGoal||estimate;
+const metrics=document.createElement("div");metrics.className="today-metrics";
+for(const [title,value,detail] of [
+["Water intake",`${formatWater(water)} / ${formatWater(tracking.waterGoal)}`,"Today's total / daily goal"],
+[tracking.calorieGoal?"Calorie target":"Suggested calorie intake",target?`${target.toLocaleString()} cal / day`:"Set up your target",target?`${food.toLocaleString()} cal logged today${!tracking.calorieGoal?" · estimate":""}`:"Add weight and details in Goals"]
+]){
+const card=document.createElement("div");card.className="today-metric";
+const label=document.createElement("strong");label.textContent=title;card.appendChild(label);
+const number=document.createElement("span");number.textContent=value;card.appendChild(number);
+const caption=document.createElement("small");caption.textContent=detail;card.appendChild(caption);
+if(!target&&title==="Suggested calorie intake"){
+const setup=document.createElement("button");setup.textContent="Set up";setup.onclick=showTrackingGoals;card.appendChild(setup);
+}metrics.appendChild(card)
+}area.appendChild(metrics);
 const plans=workoutGoals&&!workoutGoals.skipped?
 (workoutGoals.basic?Object.entries(presetWorkouts).map(([key,day])=>({key:"preset-"+key,title:day.title,open:()=>openPresetWorkout(key)})):
 suggestedWorkouts(workoutGoals).map((day,index)=>({key:suggestedWorkoutKey(index),title:day.title,open:()=>openSuggestedWorkout(index)}))):[];
@@ -1542,11 +1566,6 @@ const label=document.createElement("p");label.textContent=`Next workout: ${next.
 const actions=document.createElement("div");actions.className="today-actions";
 const start=document.createElement("button");start.textContent="Open workout";start.onclick=next.open;actions.appendChild(start);area.appendChild(actions);
 }else{const note=document.createElement("p");note.textContent="Choose a workout plan to see your next session here.";area.appendChild(note)}
-const day=localDay();
-const water=tracking.water.filter(entry=>entry.day===day).reduce((sum,entry)=>sum+Number(entry.amount||0),0);
-const food=tracking.food.filter(entry=>entry.day===day).reduce((sum,entry)=>sum+Number(entry.calories||0),0);
-const summary=document.createElement("p");summary.textContent=`Water: ${formatWater(water)} of ${formatWater(tracking.waterGoal)} · Food: ${food} calories${tracking.calorieGoal?` of ${tracking.calorieGoal}`:""}`;
-area.appendChild(summary);
 const quick=document.createElement("div");quick.className="today-actions";
 for(const [label,action] of [["Log water",showWater],["Log food",showFood]]){
 const button=document.createElement("button");button.textContent=label;button.onclick=action;quick.appendChild(button)
@@ -2886,27 +2905,32 @@ document.getElementById("useCalorieSuggestion").classList.add("hidden");
 }
 function calculateCalorieGoal(event){
 event.preventDefault();
-const latest=tracking.weight.slice().sort((a,b)=>b.day.localeCompare(a.day))[0];
 const status=document.getElementById("calorieSuggestion");
-if(!latest||!workoutGoals||workoutGoals.skipped){status.textContent="Add your weight and select a workout goal first.";return}
 const age=Number(document.getElementById("calorieAge").value);
 const feet=Number(document.getElementById("calorieFeet").value);
 const inches=Number(document.getElementById("calorieInches").value);
 const equation=document.getElementById("calorieEquation").value;
 const activity=Number(document.getElementById("calorieActivity").value);
-if(!Number.isInteger(age)||age<18||age>100||!Number.isInteger(feet)||feet<3||feet>7||!Number.isInteger(inches)||inches<0||inches>11||![1.2,1.4,1.6].includes(activity)||!["male","female","neutral"].includes(equation))return;
+suggestedCalories=estimatedCalorieGoal({age,feet,inches,equation,activity});
+if(!suggestedCalories){status.textContent="Add your weight and valid details, then choose a workout goal.";return}
+tracking.calorieAge=age;tracking.calorieFeet=feet;tracking.calorieInches=inches;
+tracking.calorieEquation=equation;tracking.calorieActivity=String(activity);saveTracking();
+status.textContent=`Suggested starting target: about ${suggestedCalories} calories per day.`;
+document.getElementById("useCalorieSuggestion").classList.remove("hidden");
+}
+function estimatedCalorieGoal({age,feet,inches,equation,activity}){
+const latest=tracking.weight.slice().sort((a,b)=>b.day.localeCompare(a.day))[0];
+if(!latest||!workoutGoals||workoutGoals.skipped)return null;
+age=Number(age);feet=Number(feet);inches=Number(inches);activity=Number(activity);
+if(!Number.isInteger(age)||age<18||age>100||!Number.isInteger(feet)||feet<3||feet>7||!Number.isInteger(inches)||inches<0||inches>11||![1.2,1.4,1.6].includes(activity)||!["male","female","neutral"].includes(equation))return null;
 const kg=Number(latest.value)/2.20462;
-if(!Number.isFinite(kg)||kg<=0)return;
+if(!Number.isFinite(kg)||kg<=0)return null;
 const cm=(feet*12+inches)*2.54;
 const offset=equation==="male"?5:equation==="female"?-161:-78;
 const resting=10*kg+6.25*cm-5*age+offset;
 const goalFactors={muscle:1.08,strength:1.04,"fat-loss":.90,consistency:1};
 const factor=goalFactors[workoutGoals.goal]||1;
-suggestedCalories=Math.round(Math.max(0,resting*activity*factor)/25)*25;
-tracking.calorieAge=age;tracking.calorieFeet=feet;tracking.calorieInches=inches;
-tracking.calorieEquation=equation;tracking.calorieActivity=String(activity);saveTracking();
-status.textContent=`Suggested starting target: about ${suggestedCalories} calories per day.`;
-document.getElementById("useCalorieSuggestion").classList.remove("hidden");
+return Math.round(Math.max(0,resting*activity*factor)/25)*25;
 }
 function useSuggestedCalories(){
 if(!Number.isInteger(suggestedCalories)||suggestedCalories<1)return;
