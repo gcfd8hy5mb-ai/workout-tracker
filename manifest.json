@@ -1,35 +1,13 @@
 {
-
-  "name": "Workout Tracker",
-
-  "short_name": "Workout",
-
-  "description": "Personal workout and progress tracker",
-
+  "name": "PRISM · Train · Track · Progress",
+  "short_name": "PRISM",
+  "description": "Performance · Records · Insights · Strength · Metrics",
   "start_url": "./",
-
   "scope": "./",
-
   "display": "standalone",
-
-  "background_color": "#111111",
-
-  "theme_color": "#111111",
-
+  "background_color": "#0b111b",
+  "theme_color": "#0b111b",
   "icons": [
-
-    {
-
-      "src": "images/app-icon.png",
-
-      "sizes": "1024x1024",
-
-      "type": "image/png",
-
-      "purpose": "any"
-
-    }
-
+    {"src": "images/app-icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any"}
   ]
-
 }
