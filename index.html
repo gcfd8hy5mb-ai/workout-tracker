@@ -644,6 +644,10 @@ header p{color:#222}
 .plan-day strong{display:block;font-size:16px}
 .plan-day span{display:block;font-size:13px;margin-top:3px;color:#555}
 .plan-edit{display:block;margin-top:12px;background:transparent;border:0;padding:8px 0;color:#156ec0;text-align:left}
+.data-reset{margin:24px 0;color:#333}
+.data-reset summary{cursor:pointer;padding:13px 0;font-size:15px;font-weight:600}
+.data-reset p{font-size:13px;line-height:1.4;margin:0 0 10px}
+.data-reset button{display:block;width:100%;margin:8px 0;padding:12px;border:1px solid #c8c8cf;border-radius:11px;background:white;color:#8e2626;text-align:left}
 
 </style>
 
@@ -655,7 +659,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 7.1</p>
+<p>Version 7.2</p>
 
 </header>
 
@@ -723,6 +727,14 @@ Exercise Library
 <h2 class="section-heading">My Workouts</h2>
 
 <div id="customButtons"></div>
+
+<details class="data-reset" id="dataReset">
+<summary>Manage workout data</summary>
+<p>Saved on this device. Choose what to erase; your workout plans and exercise library stay available.</p>
+<button onclick="resetWorkoutData('history')">Reset workout history</button>
+<button onclick="resetWorkoutData('progress')">Reset workout progress</button>
+<button onclick="resetWorkoutData('both')">Reset history and progress</button>
+</details>
 
 </section>
 
@@ -1395,6 +1407,28 @@ closePicker();showScreen("home");setBottomNav("Home");
 
 renderHome();updateProgress();
 
+}
+
+function resetWorkoutData(scope){
+const messages={
+history:"Delete all saved workout history, logged sets, and weight targets on this device? Progress checkmarks will stay.",
+progress:"Clear all completed-exercise checkmarks and progress on this device? Workout history will stay.",
+both:"Delete all saved workout history, logged sets, weight targets, and progress on this device? This cannot be undone."
+};
+if(!messages[scope]||!confirm(messages[scope]))return;
+if(scope==="history"||scope==="both"){
+workoutHistory=[];previousHistory={};setHistory={};overloadTargets={};
+localStorage.setItem("workoutHistoryV52","[]");
+localStorage.setItem("previousHistoryV51","{}");
+localStorage.setItem("setHistoryV5","{}");
+localStorage.setItem("overloadTargetsV1","{}");
+}
+if(scope==="progress"||scope==="both"){
+completedExercises=[];
+localStorage.setItem("completedExercisesV5","[]");
+}
+document.getElementById("dataReset").open=false;
+updateProgress();
 }
 
 function renderHome(){
