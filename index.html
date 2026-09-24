@@ -31,7 +31,7 @@
 --line:#e5e5ea;--green:#28a745;--red:#dc3545;
 
 --blue:#007aff;--orange:#ff9500;
---header-height:92px;--bottom-nav-height:63px
+--header-height:92px;--bottom-nav-height:76px
 
 }
 
@@ -474,7 +474,7 @@ backdrop-filter:none;
 
 border-top:1px solid #ddd;
 
-display:grid;grid-template-columns:repeat(5,1fr);
+display:grid;grid-template-columns:repeat(5,minmax(0,1fr));justify-items:center;
 
 min-height:calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
 padding:7px 4px calc(7px + env(safe-area-inset-bottom));
@@ -484,17 +484,15 @@ z-index:5000;contain:layout paint;transform:none
 
 .nav-button{
 
-border:0;border-bottom:2px solid transparent;background:transparent;color:#444;
+border:1px solid #d8d8dc;background:#fff;color:#333;
 
-font-size:10px;font-weight:550;line-height:12px;padding:3px 0 1px;
-min-width:0;min-height:48px;touch-action:manipulation;
+font-size:11px;font-weight:550;line-height:1.2;padding:0 2px;
+width:min(100%,60px);height:60px;min-width:0;touch-action:manipulation;
 transition:none;animation:none;transform:none;filter:none
 
 }
 
-.nav-icon{display:block;height:24px;font-size:22px;line-height:24px;margin-bottom:2px}
-
-.nav-button.active{color:#111;border-bottom-color:#111}
+.nav-button.active{color:#111;border-color:#111;background:#e8e8ec}
 
 .nav-button:active{background:transparent;transform:none;filter:none}
 
@@ -598,8 +596,8 @@ header p{color:#222}
 .primary span{color:#111}
 .workout-tab.active{background:#e8e8ec;color:#111}
 .finish-workout,.workout-complete.done{background:#dff2e4;color:#111}
-.bottom-nav .nav-button{border-radius:0}
-.bottom-nav .nav-button.active{background:transparent;color:#111}
+.bottom-nav .nav-button{border-radius:9px}
+.bottom-nav .nav-button.active{background:#e8e8ec;color:#111}
 .picker-sheet{color:#111}
 .picker-sheet button{color:#111}
 
@@ -659,7 +657,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 7.3</p>
+<p>Version 7.4</p>
 
 </header>
 
@@ -861,31 +859,31 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 <button class="nav-button active" id="navHome" onclick="goHome()" aria-current="page">
 
-<span class="nav-icon">🏠</span>Home
+Home
 
 </button>
 
 <button class="nav-button" id="navWorkout" onclick="bottomWorkout()">
 
-<span class="nav-icon">🏋️</span>Workout
+Workout
 
 </button>
 
 <button class="nav-button" id="navProgress" onclick="showOverallProgress()">
 
-<span class="nav-icon">📈</span>Progress
+Progress
 
 </button>
 
 <button class="nav-button" id="navHistory" onclick="showGlobalHistory()">
 
-<span class="nav-icon">🕘</span>History
+History
 
 </button>
 
 <button class="nav-button" id="navTimer" onclick="showGlobalTimer()">
 
-<span class="nav-icon">⏱️</span>Timer
+Timer
 
 </button>
 
