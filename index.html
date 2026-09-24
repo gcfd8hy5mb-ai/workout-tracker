@@ -592,6 +592,22 @@ header p{color:#222}
 .picker-sheet{color:#111}
 .picker-sheet button{color:#111}
 
+/* Visual progress, drawn from the user's logged workouts. */
+.visual-card{background:#fff;border-radius:18px;padding:16px;margin:12px 0 16px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.visual-card h3{margin:0 0 5px;font-size:18px;font-weight:600}
+.visual-note{font-size:13px;line-height:1.45;color:#222;margin:4px 0 12px}
+.body-pair{display:flex;justify-content:center;gap:12px}
+.body-figure{width:min(48%,150px);text-align:center;font-size:13px;font-weight:550}
+.body-figure svg{display:block;width:100%;height:auto;max-height:228px}
+.muscle-key{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.muscle-key span{background:#f2f2f5;border-radius:16px;padding:6px 9px;font-size:12px}
+.muscle-key span.is-active{background:#fbe1db}
+.visual-swatch{display:inline-block;width:10px;height:10px;margin-right:5px;border-radius:3px;background:#d46a57}
+.visual-empty{padding:12px;background:#f2f2f5;border-radius:11px;font-size:14px;line-height:1.45}
+.trend-select{display:block;width:100%;margin:8px 0 14px;color:#111}
+.trend-svg{display:block;width:100%;height:auto;max-height:220px}
+.trend-summary{font-size:13px;line-height:1.45;margin:10px 0 0}
+
 </style>
 
 </head>
@@ -602,7 +618,7 @@ header p{color:#222}
 
 <h1>Workout Tracker</h1>
 
-<p>Version 6.2</p>
+<p>Version 6.3</p>
 
 </header>
 
@@ -651,6 +667,7 @@ Exercise Library
 <button class="back" onclick="goHome()">← Back</button>
 
 <h2 id="workoutTitle"></h2>
+<div id="workoutMuscleVisual"></div>
 
 <div class="workout-tabs">
 
@@ -743,6 +760,8 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <h2>Overall Progress</h2>
 
 <div id="overallStats"></div>
+<div id="muscleProgressVisual"></div>
+<div id="exerciseTrendVisual"></div>
 
 <div id="overallExerciseProgress"></div>
 
@@ -1303,6 +1322,7 @@ function openWorkout(title,ids,isCustom){
 showScreen("workoutScreen");setBottomNav("Workout");
 
 document.getElementById("workoutTitle").textContent=title;
+document.getElementById("workoutMuscleVisual").innerHTML=muscleVisual(ids,"Muscles in this workout");
 
 const list=document.getElementById("exerciseList");list.innerHTML="";
 
@@ -1926,6 +1946,8 @@ stats.innerHTML=`
 
 </div>`;
 
+renderMuscleProgress();
+renderTrendPicker();
 const area=document.getElementById("overallExerciseProgress");
 
 area.innerHTML="<h3>Exercise Progress</h3>";
@@ -1956,6 +1978,120 @@ area.appendChild(div);
 
 });
 
+}
+
+
+/* VISUAL PROGRESS
+   The map uses each exercise's primary muscle group, not a medical anatomy model.
+   The chart uses the highest recorded weight in each finished session. */
+const visualMuscles=["Chest","Back","Shoulders","Biceps","Triceps","Core","Glutes","Quads","Hamstrings","Calves"];
+
+function muscleCounts(ids){
+const counts={};
+ids.forEach(id=>{
+const ex=getExercise(id);
+if(ex&&visualMuscles.includes(ex.muscle))counts[ex.muscle]=(counts[ex.muscle]||0)+1;
+});
+return counts;
+}
+
+function muscleFigure(side,counts){
+const colored=name=>counts[name]?"#d46a57":"#e5e5ea";
+const path=(d,name)=>'<path d="'+d+'" fill="'+colored(name)+'" stroke="#666670" stroke-width="1.5"><title>'+name+'</title></path>';
+const head='<circle cx="70" cy="19" r="11" fill="#e5e5ea" stroke="#666670" stroke-width="1.5"/>';
+const neck='<path d="M64 29 L76 29 L77 38 L63 38 Z" fill="#e5e5ea" stroke="#666670" stroke-width="1.5"/>';
+let parts='';
+if(side==="Front"){
+parts+=path("M57 40 Q70 46 70 61 L70 79 L51 76 L46 57 Z","Chest");
+parts+=path("M83 40 Q70 46 70 61 L70 79 L89 76 L94 57 Z","Chest");
+parts+=path("M50 78 L90 78 L86 115 L54 115 Z","Core");
+parts+=path("M51 39 L43 44 L38 64 L47 69 L55 48 Z","Shoulders");
+parts+=path("M89 39 L97 44 L102 64 L93 69 L85 48 Z","Shoulders");
+parts+=path("M39 66 L47 70 L42 101 L33 98 Z","Biceps");
+parts+=path("M101 66 L93 70 L98 101 L107 98 Z","Triceps");
+parts+=path("M54 117 L68 117 L65 169 L48 170 Z","Quads");
+parts+=path("M72 117 L86 117 L92 170 L75 169 Z","Quads");
+}else{
+parts+=path("M52 40 Q70 46 88 40 L93 79 L85 116 L55 116 L47 79 Z","Back");
+parts+=path("M50 39 L42 44 L38 64 L47 69 L55 48 Z","Shoulders");
+parts+=path("M90 39 L98 44 L102 64 L93 69 L85 48 Z","Shoulders");
+parts+=path("M39 66 L47 70 L42 101 L33 98 Z","Triceps");
+parts+=path("M101 66 L93 70 L98 101 L107 98 Z","Triceps");
+parts+=path("M54 117 L70 117 L69 139 L51 139 Z","Glutes");
+parts+=path("M70 117 L86 117 L89 139 L71 139 Z","Glutes");
+parts+=path("M51 141 L69 141 L65 170 L48 170 Z","Hamstrings");
+parts+=path("M71 141 L89 141 L92 170 L75 170 Z","Hamstrings");
+}
+parts+=path("M33 100 L42 103 L35 132 L27 129 Z",side==="Front"?"Biceps":"Triceps");
+parts+=path("M107 100 L98 103 L105 132 L113 129 Z",side==="Front"?"Triceps":"Biceps");
+parts+=path("M48 172 L65 172 L61 222 L48 222 Z","Calves");
+parts+=path("M75 172 L92 172 L92 222 L79 222 Z","Calves");
+parts+='<path d="M48 222 L61 222 L61 232 L42 232 Z M79 222 L92 222 L98 232 L79 232 Z" fill="#e5e5ea" stroke="#666670" stroke-width="1.5"/>';
+return '<div class="body-figure"><svg viewBox="15 0 110 240" role="img" aria-label="'+side+' body diagram"><title>'+side+' muscle diagram</title>'+head+neck+parts+'</svg>'+side+'</div>';
+}
+
+function muscleVisual(ids,context){
+const counts=muscleCounts(ids);
+const active=visualMuscles.filter(name=>counts[name]);
+const key=active.length?active.map(name=>'<span class="is-active"><i class="visual-swatch" aria-hidden="true"></i>'+name+'</span>').join(""):'<span>Nothing logged yet</span>';
+return '<div class="visual-card"><h3>'+context+'</h3>'+
+'<p class="visual-note">Highlighted areas show the primary muscle groups for these exercises. This is a simple guide.</p>'+
+'<div class="body-pair">'+muscleFigure("Front",counts)+muscleFigure("Back",counts)+'</div>'+
+'<div class="muscle-key" aria-label="Highlighted muscle groups">'+key+'</div></div>';
+}
+
+function renderMuscleProgress(){
+const area=document.getElementById("muscleProgressVisual");
+const ids=workoutHistory.flatMap(session=>(session.exercises||[]).map(ex=>ex.id));
+area.innerHTML=muscleVisual(ids,"Muscles you've trained");
+if(!ids.length)area.insertAdjacentHTML("beforeend",'<div class="visual-empty">Finish a workout after entering sets to light up the muscles you trained.</div>');
+}
+
+function renderTrendPicker(){
+const area=document.getElementById("exerciseTrendVisual");
+const ids=[...new Set(workoutHistory.flatMap(session=>(session.exercises||[]).map(ex=>ex.id)))].filter(id=>getExercise(id));
+area.innerHTML='<div class="visual-card"><h3>Weight over time</h3><p class="visual-note">See the heaviest set you logged for an exercise in each finished workout. This is logged weight, not a calculated strength score.</p>'+
+(ids.length?'<label for="trendExercise">Choose an exercise</label><select class="trend-select" id="trendExercise" onchange="renderExerciseTrend()">'+ids.map(id=>'<option value="'+escapeHTML(id)+'">'+escapeHTML(getExercise(id).name)+'</option>').join("")+'</select><div id="exerciseTrendChart"></div>':
+'<div class="visual-empty">After you finish a workout with weight and reps, your exercise chart will appear here.</div>')+'</div>';
+if(ids.length)renderExerciseTrend();
+}
+
+function renderExerciseTrend(){
+const selected=document.getElementById("trendExercise");
+if(!selected)return;
+const id=selected.value;
+const records=workoutHistory.flatMap(session=>{
+const ex=(session.exercises||[]).find(item=>item.id===id);
+if(!ex)return [];
+const weights=(ex.sets||[]).filter(set=>Number(set.reps)>0&&Number(set.weight)>0).map(set=>Number(set.weight)).filter(Number.isFinite);
+const date=new Date(session.date);
+return weights.length&&Number.isFinite(date.getTime())?[{date,weight:Math.max(...weights)}]:[];
+}).sort((a,b)=>a.date-b.date).slice(-8);
+const area=document.getElementById("exerciseTrendChart");
+if(!records.length){
+area.innerHTML='<div class="visual-empty">No sets with both weight and reps have been logged for this exercise yet.</div>';
+return;
+}
+const width=320,height=190,left=38,right=12,top=15,bottom=40;
+const high=Math.max(1,...records.map(p=>p.weight));
+const plotW=width-left-right,plotH=height-top-bottom;
+const points=records.map((p,i)=>{
+const x=records.length===1?left+plotW/2:left+i*plotW/(records.length-1);
+const y=top+plotH*(1-p.weight/high);
+return {x,y,weight:p.weight,date:p.date};
+});
+const lines=[0,.5,1].map(frac=>{
+const y=top+plotH*(1-frac);
+return '<line x1="'+left+'" y1="'+y+'" x2="'+(width-right)+'" y2="'+y+'" stroke="#e5e5ea"/>'+
+'<text x="1" y="'+(y+4)+'" font-size="11" fill="#111">'+Math.round(high*frac)+'</text>';
+}).join("");
+const poly=points.length>1?'<polyline fill="none" stroke="#b4493c" stroke-width="2.5" points="'+points.map(p=>p.x+','+p.y).join(" ")+'"/>':'';
+const dots=points.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="#b4493c"><title>'+p.weight+' lb on '+p.date.toLocaleDateString()+'</title></circle>').join("");
+const first=points[0],last=points[points.length-1];
+const dates='<text x="'+left+'" y="'+(height-11)+'" font-size="11" fill="#111">'+first.date.toLocaleDateString([],{month:"short",day:"numeric"})+'</text>'+
+(records.length>1?'<text x="'+(width-right)+'" y="'+(height-11)+'" text-anchor="end" font-size="11" fill="#111">'+last.date.toLocaleDateString([],{month:"short",day:"numeric"})+'</text>':'');
+const chart='<svg class="trend-svg" viewBox="0 0 320 190" role="img" aria-label="Heaviest set per workout, '+records.length+' workouts, from '+first.weight+' to '+last.weight+' pounds"><title>Logged weight over time in pounds</title>'+lines+poly+dots+dates+'</svg>';
+area.innerHTML=chart+'<p class="trend-summary">'+records.length+' logged '+(records.length===1?'workout':'workouts')+' · Most recent: '+last.weight+' lb · Best: '+Math.max(...records.map(p=>p.weight))+' lb</p>';
 }
 
 /* GLOBAL HISTORY */
