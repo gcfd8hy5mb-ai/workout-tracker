@@ -72,11 +72,11 @@ class WorkoutTrackerTests(unittest.TestCase):
 
     def test_progress_and_release_version_are_not_animated(self):
         self.assertIn(".progress-fill{height:100%;width:0;background:#111;transition:none}", INDEX)
-        self.assertIn("<p>Version 6.8</p>", INDEX)
-        self.assertIn('const CACHE_NAME = "workout-tracker-v6.8";', SERVICE_WORKER)
+        self.assertIn("<p>Version 6.9</p>", INDEX)
+        self.assertIn('const CACHE_NAME = "workout-tracker-v6.9";', SERVICE_WORKER)
 
     def test_saved_data_storage_keys_remain_compatible(self):
-        for storage_key in ("completedExercisesV5", "customWorkoutsV5", "workoutHistoryV52", "overloadTargetsV1"):
+        for storage_key in ("completedExercisesV5", "customWorkoutsV5", "workoutHistoryV52", "overloadTargetsV1", "workoutGoalsV1"):
             self.assertIn(storage_key, INDEX)
 
 
