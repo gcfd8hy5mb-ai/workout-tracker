@@ -50,6 +50,13 @@ class WorkoutTrackerTests(unittest.TestCase):
             self.assertEqual(INDEX.count(f'id="nav{destination}"'), 1)
         self.assertIn('["Workout","History","Timer"].forEach', INDEX)
 
+    def test_mobile_bars_stay_fixed_and_navigation_only_changes_color(self):
+        self.assertRegex(INDEX, r"header\{[\s\S]*?position:fixed")
+        self.assertRegex(INDEX, r"\.bottom-nav\{[\s\S]*?position:fixed")
+        self.assertIn("transition:color .12s ease-out;transform:none;filter:none", INDEX)
+        self.assertIn(".nav-button:active{color:var(--blue);transform:none;filter:none}", INDEX)
+        self.assertIn('button.setAttribute("aria-current","page")', INDEX)
+
 
 if __name__ == "__main__":
     unittest.main()
