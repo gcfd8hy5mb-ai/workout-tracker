@@ -34,6 +34,22 @@ class WorkoutTrackerTests(unittest.TestCase):
         manifest = (ROOT / "manifest.json").read_text(encoding="utf-8")
         self.assertIn('"start_url": "./"', manifest)
 
+    def test_progress_is_only_in_bottom_navigation(self):
+        self.assertNotIn('id="tabProgress"', INDEX)
+        self.assertNotIn("showWorkoutTab('progress')", INDEX)
+        self.assertNotIn('id="workoutProgressContent"', INDEX)
+        self.assertEqual(INDEX.count('id="navProgress"'), 1)
+        self.assertIn('id="navProgress" onclick="showOverallProgress()"', INDEX)
+        self.assertIn('showScreen("overallProgressScreen");setBottomNav("Progress")', INDEX)
+
+    def test_workout_and_bottom_navigation_destinations(self):
+        self.assertEqual(len(re.findall(r"day[1-4]:\{title:", INDEX)), 4)
+        for tab in ("Workout", "History", "Timer"):
+            self.assertIn(f'id="tab{tab}"', INDEX)
+        for destination in ("Home", "Workout", "Progress", "History", "Timer"):
+            self.assertEqual(INDEX.count(f'id="nav{destination}"'), 1)
+        self.assertIn('["Workout","History","Timer"].forEach', INDEX)
+
 
 if __name__ == "__main__":
     unittest.main()
