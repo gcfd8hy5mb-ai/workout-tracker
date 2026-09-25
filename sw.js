@@ -1,4 +1,4 @@
-const CACHE_NAME = "prism-v10.3-beta2";
+const CACHE_NAME = "prism-v10.3-beta3";
 
 const APP_FILES = [
 
@@ -6,6 +6,7 @@ const APP_FILES = [
 
   "./index.html",
   "./onboarding.js",
+  "./pro-experience.js",
 
   "./manifest.json",
 
@@ -81,7 +82,8 @@ self.addEventListener("fetch", event => {
     url.pathname.endsWith("/") ||
 
     url.pathname.endsWith("/index.html") ||
-    url.pathname.endsWith("/onboarding.js")
+    url.pathname.endsWith("/onboarding.js") ||
+    url.pathname.endsWith("/pro-experience.js")
 
   ) {
 
