@@ -1,3 +1,4 @@
+import json
 import re
 import unittest
 from pathlib import Path
@@ -179,7 +180,19 @@ class WorkoutTrackerTests(unittest.TestCase):
     def test_progress_and_release_version_are_not_animated(self):
         self.assertIn(".progress-fill{height:100%;width:0;background:#111;transition:none}", INDEX)
         self.assertIn('class="menu-version">PRISM · Version 10.0</small>', INDEX)
-        self.assertIn('const CACHE_NAME = "prism-v10.0";', SERVICE_WORKER)
+        self.assertIn('const CACHE_NAME = "prism-v10.0-logo1";', SERVICE_WORKER)
+
+    def test_prism_logo_icons_and_pwa_references(self):
+        manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+        for icon in manifest["icons"]:
+            self.assertTrue((ROOT / icon["src"]).is_file(), icon["src"])
+            self.assertIn(f'"./{icon["src"]}"', SERVICE_WORKER)
+        for asset in ("images/favicon-32.png", "images/apple-touch-icon-180.png", "images/app-icon-192.png"):
+            self.assertIn(asset, INDEX)
+            self.assertTrue((ROOT / asset).is_file())
+        self.assertIn('class="prism-header-logo"', INDEX)
+        self.assertIn('class="setup-branding"', INDEX)
+        self.assertIn('class="menu-brand-copy"', INDEX)
 
     def test_saved_data_storage_keys_remain_compatible(self):
         for storage_key in ("completedExercisesV5", "customWorkoutsV5", "workoutHistoryV52", "overloadTargetsV1", "workoutGoalsV1"):

@@ -17,7 +17,8 @@
 
 <link rel="manifest" href="manifest.json">
 
-<link rel="apple-touch-icon" href="images/app-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
 
 <title>PRISM · Train · Track · Progress</title>
 
@@ -756,7 +757,13 @@ header{background:rgba(11,17,27,.94);color:var(--text);border-bottom:1px solid v
 header h1{font-size:21px;letter-spacing:.06em}
 header h1 small{display:block;font-size:10px;line-height:1.2;letter-spacing:.1em;font-weight:500;color:var(--sub)}
 .prism-wordmark{font-weight:850;letter-spacing:.13em}
-.prism-wordmark::before{content:"";display:inline-block;width:15px;height:15px;margin-right:10px;vertical-align:-1px;border:3px solid var(--blue);border-radius:4px;transform:rotate(45deg);box-shadow:0 0 12px rgba(82,173,255,.28)}
+.prism-header-brand{display:flex;align-items:center;gap:9px;min-width:0}
+.prism-header-logo{display:block;flex:none;width:43px;height:43px;object-fit:contain;border-radius:11px}
+.prism-header-label{display:block;min-width:0}
+.setup-branding{text-align:center;margin:4px auto 16px}
+.setup-branding img{display:block;width:92px;height:92px;object-fit:contain;margin:0 auto 9px;border-radius:20px}
+.setup-branding strong{display:block;font-size:19px;letter-spacing:.13em}
+.setup-branding small{display:block;margin-top:3px;color:var(--sub);font-size:12px}
 .container{max-width:760px;padding:20px 16px 36px}
 .container > section h2{letter-spacing:-.035em;font-size:27px;line-height:1.17}
 .container h3{letter-spacing:-.02em}
@@ -944,7 +951,9 @@ body.prism-drawer-open{overflow:hidden}
 #sideMenu .menu-brand{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
 #sideMenu .menu-brand strong{font-size:20px;letter-spacing:.1em;font-weight:800;line-height:1.1}
 #sideMenu .menu-brand small{font-size:11px;letter-spacing:.035em;color:var(--sub)}
-#sideMenu .menu-brand-mark{width:16px;height:16px;margin-right:9px;display:inline-block;vertical-align:-1px;border:2px solid var(--blue);border-radius:4px;transform:rotate(45deg)}
+#sideMenu .menu-brand{flex-direction:row;align-items:center;gap:10px}
+#sideMenu .menu-brand img{display:block;flex:none;width:43px;height:43px;object-fit:contain;border-radius:10px}
+#sideMenu .menu-brand-copy{display:flex;flex-direction:column;gap:3px}
 #sideMenu .menu-close{flex:none;display:grid;place-items:center;width:44px;height:44px;background:#1c2b3d;border:1px solid #364960;border-radius:13px;color:var(--text);font-size:25px;line-height:1}
 #sideMenu .drawer-section{margin:0 0 7px}
 #sideMenu .drawer-section+.drawer-section{border-top:1px solid #2b3b4e;padding-top:9px}
@@ -977,7 +986,7 @@ body.prism-drawer-open{overflow:hidden}
 <header>
 <button id="menuToggle" class="menu-toggle" onclick="openMenu()" aria-label="Open menu" aria-controls="sideMenu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h11"/></svg></button>
 
-<h1><span class="prism-wordmark">PRISM</span><small>Train · Track · Progress</small></h1>
+<h1 class="prism-header-brand"><img class="prism-header-logo" src="images/app-icon-192.png" width="43" height="43" alt=""><span class="prism-header-label"><span class="prism-wordmark">PRISM</span><small>Train · Track · Progress</small></span></h1>
 
 <button id="headerToday" class="header-today" onclick="goHome()" aria-label="Go to Today">Today</button>
 
@@ -986,6 +995,7 @@ body.prism-drawer-open{overflow:hidden}
 <div class="container">
 
 <section id="setupScreen" class="hidden">
+<div class="setup-branding"><img src="images/app-icon-192.png" width="92" height="92" alt="PRISM logo"><strong>PRISM</strong><small>Train · Track · Progress</small></div>
 <h2>Build your workout plan</h2>
 <p class="small">Tell us about your goals. You can change these answers anytime.</p>
 <div class="card">
@@ -1293,7 +1303,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <symbol id="drawer-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.2 1.9c-1.1.8-1.7 1.3-1.7 2.6m0 3h.01"/></symbol>
 <symbol id="drawer-backup" viewBox="0 0 24 24"><path d="M7 18a5 5 0 0 1-1-10 7 7 0 0 1 13 2 4 4 0 0 1-1 8H7Zm5-7v9m-3-3 3 3 3-3"/></symbol>
 </svg>
-<div class="menu-head"><div class="menu-brand"><strong><span class="menu-brand-mark" aria-hidden="true"></span>PRISM</strong><small>Train · Track · Progress</small></div><button type="button" class="menu-close" onclick="closeMenu()" aria-label="Close menu">×</button></div>
+<div class="menu-head"><div class="menu-brand"><img src="images/app-icon-192.png" width="43" height="43" alt=""><span class="menu-brand-copy"><strong>PRISM</strong><small>Train · Track · Progress</small></span></div><button type="button" class="menu-close" onclick="closeMenu()" aria-label="Close menu">×</button></div>
 <section class="drawer-section" aria-label="Home"><div class="menu-group">HOME</div><button type="button" class="menu-link active" id="navHome" onclick="goHome()" aria-current="page"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-home"/></svg>Home</button></section>
 <section class="drawer-section" aria-label="Training"><button type="button" class="menu-group-toggle" aria-expanded="true" aria-controls="menuTrainingItems" onclick="toggleMenuSection('Training')">TRAINING <svg class="drawer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button><div class="drawer-section-body" id="menuTrainingItems"><div class="drawer-section-inner">
 <button type="button" class="menu-link" id="navWorkout" onclick="showWorkouts()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-workout"/></svg>Workouts</button>
