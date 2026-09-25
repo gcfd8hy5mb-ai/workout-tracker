@@ -932,6 +932,13 @@ body:has(#workoutScreen:not(.hidden)) .prism-bottom-nav,body:has(#prismRestScree
 .prism-volume-row .progress-bar{grid-column:1/-1;margin-top:2px;height:6px}
 .container .exercise-tools{display:flex;flex-wrap:wrap;gap:8px}
 .container .exercise-tools .exercise-swap-list{flex-basis:100%}
+.smart-progress-card,.smart-swap-card{width:100%;padding:12px;border:1px solid #375475;border-radius:13px;background:#142940;color:var(--text)}
+.smart-progress-card strong,.smart-swap-card strong{color:#79baff}
+.smart-progress-card p,.smart-swap-card p{margin:6px 0;color:var(--sub)}
+.smart-choice-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.container .smart-choice-row button,.container .smart-swap-card button{background:#1f87ed;color:#fff;border:0;border-radius:10px;min-height:44px;padding:8px 12px;font:inherit}
+.container .smart-choice-row button:last-child{background:#26384c}
+.smart-swap-card{margin-bottom:4px}
 .container .exercise-instructions:not([open]) summary{color:var(--sub)}
 .container .prism-next-exercise{background:#162b41;color:var(--text);border-color:#355878}
 .prism-library-thumb{width:52px;height:58px;object-fit:cover;border-radius:10px;background:#23334a;flex:0 0 52px}
@@ -2274,6 +2281,89 @@ if(name.includes("machine")||name.includes("leg press")||name.includes("pec deck
 if(name.includes("bodyweight")||name.includes("push-up")||name.includes("dead bug"))return "Bodyweight";
 return "";
 }
+// Exercise attributes are kept separate from stored workouts so older saves remain readable.
+// Columns: id | secondary muscles | movement pattern | equipment | exercise purpose.
+const SMART_EXERCISE_ATTRIBUTES=`
+machine-chest-press|Triceps,Front Delts|Horizontal Press|Machine|Compound
+pec-deck|Front Delts|Chest Fly|Machine|Isolation
+triceps-pushdown||Elbow Extension|Cable|Isolation
+lat-pulldown|Biceps,Rear Delts|Vertical Pull|Cable|Compound
+seated-row|Biceps,Rear Delts|Horizontal Pull|Machine|Compound
+preacher-curl||Elbow Flexion|Machine|Isolation
+leg-press|Glutes,Hamstrings|Squat|Machine|Compound
+leg-extension||Knee Extension|Machine|Isolation
+seated-leg-curl||Knee Flexion|Machine|Isolation
+calf-raise||Calf Raise|Machine|Isolation
+shoulder-press|Triceps,Front Delts|Vertical Press|Machine|Compound
+lateral-raise||Lateral Raise|Machine|Isolation
+biceps-curl||Elbow Flexion|Machine|Isolation
+triceps-extension||Elbow Extension|Machine|Isolation
+incline-chest-press|Triceps,Front Delts|Incline Press|Machine|Compound
+cable-fly|Front Delts|Chest Fly|Cable|Isolation
+assisted-pullup|Biceps,Rear Delts|Vertical Pull|Machine|Compound
+straight-arm-pulldown||Shoulder Extension|Cable|Isolation
+reverse-pec-deck|Upper Back|Rear Delt Fly|Machine|Isolation
+cable-lateral-raise||Lateral Raise|Cable|Isolation
+cable-curl||Elbow Flexion|Cable|Isolation
+hammer-curl|Forearms|Elbow Flexion|Dumbbell|Isolation
+overhead-triceps||Elbow Extension|Cable|Isolation
+hack-squat|Glutes,Hamstrings|Squat|Machine|Compound
+lying-leg-curl||Knee Flexion|Machine|Isolation
+hip-thrust|Hamstrings|Hip Thrust|Machine|Compound
+hip-abduction||Hip Abduction|Machine|Isolation
+ab-crunch||Spinal Flexion|Machine|Isolation
+cable-crunch||Spinal Flexion|Cable|Isolation
+smith-bench-press|Triceps,Front Delts|Horizontal Press|Smith machine|Compound
+incline-dumbbell-press|Triceps,Front Delts|Incline Press|Dumbbell|Compound
+push-up|Triceps,Front Delts|Horizontal Press|Bodyweight|Compound
+chest-press-cable|Triceps,Front Delts|Horizontal Press|Cable|Compound
+single-arm-cable-row|Biceps,Rear Delts|Horizontal Pull|Cable|Compound
+chest-supported-row|Biceps,Rear Delts|Horizontal Pull|Machine|Compound
+close-grip-pulldown|Biceps,Rear Delts|Vertical Pull|Cable|Compound
+dumbbell-row|Biceps,Rear Delts|Horizontal Pull|Dumbbell|Compound
+face-pull|Upper Back|Rear Delt Fly|Cable|Isolation
+dumbbell-shoulder-press|Triceps,Front Delts|Vertical Press|Dumbbell|Compound
+dumbbell-lateral-raise||Lateral Raise|Dumbbell|Isolation
+rear-delt-cable-fly|Upper Back|Rear Delt Fly|Cable|Isolation
+incline-dumbbell-curl||Elbow Flexion|Dumbbell|Isolation
+rope-hammer-curl|Forearms|Elbow Flexion|Cable|Isolation
+dumbbell-curl||Elbow Flexion|Dumbbell|Isolation
+assisted-dip|Chest,Front Delts|Elbow Extension|Machine|Compound
+rope-pushdown||Elbow Extension|Cable|Isolation
+single-arm-triceps-pushdown||Elbow Extension|Cable|Isolation
+smith-squat|Glutes,Hamstrings|Squat|Smith machine|Compound
+goblet-squat|Glutes,Hamstrings|Squat|Dumbbell|Compound
+split-squat|Glutes,Hamstrings|Squat|Bodyweight|Compound
+romanian-deadlift|Glutes|Hip Hinge|Dumbbell|Compound
+standing-leg-curl||Knee Flexion|Machine|Isolation
+glute-kickback|Hamstrings|Hip Extension|Cable|Isolation
+glute-bridge|Hamstrings|Hip Thrust|Bodyweight|Compound
+step-up|Quads,Hamstrings|Step Up|Bodyweight|Compound
+seated-calf-raise||Calf Raise|Machine|Isolation
+standing-calf-raise||Calf Raise|Bodyweight|Isolation
+cable-woodchop|Obliques|Rotation|Cable|Isolation
+dead-bug||Core Stability|Bodyweight|Isolation
+pallof-press|Obliques|Core Stability|Cable|Isolation`.trim().split("\n").reduce((map,line)=>{
+const [id,secondary,pattern,equipment,type]=line.split("|");
+map[id]={secondary:secondary?secondary.split(","):[],pattern,equipment,type};return map;
+},{});
+function smartExerciseMetadata(ex){
+const data=SMART_EXERCISE_ATTRIBUTES[ex.id]||{};
+return {primary:ex.muscle,secondary:data.secondary||[],pattern:data.pattern||"",equipment:data.equipment||prismEquipment(ex),type:data.type||""};
+}
+function rankExerciseSubstitutions(exerciseId,available=exerciseLibrary){
+const original=getExercise(exerciseId);if(!original)return [];
+const source=smartExerciseMetadata(original);
+return available.filter(candidate=>candidate.id!==exerciseId&&candidate.muscle===original.muscle)
+.map(ex=>{const meta=smartExerciseMetadata(ex);
+const shared=meta.secondary.filter(muscle=>source.secondary.includes(muscle));
+const pattern=!!source.pattern&&meta.pattern===source.pattern;
+const equipment=!!source.equipment&&meta.equipment===source.equipment;
+const score=100+(pattern?40:0)+Math.min(shared.length,3)*9+(equipment?7:0)+(source.type&&meta.type===source.type?3:0);
+const reasons=[pattern?`the same ${source.pattern.toLowerCase()} movement`:"the same primary muscle",equipment?`similar ${meta.equipment.toLowerCase()} equipment`:null].filter(Boolean);
+return {exercise:ex,metadata:meta,score,reason:`Targets ${source.primary.toLowerCase()} with ${reasons.join(" and ")}.`};
+}).sort((a,b)=>b.score-a.score||a.exercise.name.localeCompare(b.exercise.name));
+}
 function availableWorkoutPlans(){
 const plans=[];
 if(workoutGoals&&!workoutGoals.skipped&&!workoutGoals.basic)
@@ -2770,7 +2860,7 @@ const smart=canAccessFeature("smart_progression");
 const goal=showGoal?overloadGoal(ex.id):null;
 const suggestion=showGoal&&smart?progressionSuggestion(ex.id):null;
 const manual=showGoal&&Number(tracking.manualTargets?.[overloadKey(ex.id)])>0;
-const goalText=goal!==null?`Today: ${goal} lb × 8–10 reps${manual?" · Your target":suggestion?.reason?` · ${suggestion.reason}`:""}`:"Choose a starting weight · 8–10 reps";
+const goalText=goal!==null?`Today: ${goal} lb × 8–10 reps${manual?" · Your target":""}`:"Choose a starting weight · 8–10 reps";
 card.innerHTML=`
 
 <div class="exercise-header" role="button" tabindex="0" aria-expanded="false" aria-controls="${detailId}"
@@ -2796,10 +2886,10 @@ ${showGoal?'<div class="tracking">':""}
 
 ${showGoal?`<div class="overload-guide">
 <strong>${smart?"Progressive overload goal":"Your weight target"}</strong>
-${suggestion?`<p>Last time: ${suggestion.last}. ${suggestion.reason}.</p>`:""}
+${suggestion?`<div class="smart-progress-card"><strong>PRISM PRO RECOMMENDS</strong>${suggestion.lastWeight?`<p>Last session: ${suggestion.lastWeight} lb · ${suggestion.lastReps.join(" / ")} reps</p>`:""}${suggestion.status==="ready"?`<p><strong>${suggestion.weight} lb</strong> · Target: ${suggestion.range.min}–${suggestion.range.max} reps</p><p>${escapeHTML(suggestion.reason)}</p><div class="smart-choice-row"><button type="button" class="accept-suggestion">Use ${suggestion.weight} lb</button><button type="button" class="keep-suggestion">Keep ${suggestion.lastWeight} lb</button></div>`:"<p>Complete more sessions with this exercise to unlock a progression recommendation.</p>"}</div>`:""}
 <label for="${safeId(unique+"-goal")}">Target weight (lb)</label>
-<div class="goal-controls"><input class="goal-weight" id="${safeId(unique+"-goal")}" type="number" inputmode="decimal" min="0" max="1000" step="any" value="${goal??""}" placeholder="Starting weight">${manual?'<button type="button" class="use-suggestion">Use suggestion</button>':""}</div>
-<p>Aim for 8–10 reps. ${smart?"Adjust the suggested weight anytime.":"Enter a weight that works for you."}</p>
+<div class="goal-controls"><input class="goal-weight" id="${safeId(unique+"-goal")}" type="number" inputmode="decimal" min="0" max="1000" step="any" value="${goal??""}" placeholder="Starting weight"></div>
+<p>Aim for 8–10 reps. ${smart?"Choose a recommendation above or enter your own target.":"Enter a weight that works for you."}</p>
 <div class="warmup-guide"></div>
 </div>`:""}
 
@@ -2833,7 +2923,11 @@ card.querySelector(".prism-info-toggle").onclick=()=>showExerciseInfo(ex.id,"wor
 const input=card.querySelector(".goal-weight");
 input.addEventListener("input",()=>saveOverloadGoal(ex.id,input,card.querySelector(".goal-preview")));
 input.addEventListener("change",()=>saveOverloadGoal(ex.id,input,card.querySelector(".goal-preview")));
-const suggestedButton=card.querySelector(".use-suggestion");if(suggestedButton)suggestedButton.onclick=()=>{delete tracking.manualTargets[overloadKey(ex.id)];saveTracking();input.value=overloadGoal(ex.id)??"";card.querySelector(".goal-preview").textContent=overloadGoal(ex.id)?`Today: ${overloadGoal(ex.id)} lb × 8–10 reps`:'Choose a starting weight · 8–10 reps';suggestedButton.remove();renderWarmupGuide(ex.id,card)};
+if(suggestion?.status==="ready"){
+const choose=weight=>{if(!canAccessFeature("smart_progression"))return;input.value=weight;saveOverloadGoal(ex.id,input,card.querySelector(".goal-preview"))};
+card.querySelector(".accept-suggestion").onclick=()=>choose(suggestion.weight);
+card.querySelector(".keep-suggestion").onclick=()=>choose(suggestion.lastWeight);
+}
 const toggle=card.querySelector(".swap-toggle"),options=card.querySelector(".exercise-swap-list");
 toggle.onclick=()=>{
 options.replaceChildren();options.classList.toggle("hidden");if(options.classList.contains("hidden"))return;
@@ -2841,11 +2935,16 @@ const alternatives=exerciseLibrary.filter(other=>other.muscle===ex.muscle&&other
 if(!alternatives.length){options.textContent="No other exercises for this muscle yet.";return}
 const description=document.createElement("p");description.className="swap-description";description.textContent=`Choose another ${ex.muscle.toLowerCase()} exercise. Logged sets remain saved.`;options.appendChild(description);
 if(canAccessFeature("smart_substitutions")){
-const equipment=prismEquipment(ex),preferred=workoutGoals?.focus==="balanced"?"Machine":equipment;
-alternatives.sort((a,b)=>Number(prismEquipment(b)===preferred)-Number(prismEquipment(a)===preferred)||a.name.localeCompare(b.name));
-const hint=document.createElement("p");hint.className="small";hint.textContent="PRISM Pro · Matching equipment options appear first.";options.appendChild(hint);
-}else alternatives.sort((a,b)=>a.name.localeCompare(b.name));
-alternatives.forEach(other=>{const button=document.createElement("button");button.textContent=other.name;button.onclick=()=>replaceExercise(ex.id,other.id);options.appendChild(button)})
+const ranked=rankExerciseSubstitutions(ex.id,alternatives),best=ranked[0];
+const featured=document.createElement("div");featured.className="smart-swap-card";
+const heading=document.createElement("strong");heading.textContent="PRISM PRO RECOMMENDS";featured.appendChild(heading);
+const name=document.createElement("p");name.textContent=best.exercise.name;featured.appendChild(name);
+const muscles=document.createElement("p");muscles.textContent=[best.metadata.primary,...best.metadata.secondary].join(" · ");featured.appendChild(muscles);
+const why=document.createElement("p");why.textContent=best.reason;featured.appendChild(why);
+const button=document.createElement("button");button.type="button";button.textContent=`Use ${best.exercise.name}`;button.onclick=()=>{if(canAccessFeature("smart_substitutions"))replaceExercise(ex.id,best.exercise.id)};featured.appendChild(button);options.appendChild(featured);
+if(ranked.length>1){const otherLabel=document.createElement("p");otherLabel.className="small";otherLabel.textContent="Other alternatives";options.appendChild(otherLabel)}
+ranked.slice(1,5).forEach(result=>{const option=document.createElement("button");option.type="button";option.textContent=`${result.exercise.name} · ${result.metadata.equipment||result.metadata.primary}`;option.onclick=()=>replaceExercise(ex.id,result.exercise.id);options.appendChild(option)});
+}else{alternatives.sort((a,b)=>a.name.localeCompare(b.name));alternatives.forEach(other=>{const button=document.createElement("button");button.type="button";button.textContent=other.name;button.onclick=()=>replaceExercise(ex.id,other.id);options.appendChild(button)})}
 };
 renderWarmupGuide(ex.id,card);
 }
@@ -2872,24 +2971,35 @@ const session=workoutHistory.find(s=>(s.exercises||[]).some(e=>e.id===exerciseId
 return session?.exercises.find(e=>e.id===exerciseId)||null;
 }
 
-function progressionSuggestion(exerciseId){
-const recent=workoutHistory.map(session=>(session.exercises||[]).find(ex=>ex.id===exerciseId))
-.filter(ex=>ex&&(ex.sets||[]).some(s=>Number(s.weight)>0&&Number(s.reps)>0)).slice(0,2);
-if(!recent.length)return null;
-const sets=recent[0].sets.filter(s=>Number(s.weight)>0&&Number(s.reps)>0);
-const weight=Number(sets[0].weight),working=sets.filter(s=>Number(s.weight)===weight);
-const previous=(recent[1]?.sets||[]).filter(s=>Number(s.weight)>0&&Number(s.reps)>0);
-const previousWorking=previous.filter(s=>Number(s.weight)===weight);
-const failed=working.every(s=>Number(s.reps)<8)&&previousWorking.length>0&&previousWorking.length===previous.length&&previousWorking.every(s=>Number(s.reps)<8);
-const passed=working.every(s=>Number(s.reps)>=10);
-return {last:`${weight} lb × ${working[0].reps} reps`,weight:Math.max(2.5,weight+(failed?-5:passed?5:0)),reason:failed?"Two difficult sessions—try a lighter weight":passed?"You reached 10 reps—try a little more":"Stay here and build toward 10 reps"};
+const SMART_REP_RANGE={min:8,max:10};
+function progressionSuggestion(exerciseId,range=SMART_REP_RANGE){
+const exercise=getExercise(exerciseId);
+if(!exercise)return null;
+const recent=workoutHistory.map(session=>{
+const entry=(session.exercises||[]).find(item=>item.id===exerciseId);
+const logged=(entry?.sets||[]).filter(set=>Number(set.weight)>0&&Number(set.reps)>0&&set.completed!==false);
+if(logged.length<2)return null;
+// Lighter warm-up sets are excluded; all sets at the highest working load count.
+const weight=Math.max(...logged.map(set=>Number(set.weight)));
+const working=logged.filter(set=>Number(set.weight)===weight);
+return working.length>=2?{weight,reps:working.map(set=>Number(set.reps))}:null;
+}).filter(Boolean).slice(0,3);
+if(!recent.length)return {status:"insufficient"};
+const last=recent[0],base={lastWeight:last.weight,lastReps:last.reps,range,status:"insufficient"};
+if(recent.length<2)return base;
+const metadata=smartExerciseMetadata(exercise);
+const increment=metadata.equipment==="Dumbbell"||metadata.type==="Isolation"?2.5:5;
+const latestTop=last.reps.every(reps=>reps>=range.max);
+const sameWeightFailures=recent.slice(0,2).every(session=>session.weight===last.weight&&session.reps.filter(reps=>reps<range.min).length>session.reps.length/2);
+let weight=last.weight,reason,action;
+if(latestTop){weight=last.weight+increment;action="increase";reason=`You reached the top of ${range.min}–${range.max} reps on every working set.`}
+else if(sameWeightFailures){weight=Math.max(increment,last.weight-increment);action="reduce";reason=`Most working sets fell below ${range.min} reps in two recent sessions at this weight.`}
+else{action="hold";reason=`Keep this weight and work toward ${range.max} reps on every working set.`}
+return {...base,status:"ready",weight:Number(weight.toFixed(2)),action,reason};
 }
 function overloadGoal(exerciseId){
 const manual=Number(tracking.manualTargets?.[overloadKey(exerciseId)]);
 if(manual>0)return manual;
-if(!canAccessFeature("smart_progression"))return null;
-const suggested=progressionSuggestion(exerciseId);
-if(suggested)return suggested.weight;
 const saved=Number(overloadTargets[overloadKey(exerciseId)]);
 return saved>0&&Number.isFinite(saved)?saved:null;
 }
@@ -2907,9 +3017,6 @@ localStorage.setItem("overloadTargetsV1",JSON.stringify(overloadTargets));
 saveTracking();
 const next=overloadGoal(exerciseId);
 preview.textContent=next!==null?`Today: ${next} lb × 8–10 reps${input.value!==""?" · Your target":""}`:"Choose a starting weight · 8–10 reps";
-const controls=input.closest(".goal-controls"),existing=controls?.querySelector(".use-suggestion");
-if(input.value!==""&&!existing){const button=document.createElement("button");button.type="button";button.className="use-suggestion";button.textContent="Use suggestion";button.onclick=()=>{delete tracking.manualTargets[overloadKey(exerciseId)];saveTracking();input.value=overloadGoal(exerciseId)??"";preview.textContent=overloadGoal(exerciseId)?`Today: ${overloadGoal(exerciseId)} lb × 8–10 reps`:"Choose a starting weight · 8–10 reps";button.remove();renderWarmupGuide(exerciseId,input.closest(".exercise"))};controls.appendChild(button)}
-if(input.value===""&&existing)existing.remove();
 renderWarmupGuide(exerciseId,input.closest(".exercise"));
 }
 function renderWarmupGuide(exerciseId,card){
@@ -3257,13 +3364,6 @@ const previousBest={};
 for(const ex of session.exercises)previousBest[ex.id]=Math.max(0,...workoutHistory.flatMap(s=>(s.exercises||[]).filter(item=>item.id===ex.id).flatMap(item=>item.sets||[]).map(set=>Number(set.weight)||0)));
 session.recordIds=session.exercises.filter(ex=>Math.max(0,...ex.sets.map(set=>Number(set.weight)||0))>previousBest[ex.id]).map(ex=>ex.id);
 workoutHistory.unshift(session);
-
-session.exercises.forEach(ex=>{
-const next=progressionSuggestion(ex.id);
-if(next)overloadTargets[overloadKey(ex.id)]=next.weight;
-});
-
-localStorage.setItem("overloadTargetsV1",JSON.stringify(overloadTargets));
 
 localStorage.setItem("workoutHistoryV52",JSON.stringify(workoutHistory));
 
