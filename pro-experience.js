@@ -1,0 +1,107 @@
+/* Consumer-facing beta presentation. Entitlements continue to live in PRISM_ACCESS. */
+const PRISM_PRO_FEEDBACK_KEY="prismProBetaFeedbackV1";
+let prismProPreviousScreen="profileScreen",prismProPreviousTab="Profile";
+
+function prismProHistoryExercise(){
+for(const session of workoutHistory)for(const entry of session.exercises||[]){
+const sets=(entry.sets||[]).filter(set=>Number(set.weight)>0&&Number(set.reps)>0);
+if(sets.length>=2&&getExercise(entry.id))return {entry,sets};
+}
+return null;
+}
+function prismProProgressionExample(){
+const previous=prismProHistoryExercise();
+if(previous){
+const result=progressionSuggestion(previous.entry.id),name=getExercise(previous.entry.id)?.name||previous.entry.name;
+if(result?.lastWeight){
+return `<small>YOUR SAVED TRAINING</small><strong>${escapeHTML(name)}</strong><br>Last: ${result.lastWeight} lb · ${result.lastReps.join(" / ")} reps<br>${result.status==="ready"?`Suggested: ${result.weight} lb · ${result.range.min}–${result.range.max} reps`:'A recommendation appears after another completed session.'}`;
+}
+}
+return `<small>SAMPLE PREVIEW · NOT YOUR DATA</small>Chest Press<br>Last: 180 lb · 10 / 10 / 10 reps<br>Suggested: 185 lb · 8–10 reps`;
+}
+function prismProSubstitutionExample(){
+const source=prismProHistoryExercise()?.entry.id||"machine-chest-press";
+const original=getExercise(source),ranked=rankExerciseSubstitutions(source),best=ranked[0];
+if(!original||!best)return `<small>PREVIEW</small>Rank alternatives by muscle, movement, equipment and purpose.`;
+return `<small>${prismProHistoryExercise()?"BASED ON A SAVED EXERCISE":"SAMPLE PREVIEW · NOT YOUR DATA"}</small>${escapeHTML(original.name)} unavailable?<br><strong>${escapeHTML(best.exercise.name)}</strong><br>${escapeHTML([best.metadata.primary,...best.metadata.secondary].join(" · "))}<br>${escapeHTML(best.reason)}`;
+}
+function prismProTrainingTotals(){
+const sessions=workoutHistory||[],sets=sessions.flatMap(s=>(s.exercises||[]).flatMap(ex=>ex.sets||[])).filter(s=>Number(s.weight)>0&&Number(s.reps)>0);
+return {sessions:sessions.length,sets:sets.length,volume:Math.round(sets.reduce((sum,s)=>sum+Number(s.weight)*Number(s.reps),0))};
+}
+function prismProWeeklyExample(){
+const start=weekStart(new Date()),sessions=workoutHistory.filter(s=>sessionDay(s)>=start);
+const sets=sessions.flatMap(s=>(s.exercises||[]).flatMap(ex=>ex.sets||[])).filter(s=>Number(s.weight)>0&&Number(s.reps)>0);
+const volume=Math.round(sets.reduce((sum,s)=>sum+Number(s.weight)*Number(s.reps),0));
+return `<small>YOUR CURRENT WEEK · SAVED DATA</small>${sessions.length} workouts · ${sets.length} working sets · ${volume.toLocaleString()} lb volume`;
+}
+function prismProPhaseExample(){
+const phase=typeof prismActivePhase==="function"?prismActivePhase():null;
+if(!phase)return `<small>PREVIEW · NO GOAL PHASE YET</small>Compare your training, weight and performance across Bulk, Cut, Maintain and Recomp phases.`;
+const label=PRISM_GOAL_NAMES[phase.type]||"Current goal",current=typeof prismCurrentWeight==="function"?prismCurrentWeight():null;
+const weight=Number(phase.startWeight)>0&&Number(current)>0?` · ${prismDisplayedWeight(phase.startWeight)} → ${prismDisplayedWeight(current)}`:"";
+return `<small>YOUR CURRENT GOAL · SAVED DATA</small>${escapeHTML(label)} · ${Number(phase.durationWeeks)||"—"} weeks${weight}<br>Review: ${escapeHTML(phase.endDate||"Not set")}`;
+}
+function prismProFeaturePreview(feature){
+switch(feature){
+case "smart_progression":return prismProProgressionExample();
+case "smart_substitutions":return prismProSubstitutionExample();
+case "photo_comparison":return `<small>PROGRESS PHOTOS</small>Save private progress photos, compare Front / Side / Back views and look back across goal phases. Your photos remain on this device.`;
+case "advanced_analytics":case "muscle_volume_analytics":case "full_time_trends":{
+const total=prismProTrainingTotals();return `<small>YOUR SAVED TRAINING</small>${total.sessions} workouts · ${total.sets} sets · ${total.volume.toLocaleString()} lb logged volume. Pro adds deeper trend and muscle-group views.`;
+}
+case "weekly_prism_summary":return prismProWeeklyExample()+`<br><small>Deeper coaching recap is a future Pro benefit.</small>`;
+case "plateau_detection":return `<small>COMING LATER · SAMPLE CONCEPT</small>After several sessions without progress, PRISM could suggest holding the weight and adding a rep before the next increase.`;
+case "phase_analysis":return prismProPhaseExample()+`<br><small>Long-term phase comparison is coming later.</small>`;
+case "advanced_pr_insights":return `<small>PRO INSIGHT</small>Explore your saved personal records, best volume and estimated strength in Records.`;
+case "advanced_measurement_trends":return `<small>PRO INSIGHT</small>See how your locally saved measurements change over time.`;
+case "unlimited_custom_workouts":return `<small>PRO BENEFIT</small>Create more than ${PRISM_ACCESS.limits.freeCustomWorkouts} custom workouts while keeping your existing saved workouts.`;
+default:return "";
+}
+}
+function prismProCard(symbol,title,description,preview,availability="",feature=""){
+return `<article class="prism-pro-benefit"><header><span class="pro-symbol" aria-hidden="true">${symbol}</span><h4>${title}</h4></header><p>${description}</p><div class="pro-example">${preview}</div>${availability?`<span class="pro-note">${availability}</span>`:""}${feature?`<button class="pro-feature-button" type="button" onclick="showProPreview('${feature}')">Preview ${title.toLowerCase()} →</button>`:""}</article>`;
+}
+function prismProFeedback(){
+try{const value=JSON.parse(localStorage.getItem(PRISM_PRO_FEEDBACK_KEY)||"null");return value&&typeof value==="object"&&!Array.isArray(value)?value:{}}catch{return {}}
+}
+function showPrismPro(){
+const visible=allScreens().find(id=>!document.getElementById(id).classList.contains("hidden"));
+if(visible&&visible!=="prismProScreen")prismProPreviousScreen=visible;
+if(visible&&visible!=="prismProScreen")prismProPreviousTab=document.querySelector('#prismBottomNav [aria-current="page"]')?.dataset.prismTab||"Profile";
+showScreen("prismProScreen");setBottomNav("Profile");renderPrismPro();
+}
+function returnFromPrismPro(){
+const target=allScreens().includes(prismProPreviousScreen)?prismProPreviousScreen:"profileScreen";
+showScreen(target);setBottomNav(prismProPreviousTab);
+if(target==="profileScreen")renderPrismAccessState();
+}
+function openPrismProFromPreview(){closeProPreview();showPrismPro()}
+function renderPrismPro(){
+const total=prismProTrainingTotals(),saved=prismProFeedback();
+const free=["Track workouts","Log sets, reps and weight","Preset workouts","Exercise library and instructions","Rest timer","Basic history and progress","Water and weight tracking","Body goals and calorie estimates","Up to 3 custom workouts","Manual exercise replacement"];
+const pro=["Everything in Free","Smart Progression","Smart Exercise Substitutions","Advanced Analytics","Weekly PRISM Summary","Plateau Detection","Long-Term Goal Insights","Progress Photos and comparisons","Advanced Measurement Trends","Unlimited Custom Workouts"];
+const benefits=["Progress Photos · Front / Side / Back","Side-by-side photo comparisons","Advanced measurement trends","Unlimited custom workouts","Advanced PR insights","Week / Month / Year trends"];
+document.getElementById("prismProPageContent").innerHTML=`<div class="prism-pro-hero"><img src="images/app-icon-192.png" alt="" aria-hidden="true"><span class="prism-pro-badge">PRISM PRO ✦</span><h2>Don't just record your workouts.<br>Know what to do next.</h2><p>PRISM doesn’t just track your workouts. It tells you what to do next.</p><p>PRISM Pro uses your training history to give you smarter progression, better substitutions, deeper insights, and long-term progress tracking.</p></div>
+<h3>Train with a clearer next step</h3><div class="prism-pro-grid">
+${prismProCard("↗","SMART PROGRESSION","PRISM analyzes your previous performance and helps you choose what to attempt next.",prismProProgressionExample(),"Available in Pro beta","smart_progression")}
+${prismProCard("⇄","SMART EXERCISE SUBSTITUTIONS","Get ranked alternatives instead of manually searching the exercise library.",prismProSubstitutionExample(),"Available in Pro beta","smart_substitutions")}
+${prismProCard("▥","ADVANCED ANALYTICS","Explore strength trends, training volume, muscle-group volume, exercise progression, PR trends and longer comparisons.",`<small>YOUR LOGGED TOTALS</small>${total.sessions} workouts · ${total.sets} sets · ${total.volume.toLocaleString()} lb volume`,"Existing Pro views; deeper analysis in development","advanced_analytics")}
+${prismProCard("◷","WEEKLY PRISM SUMMARY","See what improved, what stalled and what to focus on next.",prismProWeeklyExample(),"Current snapshot; coaching recap coming later","weekly_prism_summary")}
+${prismProCard("⌁","PLATEAU DETECTION","Identify exercises that stop progressing and consider a different next target.",`<small>COMING LATER · SAMPLE CONCEPT</small>Four flat sessions → hold the load and aim for +1 rep per set.`,"Concept preview · not active","plateau_detection")}
+${prismProCard("◇","LONG-TERM GOAL INSIGHTS","Compare training, weight, measurements and performance across Bulk, Cut, Maintain and Recomp.",prismProPhaseExample(),"Goal tracking exists; phase comparison coming later","phase_analysis")}
+</div><h3>More with Pro</h3><div class="prism-pro-chip-list">${benefits.map(value=>`<span>${value}</span>`).join("")}</div><div class="prism-pro-benefit" style="margin-top:15px"><h4>PROGRESS PHOTOS</h4><p>See your progress beyond the scale. Save photos over time; compare before and after, Front / Side / Back, and goal phases where dates support it. Photos stay private on this device.</p><button class="pro-feature-button" type="button" onclick="showProPreview('photo_comparison')">Preview progress photos →</button></div><p class="small">Coming later: Cloud Sync, Data Export, Premium Themes.</p>
+<h3>Free vs Pro</h3><div class="prism-pro-compare"><article><h4>PRISM FREE</h4><ul>${free.map(value=>`<li>✓ ${value}</li>`).join("")}</ul></article><article><h4>PRISM PRO ✦</h4><ul>${pro.map(value=>`<li>✓ ${value}</li>`).join("")}</ul></article></div>
+<div class="prism-pro-pricing"><h3>Pricing preview</h3><p>Monthly: price to be announced · Yearly: price to be announced (planned best value). A 14-day Pro trial is a concept for launch.</p><p><strong>Beta pricing preview — no purchase will be processed.</strong></p></div>
+<div class="prism-pro-pricing"><h3>Try the beta</h3><p>${prismEntitlement.tier==="lifetime_pro"?"Lifetime Pro is active on this device.":canAccessFeature("smart_progression")?"Your Pro experience is active.":"Explore current Pro features with the free beta preview."} Beta preview — no purchase required.</p><button class="pro-beta-action" type="button" onclick="showProfile()">Open Beta Access in Profile</button></div>
+<div class="prism-pro-feedback"><h3>Beta Feedback</h3><p>Optional. Saved on this device separately from your training data. No workout prompts.</p><form id="prismProFeedbackForm" onsubmit="savePrismProFeedback(event)"><label>Would you pay for PRISM Pro?<select name="wouldPay"><option value="">Select one</option><option>Yes</option><option>Maybe</option><option>No</option></select></label><label>Most valuable Pro feature<select name="mostValuable"><option value="">Select one</option>${["Smart Progression","Smart Exercise Substitutions","Advanced Analytics","Weekly PRISM Summary","Plateau Detection","Long-Term Goal Insights","Progress Photos"].map(value=>`<option>${value}</option>`).join("")}</select></label><label>What should be Free?<input name="shouldBeFree" maxlength="180" placeholder="Your thoughts"></label><label>What would make you subscribe?<textarea name="subscribeReason" maxlength="500" placeholder="Your thoughts"></textarea></label><label>Expected monthly price ($)<input name="monthlyPrice" type="number" min="0" max="500" step="0.01" inputmode="decimal" placeholder="Optional"></label><label>Expected yearly price ($)<input name="yearlyPrice" type="number" min="0" max="3000" step="0.01" inputmode="decimal" placeholder="Optional"></label><label>Additional comments<textarea name="comments" maxlength="500" placeholder="Anything else?"></textarea></label><button type="submit">Save beta feedback</button><output id="prismProFeedbackStatus" role="status"></output></form></div>`;
+const form=document.getElementById("prismProFeedbackForm");
+for(const field of form.elements)if(field.name&&saved[field.name]!=null)field.value=String(saved[field.name]);
+}
+function savePrismProFeedback(event){
+event.preventDefault();const form=event.currentTarget,feedback={};
+for(const field of form.elements)if(field.name)feedback[field.name]=String(field.value||"").trim();
+feedback.updatedAt=new Date().toISOString();
+try{localStorage.setItem(PRISM_PRO_FEEDBACK_KEY,JSON.stringify(feedback));document.getElementById("prismProFeedbackStatus").textContent="Saved on this device. Thanks for helping shape PRISM Pro."}
+catch{document.getElementById("prismProFeedbackStatus").textContent="Could not save feedback on this device. Please check available storage."}
+}
