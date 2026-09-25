@@ -1,0 +1,9 @@
+const fs=require('node:fs');const vm=require('node:vm');const assert=require('node:assert/strict');const path=require('node:path');
+const store={};const localStorage={getItem:k=>store[k]??null,setItem:(k,v)=>store[k]=String(v)};
+const phases=[{id:'cut1',type:'cut',startDate:'2026-09-01',endDate:'2026-11-30'}];
+const ctx={console,Math,Number,String,Date,localStorage,window:{PRISM_GOAL_NAMES:{cut:'Cut'}},document:{getElementById:()=>null,createElement:()=>({})},escapeHTML:v=>String(v),prismPhaseRead:()=>phases,canAccessFeature:()=>true,confirm:()=>true,showOverallProgress:function(){}};vm.createContext(ctx);vm.runInContext(fs.readFileSync(path.join(__dirname,'../measurements.js'),'utf8'),ctx);
+let a=ctx.prismMeasurementSave({date:'2026-09-01',weight:214.6,waist:39,chest:44,arm:16.2});assert.ok(a);assert.equal(a.phaseId,'cut1');let b=ctx.prismMeasurementSave({date:'2026-11-24',weight:202.1,waist:36.5,chest:43.5,arm:16.1});assert.ok(b);assert.equal(ctx.prismMeasurementRead().length,2);
+let c=ctx.prismMeasurementCompare('2026-09-02','2026-11-23');assert.equal(c.before.date,'2026-09-01');assert.equal(c.after.date,'2026-11-24');const weight=c.changes.find(x=>x.key==='weight'),waist=c.changes.find(x=>x.key==='waist');assert.ok(Math.abs(weight.delta+12.5)<.001);assert.ok(Math.abs(waist.delta+2.5)<.001);
+assert.equal(ctx.prismMeasurementNearest('2027-01-01'),null);assert.equal(ctx.prismMeasurementSave({date:'2026-10-01'}),false);const html=ctx.prismMeasurementComparisonHTML('2026-09-01','2026-11-24');assert.match(html,/214\.6/);assert.match(html,/-12\.5 lb/);assert.match(html,/Waist/);
+ctx.prismMeasurementDelete(a.id);assert.equal(ctx.prismMeasurementRead().length,1);
+console.log('PRISM measurements: save, phase link, nearest-date matching, deltas, empty validation, delete: OK');
