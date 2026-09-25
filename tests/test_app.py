@@ -180,7 +180,7 @@ class WorkoutTrackerTests(unittest.TestCase):
     def test_progress_and_release_version_are_not_animated(self):
         self.assertIn(".progress-fill{height:100%;width:0;background:#111;transition:none}", INDEX)
         self.assertIn('class="menu-version">PRISM · Version 10.2 Beta</small>', INDEX)
-        self.assertIn('const CACHE_NAME = "prism-v10.2-beta1";', SERVICE_WORKER)
+        self.assertIn('const CACHE_NAME = "prism-v10.2-beta2";', SERVICE_WORKER)
 
     def test_prism_logo_icons_and_pwa_references(self):
         manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
