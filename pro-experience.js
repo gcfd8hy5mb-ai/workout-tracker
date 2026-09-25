@@ -111,7 +111,7 @@ catch{document.getElementById("prismProFeedbackStatus").textContent="Could not s
 (function loadWeeklyPrismSummary(){
 if(document.querySelector('script[data-prism-weekly-summary]'))return;
 const script=document.createElement("script");
-script.src="weekly-summary.js?v=1";
+script.src="weekly-summary.js?v=2";
 script.async=false;
 script.dataset.prismWeeklySummary="1";
 document.body.appendChild(script);
