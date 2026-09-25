@@ -843,7 +843,7 @@ body:has(#workoutScreen:not(.hidden)) .prism-bottom-nav,body:has(#prismRestScree
 .prism-plan-options{margin-top:26px}
 #homeProgressCard,#home>.action-button{display:none}
 .prism-plan-options .card{margin-bottom:12px}
-.prism-profile-links{overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;margin:18px 0}
+.prism-local-hero{display:flex;align-items:center;gap:15px;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--card);margin:14px 0}.prism-local-hero strong,.prism-local-hero span,.prism-local-hero small{display:block}.prism-local-hero strong{font-size:20px}.prism-local-hero span{color:var(--blue);font-weight:650;margin-top:3px}.prism-local-hero small{color:#a9bbcb;line-height:1.35;margin-top:5px}.prism-avatar,.prism-avatar-option{width:56px;height:56px;display:grid;place-items:center;flex:none;overflow:hidden;border-radius:16px;background:#16263b;border:1px solid #3d6182}.prism-avatar img,.prism-avatar-option img{width:100%;height:100%;object-fit:contain}.prism-avatar-symbol{font-size:28px;color:#72bbff;font-weight:750}.prism-avatar-option.teal .prism-avatar-symbol,.prism-avatar.teal .prism-avatar-symbol{color:#6de1cd}.prism-avatar-option.violet .prism-avatar-symbol,.prism-avatar.violet .prism-avatar-symbol{color:#b2a2fa}.prism-avatar-choices{display:flex;gap:12px;flex-wrap:wrap}.prism-avatar-option{cursor:pointer;padding:0}.prism-avatar-option.selected{border:2px solid #63b9ff;box-shadow:0 0 0 2px #184b79}.prism-local-section{margin:14px 0}.prism-local-section h3{margin:0 0 14px}.prism-profile-links{overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;margin:18px 0}
 .prism-profile-links button{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--line);padding:16px 18px;min-height:55px;font-size:15px}
 .prism-profile-links button:last-child{border-bottom:0}
 .prism-profile-links span{color:var(--blue);font-size:23px}
@@ -1042,18 +1042,7 @@ body.prism-onboarding-active .container{max-width:560px;min-height:100dvh;paddin
 <div class="journey-brand"><img src="images/app-icon-192.png" alt="PRISM logo"><strong>PRISM</strong><small>Train · Track · Progress</small></div>
 <h2>Train smarter. Track every workout. Know what to do next.</h2>
 <p>Set up your training in a few short steps. You can change your goals later.</p>
-<div class="journey-actions"><button class="journey-primary" onclick="openPrismAuth('signup')">GET STARTED</button><button class="journey-secondary" onclick="openPrismAuth('signin')">I ALREADY HAVE AN ACCOUNT</button><button class="journey-secondary" onclick="startPrismGuest()">CONTINUE AS GUEST</button></div>
-</section>
-<section id="authScreen" class="hidden journey-shell">
-<div class="journey-brand"><img src="images/app-icon-192.png" alt="PRISM logo"><strong>PRISM</strong><small>Train · Track · Progress</small></div>
-<button class="back" onclick="showPrismWelcome()">← Back</button><h2 id="prismAuthTitle">Create account</h2>
-<p class="journey-note">Accounts aren't connected yet. Your workouts remain saved on this device. No password is saved here.</p>
-<form id="prismAuthForm" class="journey-form" onsubmit="submitPrismAuth(event)" novalidate>
-<label for="prismAuthEmail">Email</label><input id="prismAuthEmail" type="email" autocomplete="email" inputmode="email" required>
-<label for="prismAuthPassword">Password</label><input id="prismAuthPassword" type="password" autocomplete="new-password" required minlength="8">
-<div id="prismConfirmWrap"><label for="prismAuthConfirm">Confirm password</label><input id="prismAuthConfirm" type="password" autocomplete="new-password" minlength="8"></div>
-<p class="journey-error" id="prismAuthError" role="alert"></p><button type="submit" class="journey-primary" id="prismAuthSubmit">CREATE ACCOUNT</button>
-</form><div class="journey-actions"><button type="button" onclick="prismForgotPassword()">Forgot password?</button><button type="button" onclick="continuePrismLocal()">Continue using data on this device</button><button type="button" onclick="startPrismGuest()">Continue as guest</button></div>
+<div class="journey-actions"><button class="journey-primary" onclick="startPrismGuest()">GET STARTED</button></div><p class="journey-note">Create a local PRISM profile. Your data stays on this device.</p>
 </section>
 <section id="onboardingScreen" class="hidden journey-shell"><div class="journey-brand"><img src="images/app-icon-192.png" alt="PRISM logo"><strong>PRISM</strong><small>Train · Track · Progress</small></div><div id="prismJourneyContent"></div></section>
 <section id="goalReviewScreen" class="hidden journey-shell"><div class="journey-brand"><img src="images/app-icon-192.png" alt="PRISM logo"><strong>PRISM</strong><small>Train · Track · Progress</small></div><div id="prismGoalReviewContent"></div></section>
@@ -1135,9 +1124,9 @@ Exercise Library
 
 <section id="exerciseInfoScreen" class="hidden"><button class="back" onclick="returnFromExerciseInfo()">← Back</button><div id="prismExerciseInfo"></div></section>
 
-<section id="profileScreen" class="hidden"><div class="prism-section-head"><div><span class="prism-eyebrow">YOUR SPACE</span><h2>Profile</h2></div></div><p class="small">Your goals, tracking and settings stay saved on this device.</p><div class="prism-profile-links">
+<section id="profileScreen" class="hidden"><div class="prism-section-head"><div><span class="prism-eyebrow">YOUR SPACE</span><h2>Profile</h2></div></div><div id="prismLocalProfile"></div><div class="prism-profile-links">
 <button onclick="showTrackingGoals()">Goals & calorie targets <span>›</span></button><button onclick="showWeight()">Body weight <span>›</span></button><button onclick="showWater()">Water intake <span>›</span></button><button onclick="showFood()">Food tracking <span>›</span></button><button onclick="showWorkoutCalendar()">Workout calendar <span>›</span></button><button onclick="showPersonalRecords()">Personal records <span>›</span></button><button onclick="showMeasurements()">Measurements <span>›</span></button><button onclick="showProgressPhotos()">Private progress photos <span>›</span></button><button onclick="showManageWorkouts()">Manage workouts & data <span>›</span></button>
-</div><div class="card" id="prismAccountCard"><h3>Your PRISM access</h3><p class="small">Guest data is saved on this device. Secure accounts and syncing are coming later.</p><button type="button" onclick="openPrismAuth('signup')">Create account preview</button> <button type="button" onclick="signOutPrismLocal()">Leave this session</button></div><div class="card prism-tier-card" id="prismBetaAccess"><div class="prism-tier-heading"><h3>PRISM Beta Access</h3><span class="prism-pro-badge">BETA</span></div><p id="prismTierStatus" class="small" role="status"></p><div class="prism-tier-choices" role="group" aria-label="Beta experience"><button type="button" data-beta-mode="free" onclick="setBetaPreview('free')" aria-pressed="false">FREE</button><button type="button" data-beta-mode="pro" onclick="setBetaPreview('pro')" aria-pressed="false">PRO</button></div><p class="small">Beta preview only — no purchase required. Switching access never deletes your data.</p></div><div class="card" id="profileSettings"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
+</div><div class="card prism-tier-card" id="prismBetaAccess"><div class="prism-tier-heading"><h3>PRISM Beta Access</h3><span class="prism-pro-badge">BETA</span></div><p id="prismTierStatus" class="small" role="status"></p><div class="prism-tier-choices" role="group" aria-label="Beta experience"><button type="button" data-beta-mode="free" onclick="setBetaPreview('free')" aria-pressed="false">FREE</button><button type="button" data-beta-mode="pro" onclick="setBetaPreview('pro')" aria-pressed="false">PRO</button></div><p class="small">Beta preview only — no purchase required. Switching access never deletes your data.</p></div><div class="card" id="profileSettings"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
 
 <section id="helpScreen" class="hidden"><h2>Help &amp; Support</h2><div class="card"><h3>Workouts</h3><p class="small">Open a workout, enter weight and reps, and mark each set complete. Your active workout can be resumed from Home if you leave the app.</p></div><div class="card"><h3>Your saved data</h3><p class="small">Workouts and tracking are saved on this device. Download a backup before switching phones or clearing browser data.</p><button onclick="showDataBackup()">Open Data &amp; Backup</button></div><div class="card"><h3>Need more help?</h3><p class="small">Report an app issue through the project’s GitHub page. Please leave personal health information out of public issues.</p><a href="https://github.com/gcfd8hy5mb-ai/workout-tracker/issues" target="_blank" rel="noopener noreferrer">Open project support ↗</a></div></section>
 
@@ -1397,7 +1386,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <section class="drawer-section" aria-label="Other"><div class="menu-group">OTHER</div>
 <button type="button" class="menu-link" id="navHelp" onclick="showHelp()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-help"/></svg>Help &amp; Support</button>
 <button type="button" class="menu-link" id="navBackup" onclick="showDataBackup()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-backup"/></svg>Data &amp; Backup</button></section>
-<small class="menu-version">PRISM · Version 10.2 Beta</small>
+<small class="menu-version">PRISM · Version 10.3 Beta</small>
 </nav>
 
 <div id="pickerOverlay" class="picker-overlay hidden" onclick="closePicker()"></div>
@@ -2011,7 +2000,7 @@ function getExercise(id){return exerciseLibrary.find(x=>x.id===id)}
 
 function allScreens(){
 
-return ["welcomeScreen","authScreen","onboardingScreen","goalReviewScreen","home","workoutsScreen","workoutDetailScreen","exerciseInfoScreen","profileScreen","prismRestScreen","setupScreen","workoutScreen","libraryScreen","builderScreen",
+return ["welcomeScreen","onboardingScreen","goalReviewScreen","home","workoutsScreen","workoutDetailScreen","exerciseInfoScreen","profileScreen","prismRestScreen","setupScreen","workoutScreen","libraryScreen","builderScreen",
 
 "overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen","calendarScreen","recordsScreen","measurementsScreen","photosScreen","completionScreen","helpScreen"];
 
@@ -2025,7 +2014,7 @@ allScreens().forEach(x=>document.getElementById(x).classList.add("hidden"));
 
 document.getElementById(id).classList.remove("hidden");
 
-const focused=["welcomeScreen","authScreen","onboardingScreen","goalReviewScreen"].includes(id);
+const focused=["welcomeScreen","onboardingScreen","goalReviewScreen"].includes(id);
 document.body.classList.toggle("prism-onboarding-active",focused);
 document.getElementById("menuToggle").classList.toggle("hidden",id==="setupScreen"||focused);
 document.getElementById("headerToday").classList.toggle("hidden",id==="setupScreen"||focused);
@@ -2269,7 +2258,7 @@ Object.entries(presetWorkouts).forEach(([key,day])=>plans.push({kind:"preset",ke
 return plans;
 }
 function showWorkouts(){showScreen("workoutsScreen");setBottomNav("Workouts");renderWorkoutBrowser()}
-function showProfile(){showScreen("profileScreen");setBottomNav("Profile");renderPrismAccessState()}
+function showProfile(){showScreen("profileScreen");setBottomNav("Profile");renderPrismAccessState();renderPrismLocalProfile()}
 function showSettings(){showProfile();setBottomNav("Settings");document.getElementById("profileSettings").scrollIntoView({block:"start"})}
 function showHelp(){showScreen("helpScreen");setBottomNav("Help")}
 function showDataBackup(){showManageWorkouts();setBottomNav("Backup");document.getElementById("dataBackupSection").scrollIntoView({block:"start"})}
@@ -2365,7 +2354,7 @@ try{data[key]=JSON.parse(localStorage.getItem(key)??JSON.stringify(fallback))}
 catch{data[key]=fallback}
 }
 data.prismActiveWorkoutV1=readPrismActiveWorkout();
-for(const key of ["prismGoalPhasesV1","prismJourneyV1"])data[key]=(()=>{try{return JSON.parse(localStorage.getItem(key)||"null")}catch{return null}})();
+for(const key of ["prismGoalPhasesV1","prismJourneyV1","prismLocalProfileV1"])data[key]=(()=>{try{return JSON.parse(localStorage.getItem(key)||"null")}catch{return null}})();
 return {format:"workout-tracker-backup",version:1,exportedAt:new Date().toISOString(),data};
 }
 function validBackup(backup){
@@ -2420,6 +2409,7 @@ try{for(const key of Object.keys(backupKeys))localStorage.setItem(key,JSON.strin
 catch(error){for(const key of Object.keys(backupKeys))localStorage.removeItem(key);for(const [key,value] of Object.entries(previous))if(value!==null)localStorage.setItem(key,value);throw error}
 if(Array.isArray(backup.data.prismGoalPhasesV1))localStorage.setItem("prismGoalPhasesV1",JSON.stringify(backup.data.prismGoalPhasesV1));
 if(backup.data.prismJourneyV1&&typeof backup.data.prismJourneyV1==="object"&&["welcome","onboarding","complete"].includes(backup.data.prismJourneyV1.status))localStorage.setItem("prismJourneyV1",JSON.stringify(backup.data.prismJourneyV1));
+if(backup.data.prismLocalProfileV1&&typeof backup.data.prismLocalProfileV1==="object"&&!Array.isArray(backup.data.prismLocalProfileV1))localStorage.setItem("prismLocalProfileV1",JSON.stringify(backup.data.prismLocalProfileV1));
 if(Object.hasOwn(backup.data,"prismActiveWorkoutV1")){
 const active=backup.data.prismActiveWorkoutV1;
 if(active&&typeof active.key==="string"&&Array.isArray(active.ids))localStorage.setItem("prismActiveWorkoutV1",JSON.stringify(active));
@@ -2464,7 +2454,7 @@ document.getElementById("homeProgressCard").classList.toggle("hidden",!workoutGo
 
 }
 
-function localGreeting(){const hour=new Date().getHours();return hour<12?"Good morning":hour<17?"Good afternoon":"Good evening"}
+function localGreeting(){const hour=new Date().getHours(),greeting=hour<12?"Good morning":hour<17?"Good afternoon":"Good evening",name=typeof prismProfileName==="function"?prismProfileName():"";return name?`${greeting}, ${name}`:greeting}
 function renderPrismTodayDashboard(){
 const area=document.getElementById("todayDashboard");area.replaceChildren();area.classList.add("prism-home-dashboard");
 const plans=workoutGoals&&!workoutGoals.skipped?
