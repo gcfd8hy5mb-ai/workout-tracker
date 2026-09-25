@@ -109,6 +109,19 @@ if(button)button.disabled=!valid;
 if(hint)hint.textContent=valid?"":"Enter your name to continue.";
 if(valid){const error=document.getElementById("journeyError");if(error)error.textContent=""}
 }
+function prismProfileViewport(){
+const actions=document.querySelector(".journey-profile-actions");
+const viewport=window.visualViewport;
+if(!actions||!viewport)return;
+// Android Chrome can shrink only the visual viewport when the keyboard opens.
+// Keep Continue above it while preserving normal page scrolling.
+const keyboard=Math.max(0,window.innerHeight-viewport.height-viewport.offsetTop);
+actions.style.bottom=`${Math.round(keyboard)}px`;
+}
+if(window.visualViewport){
+window.visualViewport.addEventListener("resize",prismProfileViewport);
+window.visualViewport.addEventListener("scroll",prismProfileViewport);
+}
 function prismBack(){if(prismJourney.step===0){showPrismWelcome();return}prismJourney.step--;savePrismJourney();renderPrismJourney()}
 function prismNext(){
 const step=prismJourney.step,d=prismJourney.draft,error=document.getElementById("journeyError");
@@ -166,6 +179,7 @@ html+=`<h2>YOU'RE READY${d.displayName?", "+escapeHTML(d.displayName.toUpperCase
 }
 area.innerHTML=html;
 if(s===0)prismProfileChanged();
+if(s===0)prismProfileViewport();
 if(s===3)prismUpdateDuration();
 if(s===4)prismUpdateCaloriePreview();
 }
