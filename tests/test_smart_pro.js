@@ -10,6 +10,7 @@ assert.deepEqual(new Set(metadataIds),new Set(ids),'every library exercise has s
 const exercises=[
 {id:'machine-chest-press',name:'Machine Chest Press',muscle:'Chest'},
 {id:'smith-bench-press',name:'Smith Bench Press',muscle:'Chest'},
+{id:'push-up',name:'Push-Up',muscle:'Chest'},
 {id:'incline-chest-press',name:'Incline Chest Press',muscle:'Chest'},
 {id:'pec-deck',name:'Pec Deck',muscle:'Chest'},
 {id:'triceps-pushdown',name:'Triceps Pushdown',muscle:'Triceps'}
