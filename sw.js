@@ -1,10 +1,11 @@
-const CACHE_NAME = "prism-v10.1-beta1";
+const CACHE_NAME = "prism-v10.2-beta1";
 
 const APP_FILES = [
 
   "./",
 
   "./index.html",
+  "./onboarding.js",
 
   "./manifest.json",
 
