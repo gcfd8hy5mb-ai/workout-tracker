@@ -2359,7 +2359,8 @@ return available.filter(candidate=>candidate.id!==exerciseId&&candidate.muscle==
 const shared=meta.secondary.filter(muscle=>source.secondary.includes(muscle));
 const pattern=!!source.pattern&&meta.pattern===source.pattern;
 const equipment=!!source.equipment&&meta.equipment===source.equipment;
-const score=100+(pattern?40:0)+Math.min(shared.length,3)*9+(equipment?7:0)+(source.type&&meta.type===source.type?3:0);
+const similarEquipment=!equipment&&["Machine","Smith machine"].includes(source.equipment)&&["Machine","Smith machine"].includes(meta.equipment);
+const score=100+(pattern?40:0)+Math.min(shared.length,3)*9+(equipment?9:similarEquipment?5:0)+(source.type&&meta.type===source.type?3:0);
 const reasons=[pattern?`the same ${source.pattern.toLowerCase()} movement`:"the same primary muscle",equipment?`similar ${meta.equipment.toLowerCase()} equipment`:null].filter(Boolean);
 return {exercise:ex,metadata:meta,score,reason:`Targets ${source.primary.toLowerCase()} with ${reasons.join(" and ")}.`};
 }).sort((a,b)=>b.score-a.score||a.exercise.name.localeCompare(b.exercise.name));
