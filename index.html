@@ -996,6 +996,25 @@ body.prism-drawer-open{overflow:hidden}
 .prism-pro-preview button{min-height:48px;border-radius:12px;padding:10px 16px}
 .prism-pro-actions{display:flex;gap:9px;flex-wrap:wrap}.prism-pro-actions button:first-child{background:#238af0;color:#fff;border:1px solid #73c4ff}.prism-pro-actions button:last-child{background:#233a52;border:1px solid #45617b;color:#fff}
 .prism-pro-close{float:right;background:transparent;border:0;color:#fff;font-size:25px}
+.prism-pro-feature-detail{margin:14px 0;padding:13px;border:1px solid #345979;border-radius:13px;background:#102b44;color:#eaf5ff;line-height:1.55}
+.prism-pro-feature-detail small{display:block;color:#9db6d1;margin-bottom:5px}
+.prism-pro-page{max-width:620px;margin:auto;padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+.prism-pro-page .pro-back{min-height:44px;border:0;background:transparent;color:#a8c9e8;padding:8px 0;font:inherit}
+.prism-pro-hero{padding:24px 19px;border:1px solid #285476;border-radius:23px;background:radial-gradient(circle at 86% 8%,#163f68 0%,#10283e 35%,#101b2b 77%);box-shadow:0 12px 35px #03091366}
+.prism-pro-hero img{width:56px;height:56px;object-fit:contain}.prism-pro-hero h2{margin:14px 0 9px;font-size:clamp(29px,8vw,38px);line-height:1.08}.prism-pro-hero p{color:#b7cce0;line-height:1.55;margin:8px 0}
+.prism-pro-page h3{font-size:19px;margin:27px 0 12px}.prism-pro-grid{display:grid;gap:12px}
+.prism-pro-benefit{border:1px solid #2c4760;background:#17283b;border-radius:17px;padding:16px;box-shadow:0 7px 18px #030a1833}
+.prism-pro-benefit header{position:static;display:flex;align-items:center;gap:9px;padding:0;background:none;border:0;min-height:0;box-shadow:none;color:#fff}
+.prism-pro-benefit .pro-symbol{display:grid;place-items:center;flex:none;width:31px;height:31px;border:1px solid #326b9d;border-radius:9px;color:#81c7ff;font-size:18px}
+.prism-pro-benefit h4{margin:0;font-size:15px}.prism-pro-benefit p{color:#b6c9dd;font-size:14px;line-height:1.5;margin:10px 0 0}
+.prism-pro-benefit .pro-example{margin-top:13px;padding:12px;border:1px solid #315471;border-radius:12px;background:#10253a;color:#f1f8ff;font-size:14px;line-height:1.55}
+.prism-pro-benefit .pro-example small{color:#90c5f2;display:block;font-weight:700;letter-spacing:.05em}.prism-pro-benefit .pro-example strong{color:#fff}
+.prism-pro-benefit .pro-feature-button{display:block;margin-top:12px;min-height:44px;border:1px solid #477aab;border-radius:10px;background:#1d4265;color:#e6f5ff;padding:8px 12px;font:inherit;font-size:13px;font-weight:700}
+.prism-pro-page .pro-note{display:inline-block;margin-top:10px;border:1px solid #476080;border-radius:7px;padding:3px 7px;color:#c5d6e8;font-size:11px}
+.prism-pro-chip-list{display:flex;gap:8px;flex-wrap:wrap}.prism-pro-chip-list span{border:1px solid #344d66;border-radius:10px;padding:9px 11px;background:#17283b;color:#dce9f7;font-size:13px}
+.prism-pro-compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.prism-pro-compare article{border:1px solid #324c66;border-radius:17px;padding:14px;background:#142438}.prism-pro-compare article:last-child{border-color:#277bc0;background:#143657}.prism-pro-compare h4{margin:0 0 10px}.prism-pro-compare ul{list-style:none;padding:0;margin:0}.prism-pro-compare li{font-size:12px;line-height:1.4;padding:5px 0;color:#d1e0ee}
+.prism-pro-pricing,.prism-pro-feedback{padding:17px;border:1px solid #31506c;border-radius:18px;background:#17283b;margin-top:18px}.prism-pro-pricing p,.prism-pro-feedback p{color:#b5c8da;font-size:13px;line-height:1.5}.prism-pro-feedback form{display:grid;gap:12px}.prism-pro-feedback label{display:grid;gap:5px;font-size:13px;color:#d7e6f4}.prism-pro-feedback select,.prism-pro-feedback input,.prism-pro-feedback textarea{width:100%;min-height:45px;border:1px solid #48647e;border-radius:11px;background:#0e1c2b;color:#fff;padding:9px 11px;font:inherit}.prism-pro-feedback textarea{min-height:75px}.prism-pro-feedback button,.prism-pro-page .pro-beta-action{min-height:48px;border:0;border-radius:12px;background:#2189f2;color:white;padding:10px 15px;font:inherit;font-weight:700}.prism-pro-feedback output{color:#a1d6ff;font-size:13px}
+@media(max-width:365px){.prism-pro-compare{grid-template-columns:1fr}}
 /* PRISM welcome, goal phases and account preview */
 body.prism-onboarding-active header,body.prism-onboarding-active #prismBottomNav{display:none!important}
 body.prism-onboarding-active .container{max-width:560px;min-height:100dvh;padding:calc(24px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom))}
@@ -1133,7 +1152,9 @@ Exercise Library
 
 <section id="profileScreen" class="hidden"><div class="prism-section-head"><div><span class="prism-eyebrow">YOUR SPACE</span><h2>Profile</h2></div></div><div id="prismLocalProfile"></div><div class="prism-profile-links">
 <button onclick="showTrackingGoals()">Goals & calorie targets <span>›</span></button><button onclick="showWeight()">Body weight <span>›</span></button><button onclick="showWater()">Water intake <span>›</span></button><button onclick="showFood()">Food tracking <span>›</span></button><button onclick="showWorkoutCalendar()">Workout calendar <span>›</span></button><button onclick="showPersonalRecords()">Personal records <span>›</span></button><button onclick="showMeasurements()">Measurements <span>›</span></button><button onclick="showProgressPhotos()">Private progress photos <span>›</span></button><button onclick="showManageWorkouts()">Manage workouts & data <span>›</span></button>
-</div><div class="card prism-tier-card" id="prismBetaAccess"><div class="prism-tier-heading"><h3>PRISM Beta Access</h3><span class="prism-pro-badge">BETA</span></div><p id="prismTierStatus" class="small" role="status"></p><div class="prism-tier-choices" role="group" aria-label="Beta experience"><button type="button" data-beta-mode="free" onclick="setBetaPreview('free')" aria-pressed="false">FREE</button><button type="button" data-beta-mode="pro" onclick="setBetaPreview('pro')" aria-pressed="false">PRO</button></div><p class="small">Beta preview only — no purchase required. Switching access never deletes your data.</p></div><div class="card" id="profileSettings"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
+</div><div class="card prism-tier-card"><div class="prism-tier-heading"><h3>Explore PRISM Pro</h3><span class="prism-pro-badge">PRO ✦</span></div><p class="small">PRISM doesn’t just track your workouts. It tells you what to do next.</p><button type="button" class="prism-primary prism-wide" onclick="showPrismPro()">See what Pro can do</button></div><div class="card prism-tier-card" id="prismBetaAccess"><div class="prism-tier-heading"><h3>PRISM Beta Access</h3><span class="prism-pro-badge">BETA</span></div><p id="prismTierStatus" class="small" role="status"></p><div class="prism-tier-choices" role="group" aria-label="Beta experience"><button type="button" data-beta-mode="free" onclick="setBetaPreview('free')" aria-pressed="false">FREE</button><button type="button" data-beta-mode="pro" onclick="setBetaPreview('pro')" aria-pressed="false">PRO</button></div><p class="small">Beta preview only — no purchase required. Switching access never deletes your data.</p></div><div class="card" id="profileSettings"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
+
+<section id="prismProScreen" class="hidden prism-pro-page" aria-label="PRISM Pro"><button type="button" class="pro-back" onclick="returnFromPrismPro()">← Back</button><div id="prismProPageContent"></div></section>
 
 <section id="helpScreen" class="hidden"><h2>Help &amp; Support</h2><div class="card"><h3>Workouts</h3><p class="small">Open a workout, enter weight and reps, and mark each set complete. Your active workout can be resumed from Home if you leave the app.</p></div><div class="card"><h3>Your saved data</h3><p class="small">Workouts and tracking are saved on this device. Download a backup before switching phones or clearing browser data.</p><button onclick="showDataBackup()">Open Data &amp; Backup</button></div><div class="card"><h3>Need more help?</h3><p class="small">Report an app issue through the project’s GitHub page. Please leave personal health information out of public issues.</p><a href="https://github.com/gcfd8hy5mb-ai/workout-tracker/issues" target="_blank" rel="noopener noreferrer">Open project support ↗</a></div></section>
 
@@ -1334,7 +1355,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 </div>
 
-<div id="prismProOverlay" class="prism-pro-overlay hidden" onclick="if(event.target===this)closeProPreview()" aria-hidden="true"><div class="prism-pro-preview" role="dialog" aria-modal="true" aria-labelledby="prismProTitle" aria-describedby="prismProDescription"><button type="button" class="prism-pro-close" onclick="closeProPreview()" aria-label="Close PRISM Pro preview">×</button><span class="prism-pro-badge">PRO ✦</span><h2 id="prismProTitle">PRISM Pro</h2><p id="prismProDescription"></p><ul id="prismProBenefits" class="hidden"></ul><p id="prismProDetails" class="small hidden">Explore these features in beta from Profile. No payment is collected during the preview.</p><div class="prism-pro-actions"><button type="button" onclick="document.getElementById('prismProDetails').classList.remove('hidden')">Explore PRISM Pro</button><button type="button" onclick="closeProPreview()">Not now</button></div></div></div>
+<div id="prismProOverlay" class="prism-pro-overlay hidden" onclick="if(event.target===this)closeProPreview()" aria-hidden="true"><div class="prism-pro-preview" role="dialog" aria-modal="true" aria-labelledby="prismProTitle" aria-describedby="prismProDescription"><button type="button" class="prism-pro-close" onclick="closeProPreview()" aria-label="Close PRISM Pro preview">×</button><span class="prism-pro-badge">PRO ✦</span><h2 id="prismProTitle">PRISM Pro</h2><p id="prismProDescription"></p><div id="prismProFeatureDetail" class="prism-pro-feature-detail hidden"></div><ul id="prismProBenefits" class="hidden"></ul><div class="prism-pro-actions"><button type="button" onclick="openPrismProFromPreview()">Explore PRISM Pro</button><button type="button" onclick="closeProPreview()">Not now</button></div></div></div>
 
 <nav id="prismBottomNav" class="prism-bottom-nav" aria-label="Primary navigation">
 <button type="button" data-prism-tab="Home" onclick="goHome()" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></svg><span>Home</span></button>
@@ -1962,12 +1983,14 @@ const overlay=document.getElementById("prismProOverlay");
 prismProReturnFocus=document.activeElement;
 document.getElementById("prismProTitle").textContent=title;
 document.getElementById("prismProDescription").textContent=description;
+const detail=document.getElementById("prismProFeatureDetail");
+detail.innerHTML=typeof prismProFeaturePreview==="function"?prismProFeaturePreview(PRISM_FEATURE_ALIASES[feature]||feature):"";
+detail.classList.toggle("hidden",!detail.innerHTML);
 const benefits=document.getElementById("prismProBenefits");benefits.replaceChildren();
 if((PRISM_FEATURE_ALIASES[feature]||feature)==="photo_comparison"){
 for(const line of ["Save progress photos over time","Compare before and after photos side by side","Track visual changes across Bulk, Cut, Maintain, or Recomp phases"]){const item=document.createElement("li");item.textContent=line;benefits.appendChild(item)}
 benefits.classList.remove("hidden");
 }else benefits.classList.add("hidden");
-document.getElementById("prismProDetails").classList.add("hidden");
 overlay.classList.remove("hidden");overlay.setAttribute("aria-hidden","false");
 overlay.querySelector(".prism-pro-close").focus();
 }
@@ -2033,7 +2056,7 @@ function allScreens(){
 
 return ["welcomeScreen","onboardingScreen","goalReviewScreen","home","workoutsScreen","workoutDetailScreen","exerciseInfoScreen","profileScreen","prismRestScreen","setupScreen","workoutScreen","libraryScreen","builderScreen",
 
-"overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen","calendarScreen","recordsScreen","measurementsScreen","photosScreen","completionScreen","helpScreen"];
+"overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen","calendarScreen","recordsScreen","measurementsScreen","photosScreen","completionScreen","helpScreen","prismProScreen"];
 
 }
 
@@ -4564,6 +4587,7 @@ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
 
 </script>
 <script src="onboarding.js"></script>
+<script src="pro-experience.js"></script>
 
 </body>
 
