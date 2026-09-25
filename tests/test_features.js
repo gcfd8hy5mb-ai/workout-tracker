@@ -58,7 +58,7 @@ const weeklyEnd=source.indexOf('/* OVERALL PROGRESS */',weeklyStart);
 const weeklyArea={innerHTML:''};
 const weekContext={
 document:{getElementById:()=>weeklyArea},workoutHistory:[{date:new Date().toISOString(),exercises:[{id:'press',sets:[{weight:185,reps:8}]}]}],
-workoutGoals:{days:4},tracking:{food:[]},weightEntriesNewestFirst:()=>[],dailyCalorieTarget:()=>2000,
+workoutGoals:{days:4},tracking:{food:[]},weightEntriesNewestFirst:()=>[],dailyCalorieTarget:()=>2000,canAccessFeature:()=>false,proFeatureCard:()=>'<div>PRO</div>',
 sessionDay:s=>s.date.slice(0,10),weekStart:date=>{const day=new Date(date);day.setDate(day.getDate()-(day.getDay()+6)%7);return day.toISOString().slice(0,10)}
 };
 vm.createContext(weekContext);vm.runInContext(source.slice(weeklyStart,weeklyEnd),weekContext);
@@ -66,6 +66,9 @@ weekContext.renderWeeklySummary('weeklySummaryHome');
 assert.match(weeklyArea.innerHTML,/Weekly workout goal/);
 assert.match(weeklyArea.innerHTML,/1\/4/);
 assert.match(weeklyArea.innerHTML,/See all progress/);
+assert.doesNotMatch(weeklyArea.innerHTML,/Weight change|Calories:|PRs/,'Free summary stays basic');
+weekContext.canAccessFeature=()=>true;weekContext.renderWeeklySummary('weeklySummary');
+assert.match(weeklyArea.innerHTML,/Weekly PRISM Summary|PRs/,'Pro includes detailed weekly insights');
 const pickerStart=source.indexOf('function confirmPicker(){'),pickerEnd=source.indexOf('function refreshComparison(key){',pickerStart);
 let chosen=null,closed=0;
 const direct={value:'185',focus:()=>{}};
