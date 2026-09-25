@@ -1,4 +1,4 @@
-const CACHE_NAME = "prism-v10.3-beta6";
+const CACHE_NAME = "prism-v10.3-beta7";
 
 const APP_FILES = [
   "./",
@@ -37,16 +37,44 @@ const ANDROID_ONBOARDING_HOTFIX = `
     }
 
     const style = document.createElement("style");
-    style.id = "prism-android-onboarding-scroll-hotfix";
-    style.textContent = "body.prism-onboarding-active{overflow-y:auto!important;overflow-x:hidden!important;min-height:100vh!important;min-height:100dvh!important;height:auto!important;overscroll-behavior-y:auto!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important}body.prism-onboarding-active .container,body.prism-onboarding-active #onboardingScreen,body.prism-onboarding-active #prismJourneyContent,body.prism-onboarding-active .journey-shell{height:auto!important;max-height:none!important;overflow:visible!important}body.prism-onboarding-active .container{min-height:100vh!important;min-height:100dvh!important;padding-bottom:calc(96px + env(safe-area-inset-bottom))!important}body.prism-onboarding-active .journey-profile-actions{position:static!important;inset:auto!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;transform:none!important;margin-top:18px!important;padding:0 0 calc(36px + env(safe-area-inset-bottom))!important;background:transparent!important}body.prism-onboarding-active .journey-profile-actions .journey-actions{margin-top:10px!important}";
+    style.id = "prism-android-scroll-hotfix";
+    style.textContent = "html,body{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overscroll-behavior-y:auto!important;-webkit-overflow-scrolling:touch!important}body:not(.prism-drawer-open){overflow-y:auto!important;touch-action:pan-y!important}body.prism-onboarding-active{overflow-y:auto!important;min-height:100vh!important;min-height:100dvh!important;height:auto!important;touch-action:pan-y!important}body.prism-onboarding-active .container,body.prism-onboarding-active #onboardingScreen,body.prism-onboarding-active #prismJourneyContent,body.prism-onboarding-active .journey-shell{height:auto!important;max-height:none!important;overflow:visible!important}body.prism-onboarding-active .container{min-height:100vh!important;min-height:100dvh!important;padding-bottom:calc(96px + env(safe-area-inset-bottom))!important}body.prism-onboarding-active .journey-profile-actions{position:static!important;inset:auto!important;transform:none!important;margin-top:18px!important;padding:0 0 calc(36px + env(safe-area-inset-bottom))!important;background:transparent!important}body.prism-onboarding-active .journey-profile-actions .journey-actions{margin-top:10px!important}";
 
     document.getElementById(style.id)?.remove();
     document.head.appendChild(style);
 
+    const clearStaleDrawerLock = () => {
+      const menu = document.getElementById("sideMenu");
+      if (!menu || !menu.classList.contains("open")) {
+        document.body.classList.remove("prism-drawer-open");
+        document.body.style.overflow = "";
+      }
+    };
+
+    clearStaleDrawerLock();
+
+    if (typeof closeMenu === "function" && !closeMenu.__prismScrollPatched) {
+      const originalCloseMenu = closeMenu;
+      const patchedCloseMenu = function(...args) {
+        try { return originalCloseMenu.apply(this,args); }
+        finally {
+          document.body.classList.remove("prism-drawer-open");
+          document.body.style.overflow = "";
+        }
+      };
+      patchedCloseMenu.__prismScrollPatched = true;
+      window.closeMenu = patchedCloseMenu;
+    }
+
+    const menu = document.getElementById("sideMenu");
+    if (menu && window.MutationObserver) {
+      new MutationObserver(clearStaleDrawerLock).observe(menu,{attributes:true,attributeFilter:["class","aria-hidden"]});
+    }
+
     const actions = document.querySelector(".journey-profile-actions");
     if (actions) actions.style.bottom = "";
   } catch (error) {
-    console.warn("PRISM onboarding scroll hotfix could not initialize", error);
+    console.warn("PRISM Android scroll hotfix could not initialize", error);
   }
 })();
 `;
