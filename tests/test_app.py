@@ -160,7 +160,7 @@ class WorkoutTrackerTests(unittest.TestCase):
         self.assertIn('id="headerToday" class="header-today" onclick="goHome()"', INDEX)
         self.assertIn('headerToday").classList.toggle("hidden",id==="setupScreen")', INDEX)
         self.assertIn('--header-height:72px', INDEX)
-        self.assertIn('class="menu-version">PRISM · Version 10.0</small>', INDEX)
+        self.assertIn('class="menu-version">PRISM · Version 10.1 Beta</small>', INDEX)
         self.assertIn('id="sideMenu" class="side-menu" aria-label="Main menu" aria-hidden="true" inert', INDEX)
         self.assertIn('.side-menu.open{transform:translateX(0);visibility:visible}', INDEX)
         self.assertIn('event.key==="Escape"', INDEX)
@@ -179,8 +179,8 @@ class WorkoutTrackerTests(unittest.TestCase):
 
     def test_progress_and_release_version_are_not_animated(self):
         self.assertIn(".progress-fill{height:100%;width:0;background:#111;transition:none}", INDEX)
-        self.assertIn('class="menu-version">PRISM · Version 10.0</small>', INDEX)
-        self.assertIn('const CACHE_NAME = "prism-v10.0-logo1";', SERVICE_WORKER)
+        self.assertIn('class="menu-version">PRISM · Version 10.1 Beta</small>', INDEX)
+        self.assertIn('const CACHE_NAME = "prism-v10.1-beta1";', SERVICE_WORKER)
 
     def test_prism_logo_icons_and_pwa_references(self):
         manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))

@@ -972,6 +972,24 @@ body.prism-drawer-open{overflow:hidden}
 #sideMenu .menu-link:focus-visible,#sideMenu .menu-group-toggle:focus-visible,#sideMenu .menu-close:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
 #sideMenu .menu-version{margin:15px 2px 0;padding:16px 11px 0;border-top:1px solid var(--line);color:#8da0b6;font-size:12px}
 #profileSettings,#dataBackupSection{scroll-margin-top:calc(var(--header-height) + 20px)}
+/* Beta entitlement controls and one reusable PRISM Pro preview. */
+.prism-tier-card{margin-top:16px}
+.prism-tier-heading{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.prism-pro-badge{display:inline-flex;align-items:center;padding:3px 7px;border-radius:6px;background:#163f69;color:#80c9ff;font-size:10px;font-weight:800;letter-spacing:.1em;vertical-align:middle}
+.prism-tier-choices{display:flex;gap:8px;margin:13px 0 5px}
+.prism-tier-choices button{flex:1;min-height:48px;border-radius:12px;border:1px solid #3a536b;background:#172435;color:var(--text);font-weight:700}
+.prism-tier-choices button[aria-pressed=true]{border-color:#75c3ff;background:#164776;color:#fff}
+.prism-tier-choices button:focus-visible,.prism-pro-preview button:focus-visible{outline:2px solid #75c3ff;outline-offset:2px}
+.prism-pro-teaser{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0;padding:14px;border:1px solid #315474;border-radius:14px;background:#13283d;color:var(--text)}
+.prism-pro-teaser strong{font-size:14px}.prism-pro-teaser button{min-height:44px;padding:8px 12px;border:1px solid #447dad;border-radius:10px;background:#194e7c;color:#fff}
+.prism-pro-overlay{position:fixed;inset:0;z-index:9000;display:grid;place-items:end center;padding:20px 12px calc(16px + env(safe-area-inset-bottom));background:rgba(1,6,14,.79)}
+.prism-pro-overlay.hidden{display:none}
+.prism-pro-preview{width:min(100%,480px);padding:23px 20px;border-radius:22px;border:1px solid #416384;background:linear-gradient(145deg,#1b3048,#0f1b2b);box-shadow:0 20px 50px rgba(0,0,0,.5);color:#fff}
+.prism-pro-preview h2{font-size:26px;margin:10px 0}.prism-pro-preview p{line-height:1.55;color:#bac9da}
+.prism-pro-preview button{min-height:48px;border-radius:12px;padding:10px 16px}
+.prism-pro-actions{display:flex;gap:9px;flex-wrap:wrap}.prism-pro-actions button:first-child{background:#238af0;color:#fff;border:1px solid #73c4ff}.prism-pro-actions button:last-child{background:#233a52;border:1px solid #45617b;color:#fff}
+.prism-pro-close{float:right;background:transparent;border:0;color:#fff;font-size:25px}
+@media(prefers-reduced-motion:reduce){.prism-pro-overlay,.prism-tier-choices button{transition:none!important}}
 @media(prefers-reduced-motion:reduce){#sideMenu,#menuScrim,#sideMenu .drawer-section-body,#sideMenu .drawer-chevron{transition:none!important}}
 @media(max-width:420px){.container{padding:14px 12px 30px}.prism-metric{padding:12px}.prism-metric b{font-size:17px}.prism-bottom-nav button{font-size:9px}.prism-detail-hero .exercise-mini-map{width:75px}}
 @media(max-width:600px){body:has(input:focus) .prism-bottom-nav{display:none}}
@@ -1072,7 +1090,7 @@ Exercise Library
 
 <section id="profileScreen" class="hidden"><div class="prism-section-head"><div><span class="prism-eyebrow">YOUR SPACE</span><h2>Profile</h2></div></div><p class="small">Your goals, tracking and settings stay saved on this device.</p><div class="prism-profile-links">
 <button onclick="showTrackingGoals()">Goals & calorie targets <span>›</span></button><button onclick="showWeight()">Body weight <span>›</span></button><button onclick="showWater()">Water intake <span>›</span></button><button onclick="showFood()">Food tracking <span>›</span></button><button onclick="showWorkoutCalendar()">Workout calendar <span>›</span></button><button onclick="showPersonalRecords()">Personal records <span>›</span></button><button onclick="showMeasurements()">Measurements <span>›</span></button><button onclick="showProgressPhotos()">Private progress photos <span>›</span></button><button onclick="showManageWorkouts()">Manage workouts & data <span>›</span></button>
-</div><div class="card" id="profileSettings"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
+</div><div class="card prism-tier-card" id="prismBetaAccess"><div class="prism-tier-heading"><h3>PRISM Beta Access</h3><span class="prism-pro-badge">BETA</span></div><p id="prismTierStatus" class="small" role="status"></p><div class="prism-tier-choices" role="group" aria-label="Beta experience"><button type="button" data-beta-mode="free" onclick="setBetaPreview('free')" aria-pressed="false">FREE</button><button type="button" data-beta-mode="pro" onclick="setBetaPreview('pro')" aria-pressed="false">PRO</button></div><p class="small">Beta preview only — no purchase required. Switching access never deletes your data.</p></div><div class="card" id="profileSettings"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
 
 <section id="helpScreen" class="hidden"><h2>Help &amp; Support</h2><div class="card"><h3>Workouts</h3><p class="small">Open a workout, enter weight and reps, and mark each set complete. Your active workout can be resumed from Home if you leave the app.</p></div><div class="card"><h3>Your saved data</h3><p class="small">Workouts and tracking are saved on this device. Download a backup before switching phones or clearing browser data.</p><button onclick="showDataBackup()">Open Data &amp; Backup</button></div><div class="card"><h3>Need more help?</h3><p class="small">Report an app issue through the project’s GitHub page. Please leave personal health information out of public issues.</p><a href="https://github.com/gcfd8hy5mb-ai/workout-tracker/issues" target="_blank" rel="noopener noreferrer">Open project support ↗</a></div></section>
 
@@ -1273,6 +1291,8 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 </div>
 
+<div id="prismProOverlay" class="prism-pro-overlay hidden" onclick="if(event.target===this)closeProPreview()" aria-hidden="true"><div class="prism-pro-preview" role="dialog" aria-modal="true" aria-labelledby="prismProTitle" aria-describedby="prismProDescription"><button type="button" class="prism-pro-close" onclick="closeProPreview()" aria-label="Close PRISM Pro preview">×</button><span class="prism-pro-badge">PRO ✦</span><h2 id="prismProTitle">PRISM Pro</h2><p id="prismProDescription"></p><p id="prismProDetails" class="small hidden">Explore these features in beta from Profile. No payment is collected during the preview.</p><div class="prism-pro-actions"><button type="button" onclick="document.getElementById('prismProDetails').classList.remove('hidden')">Explore PRISM Pro</button><button type="button" onclick="closeProPreview()">Not now</button></div></div></div>
+
 <nav id="prismBottomNav" class="prism-bottom-nav" aria-label="Primary navigation">
 <button type="button" data-prism-tab="Home" onclick="goHome()" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></svg><span>Home</span></button>
 <button type="button" data-prism-tab="Workouts" onclick="showWorkouts()" aria-label="Workouts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9v6m3-8v10m12-10v10m3-8v6M6 12h12"/></svg><span>Workouts</span></button>
@@ -1330,7 +1350,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <section class="drawer-section" aria-label="Other"><div class="menu-group">OTHER</div>
 <button type="button" class="menu-link" id="navHelp" onclick="showHelp()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-help"/></svg>Help &amp; Support</button>
 <button type="button" class="menu-link" id="navBackup" onclick="showDataBackup()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-backup"/></svg>Data &amp; Backup</button></section>
-<small class="menu-version">PRISM · Version 10.0</small>
+<small class="menu-version">PRISM · Version 10.1 Beta</small>
 </nav>
 
 <div id="pickerOverlay" class="picker-overlay hidden" onclick="closePicker()"></div>
@@ -1798,6 +1818,104 @@ exercises:["shoulder-press","lateral-raise","biceps-curl","triceps-extension"]}
 
 };
 
+/* PRISM ACCESS: central feature policy. Replace the temporary local entitlement
+   with verified StoreKit/account grants before launch; browser storage is not proof of purchase. */
+const PRISM_ACCESS={
+features:{
+workout_tracking:"free",set_logging:"free",preset_workouts:"free",exercise_library:"free",
+exercise_instructions:"free",rest_timer:"free",basic_history:"free",basic_progress:"free",
+water_tracking:"free",weight_tracking:"free",basic_goals:"free",basic_records:"free",
+measurement_logging:"free",photo_storage:"free",local_backup:"free",
+custom_workouts:"free",unlimited_custom_workouts:"pro",
+smart_progression:"pro",advanced_analytics:"pro",strength_trends:"pro",
+muscle_volume:"pro",advanced_records:"pro",smart_substitutions:"pro",
+long_term_comparisons:"pro",measurement_trends:"pro",photo_comparisons:"pro",
+advanced_goals:"pro",cloud_backup:"pro",advanced_export:"pro",premium_themes:"pro"
+},
+limits:{freeCustomWorkouts:3},betaControlsEnabled:true
+};
+const PRISM_FEATURE_DETAILS={
+smart_progression:["Smart progression","Use your previous sets to suggest the next weight and rep target."],
+advanced_analytics:["Advanced progress","See deeper patterns in your training over time."],
+strength_trends:["Strength trends","Follow your logged exercise weights across workouts."],
+muscle_volume:["Muscle-group volume","See how much volume you train for each muscle group."],
+advanced_records:["Record insights","Explore estimated strength, best volume and recent records."],
+smart_substitutions:["Exercise substitutions","Find another exercise for the same muscles when equipment is busy."],
+long_term_comparisons:["Long-term comparisons","Compare your training by month and year."],
+measurement_trends:["Measurement trends","See how your saved measurements change over time."],
+photo_comparisons:["Photo comparisons","Compare two of your private progress photos side by side."],
+custom_workouts:["Unlimited custom workouts","Keep creating workouts after your free plan's limit."],
+advanced_goals:["Advanced goals","Get more detailed goal insights when they become available."]
+};
+const PRISM_ENTITLEMENT_KEY="prismEntitlementV1";
+function readPrismEntitlement(){
+try{
+const saved=JSON.parse(localStorage.getItem(PRISM_ENTITLEMENT_KEY)||"null");
+if(saved&&["free","pro","lifetime_pro","beta"].includes(saved.tier))return {tier:saved.tier,betaView:saved.betaView==="pro"?"pro":"free",source:typeof saved.source==="string"?saved.source:"local"};
+}catch{}
+return {tier:"free",betaView:"free",source:"local_default"};
+}
+let prismEntitlement=readPrismEntitlement();
+function effectivePrismTier(){return prismEntitlement.tier==="beta"?(PRISM_ACCESS.betaControlsEnabled?prismEntitlement.betaView:"free"):prismEntitlement.tier}
+function canAccessFeature(feature){
+const rule=PRISM_ACCESS.features[feature];
+if(!rule)return false;
+return rule==="free"||["pro","lifetime_pro"].includes(effectivePrismTier());
+}
+function customWorkoutLimit(){return canAccessFeature("unlimited_custom_workouts")?Infinity:PRISM_ACCESS.limits.freeCustomWorkouts}
+/* Future StoreKit/account verification will call this adapter with a verified tier.
+   The public beta UI calls setBetaPreview only and cannot grant lifetime access. */
+function applyVerifiedPrismTier(tier,source){
+if(!["free","pro","lifetime_pro"].includes(tier)||!["storekit","manual_grant","account_sync"].includes(source))return false;
+if(prismEntitlement.tier==="lifetime_pro"&&tier!=="lifetime_pro")return false;
+prismEntitlement={tier,betaView:prismEntitlement.betaView,source};
+localStorage.setItem(PRISM_ENTITLEMENT_KEY,JSON.stringify(prismEntitlement));
+renderPrismAccessState();return true;
+}
+function setBetaPreview(view){
+if(!PRISM_ACCESS.betaControlsEnabled||!["free","pro"].includes(view))return;
+if(prismEntitlement.tier==="free"||prismEntitlement.tier==="beta")prismEntitlement={tier:"beta",betaView:view,source:"beta_preview"};
+else prismEntitlement.betaView=view; // Verified Pro or Lifetime Pro always stays Pro.
+localStorage.setItem(PRISM_ENTITLEMENT_KEY,JSON.stringify(prismEntitlement));
+renderPrismAccessState();
+}
+function renderPrismAccessState(){
+const controls=document.getElementById("prismBetaAccess");if(!controls)return;
+controls.classList.toggle("hidden",!PRISM_ACCESS.betaControlsEnabled);
+const label=prismEntitlement.tier==="lifetime_pro"?"Lifetime Pro · permanent access":prismEntitlement.tier==="pro"?"PRISM Pro":prismEntitlement.tier==="beta"?`PRISM Beta Tester · ${prismEntitlement.betaView.toUpperCase()} preview`:"Free · choose a beta preview below";
+document.getElementById("prismTierStatus").textContent=label;
+controls.querySelectorAll("[data-beta-mode]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.betaMode===effectivePrismTier())));
+if(!canAccessFeature("long_term_comparisons")&&prismProgressPeriod!=="week"){
+prismProgressPeriod="week";document.querySelectorAll("[data-period]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.period==="week")));
+}
+if(!document.getElementById("overallProgressScreen").classList.contains("hidden")){renderOverallProgress();renderPrismPeriodStats()}
+if(!document.getElementById("recordsScreen").classList.contains("hidden"))renderPersonalRecords();
+if(!document.getElementById("measurementsScreen").classList.contains("hidden"))renderMeasurements();
+if(!document.getElementById("photosScreen").classList.contains("hidden"))renderProgressPhotos();
+}
+let prismProReturnFocus=null;
+function showProPreview(feature){
+const [title,description]=PRISM_FEATURE_DETAILS[feature]||["PRISM Pro","Unlock more ways to train and see your progress."];
+const overlay=document.getElementById("prismProOverlay");
+prismProReturnFocus=document.activeElement;
+document.getElementById("prismProTitle").textContent=title;
+document.getElementById("prismProDescription").textContent=description;
+document.getElementById("prismProDetails").classList.add("hidden");
+overlay.classList.remove("hidden");overlay.setAttribute("aria-hidden","false");
+overlay.querySelector(".prism-pro-close").focus();
+}
+function closeProPreview(){
+const overlay=document.getElementById("prismProOverlay");
+if(overlay.classList.contains("hidden"))return;
+overlay.classList.add("hidden");overlay.setAttribute("aria-hidden","true");
+if(prismProReturnFocus?.isConnected)prismProReturnFocus.focus();prismProReturnFocus=null;
+}
+function proFeatureCard(feature){
+const [title]=PRISM_FEATURE_DETAILS[feature]||["PRISM Pro"];
+return `<div class="prism-pro-teaser"><strong>${escapeHTML(title)} <span class="prism-pro-badge">PRO</span></strong><button type="button" onclick="showProPreview('${feature}')">Preview</button></div>`;
+}
+document.addEventListener("keydown",event=>{if(event.key==="Escape")closeProPreview()});
+
 /* STORAGE — preserves V5/V5.1 data */
 
 let completedExercises=JSON.parse(localStorage.getItem("completedExercisesV5")||"[]");
@@ -2102,7 +2220,7 @@ Object.entries(presetWorkouts).forEach(([key,day])=>plans.push({kind:"preset",ke
 return plans;
 }
 function showWorkouts(){showScreen("workoutsScreen");setBottomNav("Workouts");renderWorkoutBrowser()}
-function showProfile(){showScreen("profileScreen");setBottomNav("Profile")}
+function showProfile(){showScreen("profileScreen");setBottomNav("Profile");renderPrismAccessState()}
 function showSettings(){showProfile();setBottomNav("Settings");document.getElementById("profileSettings").scrollIntoView({block:"start"})}
 function showHelp(){showScreen("helpScreen");setBottomNav("Help")}
 function showDataBackup(){showManageWorkouts();setBottomNav("Backup");document.getElementById("dataBackupSection").scrollIntoView({block:"start"})}
@@ -2581,8 +2699,9 @@ card.className="exercise";
 const detailId=safeId(unique);
 const diagram=exerciseMuscleDiagram(ex);
 const showGoal=activeWorkoutKey!=="library";
+const smart=canAccessFeature("smart_progression"),canSubstitute=canAccessFeature("smart_substitutions");
 const goal=showGoal?overloadGoal(ex.id):null;
-const suggestion=showGoal?progressionSuggestion(ex.id):null;
+const suggestion=showGoal&&smart?progressionSuggestion(ex.id):null;
 const manual=showGoal&&Number(tracking.manualTargets?.[overloadKey(ex.id)])>0;
 const goalText=goal!==null?`Today: ${goal} lb × 8–10 reps${manual?" · Your target":suggestion?.reason?` · ${suggestion.reason}`:""}`:"Choose a starting weight · 8–10 reps";
 card.innerHTML=`
@@ -2604,16 +2723,16 @@ ${showGoal?`<div class="goal-preview">${goalText}</div>`:""}
 
 <div class="details" id="${detailId}">
 
-${showGoal?'<div class="exercise-tools"><button type="button" class="swap-toggle">Replace exercise</button><button type="button" class="prism-info-toggle">Exercise info</button><div class="exercise-swap-list hidden"></div></div>':""}
+${showGoal?`<div class="exercise-tools"><button type="button" class="swap-toggle">Replace exercise${canSubstitute?"":' <span class="prism-pro-badge">PRO</span>'}</button><button type="button" class="prism-info-toggle">Exercise info</button><div class="exercise-swap-list hidden"></div></div>`:""}
 
 ${showGoal?'<div class="tracking">':""}
 
 ${showGoal?`<div class="overload-guide">
-<strong>Progressive overload goal</strong>
+<strong>${smart?"Progressive overload goal":"Your weight target"}</strong>
 ${suggestion?`<p>Last time: ${suggestion.last}. ${suggestion.reason}.</p>`:""}
 <label for="${safeId(unique+"-goal")}">Target weight (lb)</label>
 <div class="goal-controls"><input class="goal-weight" id="${safeId(unique+"-goal")}" type="number" inputmode="decimal" min="0" max="1000" step="any" value="${goal??""}" placeholder="Starting weight">${manual?'<button type="button" class="use-suggestion">Use suggestion</button>':""}</div>
-<p>Aim for 8–10 reps. Adjust the suggested weight anytime.</p>
+<p>Aim for 8–10 reps. ${smart?"Adjust the suggested weight anytime.":"Enter a weight that works for you."}</p>
 <div class="warmup-guide"></div>
 </div>`:""}
 
@@ -2650,6 +2769,7 @@ input.addEventListener("change",()=>saveOverloadGoal(ex.id,input,card.querySelec
 const suggestedButton=card.querySelector(".use-suggestion");if(suggestedButton)suggestedButton.onclick=()=>{delete tracking.manualTargets[overloadKey(ex.id)];saveTracking();input.value=overloadGoal(ex.id)??"";card.querySelector(".goal-preview").textContent=overloadGoal(ex.id)?`Today: ${overloadGoal(ex.id)} lb × 8–10 reps`:'Choose a starting weight · 8–10 reps';suggestedButton.remove();renderWarmupGuide(ex.id,card)};
 const toggle=card.querySelector(".swap-toggle"),options=card.querySelector(".exercise-swap-list");
 toggle.onclick=()=>{
+if(!canAccessFeature("smart_substitutions")){showProPreview("smart_substitutions");return}
 options.replaceChildren();options.classList.toggle("hidden");if(options.classList.contains("hidden"))return;
 const alternatives=exerciseLibrary.filter(other=>other.muscle===ex.muscle&&other.id!==ex.id&&!activeWorkoutExerciseIds.includes(other.id));
 if(!alternatives.length){options.textContent="No other exercises for this muscle yet.";return}
@@ -2696,6 +2816,7 @@ return {last:`${weight} lb × ${working[0].reps} reps`,weight:Math.max(2.5,weigh
 function overloadGoal(exerciseId){
 const manual=Number(tracking.manualTargets?.[overloadKey(exerciseId)]);
 if(manual>0)return manual;
+if(!canAccessFeature("smart_progression"))return null;
 const suggested=progressionSuggestion(exerciseId);
 if(suggested)return suggested.weight;
 const saved=Number(overloadTargets[overloadKey(exerciseId)]);
@@ -3226,6 +3347,7 @@ renderPrismPeriodStats();
 let prismProgressPeriod="week";
 function setPrismProgressPeriod(period){
 if(!["week","month","year"].includes(period))return;
+if(period!=="week"&&!canAccessFeature("long_term_comparisons")){showProPreview("long_term_comparisons");return}
 prismProgressPeriod=period;
 document.querySelectorAll("[data-period]").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.period===period)));
 renderPrismPeriodStats();
@@ -3238,7 +3360,7 @@ const sets=sessions.flatMap(s=>(s.exercises||[]).flatMap(ex=>ex.sets||[])).filte
 const volume=sets.reduce((sum,set)=>sum+Number(set.weight)*Number(set.reps),0);
 const days=new Set(sessions.map(sessionDay).filter(Boolean)).size;
 const muscleVolume={};for(const session of sessions)for(const ex of session.exercises||[]){const muscle=getExercise(ex.id)?.muscle||"Other";muscleVolume[muscle]=(muscleVolume[muscle]||0)+(ex.sets||[]).reduce((sum,set)=>sum+Number(set.weight||0)*Number(set.reps||0),0)}
-area.innerHTML=`<div class="stat-grid"><div class="stat-card"><div class="stat-number">${sessions.length}</div><div class="stat-label">Workouts</div></div><div class="stat-card"><div class="stat-number">${sets.length}</div><div class="stat-label">Sets</div></div><div class="stat-card"><div class="stat-number">${Math.round(volume).toLocaleString()}</div><div class="stat-label">Volume (lb)</div></div><div class="stat-card"><div class="stat-number">${days}</div><div class="stat-label">Training days</div></div></div><div class="card"><h3>Muscle group volume</h3>${Object.entries(muscleVolume).sort((a,b)=>b[1]-a[1]).map(([name,amount])=>`<div class="prism-volume-row"><span>${escapeHTML(name)}</span><span>${Math.round(amount).toLocaleString()} lb</span><div class="progress-bar"><div class="progress-fill" style="width:${volume?Math.min(100,amount/volume*100):0}%"></div></div></div>`).join("")||'<p class="small">Log a workout to see muscle group volume.</p>'}</div>`;
+area.innerHTML=`<div class="stat-grid"><div class="stat-card"><div class="stat-number">${sessions.length}</div><div class="stat-label">Workouts</div></div><div class="stat-card"><div class="stat-number">${sets.length}</div><div class="stat-label">Sets</div></div><div class="stat-card"><div class="stat-number">${Math.round(volume).toLocaleString()}</div><div class="stat-label">Volume (lb)</div></div><div class="stat-card"><div class="stat-number">${days}</div><div class="stat-label">Training days</div></div></div>${canAccessFeature("muscle_volume")?`<div class="card"><h3>Muscle group volume</h3>${Object.entries(muscleVolume).sort((a,b)=>b[1]-a[1]).map(([name,amount])=>`<div class="prism-volume-row"><span>${escapeHTML(name)}</span><span>${Math.round(amount).toLocaleString()} lb</span><div class="progress-bar"><div class="progress-fill" style="width:${volume?Math.min(100,amount/volume*100):0}%"></div></div></div>`).join("")||'<p class="small">Log a workout to see muscle group volume.</p>'}</div>`:proFeatureCard("muscle_volume")}`;
 }
 
 function renderOverallProgress(){
@@ -3265,13 +3387,17 @@ stats.innerHTML=`
 
 </div>`;
 
-renderMuscleProgress();
-renderMuscleRecovery();
+if(canAccessFeature("advanced_analytics"))renderMuscleProgress();
+else document.getElementById("muscleProgressVisual").innerHTML=proFeatureCard("advanced_analytics");
+if(canAccessFeature("advanced_analytics"))renderMuscleRecovery();
+else document.getElementById("muscleRecoveryVisual").replaceChildren();
 renderWeeklySummary("weeklySummary");
-renderTrendPicker();
+if(canAccessFeature("strength_trends"))renderTrendPicker();
+else document.getElementById("exerciseTrendVisual").innerHTML=proFeatureCard("strength_trends");
 const area=document.getElementById("overallExerciseProgress");
 
-area.innerHTML="<h3>Exercise Progress</h3>";
+area.innerHTML=canAccessFeature("advanced_analytics")?"<h3>Exercise Progress</h3>":proFeatureCard("advanced_analytics");
+if(!canAccessFeature("advanced_analytics"))return;
 
 const usedIds=[...new Set(workoutHistory.flatMap(s=>s.exercises.map(e=>e.id)))];
 
@@ -3483,6 +3609,8 @@ function setCalendarNote(day,value){if(value)tracking.calendarNotes[day]=value;e
 function showPersonalRecords(){showScreen("recordsScreen");setBottomNav("Records");renderPersonalRecords()}
 function renderPersonalRecords(){
 const area=document.getElementById("personalRecords");area.replaceChildren();
+const advanced=canAccessFeature("advanced_records");
+if(!advanced)area.innerHTML=proFeatureCard("advanced_records");
 const byExercise={};
 for(const session of workoutHistory)for(const ex of session.exercises||[])for(const set of ex.sets||[]){
 const weight=Number(set.weight),reps=Number(set.reps);
@@ -3498,11 +3626,11 @@ let runningBest=0;const recentRecords=[];
 for(const set of sets.slice().reverse())if(set.weight>runningBest){runningBest=set.weight;recentRecords.push(`${set.day}: ${set.weight} lb`)}
 const card=document.createElement("article");card.className="card";
 const heading=document.createElement("h3");heading.textContent=getExercise(id)?.name||id;card.appendChild(heading);
-const stats=document.createElement("p");stats.textContent=`Best weight: ${weight} lb · Best reps: ${reps} · Best set volume: ${Math.round(volume)} lb · Estimated 1RM: ${oneRep?Math.round(oneRep)+" lb":"—"}`;card.appendChild(stats);
+const stats=document.createElement("p");stats.textContent=advanced?`Best weight: ${weight} lb · Best reps: ${reps} · Best set volume: ${Math.round(volume)} lb · Estimated 1RM: ${oneRep?Math.round(oneRep)+" lb":"—"}`:`Best weight: ${weight} lb · Best reps: ${reps}`;card.appendChild(stats);
 const note=document.createElement("p");note.className="small";note.textContent=`Last logged ${latest.day}. Records use your saved sets.`;card.appendChild(note);area.appendChild(card);
-const history=document.createElement("p");history.className="small";history.textContent=`Recent weight records: ${recentRecords.slice(-3).reverse().join(" · ")||"None yet"}`;card.appendChild(history);
+if(advanced){const history=document.createElement("p");history.className="small";history.textContent=`Recent weight records: ${recentRecords.slice(-3).reverse().join(" · ")||"None yet"}`;card.appendChild(history)}
 }
-if(!area.children.length)area.innerHTML='<div class="card empty">Log weighted sets and finish a workout to see your records.</div>';
+if(!Object.keys(byExercise).length)area.insertAdjacentHTML("beforeend",'<div class="card empty">Log weighted sets and finish a workout to see your records.</div>');
 }
 function showMeasurements(){showScreen("measurementsScreen");setBottomNav("Measurements");document.getElementById("measurementDay").value=localDay();renderMeasurements()}
 function saveMeasurement(event){
@@ -3515,7 +3643,8 @@ function renderMeasurements(){
 const selected=document.getElementById("measurementChartArea").value;
 const points=tracking.measurements.filter(m=>m.area===selected&&Number.isFinite(Number(m.value))&&Number(m.value)>0).sort((a,b)=>a.day.localeCompare(b.day)).slice(-12);
 const chart=document.getElementById("measurementChart");
-if(!points.length)chart.innerHTML='<p class="small">Save a measurement to see its trend.</p>';
+if(!canAccessFeature("measurement_trends"))chart.innerHTML=proFeatureCard("measurement_trends");
+else if(!points.length)chart.innerHTML='<p class="small">Save a measurement to see its trend.</p>';
 else{
 const min=Math.min(...points.map(p=>p.value)),max=Math.max(...points.map(p=>p.value)),range=Math.max(1,max-min);
 const coords=points.map((p,i)=>({x:points.length===1?160:28+i*264/(points.length-1),y:132-(p.value-min)/range*104}));
@@ -3571,16 +3700,17 @@ const list=document.getElementById("photoList"),comparison=document.getElementBy
 photoObjectUrls.forEach(url=>URL.revokeObjectURL(url));photoObjectUrls=[];list.replaceChildren();comparison.replaceChildren();comparison.classList.add("hidden");
 let photos;try{photos=(await allProgressPhotos()).sort((a,b)=>b.day.localeCompare(a.day)||b.id.localeCompare(a.id))}catch(error){photoStatus(error.message||"Photo storage is unavailable.");return}
 selectedPhotoIds=selectedPhotoIds.filter(id=>photos.some(p=>p.id===id));
+if(!canAccessFeature("photo_comparisons")){selectedPhotoIds=[];list.innerHTML=proFeatureCard("photo_comparisons")}
 if(!photos.length){list.innerHTML='<div class="card empty">Your private photos will appear here.</div>';return}
 const makeImage=photo=>{const img=document.createElement("img");const url=URL.createObjectURL(photo.data);photoObjectUrls.push(url);img.src=url;img.alt=`Progress photo from ${photo.day}`;return img};
 for(const photo of photos){
 const card=document.createElement("div");card.className="photo-card";card.appendChild(makeImage(photo));
 const label=document.createElement("p");label.textContent=`${photo.day}${photo.weight?` · ${photo.weight} lb`:""}`;
-const choose=document.createElement("button");choose.textContent=selectedPhotoIds.includes(photo.id)?"Selected":"Compare";choose.setAttribute("aria-pressed",selectedPhotoIds.includes(photo.id));choose.onclick=()=>togglePhotoSelection(photo.id);
+const choose=document.createElement("button");choose.textContent=canAccessFeature("photo_comparisons")?(selectedPhotoIds.includes(photo.id)?"Selected":"Compare"):"Compare · PRO";choose.setAttribute("aria-pressed",selectedPhotoIds.includes(photo.id));choose.onclick=()=>canAccessFeature("photo_comparisons")?togglePhotoSelection(photo.id):showProPreview("photo_comparisons");
 const remove=document.createElement("button");remove.textContent="Delete";remove.onclick=()=>deleteProgressPhoto(photo.id);
 card.append(label,choose,remove);list.appendChild(card);
 }
-if(selectedPhotoIds.length===2){comparison.classList.remove("hidden");const heading=document.createElement("h3");heading.textContent="Compare photos";comparison.appendChild(heading);const pair=document.createElement("div");pair.className="photo-compare";
+if(canAccessFeature("photo_comparisons")&&selectedPhotoIds.length===2){comparison.classList.remove("hidden");const heading=document.createElement("h3");heading.textContent="Compare photos";comparison.appendChild(heading);const pair=document.createElement("div");pair.className="photo-compare";
 for(const id of selectedPhotoIds){const p=photos.find(item=>item.id===id);const cell=document.createElement("div");cell.appendChild(makeImage(p));const label=document.createElement("p");label.textContent=`${p.day}${p.weight?` · ${p.weight} lb`:""}`;cell.appendChild(label);pair.appendChild(cell)}comparison.appendChild(pair)}
 }
 
@@ -3842,6 +3972,7 @@ showWorkoutTab("workout");
 /* CUSTOM BUILDER */
 
 function showBuilder(){
+if(customWorkouts.length>=customWorkoutLimit()){showProPreview("custom_workouts");return}
 
 builderSelected=[];
 
@@ -3928,6 +4059,7 @@ area.appendChild(item);
 }
 
 function saveCustomWorkout(){
+if(customWorkouts.length>=customWorkoutLimit()){showProPreview("custom_workouts");return}
 
 const name=document.getElementById("customWorkoutName").value.trim();
 

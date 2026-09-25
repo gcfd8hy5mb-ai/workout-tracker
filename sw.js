@@ -1,4 +1,4 @@
-const CACHE_NAME = "prism-v10.0-logo1";
+const CACHE_NAME = "prism-v10.1-beta1";
 
 const APP_FILES = [
 
