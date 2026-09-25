@@ -9,6 +9,7 @@ const context={localStorage,console,Date,Math,Object,Number,JSON,String,
 localDay:()=> "2026-09-24",readPrismActiveWorkout:()=>null,
 tracking:{weight:[],calorieMode:"auto",restSeconds:90},workoutGoals:null,
 weightEntriesNewestFirst:()=>context.tracking.weight.slice().reverse(),
+escapeHTML:v=>String(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll('"',"&quot;"),
 saveTracking:()=>localStorage.setItem("dailyTrackingV1",JSON.stringify(context.tracking)),
 newTrackingId:()=>String(Math.random()),
 showScreen:id=>screens.push(id),goHome:()=>screens.push("home"),
@@ -22,15 +23,16 @@ assert.equal(first.eval("prismCalorieEstimate({age:30,sex:'male',feet:5,inches:1
 assert.equal(first.eval("prismGoalFactor('cut','faster')"),.85);
 assert.equal(first.eval("prismGoalFactor('bulk','faster')"),1.10);
 first.eval("startPrismGuest()");
-first.eval("prismJourney.step=3;prismJourney.draft={body:'cut',training:'muscle',start:'2026-09-24',end:'2026-11-19',durationWeeks:8,age:'30',sex:'female',feet:'5',inches:'5',weight:'160',activity:'1.55',pace:'moderate',days:'4',rest:'90',units:'lb',focus:'balanced'};savePrismJourney()");
+first.eval("prismJourney.step=4;prismJourney.draft={displayName:'Kevin',avatarId:'blue',body:'cut',training:'muscle',start:'2026-09-24',end:'2026-11-19',durationWeeks:8,age:'30',sex:'female',feet:'5',inches:'5',weight:'160',activity:'1.55',pace:'moderate',days:'4',rest:'90',units:'lb',focus:'balanced'};savePrismJourney()");
 const resumed=run(Object.fromEntries(first.items));
 assert.equal(resumed.screens.at(-1),"onboardingScreen");
-assert.equal(resumed.eval("prismJourney.step"),3);
-resumed.eval("prismJourney.step=5;finishPrismJourney()");
+assert.equal(resumed.eval("prismJourney.step"),4);
+resumed.eval("prismJourney.step=6;finishPrismJourney()");
 assert.equal(resumed.screens.at(-1),"home");
 assert.equal(JSON.parse(resumed.items.get("prismGoalPhasesV1")).length,1);
 assert.equal(JSON.parse(resumed.items.get("dailyTrackingV1")).weight.length,1);
 assert.equal(JSON.parse(resumed.items.get("workoutGoalsV1")).days,4);
+assert.equal(JSON.parse(resumed.items.get("prismLocalProfileV1")).displayName,"Kevin");
 const active=JSON.parse(resumed.items.get("prismGoalPhasesV1"))[0];
 assert.equal(active.endDate,"2026-11-19");
 const again=run(Object.fromEntries(resumed.items));
@@ -47,6 +49,8 @@ const migrated=run({workoutHistoryV52:savedWorkouts,prismEntitlementV1:savedEnti
 assert.equal(migrated.screens.at(-1),"home","existing users should not repeat onboarding");
 assert.equal(migrated.items.get("workoutHistoryV52"),savedWorkouts);
 assert.equal(migrated.items.get("prismEntitlementV1"),savedEntitlement);
+assert.equal(JSON.parse(migrated.items.get("prismLocalProfileV1")).onboardingComplete,true);
+assert.equal(JSON.parse(migrated.items.get("prismLocalProfileV1")).displayName,"");
 assert.equal(migrated.eval("prismDatePlusDays('2026-09-24',56)"),"2026-11-19");
 assert.equal(migrated.eval("prismCalorieEstimate({age:17,sex:'male',feet:5,inches:10,weight:180,activity:1.55,goal:'cut',pace:'moderate'})"),null);
 console.log("Onboarding migration, resume, goal dates, calories, and saved data: OK");
