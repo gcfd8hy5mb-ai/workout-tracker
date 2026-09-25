@@ -1,15 +1,11 @@
 const CACHE_NAME = "prism-v10.3-beta6";
 
 const APP_FILES = [
-
   "./",
-
   "./index.html",
   "./onboarding.js?v=10.3-beta5",
   "./pro-experience.js",
-
   "./manifest.json",
-
   "./sw.js",
   "./images/app-icon.png",
   "./images/app-icon-512.png",
@@ -30,7 +26,6 @@ const APP_FILES = [
   "./images/shoulder-press.png",
   "./images/triceps-extension.png",
   "./images/triceps-pushdown.png"
-
 ];
 
 const ANDROID_ONBOARDING_HOTFIX = `
@@ -43,47 +38,7 @@ const ANDROID_ONBOARDING_HOTFIX = `
 
     const style = document.createElement("style");
     style.id = "prism-android-onboarding-scroll-hotfix";
-    style.textContent = ` + "`" + `
-      body.prism-onboarding-active {
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        min-height: 100vh !important;
-        min-height: 100dvh !important;
-        height: auto !important;
-        overscroll-behavior-y: auto !important;
-        touch-action: pan-y !important;
-        -webkit-overflow-scrolling: touch !important;
-      }
-      body.prism-onboarding-active .container,
-      body.prism-onboarding-active #onboardingScreen,
-      body.prism-onboarding-active #prismJourneyContent,
-      body.prism-onboarding-active .journey-shell {
-        height: auto !important;
-        min-height: 0 !important;
-        max-height: none !important;
-        overflow: visible !important;
-      }
-      body.prism-onboarding-active .container {
-        min-height: 100vh !important;
-        min-height: 100dvh !important;
-        padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important;
-      }
-      body.prism-onboarding-active .journey-profile-actions {
-        position: static !important;
-        inset: auto !important;
-        top: auto !important;
-        right: auto !important;
-        bottom: auto !important;
-        left: auto !important;
-        transform: none !important;
-        margin-top: 18px !important;
-        padding: 0 0 calc(36px + env(safe-area-inset-bottom)) !important;
-        background: transparent !important;
-      }
-      body.prism-onboarding-active .journey-profile-actions .journey-actions {
-        margin-top: 10px !important;
-      }
-    ` + "`" + `;
+    style.textContent = "body.prism-onboarding-active{overflow-y:auto!important;overflow-x:hidden!important;min-height:100vh!important;min-height:100dvh!important;height:auto!important;overscroll-behavior-y:auto!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important}body.prism-onboarding-active .container,body.prism-onboarding-active #onboardingScreen,body.prism-onboarding-active #prismJourneyContent,body.prism-onboarding-active .journey-shell{height:auto!important;max-height:none!important;overflow:visible!important}body.prism-onboarding-active .container{min-height:100vh!important;min-height:100dvh!important;padding-bottom:calc(96px + env(safe-area-inset-bottom))!important}body.prism-onboarding-active .journey-profile-actions{position:static!important;inset:auto!important;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;transform:none!important;margin-top:18px!important;padding:0 0 calc(36px + env(safe-area-inset-bottom))!important;background:transparent!important}body.prism-onboarding-active .journey-profile-actions .journey-actions{margin-top:10px!important}";
 
     document.getElementById(style.id)?.remove();
     document.head.appendChild(style);
@@ -97,52 +52,32 @@ const ANDROID_ONBOARDING_HOTFIX = `
 `;
 
 self.addEventListener("install", event => {
-
   event.waitUntil(
-
     caches.open(CACHE_NAME).then(async cache => {
-      // The app shell must update together. An unavailable optional image must
-      // not prevent the new onboarding script from replacing an old version.
       await cache.addAll(APP_FILES.slice(0, 6).map(file => new Request(file, {cache: "reload"})));
       await Promise.allSettled(APP_FILES.slice(6).map(file => cache.add(file)));
       await self.skipWaiting();
     })
-
   );
-
 });
 
 self.addEventListener("activate", event => {
-
   event.waitUntil(
-
     caches.keys().then(keys =>
-
       Promise.all(
-
         keys
-
           .filter(key => key !== CACHE_NAME)
-
           .map(key => caches.delete(key))
-
       )
-
     ).then(() => self.clients.claim())
-
   );
-
 });
 
 self.addEventListener("fetch", event => {
-
   if (event.request.method !== "GET") return;
 
   const url = new URL(event.request.url);
 
-  // Onboarding gets the normal release script plus a small compatibility
-  // override that removes the sticky/visualViewport behavior responsible for
-  // scroll-locking the first profile step on some Android Chrome devices.
   if (url.pathname.endsWith("/onboarding.js")) {
     event.respondWith(
       fetch(event.request, {cache: "no-cache"})
@@ -173,63 +108,31 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // Always check the internet first for the main app.
-
   if (
-
     url.pathname.endsWith("/") ||
-
     url.pathname.endsWith("/index.html") ||
     url.pathname.endsWith("/pro-experience.js")
-
   ) {
-
     event.respondWith(
-
       fetch(event.request, {cache: "no-cache"})
-
         .then(response => {
-
           const copy = response.clone();
-
           if (response.ok) caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-
           return response;
-
         })
-
-        .catch(() => {
-
-          return caches.match(event.request);
-
-        })
-
+        .catch(() => caches.match(event.request))
     );
-
     return;
-
   }
 
-  // Other files can use the cache first.
-
   event.respondWith(
-
     caches.match(event.request).then(cached => {
-
       if (cached) return cached;
-
       return fetch(event.request).then(response => {
-
         const copy = response.clone();
-
         if (response.ok) caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-
         return response;
-
       });
-
     })
-
   );
-
 });
