@@ -3396,7 +3396,7 @@ if(canAccessFeature("strength_trends"))renderTrendPicker();
 else document.getElementById("exerciseTrendVisual").innerHTML=proFeatureCard("strength_trends");
 const area=document.getElementById("overallExerciseProgress");
 
-area.innerHTML=canAccessFeature("advanced_analytics")?"<h3>Exercise Progress</h3>":proFeatureCard("advanced_analytics");
+area.innerHTML=canAccessFeature("advanced_analytics")?"<h3>Exercise Progress</h3>":"";
 if(!canAccessFeature("advanced_analytics"))return;
 
 const usedIds=[...new Set(workoutHistory.flatMap(s=>s.exercises.map(e=>e.id)))];
