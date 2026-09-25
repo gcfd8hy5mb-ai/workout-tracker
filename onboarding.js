@@ -84,7 +84,31 @@ if(prismJourney.status==="complete"){goHome();return}
 prismJourney.status="onboarding";prismJourney.mode="guest";prismJourney.step=Number.isInteger(prismJourney.step)?prismJourney.step:0;
 prismJourney.localProfileStepVersion=1;savePrismJourney();renderPrismJourney();
 }
-function prismChoose(field,value){prismJourney.draft[field]=value;savePrismJourney();renderPrismJourney()}
+function prismChoose(field,value){
+prismJourney.draft[field]=value;savePrismJourney();
+if(field==="avatarId"&&prismJourney.step===0){
+document.querySelectorAll(".prism-avatar-option").forEach(button=>{
+const selected=button.getAttribute("data-avatar")===value;
+button.classList.toggle("selected",selected);
+button.setAttribute("aria-pressed",String(selected));
+});
+return;
+}
+renderPrismJourney();
+}
+function prismProfileChanged(){
+const name=document.getElementById("journey-name")?.value||"";
+const units=document.getElementById("journey-profile-units")?.value||"lb";
+prismJourney.draft.displayName=name;
+prismJourney.draft.units=units;
+savePrismJourney();
+const button=document.getElementById("journey-profile-next");
+const hint=document.getElementById("journey-profile-hint");
+const valid=name.trim().length>0&&name.trim().length<=40&&["lb","kg"].includes(units);
+if(button)button.disabled=!valid;
+if(hint)hint.textContent=valid?"":"Enter your name to continue.";
+if(valid){const error=document.getElementById("journeyError");if(error)error.textContent=""}
+}
 function prismBack(){if(prismJourney.step===0){showPrismWelcome();return}prismJourney.step--;savePrismJourney();renderPrismJourney()}
 function prismNext(){
 const step=prismJourney.step,d=prismJourney.draft,error=document.getElementById("journeyError");
@@ -125,12 +149,12 @@ const out=document.getElementById("journey-calorie-preview");if(!out)return;
 const estimate=prismCalorieEstimate({...d,goal:d.body,pace:d.pace||"moderate"});
 out.innerHTML=estimate?`<div class="journey-summary"><span>Estimated maintenance</span><strong>${estimate.maintenance.toLocaleString()} kcal/day</strong></div><div class="journey-summary"><span>Recommended ${PRISM_GOAL_NAMES[d.body]} target</span><strong>${estimate.target.toLocaleString()} kcal/day</strong></div>`:"Enter your details to see a starting estimate.";
 }
-function prismJourneyActions(next="Continue"){return `<p id="journeyError" class="journey-error" role="alert"></p><div class="journey-actions"><button type="button" class="journey-primary" onclick="prismNext()">${next}</button><button type="button" class="journey-secondary" onclick="prismBack()">Back</button></div>`}
+function prismJourneyActions(next="Continue",profile=false){return `<div class="${profile?"journey-profile-actions":""}"><p id="journeyError" class="journey-error" role="alert"></p>${profile?'<p id="journey-profile-hint" class="journey-note" role="status"></p>':""}<div class="journey-actions"><button type="button" class="journey-primary" ${profile?'id="journey-profile-next" ':""}onclick="prismNext()">${next}</button><button type="button" class="journey-secondary" onclick="prismBack()">Back</button></div></div>`}
 function renderPrismJourney(){
 showScreen("onboardingScreen");
 const d=prismJourney.draft,s=prismJourney.step,area=document.getElementById("prismJourneyContent");
 let html=prismProgress(s);
-if(s===0)html+=`<h2>CREATE YOUR PRISM PROFILE</h2><p>Your personal setup stays on this device.</p><div class="journey-card journey-form"><label for="journey-name">What should PRISM call you?</label><input id="journey-name" type="text" maxlength="40" autocomplete="nickname" placeholder="Your name" value="${escapeHTML(d.displayName||prismProfileName())}" oninput="prismJourney.draft.displayName=this.value;savePrismJourney()"><label>Choose an avatar</label><div class="prism-avatar-choices" role="group" aria-label="Profile avatar">${PRISM_AVATARS.map(id=>`<button type="button" class="prism-avatar-option ${id===(d.avatarId||"prism")?"selected":""}" aria-label="${id} avatar" aria-pressed="${id===(d.avatarId||"prism")}" onclick="prismChoose('avatarId','${id}')">${prismAvatarMarkup(id)}</button>`).join("")}</div><label for="journey-profile-units">Units</label><select id="journey-profile-units" onchange="prismJourney.draft.units=this.value;savePrismJourney()"><option value="lb" ${(d.units||tracking.preferredWeightUnit)!=="kg"?"selected":""}>Pounds</option><option value="kg" ${(d.units||tracking.preferredWeightUnit)==="kg"?"selected":""}>Kilograms</option></select><p class="journey-note">Workout set entry currently uses pounds. This choice sets your display preference.</p></div>${prismJourneyActions()}`;
+if(s===0)html+=`<h2>CREATE YOUR PRISM PROFILE</h2><p>Your personal setup stays on this device.</p><div class="journey-card journey-form"><label for="journey-name">What should PRISM call you?</label><input id="journey-name" type="text" maxlength="40" autocomplete="nickname" placeholder="Your name" value="${escapeHTML(d.displayName||prismProfileName())}" oninput="prismProfileChanged()"><label>Choose an avatar</label><div class="prism-avatar-choices" role="group" aria-label="Profile avatar">${PRISM_AVATARS.map(id=>`<button type="button" data-avatar="${id}" class="prism-avatar-option ${id===(d.avatarId||"prism")?"selected":""}" aria-label="${id} avatar" aria-pressed="${id===(d.avatarId||"prism")}" onclick="prismChoose('avatarId','${id}')">${prismAvatarMarkup(id)}</button>`).join("")}</div><label for="journey-profile-units">Units</label><select id="journey-profile-units" onchange="prismProfileChanged()"><option value="lb" ${(d.units||tracking.preferredWeightUnit)!=="kg"?"selected":""}>Pounds</option><option value="kg" ${(d.units||tracking.preferredWeightUnit)==="kg"?"selected":""}>Kilograms</option></select><p class="journey-note">Workout set entry currently uses pounds. This choice sets your display preference.</p></div>${prismJourneyActions("Continue",true)}`;
 if(s===1)html+=`<h2>What are you training for?</h2><p>Your answer helps shape your workout plan.</p>${prismSelectedOptions([["muscle","Build Muscle"],["strength","Get Stronger"],["fat-loss","Lose Weight"],["consistency","General Fitness"]],d.training,"prismChooseTraining")}${prismJourneyActions()}`;
 if(s===2)html+=`<h2>What best describes your current body goal?</h2>${prismSelectedOptions([["bulk","BULK","Gain weight / muscle"],["cut","CUT","Lose weight / body fat"],["maintain","MAINTAIN","Maintain current body weight"],["recomp","RECOMP / NOT SURE","Build muscle while staying near the same body weight"]],d.body,"prismChooseBody")}${prismJourneyActions()}`;
 if(s===3)html+=`<h2>How long do you want to follow this goal?</h2><div class="journey-card journey-form"><label for="journey-weeks">Duration</label><select id="journey-weeks" onchange="prismUpdateDuration()">${[4,6,8,12,16].map(n=>`<option value="${n}" ${String(d.weeks||"8")===String(n)?"selected":""}>${n} weeks</option>`).join("")}<option value="custom" ${d.weeks==="custom"?"selected":""}>Custom end date</option></select><div id="journey-custom-wrap" class="${d.weeks==="custom"?"":"hidden"}"><label for="journey-end">End date</label><input id="journey-end" type="date" min="${prismDatePlusDays(localDay(),1)}" value="${d.end||""}" onchange="prismUpdateDuration()"></div><p id="journey-date-preview" class="journey-note"></p></div>${prismJourneyActions("Confirm duration")}`;
@@ -141,6 +165,7 @@ const est=d.calorieSkipped?null:prismCalorieEstimate({...d,goal:d.body,pace:d.pa
 html+=`<h2>YOU'RE READY${d.displayName?", "+escapeHTML(d.displayName.toUpperCase()):""}</h2><p>PRISM is set up for your current goal.</p><div class="journey-card"><div class="journey-summary"><span>Training goal</span><strong>${PRISM_TRAINING_NAMES[d.training]}</strong></div><div class="journey-summary"><span>Body goal</span><strong>${PRISM_GOAL_NAMES[d.body]}</strong></div><div class="journey-summary"><span>Duration</span><strong>${d.durationWeeks} weeks</strong></div><div class="journey-summary"><span>Review date</span><strong>${prismDateLabel(d.end)}</strong></div><div class="journey-summary"><span>Estimated calorie target</span><strong>${est?est.target.toLocaleString()+" kcal/day":"Set later"}</strong></div><div class="journey-summary"><span>Training</span><strong>${d.days} days/week</strong></div></div><div class="journey-actions"><button class="journey-primary" onclick="finishPrismJourney()">START TRAINING</button><button class="journey-secondary" onclick="prismBack()">Back</button></div>`;
 }
 area.innerHTML=html;
+if(s===0)prismProfileChanged();
 if(s===3)prismUpdateDuration();
 if(s===4)prismUpdateCaloriePreview();
 }
