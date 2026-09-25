@@ -57,7 +57,7 @@ class WorkoutTrackerTests(unittest.TestCase):
 
     def test_pages_assets_use_relative_urls(self):
         self.assertIn('<link rel="manifest" href="manifest.json">', INDEX)
-        self.assertIn('navigator.serviceWorker.register("./sw.js")', INDEX)
+        self.assertIn('navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"})', INDEX)
         manifest = (ROOT / "manifest.json").read_text(encoding="utf-8")
         self.assertIn('"start_url": "./"', manifest)
 

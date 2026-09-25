@@ -1,4 +1,4 @@
-const CACHE_NAME = "prism-v10.3-beta3";
+const CACHE_NAME = "prism-v10.3-beta4";
 
 const APP_FILES = [
 
@@ -37,11 +37,15 @@ self.addEventListener("install", event => {
 
   event.waitUntil(
 
-    caches.open(CACHE_NAME).then(cache => cache.addAll(APP_FILES))
+    caches.open(CACHE_NAME).then(async cache => {
+      // The app shell must update together. An unavailable optional image must
+      // not prevent the new onboarding script from replacing an old version.
+      await cache.addAll(APP_FILES.slice(0, 6).map(file => new Request(file, {cache: "reload"})));
+      await Promise.allSettled(APP_FILES.slice(6).map(file => cache.add(file)));
+      await self.skipWaiting();
+    })
 
   );
-
-  self.skipWaiting();
 
 });
 
@@ -61,11 +65,9 @@ self.addEventListener("activate", event => {
 
       )
 
-    )
+    ).then(() => self.clients.claim())
 
   );
-
-  self.clients.claim();
 
 });
 
@@ -89,17 +91,13 @@ self.addEventListener("fetch", event => {
 
     event.respondWith(
 
-      fetch(event.request)
+      fetch(event.request, {cache: "no-cache"})
 
         .then(response => {
 
           const copy = response.clone();
 
-          caches.open(CACHE_NAME).then(cache => {
-
-            cache.put(event.request, copy);
-
-          });
+          if (response.ok) caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
 
           return response;
 
@@ -129,11 +127,7 @@ self.addEventListener("fetch", event => {
 
         const copy = response.clone();
 
-        caches.open(CACHE_NAME).then(cache => {
-
-          cache.put(event.request, copy);
-
-        });
+        if (response.ok) caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
 
         return response;
 
