@@ -10,8 +10,10 @@ getAttribute:key=>key==="data-avatar"?id:null,
 classList:{toggle(name,active){this[name]=active}},
 setAttribute(key,value){this[key]=value}
 }));
+const profileActions={style:{bottom:""}};
+const visualViewport={height:700,offsetTop:0,addEventListener(){}};
 const localStorage={getItem:key=>items.get(key)??null,setItem:(key,value)=>items.set(key,String(value))};
-const context={localStorage,console,Date,Math,Object,Number,JSON,String,
+const context={localStorage,console,Date,Math,Object,Number,JSON,String,window:{innerHeight:700,visualViewport},
 localDay:()=> "2026-09-24",readPrismActiveWorkout:()=>null,
 tracking:{weight:[],calorieMode:"auto",restSeconds:90},workoutGoals:null,
 weightEntriesNewestFirst:()=>context.tracking.weight.slice().reverse(),
@@ -19,9 +21,9 @@ escapeHTML:v=>String(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAl
 saveTracking:()=>localStorage.setItem("dailyTrackingV1",JSON.stringify(context.tracking)),
 newTrackingId:()=>String(Math.random()),
 showScreen:id=>screens.push(id),goHome:()=>screens.push("home"),
-document:{getElementById(id){if(!elements.has(id))elements.set(id,{innerHTML:"",textContent:"",classList:{toggle(){}},value:""});return elements.get(id)},querySelectorAll:()=>avatars}};
+document:{getElementById(id){if(!elements.has(id))elements.set(id,{innerHTML:"",textContent:"",classList:{toggle(){}},value:""});return elements.get(id)},querySelectorAll:()=>avatars,querySelector:()=>profileActions}};
 vm.createContext(context);vm.runInContext(source,context);
-return {context,items,screens,elements,avatars,eval:s=>vm.runInContext(s,context)};
+return {context,items,screens,elements,avatars,profileActions,eval:s=>vm.runInContext(s,context)};
 }
 const first=run({dailyTrackingV1:JSON.stringify({water:[],food:[],weight:[],calorieMode:"auto"})});
 assert.equal(first.screens.at(-1),"welcomeScreen","an empty default tracking object must not skip onboarding");
@@ -35,6 +37,12 @@ first.elements.get("journey-name").value=" Kevin ";
 first.elements.get("journey-profile-units").value="lb";
 first.eval("prismProfileChanged()");
 assert.equal(first.elements.get("journey-profile-next").disabled,false,"default pounds is valid");
+first.context.window.visualViewport.height=420;
+first.eval("prismProfileViewport()");
+assert.equal(first.profileActions.style.bottom,"280px","keyboard inset keeps Continue above the Android visual viewport");
+first.context.window.visualViewport.height=700;
+first.eval("prismProfileViewport()");
+assert.equal(first.profileActions.style.bottom,"0px","closing the keyboard restores the button position");
 const beforeAvatar=first.screens.length;
 first.eval("prismChoose('avatarId','teal')");
 assert.equal(first.screens.length,beforeAvatar,"avatar changes must not re-render and reset scroll or keyboard");
