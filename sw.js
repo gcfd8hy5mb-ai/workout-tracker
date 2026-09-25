@@ -1,4 +1,4 @@
-const CACHE_NAME = "prism-v10.0";
+const CACHE_NAME = "prism-v10.0-logo1";
 
 const APP_FILES = [
 
@@ -10,6 +10,10 @@ const APP_FILES = [
 
   "./sw.js",
   "./images/app-icon.png",
+  "./images/app-icon-512.png",
+  "./images/app-icon-192.png",
+  "./images/apple-touch-icon-180.png",
+  "./images/favicon-32.png",
   "./images/biceps-curl.png",
   "./images/calf-raise.png",
   "./images/lat-pulldown.png",
