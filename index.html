@@ -1327,7 +1327,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 </div>
 
-<div id="prismProOverlay" class="prism-pro-overlay hidden" onclick="if(event.target===this)closeProPreview()" aria-hidden="true"><div class="prism-pro-preview" role="dialog" aria-modal="true" aria-labelledby="prismProTitle" aria-describedby="prismProDescription"><button type="button" class="prism-pro-close" onclick="closeProPreview()" aria-label="Close PRISM Pro preview">×</button><span class="prism-pro-badge">PRO ✦</span><h2 id="prismProTitle">PRISM Pro</h2><p id="prismProDescription"></p><p id="prismProDetails" class="small hidden">Explore these features in beta from Profile. No payment is collected during the preview.</p><div class="prism-pro-actions"><button type="button" onclick="document.getElementById('prismProDetails').classList.remove('hidden')">Explore PRISM Pro</button><button type="button" onclick="closeProPreview()">Not now</button></div></div></div>
+<div id="prismProOverlay" class="prism-pro-overlay hidden" onclick="if(event.target===this)closeProPreview()" aria-hidden="true"><div class="prism-pro-preview" role="dialog" aria-modal="true" aria-labelledby="prismProTitle" aria-describedby="prismProDescription"><button type="button" class="prism-pro-close" onclick="closeProPreview()" aria-label="Close PRISM Pro preview">×</button><span class="prism-pro-badge">PRO ✦</span><h2 id="prismProTitle">PRISM Pro</h2><p id="prismProDescription"></p><ul id="prismProBenefits" class="hidden"></ul><p id="prismProDetails" class="small hidden">Explore these features in beta from Profile. No payment is collected during the preview.</p><div class="prism-pro-actions"><button type="button" onclick="document.getElementById('prismProDetails').classList.remove('hidden')">Explore PRISM Pro</button><button type="button" onclick="closeProPreview()">Not now</button></div></div></div>
 
 <nav id="prismBottomNav" class="prism-bottom-nav" aria-label="Primary navigation">
 <button type="button" data-prism-tab="Home" onclick="goHome()" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></svg><span>Home</span></button>
@@ -1864,7 +1864,7 @@ basic_history:"free",basic_progress:"free",basic_progress_trends:"free",
 water_tracking:"free",weight_tracking:"free",basic_goals:"free",
 body_goal_setup:"free",calorie_estimate:"free",local_profile:"free",
 custom_workouts:"free",manual_substitutions:"free",basic_records:"free",
-measurement_logging:"free",photo_storage:"free",local_backup:"free",
+measurement_logging:"free",local_backup:"free",
 smart_progression:"pro",smart_substitutions:"pro",advanced_analytics:"pro",
 full_time_trends:"pro",muscle_volume_analytics:"pro",advanced_pr_insights:"pro",
 plateau_detection:"pro",weekly_prism_summary:"pro",phase_analysis:"pro",
@@ -1893,7 +1893,8 @@ advanced_records:["Record insights","Explore estimated strength, best volume and
 smart_substitutions:["Exercise substitutions","Find another exercise for the same muscles when equipment is busy."],
 long_term_comparisons:["Long-term comparisons","Compare your training by month and year."],
 measurement_trends:["Measurement trends","See how your saved measurements change over time."],
-photo_comparisons:["Photo comparisons","Compare two of your private progress photos side by side."],
+photo_comparison:["PROGRESS PHOTOS ✦","See your progress beyond the scale."],
+photo_comparisons:["PROGRESS PHOTOS ✦","See your progress beyond the scale."],
 custom_workouts:["Unlimited custom workouts","Keep creating workouts after your free plan's limit."],
 unlimited_custom_workouts:["Unlimited custom workouts","Keep creating workouts after your free plan's limit."],
 advanced_goals:["Advanced goals","Get more detailed goal insights when they become available."]
@@ -1942,7 +1943,10 @@ prismProgressPeriod="week";document.querySelectorAll("[data-period]").forEach(bu
 if(!document.getElementById("overallProgressScreen").classList.contains("hidden")){renderOverallProgress();renderPrismPeriodStats()}
 if(!document.getElementById("recordsScreen").classList.contains("hidden"))renderPersonalRecords();
 if(!document.getElementById("measurementsScreen").classList.contains("hidden"))renderMeasurements();
-if(!document.getElementById("photosScreen").classList.contains("hidden"))renderProgressPhotos();
+if(!document.getElementById("photosScreen").classList.contains("hidden")){
+if(canAccessFeature("photo_comparison"))renderProgressPhotos();
+else{showOverallProgress();showProPreview("photo_comparison")}
+}
 }
 let prismProReturnFocus=null;
 function showProPreview(feature){
@@ -1951,6 +1955,11 @@ const overlay=document.getElementById("prismProOverlay");
 prismProReturnFocus=document.activeElement;
 document.getElementById("prismProTitle").textContent=title;
 document.getElementById("prismProDescription").textContent=description;
+const benefits=document.getElementById("prismProBenefits");benefits.replaceChildren();
+if((PRISM_FEATURE_ALIASES[feature]||feature)==="photo_comparison"){
+for(const line of ["Save progress photos over time","Compare before and after photos side by side","Track visual changes across Bulk, Cut, Maintain, or Recomp phases"]){const item=document.createElement("li");item.textContent=line;benefits.appendChild(item)}
+benefits.classList.remove("hidden");
+}else benefits.classList.add("hidden");
 document.getElementById("prismProDetails").classList.add("hidden");
 overlay.classList.remove("hidden");overlay.setAttribute("aria-hidden","false");
 overlay.querySelector(".prism-pro-close").focus();
@@ -3741,9 +3750,18 @@ transaction.oncomplete=()=>resolve(value);transaction.onerror=()=>reject(transac
 const allProgressPhotos=()=>photoOperation("readonly",store=>store.getAll());
 const saveProgressPhoto=record=>photoOperation("readwrite",store=>store.put(record));
 const removeProgressPhoto=id=>photoOperation("readwrite",store=>store.delete(id));
+function photoGoalPhaseLabel(day){
+if(typeof prismPhases==="undefined"||!Array.isArray(prismPhases))return "";
+const phase=prismPhases.findLast(item=>item.startDate<=day&&day<=(item.closedAt||item.endDate));
+return phase&&typeof PRISM_GOAL_NAMES!=="undefined"?PRISM_GOAL_NAMES[phase.type]||"":"";
+}
 function photoStatus(message){document.getElementById("photoStatus").textContent=message}
-async function showProgressPhotos(){showScreen("photosScreen");setBottomNav("Photos");await renderProgressPhotos()}
+async function showProgressPhotos(){
+if(!canAccessFeature("photo_comparison")){showProPreview("photo_comparison");return}
+showScreen("photosScreen");setBottomNav("Photos");await renderProgressPhotos()
+}
 async function addProgressPhoto(event){
+if(!canAccessFeature("photo_comparison")){event.target.value="";showProPreview("photo_comparison");return}
 const file=event.target.files?.[0];if(!file)return;
 try{
 if(!file.type.startsWith("image/")||file.size>20_000_000)throw Error("Choose an image under 20 MB.");
@@ -3752,32 +3770,38 @@ const bitmap=await createImageBitmap(file),scale=Math.min(1,1200/Math.max(bitmap
 const canvas=document.createElement("canvas");canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);
 canvas.getContext("2d").drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
 const data=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.8));if(!data)throw Error("Could not prepare that photo.");
+if(!canAccessFeature("photo_comparison")){showProPreview("photo_comparison");return}
 const latest=weightEntriesNewestFirst()[0];await saveProgressPhoto({id:newTrackingId(),day:localDay(),weight:latest?.value||null,data});
 photoStatus("Saved on this device. Include photos when you export a backup before switching phones.");await renderProgressPhotos();
 }catch(error){photoStatus(error.message||"Could not save photo.")}finally{event.target.value=""}
 }
 async function deleteProgressPhoto(id){
+if(!canAccessFeature("photo_comparison")){showProPreview("photo_comparison");return}
 if(!confirm("Delete this progress photo from this device?"))return;
 try{await removeProgressPhoto(id);selectedPhotoIds=selectedPhotoIds.filter(item=>item!==id);await renderProgressPhotos()}catch{photoStatus("Could not remove photo.")}
 }
-async function togglePhotoSelection(id){selectedPhotoIds=selectedPhotoIds.includes(id)?selectedPhotoIds.filter(x=>x!==id):[...selectedPhotoIds.slice(-1),id];await renderProgressPhotos()}
+async function togglePhotoSelection(id){
+if(!canAccessFeature("photo_comparison")){showProPreview("photo_comparison");return}
+selectedPhotoIds=selectedPhotoIds.includes(id)?selectedPhotoIds.filter(x=>x!==id):[...selectedPhotoIds.slice(-1),id];await renderProgressPhotos()
+}
 async function renderProgressPhotos(){
 const list=document.getElementById("photoList"),comparison=document.getElementById("photoComparison");
 photoObjectUrls.forEach(url=>URL.revokeObjectURL(url));photoObjectUrls=[];list.replaceChildren();comparison.replaceChildren();comparison.classList.add("hidden");
+if(!canAccessFeature("photo_comparison")){selectedPhotoIds=[];showProPreview("photo_comparison");return}
 let photos;try{photos=(await allProgressPhotos()).sort((a,b)=>b.day.localeCompare(a.day)||b.id.localeCompare(a.id))}catch(error){photoStatus(error.message||"Photo storage is unavailable.");return}
+if(!canAccessFeature("photo_comparison")){selectedPhotoIds=[];showProPreview("photo_comparison");return}
 selectedPhotoIds=selectedPhotoIds.filter(id=>photos.some(p=>p.id===id));
-if(!canAccessFeature("photo_comparisons")){selectedPhotoIds=[];list.innerHTML=proFeatureCard("photo_comparisons")}
 if(!photos.length){list.innerHTML='<div class="card empty">Your private photos will appear here.</div>';return}
 const makeImage=photo=>{const img=document.createElement("img");const url=URL.createObjectURL(photo.data);photoObjectUrls.push(url);img.src=url;img.alt=`Progress photo from ${photo.day}`;return img};
 for(const photo of photos){
 const card=document.createElement("div");card.className="photo-card";card.appendChild(makeImage(photo));
-const label=document.createElement("p");label.textContent=`${photo.day}${photo.weight?` · ${photo.weight} lb`:""}`;
-const choose=document.createElement("button");choose.textContent=canAccessFeature("photo_comparisons")?(selectedPhotoIds.includes(photo.id)?"Selected":"Compare"):"Compare · PRO";choose.setAttribute("aria-pressed",selectedPhotoIds.includes(photo.id));choose.onclick=()=>canAccessFeature("photo_comparisons")?togglePhotoSelection(photo.id):showProPreview("photo_comparisons");
+const label=document.createElement("p");const phase=photoGoalPhaseLabel(photo.day);label.textContent=`${photo.day}${photo.weight?` · ${photo.weight} lb`:""}${phase?` · ${phase} phase`:""}`;
+const choose=document.createElement("button");choose.textContent=selectedPhotoIds.includes(photo.id)?"Selected":"Compare";choose.setAttribute("aria-pressed",selectedPhotoIds.includes(photo.id));choose.onclick=()=>togglePhotoSelection(photo.id);
 const remove=document.createElement("button");remove.textContent="Delete";remove.onclick=()=>deleteProgressPhoto(photo.id);
 card.append(label,choose,remove);list.appendChild(card);
 }
-if(canAccessFeature("photo_comparisons")&&selectedPhotoIds.length===2){comparison.classList.remove("hidden");const heading=document.createElement("h3");heading.textContent="Compare photos";comparison.appendChild(heading);const pair=document.createElement("div");pair.className="photo-compare";
-for(const id of selectedPhotoIds){const p=photos.find(item=>item.id===id);const cell=document.createElement("div");cell.appendChild(makeImage(p));const label=document.createElement("p");label.textContent=`${p.day}${p.weight?` · ${p.weight} lb`:""}`;cell.appendChild(label);pair.appendChild(cell)}comparison.appendChild(pair)}
+if(selectedPhotoIds.length===2){comparison.classList.remove("hidden");const heading=document.createElement("h3");heading.textContent="Compare photos";comparison.appendChild(heading);const pair=document.createElement("div");pair.className="photo-compare";
+for(const id of selectedPhotoIds){const p=photos.find(item=>item.id===id);const cell=document.createElement("div");cell.appendChild(makeImage(p));const label=document.createElement("p");const phase=photoGoalPhaseLabel(p.day);label.textContent=`${p.day}${p.weight?` · ${p.weight} lb`:""}${phase?` · ${phase} phase`:""}`;cell.appendChild(label);pair.appendChild(cell)}comparison.appendChild(pair)}
 }
 
 /* GLOBAL HISTORY */
