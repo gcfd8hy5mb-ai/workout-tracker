@@ -50,7 +50,7 @@ case "photo_comparison":return `<small>PROGRESS PHOTOS</small>Save private progr
 case "advanced_analytics":case "muscle_volume_analytics":case "full_time_trends":{
 const total=prismProTrainingTotals();return `<small>YOUR SAVED TRAINING</small>${total.sessions} workouts · ${total.sets} sets · ${total.volume.toLocaleString()} lb logged volume. Pro adds deeper trend and muscle-group views.`;
 }
-case "weekly_prism_summary":return prismProWeeklyExample()+`<br><small>Deeper coaching recap is a future Pro benefit.</small>`;
+case "weekly_prism_summary":return prismProWeeklyExample()+`<br><small>Real weekly coaching recap is active in the Pro beta.</small>`;
 case "plateau_detection":return `<small>COMING LATER · SAMPLE CONCEPT</small>After several sessions without progress, PRISM could suggest holding the weight and adding a rep before the next increase.`;
 case "phase_analysis":return prismProPhaseExample()+`<br><small>Long-term phase comparison is coming later.</small>`;
 case "advanced_pr_insights":return `<small>PRO INSIGHT</small>Explore your saved personal records, best volume and estimated strength in Records.`;
@@ -80,14 +80,14 @@ function openPrismProFromPreview(){closeProPreview();showPrismPro()}
 function renderPrismPro(){
 const total=prismProTrainingTotals(),saved=prismProFeedback();
 const free=["Track workouts","Log sets, reps and weight","Preset workouts","Exercise library and instructions","Rest timer","Basic history and progress","Water and weight tracking","Body goals and calorie estimates","Up to 3 custom workouts","Manual exercise replacement"];
-const pro=["Everything in Free","Smart Progression","Smart Exercise Substitutions","Advanced Analytics","Weekly PRISM Summary · coaching recap coming later","Plateau Detection · coming later","Long-Term Goal Insights · phase comparison coming later","Progress Photos and comparisons","Advanced Measurement Trends","Unlimited Custom Workouts"];
+const pro=["Everything in Free","Smart Progression","Smart Exercise Substitutions","Advanced Analytics","Weekly PRISM Summary","Plateau Detection · coming later","Long-Term Goal Insights · phase comparison coming later","Progress Photos and comparisons","Advanced Measurement Trends","Unlimited Custom Workouts"];
 const benefits=["Progress Photos · Front / Side / Back","Side-by-side photo comparisons","Advanced measurement trends","Unlimited custom workouts","Advanced PR insights","Week / Month / Year trends"];
 document.getElementById("prismProPageContent").innerHTML=`<div class="prism-pro-hero"><img src="images/app-icon-192.png" alt="" aria-hidden="true"><span class="prism-pro-badge">PRISM PRO ✦</span><h2>Don't just record your workouts.<br>Know what to do next.</h2><p>PRISM doesn’t just track your workouts. It tells you what to do next.</p><p>PRISM Pro uses your training history to give you smarter progression, better substitutions, deeper insights, and long-term progress tracking.</p></div>
 <h3>Train with a clearer next step</h3><div class="prism-pro-grid">
 ${prismProCard("↗","SMART PROGRESSION","PRISM analyzes your previous performance and helps you choose what to attempt next.",prismProProgressionExample(),"Available in Pro beta","smart_progression")}
 ${prismProCard("⇄","SMART EXERCISE SUBSTITUTIONS","Get ranked alternatives instead of manually searching the exercise library.",prismProSubstitutionExample(),"Available in Pro beta","smart_substitutions")}
 ${prismProCard("▥","ADVANCED ANALYTICS","Explore strength trends, training volume, muscle-group volume, exercise progression, PR trends and longer comparisons.",`<small>YOUR LOGGED TOTALS</small>${total.sessions} workouts · ${total.sets} sets · ${total.volume.toLocaleString()} lb volume`,"Existing Pro views; deeper analysis in development","advanced_analytics")}
-${prismProCard("◷","WEEKLY PRISM SUMMARY","See what improved, what stalled and what to focus on next.",prismProWeeklyExample(),"Current snapshot; coaching recap coming later","weekly_prism_summary")}
+${prismProCard("◷","WEEKLY PRISM SUMMARY","See what improved, what stalled and what to focus on next.",prismProWeeklyExample(),"Available in Pro beta","weekly_prism_summary")}
 ${prismProCard("⌁","PLATEAU DETECTION","Identify exercises that stop progressing and consider a different next target.",`<small>COMING LATER · SAMPLE CONCEPT</small>Four flat sessions → hold the load and aim for +1 rep per set.`,"Concept preview · not active","plateau_detection")}
 ${prismProCard("◇","LONG-TERM GOAL INSIGHTS","Compare training, weight, measurements and performance across Bulk, Cut, Maintain and Recomp.",prismProPhaseExample(),"Goal tracking exists; phase comparison coming later","phase_analysis")}
 </div><h3>More with Pro</h3><div class="prism-pro-chip-list">${benefits.map(value=>`<span>${value}</span>`).join("")}</div><div class="prism-pro-benefit" style="margin-top:15px"><h4>PROGRESS PHOTOS</h4><p>See your progress beyond the scale. Save photos over time; compare before and after, Front / Side / Back, and goal phases where dates support it. Photos stay private on this device.</p><button class="pro-feature-button" type="button" onclick="showProPreview('photo_comparison')">Preview progress photos →</button></div><p class="small">Coming later: Cloud Sync, Data Export, Premium Themes.</p>
@@ -105,3 +105,14 @@ feedback.updatedAt=new Date().toISOString();
 try{localStorage.setItem(PRISM_PRO_FEEDBACK_KEY,JSON.stringify(feedback));document.getElementById("prismProFeedbackStatus").textContent="Saved on this device. Thanks for helping shape PRISM Pro."}
 catch{document.getElementById("prismProFeedbackStatus").textContent="Could not save feedback on this device. Please check available storage."}
 }
+
+/* Load the separate weekly-summary module after the core Pro experience.
+   Keeping it separate prevents Weekly Summary work from touching onboarding. */
+(function loadWeeklyPrismSummary(){
+if(document.querySelector('script[data-prism-weekly-summary]'))return;
+const script=document.createElement("script");
+script.src="weekly-summary.js?v=1";
+script.async=false;
+script.dataset.prismWeeklySummary="1";
+document.body.appendChild(script);
+})();
