@@ -989,6 +989,32 @@ body.prism-drawer-open{overflow:hidden}
 .prism-pro-preview button{min-height:48px;border-radius:12px;padding:10px 16px}
 .prism-pro-actions{display:flex;gap:9px;flex-wrap:wrap}.prism-pro-actions button:first-child{background:#238af0;color:#fff;border:1px solid #73c4ff}.prism-pro-actions button:last-child{background:#233a52;border:1px solid #45617b;color:#fff}
 .prism-pro-close{float:right;background:transparent;border:0;color:#fff;font-size:25px}
+/* PRISM welcome, goal phases and account preview */
+body.prism-onboarding-active header,body.prism-onboarding-active #prismBottomNav{display:none!important}
+body.prism-onboarding-active .container{max-width:560px;min-height:100dvh;padding:calc(24px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom))}
+.journey-brand{display:grid;justify-items:center;gap:9px;margin:24px auto 32px;text-align:center}
+.journey-brand img{width:84px;height:84px;object-fit:contain;border-radius:20px}
+.journey-brand strong{font-size:27px;letter-spacing:.16em}.journey-brand small{color:#a5b5c8}
+.journey-shell{max-width:520px;margin:auto}
+.journey-shell h2{font-size:clamp(27px,7vw,36px);line-height:1.15;margin:12px 0}
+.journey-shell p{color:#b5c4d6;line-height:1.55}
+.journey-eyebrow{font-size:12px;letter-spacing:.14em;color:#74c2ff;font-weight:700}
+.journey-card{background:#182535;border:1px solid #32465e;border-radius:20px;padding:19px;margin:18px 0}
+.journey-actions{display:grid;gap:10px;margin-top:22px}
+.journey-actions button,.journey-option,.journey-form button{min-height:50px;border:1px solid #36526d;background:#1c2d41;border-radius:13px;color:#f6faff;font:inherit;font-weight:650;padding:12px 15px;text-align:left}
+.journey-actions .journey-primary,.journey-form .journey-primary{background:#2089f3;border-color:#6dbdff;color:white;text-align:center}
+.journey-actions .journey-secondary{text-align:center}
+.journey-option{width:100%;display:flex;justify-content:space-between;align-items:center;margin:8px 0}
+.journey-option[aria-pressed=true]{border-color:#74bdff;background:#19446c}
+.journey-form{display:grid;gap:9px}.journey-form label{font-size:14px;color:#cdd9e9}
+.journey-form input,.journey-form select,.journey-form output{width:100%;min-height:48px;padding:10px 12px;border:1px solid #455b75;border-radius:12px;background:#101b29;color:#fff;font:inherit}
+.journey-form input:focus-visible,.journey-form select:focus-visible,.journey-actions button:focus-visible,.journey-option:focus-visible{outline:2px solid #7bc5ff;outline-offset:2px}
+.journey-form .journey-inline{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.journey-error{color:#ffb2b2!important;min-height:20px}.journey-note{font-size:13px;color:#aebed1}
+.journey-progress{display:flex;gap:5px;margin-bottom:20px}.journey-progress span{height:4px;flex:1;border-radius:8px;background:#304154}.journey-progress span.done{background:#42a7ff}
+.journey-summary{display:grid;grid-template-columns:1fr auto;gap:12px;border-bottom:1px solid #34465c;padding:10px 0}.journey-summary span{color:#b4c3d5}
+.goal-phase-card{margin-top:15px}.goal-phase-card .small{margin:6px 0}
+@media(max-width:400px){.journey-form .journey-inline{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.prism-pro-overlay,.prism-tier-choices button{transition:none!important}}
 @media(prefers-reduced-motion:reduce){#sideMenu,#menuScrim,#sideMenu .drawer-section-body,#sideMenu .drawer-chevron{transition:none!important}}
 @media(max-width:420px){.container{padding:14px 12px 30px}.prism-metric{padding:12px}.prism-metric b{font-size:17px}.prism-bottom-nav button{font-size:9px}.prism-detail-hero .exercise-mini-map{width:75px}}
@@ -1011,6 +1037,26 @@ body.prism-drawer-open{overflow:hidden}
 </header>
 
 <div class="container">
+
+<section id="welcomeScreen" class="hidden journey-shell">
+<div class="journey-brand"><img src="images/app-icon-192.png" alt="PRISM logo"><strong>PRISM</strong><small>Train · Track · Progress</small></div>
+<h2>Train smarter. Track every workout. Know what to do next.</h2>
+<p>Set up your training in a few short steps. You can change your goals later.</p>
+<div class="journey-actions"><button class="journey-primary" onclick="openPrismAuth('signup')">GET STARTED</button><button class="journey-secondary" onclick="openPrismAuth('signin')">I ALREADY HAVE AN ACCOUNT</button><button class="journey-secondary" onclick="startPrismGuest()">CONTINUE AS GUEST</button></div>
+</section>
+<section id="authScreen" class="hidden journey-shell">
+<div class="journey-brand"><img src="images/app-icon-192.png" alt="PRISM logo"><strong>PRISM</strong><small>Train · Track · Progress</small></div>
+<button class="back" onclick="showPrismWelcome()">← Back</button><h2 id="prismAuthTitle">Create account</h2>
+<p class="journey-note">Accounts aren't connected yet. Your workouts remain saved on this device. No password is saved here.</p>
+<form id="prismAuthForm" class="journey-form" onsubmit="submitPrismAuth(event)" novalidate>
+<label for="prismAuthEmail">Email</label><input id="prismAuthEmail" type="email" autocomplete="email" inputmode="email" required>
+<label for="prismAuthPassword">Password</label><input id="prismAuthPassword" type="password" autocomplete="new-password" required minlength="8">
+<div id="prismConfirmWrap"><label for="prismAuthConfirm">Confirm password</label><input id="prismAuthConfirm" type="password" autocomplete="new-password" minlength="8"></div>
+<p class="journey-error" id="prismAuthError" role="alert"></p><button type="submit" class="journey-primary" id="prismAuthSubmit">CREATE ACCOUNT</button>
+</form><div class="journey-actions"><button type="button" onclick="prismForgotPassword()">Forgot password?</button><button type="button" onclick="continuePrismLocal()">Continue using data on this device</button><button type="button" onclick="startPrismGuest()">Continue as guest</button></div>
+</section>
+<section id="onboardingScreen" class="hidden journey-shell"><div class="journey-brand"><img src="images/app-icon-192.png" alt="PRISM logo"><strong>PRISM</strong><small>Train · Track · Progress</small></div><div id="prismJourneyContent"></div></section>
+<section id="goalReviewScreen" class="hidden journey-shell"><div class="journey-brand"><img src="images/app-icon-192.png" alt="PRISM logo"><strong>PRISM</strong><small>Train · Track · Progress</small></div><div id="prismGoalReviewContent"></div></section>
 
 <section id="setupScreen" class="hidden">
 <div class="setup-branding"><img src="images/app-icon-192.png" width="92" height="92" alt="PRISM logo"><strong>PRISM</strong><small>Train · Track · Progress</small></div>
@@ -1043,6 +1089,7 @@ body.prism-drawer-open{overflow:hidden}
 
 <div class="prism-greeting"><h2 id="prismGreeting">Your day, your pace.</h2><p>Let's get it done.</p></div>
 <div id="todayDashboard" class="card today-card"></div>
+<div id="currentGoalCard"></div>
 <div id="weeklySummaryHome"></div>
 <button id="lastSummaryShortcut" class="action-button hidden" onclick="showLastWorkoutSummary()">Last workout summary<span>See your sets and what to try next</span></button>
 
@@ -1090,7 +1137,7 @@ Exercise Library
 
 <section id="profileScreen" class="hidden"><div class="prism-section-head"><div><span class="prism-eyebrow">YOUR SPACE</span><h2>Profile</h2></div></div><p class="small">Your goals, tracking and settings stay saved on this device.</p><div class="prism-profile-links">
 <button onclick="showTrackingGoals()">Goals & calorie targets <span>›</span></button><button onclick="showWeight()">Body weight <span>›</span></button><button onclick="showWater()">Water intake <span>›</span></button><button onclick="showFood()">Food tracking <span>›</span></button><button onclick="showWorkoutCalendar()">Workout calendar <span>›</span></button><button onclick="showPersonalRecords()">Personal records <span>›</span></button><button onclick="showMeasurements()">Measurements <span>›</span></button><button onclick="showProgressPhotos()">Private progress photos <span>›</span></button><button onclick="showManageWorkouts()">Manage workouts & data <span>›</span></button>
-</div><div class="card prism-tier-card" id="prismBetaAccess"><div class="prism-tier-heading"><h3>PRISM Beta Access</h3><span class="prism-pro-badge">BETA</span></div><p id="prismTierStatus" class="small" role="status"></p><div class="prism-tier-choices" role="group" aria-label="Beta experience"><button type="button" data-beta-mode="free" onclick="setBetaPreview('free')" aria-pressed="false">FREE</button><button type="button" data-beta-mode="pro" onclick="setBetaPreview('pro')" aria-pressed="false">PRO</button></div><p class="small">Beta preview only — no purchase required. Switching access never deletes your data.</p></div><div class="card" id="profileSettings"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
+</div><div class="card" id="prismAccountCard"><h3>Your PRISM access</h3><p class="small">Guest data is saved on this device. Secure accounts and syncing are coming later.</p><button type="button" onclick="openPrismAuth('signup')">Create account preview</button> <button type="button" onclick="signOutPrismLocal()">Leave this session</button></div><div class="card prism-tier-card" id="prismBetaAccess"><div class="prism-tier-heading"><h3>PRISM Beta Access</h3><span class="prism-pro-badge">BETA</span></div><p id="prismTierStatus" class="small" role="status"></p><div class="prism-tier-choices" role="group" aria-label="Beta experience"><button type="button" data-beta-mode="free" onclick="setBetaPreview('free')" aria-pressed="false">FREE</button><button type="button" data-beta-mode="pro" onclick="setBetaPreview('pro')" aria-pressed="false">PRO</button></div><p class="small">Beta preview only — no purchase required. Switching access never deletes your data.</p></div><div class="card" id="profileSettings"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
 
 <section id="helpScreen" class="hidden"><h2>Help &amp; Support</h2><div class="card"><h3>Workouts</h3><p class="small">Open a workout, enter weight and reps, and mark each set complete. Your active workout can be resumed from Home if you leave the app.</p></div><div class="card"><h3>Your saved data</h3><p class="small">Workouts and tracking are saved on this device. Download a backup before switching phones or clearing browser data.</p><button onclick="showDataBackup()">Open Data &amp; Backup</button></div><div class="card"><h3>Need more help?</h3><p class="small">Report an app issue through the project’s GitHub page. Please leave personal health information out of public issues.</p><a href="https://github.com/gcfd8hy5mb-ai/workout-tracker/issues" target="_blank" rel="noopener noreferrer">Open project support ↗</a></div></section>
 
@@ -1266,7 +1313,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 </section>
 
 <section id="goalsScreen" class="hidden">
-<h2>Goals</h2><div class="card"><h3>Calorie intake</h3><p class="small">Enter your details once. The automatic estimate changes with your workout and time. It's a starting point, not a prescription.</p>
+<h2>Goals</h2><div id="prismGoalSettings"></div><div class="card"><h3>Calorie intake</h3><p class="small">Enter your details once. The automatic estimate changes with your workout and time. It's a starting point, not a prescription.</p>
 <p id="calorieProfile" class="small"></p>
 <form class="tracker-form" onsubmit="saveCalorieSettings(event)" oninput="updateCaloriePreview()">
 <label for="calorieMode">How should your daily target work?</label><select id="calorieMode" onchange="updateCaloriePreview()"><option value="auto">Adjust automatically for my workout</option><option value="manual">Use a target I choose</option></select>
@@ -1276,7 +1323,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <label for="calorieFeet">Height (feet)</label><input id="calorieFeet" type="number" min="3" max="7" inputmode="numeric" required>
 <label for="calorieInches">Additional inches</label><input id="calorieInches" type="number" min="0" max="11" inputmode="numeric" required>
 <label for="calorieEquation">Estimate formula</label><select id="calorieEquation"><option value="neutral">Neutral estimate</option><option value="male">Male-based estimate</option><option value="female">Female-based estimate</option></select>
-<label for="calorieActivity">Movement outside workouts</label><select id="calorieActivity"><option value="1.2">Mostly sitting</option><option value="1.4">Some daily movement</option><option value="1.6">Active most days</option></select>
+<label for="calorieActivity">Movement outside workouts</label><select id="calorieActivity"><option value="1.2">Sedentary</option><option value="1.375">Lightly active</option><option value="1.55">Moderately active</option><option value="1.725">Very active</option><option value="1.9">Extremely active</option><option value="1.4">Some daily movement (previous setting)</option><option value="1.6">Active most days (previous setting)</option></select>
 <div id="calorieSuggestion" role="status" class="tracker-value"></div><button type="submit">Save calorie settings</button></form>
 <p class="calorie-mode-note">Workout estimates use time and a general strength-training activity value. Actual energy use varies.</p></div>
 <div class="card"><h3>Water intake</h3><form class="tracker-form" onsubmit="saveTrackingGoals(event)"><label for="waterGoal">Daily water target (mL)</label><input id="waterGoal" type="number" min="1" max="10000" inputmode="numeric" required><button type="submit">Save water goal</button></form></div>
@@ -1350,7 +1397,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <section class="drawer-section" aria-label="Other"><div class="menu-group">OTHER</div>
 <button type="button" class="menu-link" id="navHelp" onclick="showHelp()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-help"/></svg>Help &amp; Support</button>
 <button type="button" class="menu-link" id="navBackup" onclick="showDataBackup()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-backup"/></svg>Data &amp; Backup</button></section>
-<small class="menu-version">PRISM · Version 10.1 Beta</small>
+<small class="menu-version">PRISM · Version 10.2 Beta</small>
 </nav>
 
 <div id="pickerOverlay" class="picker-overlay hidden" onclick="closePicker()"></div>
@@ -1935,8 +1982,8 @@ let workoutGoals=JSON.parse(localStorage.getItem("workoutGoalsV1")||"null");
 function readTrackingData(){
 try{
 const saved=JSON.parse(localStorage.getItem("dailyTrackingV1")||"{}");
-return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],foodFavorites:Array.isArray(saved.foodFavorites)?saved.foodFavorites:[],waterUnit:saved.waterUnit==="oz"?"oz":"ml",waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null,calorieMode:["auto","manual"].includes(saved.calorieMode)?saved.calorieMode:null,calorieWorkout:saved.calorieWorkout&&typeof saved.calorieWorkout==="object"&&!Array.isArray(saved.calorieWorkout)?saved.calorieWorkout:null,restSeconds:[60,90,120,180].includes(saved.restSeconds)?saved.restSeconds:90,readiness:saved.readiness&&typeof saved.readiness==="object"?saved.readiness:{},manualTargets:saved.manualTargets&&typeof saved.manualTargets==="object"?saved.manualTargets:{},substitutions:saved.substitutions&&typeof saved.substitutions==="object"?saved.substitutions:{},measurements:Array.isArray(saved.measurements)?saved.measurements:[],calendarNotes:saved.calendarNotes&&typeof saved.calendarNotes==="object"&&!Array.isArray(saved.calendarNotes)?saved.calendarNotes:{},calorieAge:saved.calorieAge||"",calorieFeet:saved.calorieFeet||"",calorieInches:saved.calorieInches??"",calorieEquation:saved.calorieEquation||"",calorieActivity:saved.calorieActivity||"1.4"};
-}catch{return {water:[],food:[],weight:[],foodFavorites:[],waterUnit:"ml",waterGoal:2000,calorieGoal:null,calorieMode:null,calorieWorkout:null,restSeconds:90,readiness:{},manualTargets:{},substitutions:{},measurements:[],calendarNotes:{},calorieAge:"",calorieFeet:"",calorieInches:"",calorieEquation:"",calorieActivity:"1.4"}}
+return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],foodFavorites:Array.isArray(saved.foodFavorites)?saved.foodFavorites:[],waterUnit:saved.waterUnit==="oz"?"oz":"ml",waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null,calorieMode:["auto","manual"].includes(saved.calorieMode)?saved.calorieMode:null,calorieWorkout:saved.calorieWorkout&&typeof saved.calorieWorkout==="object"&&!Array.isArray(saved.calorieWorkout)?saved.calorieWorkout:null,restSeconds:[60,90,120,180].includes(saved.restSeconds)?saved.restSeconds:90,readiness:saved.readiness&&typeof saved.readiness==="object"?saved.readiness:{},manualTargets:saved.manualTargets&&typeof saved.manualTargets==="object"?saved.manualTargets:{},substitutions:saved.substitutions&&typeof saved.substitutions==="object"?saved.substitutions:{},measurements:Array.isArray(saved.measurements)?saved.measurements:[],calendarNotes:saved.calendarNotes&&typeof saved.calendarNotes==="object"&&!Array.isArray(saved.calendarNotes)?saved.calendarNotes:{},calorieAge:saved.calorieAge||"",calorieFeet:saved.calorieFeet||"",calorieInches:saved.calorieInches??"",calorieEquation:saved.calorieEquation||"",calorieActivity:saved.calorieActivity||"1.4",preferredWeightUnit:saved.preferredWeightUnit==="kg"?"kg":"lb",trainingLevel:["Beginner","Intermediate","Advanced"].includes(saved.trainingLevel)?saved.trainingLevel:"Beginner"};
+}catch{return {water:[],food:[],weight:[],foodFavorites:[],waterUnit:"ml",waterGoal:2000,calorieGoal:null,calorieMode:null,calorieWorkout:null,restSeconds:90,readiness:{},manualTargets:{},substitutions:{},measurements:[],calendarNotes:{},calorieAge:"",calorieFeet:"",calorieInches:"",calorieEquation:"",calorieActivity:"1.4",preferredWeightUnit:"lb",trainingLevel:"Beginner"}}
 }
 let tracking=readTrackingData();
 function saveTracking(){localStorage.setItem("dailyTrackingV1",JSON.stringify(tracking))}
@@ -1964,7 +2011,7 @@ function getExercise(id){return exerciseLibrary.find(x=>x.id===id)}
 
 function allScreens(){
 
-return ["home","workoutsScreen","workoutDetailScreen","exerciseInfoScreen","profileScreen","prismRestScreen","setupScreen","workoutScreen","libraryScreen","builderScreen",
+return ["welcomeScreen","authScreen","onboardingScreen","goalReviewScreen","home","workoutsScreen","workoutDetailScreen","exerciseInfoScreen","profileScreen","prismRestScreen","setupScreen","workoutScreen","libraryScreen","builderScreen",
 
 "overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen","calendarScreen","recordsScreen","measurementsScreen","photosScreen","completionScreen","helpScreen"];
 
@@ -1978,8 +2025,10 @@ allScreens().forEach(x=>document.getElementById(x).classList.add("hidden"));
 
 document.getElementById(id).classList.remove("hidden");
 
-document.getElementById("menuToggle").classList.toggle("hidden",id==="setupScreen");
-document.getElementById("headerToday").classList.toggle("hidden",id==="setupScreen");
+const focused=["welcomeScreen","authScreen","onboardingScreen","goalReviewScreen"].includes(id);
+document.body.classList.toggle("prism-onboarding-active",focused);
+document.getElementById("menuToggle").classList.toggle("hidden",id==="setupScreen"||focused);
+document.getElementById("headerToday").classList.toggle("hidden",id==="setupScreen"||focused);
 
 window.scrollTo(0,0);
 
@@ -2316,6 +2365,7 @@ try{data[key]=JSON.parse(localStorage.getItem(key)??JSON.stringify(fallback))}
 catch{data[key]=fallback}
 }
 data.prismActiveWorkoutV1=readPrismActiveWorkout();
+for(const key of ["prismGoalPhasesV1","prismJourneyV1"])data[key]=(()=>{try{return JSON.parse(localStorage.getItem(key)||"null")}catch{return null}})();
 return {format:"workout-tracker-backup",version:1,exportedAt:new Date().toISOString(),data};
 }
 function validBackup(backup){
@@ -2368,6 +2418,8 @@ try{await new Promise((resolve,reject)=>{const transaction=db.transaction("photo
 const previous={};for(const key of Object.keys(backupKeys))previous[key]=localStorage.getItem(key);
 try{for(const key of Object.keys(backupKeys))localStorage.setItem(key,JSON.stringify(backup.data[key]))}
 catch(error){for(const key of Object.keys(backupKeys))localStorage.removeItem(key);for(const [key,value] of Object.entries(previous))if(value!==null)localStorage.setItem(key,value);throw error}
+if(Array.isArray(backup.data.prismGoalPhasesV1))localStorage.setItem("prismGoalPhasesV1",JSON.stringify(backup.data.prismGoalPhasesV1));
+if(backup.data.prismJourneyV1&&typeof backup.data.prismJourneyV1==="object"&&["welcome","onboarding","complete"].includes(backup.data.prismJourneyV1.status))localStorage.setItem("prismJourneyV1",JSON.stringify(backup.data.prismJourneyV1));
 if(Object.hasOwn(backup.data,"prismActiveWorkoutV1")){
 const active=backup.data.prismActiveWorkoutV1;
 if(active&&typeof active.key==="string"&&Array.isArray(active.ids))localStorage.setItem("prismActiveWorkoutV1",JSON.stringify(active));
@@ -2405,6 +2457,7 @@ function renderHome(){
 
 document.getElementById("prismGreeting").textContent=localGreeting();
 renderPrismTodayDashboard();
+if(typeof renderPrismCurrentGoal==="function")renderPrismCurrentGoal();
 renderWeeklySummary("weeklySummaryHome");
 document.getElementById("lastSummaryShortcut").classList.add("hidden");
 document.getElementById("homeProgressCard").classList.toggle("hidden",!workoutGoals||workoutGoals.skipped);
@@ -4149,6 +4202,7 @@ function showFood(){showScreen("foodScreen");setBottomNav("Food");document.getEl
 function showWeight(){showScreen("weightScreen");setBottomNav("Weight");renderWeight()}
 function showTrackingGoals(){
 showScreen("goalsScreen");setBottomNav("Goals");
+if(typeof renderPrismGoalSettings==="function")renderPrismGoalSettings();
 document.getElementById("waterGoal").value=tracking.waterUnit==="oz"?Math.round(tracking.waterGoal/29.5735):tracking.waterGoal;
 document.getElementById("waterGoal").max=tracking.waterUnit==="oz"?"338":"10000";
 document.querySelector('label[for="waterGoal"]').textContent=`Daily water target (${tracking.waterUnit==="oz"?"fl oz":"mL"})`;
@@ -4178,14 +4232,14 @@ function estimatedCalorieGoal({weight,age,feet,inches,equation,activity},workout
 const latest=weightEntriesNewestFirst()[0];
 weight=weight==null||weight===""?Number(latest?.value):Number(weight);
 age=Number(age);feet=Number(feet);inches=Number(inches);activity=Number(activity);
-if(!Number.isInteger(age)||age<18||age>100||!Number.isInteger(feet)||feet<3||feet>7||!Number.isInteger(inches)||inches<0||inches>11||![1.2,1.4,1.6].includes(activity)||!["male","female","neutral"].includes(equation))return null;
+if(!Number.isInteger(age)||age<18||age>100||!Number.isInteger(feet)||feet<3||feet>7||!Number.isInteger(inches)||inches<0||inches>11||![1.2,1.375,1.4,1.55,1.6,1.725,1.9].includes(activity)||!["male","female","neutral"].includes(equation))return null;
 const kg=weight/2.20462;
 if(!Number.isFinite(kg)||weight<1||weight>1500)return null;
 const cm=(feet*12+inches)*2.54;
 const offset=equation==="male"?5:equation==="female"?-161:-78;
 const resting=10*kg+6.25*cm-5*age+offset;
 const goalFactors={muscle:1.08,strength:1.04,"fat-loss":.90,consistency:1};
-const factor=goalFactors[workoutGoals?.goal]||1;
+const factor=typeof prismGoalFactor==="function"&&prismGoalFactor()!==null?prismGoalFactor():goalFactors[workoutGoals?.goal]||1;
 const workoutExtra=workout?Math.max(0,(3.5-1)*kg*Number(workout.minutes)/60):0;
 return Math.round(Math.max(0,resting*activity*factor+workoutExtra)/25)*25;
 }
@@ -4226,6 +4280,7 @@ tracking.calorieAge=Number(profile.age);tracking.calorieFeet=Number(profile.feet
 tracking.calorieEquation=profile.equation;tracking.calorieActivity=profile.activity;
 }
 tracking.calorieMode=mode;tracking.calorieGoal=mode==="manual"?manual:null;
+if(typeof markPrismCalorieOverride==="function")markPrismCalorieOverride(mode==="manual"?manual:null);
 saveTracking();goHome();
 }
 function updateWorkoutMinutes(){
@@ -4361,7 +4416,7 @@ renderHome();
 
 updateProgress();
 
-if(!workoutGoals||(!workoutGoals.skipped&&!workoutGoals.gender))showGoalsSetup();
+// onboarding.js handles first-run and goal review without changing existing saved plans.
 
 if("serviceWorker" in navigator){
 
@@ -4370,6 +4425,7 @@ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
 }
 
 </script>
+<script src="onboarding.js"></script>
 
 </body>
 
