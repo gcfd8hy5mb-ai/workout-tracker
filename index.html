@@ -4217,7 +4217,7 @@ document.getElementById("calorieEquation").value=tracking.calorieEquation||(["ma
 document.getElementById("calorieActivity").value=tracking.calorieActivity;
 const names={muscle:"Build muscle",strength:"Get stronger","fat-loss":"Lose body fat",consistency:"Get into a routine"};
 document.getElementById("calorieProfile").textContent=workoutGoals&&!workoutGoals.skipped?
-`Selected goal: ${workoutGoals.basic?"Build muscle (basic plan)":names[workoutGoals.goal]||"Choose a workout goal"}.`:
+`Training: ${workoutGoals.basic?"Build muscle (basic plan)":names[workoutGoals.goal]||"Choose a workout goal"}${typeof prismActivePhase==="function"&&prismActivePhase()?` · Body goal: ${prismActivePhase().type}.`:"."}`:
 "For a custom workout without a plan, the estimate uses a maintenance goal.";
 updateCaloriePreview();
 }
