@@ -42,9 +42,10 @@ age=Number(age);feet=Number(feet);inches=Number(inches);weight=Number(weight);ac
 if(!Number.isInteger(age)||age<18||age>100||!Number.isInteger(feet)||feet<3||feet>7||!Number.isInteger(inches)||inches<0||inches>11||!Number.isFinite(weight)||weight<50||weight>800||!Object.hasOwn(PRISM_ACTIVITIES,activity)||!["male","female","neutral"].includes(sex))return null;
 const kg=weight/2.20462,cm=(feet*12+inches)*2.54;
 const offset=sex==="male"?5:sex==="female"?-161:-78;
-const maintenance=Math.round((10*kg+6.25*cm-5*age+offset)*activity/25)*25;
+const rawMaintenance=(10*kg+6.25*cm-5*age+offset)*activity;
+const maintenance=Math.round(rawMaintenance/25)*25;
 const factor=prismGoalFactor(goal,pace);
-return factor?{maintenance,target:Math.round(maintenance*factor/25)*25}:null;
+return factor?{maintenance,target:Math.round(rawMaintenance*factor/25)*25}:null;
 }
 function prismSelectedOptions(values,selected,fn){
 return values.map(([value,label,detail])=>`<button type="button" class="journey-option" aria-pressed="${selected===value}" onclick="${fn}('${value}')"><span><strong>${label}</strong>${detail?`<br><small>${detail}</small>`:""}</span><span aria-hidden="true">${selected===value?"✓":""}</span></button>`).join("");
