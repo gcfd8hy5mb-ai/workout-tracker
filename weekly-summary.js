@@ -76,8 +76,9 @@ function prismWeeklyBuildData(){
     const prior=previousBest.get(id);
     if(!prior)continue;
     const change=prior.score?((current.score-prior.score)/prior.score)*100:0;
-    if(change>=1)improved.push({...current,change});
-    else if(change<=-1)declined.push({...current,change});
+    const result={...current,change,previousWeight:prior.weight,previousReps:prior.reps};
+    if(change>=1)improved.push(result);
+    else if(change<=-1)declined.push(result);
   }
   improved.sort((a,b)=>b.change-a.change);
   declined.sort((a,b)=>a.change-b.change);
@@ -89,19 +90,28 @@ function prismWeeklyBuildData(){
     prCount:prismWeeklyPrCount(currentSessions,currentStart),
     improved,declined,muscles,
     mostTrained:muscles[0]||null,
-    leastTrained:muscles.length>1?muscles[muscles.length-1]:null
+    leastTrained:muscles.length>1?muscles[muscles.length-1]:null,
+    hasPreviousWeek:previousSessions.length>0
   };
 }
 
 function prismWeeklyDelta(current,previous,suffix=""){
-  if(!previous)return "No previous-week comparison yet";
   const delta=current-previous;
   if(delta===0)return `Same as last week${suffix}`;
   return `${delta>0?"+":""}${delta.toLocaleString()}${suffix} vs last week`;
 }
 
+function prismWeeklyExerciseChange(item){
+  const weightDelta=item.weight-item.previousWeight;
+  const repDelta=item.reps-item.previousReps;
+  if(weightDelta!==0)return `${weightDelta>0?"+":""}${weightDelta} lb`;
+  if(repDelta!==0)return `${repDelta>0?"+":""}${repDelta} rep${Math.abs(repDelta)===1?"":"s"}`;
+  return `${item.change>0?"+":""}${item.change.toFixed(1)}% estimated strength`;
+}
+
 function prismWeeklyNextFocus(data){
   if(!data.currentSessions.length)return "Complete your first workout this week and PRISM will start building your recap.";
+  if(!data.hasPreviousWeek)return "PRISM is learning your baseline. Keep logging full workouts so next week can include real comparisons.";
   if(data.declined.length){
     const exercise=data.declined[0];
     return `${exercise.name} was below last week's best performance. Keep the next session controlled and aim to rebuild before increasing load.`;
@@ -112,7 +122,7 @@ function prismWeeklyNextFocus(data){
   if(data.improved.length){
     return `${data.improved[0].name} improved this week. Keep progressing gradually while maintaining clean reps.`;
   }
-  if(data.previousSessions.length&&data.currentVolume<data.previousVolume*.8){
+  if(data.currentVolume<data.previousVolume*.8){
     return "Training volume is below last week so far. That may be intentional; if not, check whether a planned session is still missing.";
   }
   return "Your week looks steady so far. Keep logging complete working sets so PRISM can make the next recap more specific.";
@@ -120,12 +130,17 @@ function prismWeeklyNextFocus(data){
 
 function prismWeeklyExerciseList(items,emptyText){
   if(!items.length)return `<p class="small">${escapeHTML(emptyText)}</p>`;
-  return `<div class="weekly-insight-list">${items.slice(0,4).map(item=>`<div class="journey-summary"><span>${escapeHTML(item.name)}</span><strong>${item.change>0?"+":""}${item.change.toFixed(1)}%</strong></div>`).join("")}</div>`;
+  return `<div class="weekly-insight-list">${items.slice(0,4).map(item=>`<div class="journey-summary"><span>${escapeHTML(item.name)}</span><strong>${escapeHTML(prismWeeklyExerciseChange(item))}</strong></div>`).join("")}</div>`;
 }
 
 function prismWeeklyMuscleList(items){
   if(!items.length)return `<p class="small">Log working sets to build your training-balance view.</p>`;
   return `<div class="weekly-insight-list">${items.slice(0,6).map(item=>`<div class="journey-summary"><span>${escapeHTML(item.muscle)}</span><strong>${item.sets} sets</strong></div>`).join("")}</div>`;
+}
+
+function prismWeeklyComparison(data){
+  if(!data.hasPreviousWeek)return `<div class="journey-card"><strong>PRISM is learning your baseline</strong><p class="small">Complete another week of training to unlock week-over-week workout, set, volume and exercise comparisons.</p></div>`;
+  return `<p class="small">Workouts: ${escapeHTML(prismWeeklyDelta(data.currentSessions.length,data.previousSessions.length))}<br>Working sets: ${escapeHTML(prismWeeklyDelta(data.currentSets.length,data.previousSets.length))}<br>Volume: ${escapeHTML(prismWeeklyDelta(data.currentVolume,data.previousVolume," lb"))}</p>`;
 }
 
 function prismWeeklyRenderFull(area,id){
@@ -135,7 +150,7 @@ function prismWeeklyRenderFull(area,id){
   const range=`${startDate.toLocaleDateString([],{month:"short",day:"numeric"})}–${endDate.toLocaleDateString([],{month:"short",day:"numeric"})}`;
 
   if(!canAccessFeature("weekly_prism_summary")){
-    area.innerHTML=`<div class="card weekly-dashboard"><span class="journey-eyebrow">PRISM PRO ✦</span><h3>Weekly PRISM Summary</h3><p>See what improved, what slipped, your training balance, PRs, weekly volume and what to focus on next.</p><button type="button" onclick="showProPreview('weekly_prism_summary')">Explore PRISM Pro</button></div>`;
+    area.innerHTML=`<div class="card weekly-dashboard"><span class="journey-eyebrow">PRISM PRO ✦</span><h3>Weekly PRISM Summary</h3><p>Free tracks what you did. Pro turns that history into a weekly coaching recap: what improved, what slipped, your training balance, PRs and what to focus on next.</p><button type="button" onclick="showProPreview('weekly_prism_summary')">Preview Weekly Summary</button></div>`;
     return;
   }
 
@@ -149,7 +164,8 @@ function prismWeeklyRenderFull(area,id){
     return;
   }
 
-  area.innerHTML=`<div class="card weekly-dashboard"><span class="journey-eyebrow">YOUR PRISM WEEK</span><h3>Weekly PRISM Summary</h3><p class="small">${range}${target?` · ${Math.min(data.currentSessions.length,target)} of ${target} planned workouts`:""}</p><div class="stat-grid"><div class="stat-card"><div class="stat-number">${data.currentSessions.length}</div><div class="stat-label">Workouts</div></div><div class="stat-card"><div class="stat-number">${data.currentSets.length}</div><div class="stat-label">Working sets</div></div><div class="stat-card"><div class="stat-number">${data.currentVolume.toLocaleString()}</div><div class="stat-label">lb volume</div></div><div class="stat-card"><div class="stat-number">${data.prCount}</div><div class="stat-label">PRs</div></div></div><p class="small">Workouts: ${escapeHTML(prismWeeklyDelta(data.currentSessions.length,data.previousSessions.length))}<br>Working sets: ${escapeHTML(prismWeeklyDelta(data.currentSets.length,data.previousSets.length))}<br>Volume: ${escapeHTML(prismWeeklyDelta(data.currentVolume,data.previousVolume," lb"))}</p><h4>Improved</h4>${prismWeeklyExerciseList(data.improved,"No exercise improvement comparison is available yet. Repeat exercises across two weeks to unlock this section.")}<h4>Declined</h4>${prismWeeklyExerciseList(data.declined,"No meaningful exercise decline detected versus last week.")}<h4>Training Balance</h4>${prismWeeklyMuscleList(data.muscles)}<h4>Next Focus</h4><p>${escapeHTML(prismWeeklyNextFocus(data))}</p></div>`;
+  const balanceHeadline=data.mostTrained?`<p class="small">Most trained: <strong>${escapeHTML(data.mostTrained.muscle)}</strong> · ${data.mostTrained.sets} sets${data.leastTrained?`<br>Least trained: <strong>${escapeHTML(data.leastTrained.muscle)}</strong> · ${data.leastTrained.sets} sets`:""}</p>`:"";
+  area.innerHTML=`<div class="card weekly-dashboard"><span class="journey-eyebrow">YOUR PRISM WEEK</span><h3>Weekly PRISM Summary</h3><p class="small">${range}${target?` · ${Math.min(data.currentSessions.length,target)} of ${target} planned workouts`:""}</p><div class="stat-grid"><div class="stat-card"><div class="stat-number">${data.currentSessions.length}</div><div class="stat-label">Workouts</div></div><div class="stat-card"><div class="stat-number">${data.currentSets.length}</div><div class="stat-label">Working sets</div></div><div class="stat-card"><div class="stat-number">${data.currentVolume.toLocaleString()}</div><div class="stat-label">lb volume</div></div><div class="stat-card"><div class="stat-number">${data.prCount}</div><div class="stat-label">PRs</div></div></div><h4>Compared with last week</h4>${prismWeeklyComparison(data)}<h4>Improved</h4>${prismWeeklyExerciseList(data.improved,data.hasPreviousWeek?"No meaningful exercise improvement detected versus last week.":"Repeat exercises across another week to unlock this section.")}<h4>Declined</h4>${prismWeeklyExerciseList(data.declined,data.hasPreviousWeek?"No meaningful exercise decline detected versus last week.":"Repeat exercises across another week to unlock this section.")}<h4>Training Balance</h4>${balanceHeadline}${prismWeeklyMuscleList(data.muscles)}<h4>Next Focus</h4><p>${escapeHTML(prismWeeklyNextFocus(data))}</p></div>`;
 }
 
 /* Loaded after the core app, so this replaces the earlier basic renderer without
@@ -166,7 +182,8 @@ if(typeof prismProWeeklyExample==="function"){
   prismProWeeklyExample=function(){
     const data=prismWeeklyBuildData();
     if(!data.currentSessions.length)return `<small>YOUR CURRENT WEEK · SAVED DATA</small>No completed workouts yet. PRISM will build your recap as you train.`;
-    return `<small>YOUR CURRENT WEEK · SAVED DATA</small>${data.currentSessions.length} workouts · ${data.currentSets.length} working sets · ${data.currentVolume.toLocaleString()} lb volume · ${data.prCount} PRs`;
+    const insight=data.improved[0]?`<br><strong>${escapeHTML(data.improved[0].name)}</strong> ${escapeHTML(prismWeeklyExerciseChange(data.improved[0]))}`:`<br>${escapeHTML(prismWeeklyNextFocus(data))}`;
+    return `<small>YOUR CURRENT WEEK · SAVED DATA</small>${data.currentSessions.length} workouts · ${data.currentSets.length} working sets · ${data.currentVolume.toLocaleString()} lb volume · ${data.prCount} PRs${insight}`;
   };
 }
 
