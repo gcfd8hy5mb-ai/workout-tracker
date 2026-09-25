@@ -1858,20 +1858,34 @@ exercises:["shoulder-press","lateral-raise","biceps-curl","triceps-extension"]}
    with verified StoreKit/account grants before launch; browser storage is not proof of purchase. */
 const PRISM_ACCESS={
 features:{
-workout_tracking:"free",set_logging:"free",preset_workouts:"free",exercise_library:"free",
-exercise_instructions:"free",rest_timer:"free",basic_history:"free",basic_progress:"free",
-water_tracking:"free",weight_tracking:"free",basic_goals:"free",basic_records:"free",
+basic_workout_tracking:"free",set_logging:"free",preset_workouts:"free",
+exercise_library:"free",exercise_instructions:"free",rest_timer:"free",
+basic_history:"free",basic_progress:"free",basic_progress_trends:"free",
+water_tracking:"free",weight_tracking:"free",basic_goals:"free",
+body_goal_setup:"free",calorie_estimate:"free",local_profile:"free",
+custom_workouts:"free",manual_substitutions:"free",basic_records:"free",
 measurement_logging:"free",photo_storage:"free",local_backup:"free",
-custom_workouts:"free",unlimited_custom_workouts:"pro",
-smart_progression:"pro",advanced_analytics:"pro",strength_trends:"pro",
-muscle_volume:"pro",advanced_records:"pro",smart_substitutions:"pro",
-long_term_comparisons:"pro",measurement_trends:"pro",photo_comparisons:"pro",
-advanced_goals:"pro",cloud_backup:"pro",advanced_export:"pro",premium_themes:"pro"
+smart_progression:"pro",smart_substitutions:"pro",advanced_analytics:"pro",
+full_time_trends:"pro",muscle_volume_analytics:"pro",advanced_pr_insights:"pro",
+plateau_detection:"pro",weekly_prism_summary:"pro",phase_analysis:"pro",
+photo_comparison:"pro",advanced_measurement_trends:"pro",
+unlimited_custom_workouts:"pro",cloud_sync:"pro",data_export:"pro",premium_themes:"pro"
 },
 limits:{freeCustomWorkouts:3},betaControlsEnabled:true
 };
+/* Existing screen names resolve to the canonical policy above. No separate rules. */
+const PRISM_FEATURE_ALIASES={
+workout_tracking:"basic_workout_tracking",strength_trends:"basic_progress_trends",
+muscle_volume:"muscle_volume_analytics",advanced_records:"advanced_pr_insights",
+long_term_comparisons:"full_time_trends",measurement_trends:"advanced_measurement_trends",
+photo_comparisons:"photo_comparison",advanced_goals:"phase_analysis",
+cloud_backup:"cloud_sync",advanced_export:"data_export"
+};
 const PRISM_FEATURE_DETAILS={
 smart_progression:["Smart progression","Use your previous sets to suggest the next weight and rep target."],
+plateau_detection:["Plateau detection","Spot stalled progress and adjust future targets."],
+weekly_prism_summary:["Weekly PRISM Summary","Review records, body-weight change and calorie targets alongside your workouts."],
+phase_analysis:["Long-term goal insights","Compare your Bulk, Cut, Maintain and Recomp phases over time."],
 advanced_analytics:["Advanced progress","See deeper patterns in your training over time."],
 strength_trends:["Strength trends","Follow your logged exercise weights across workouts."],
 muscle_volume:["Muscle-group volume","See how much volume you train for each muscle group."],
@@ -1881,6 +1895,7 @@ long_term_comparisons:["Long-term comparisons","Compare your training by month a
 measurement_trends:["Measurement trends","See how your saved measurements change over time."],
 photo_comparisons:["Photo comparisons","Compare two of your private progress photos side by side."],
 custom_workouts:["Unlimited custom workouts","Keep creating workouts after your free plan's limit."],
+unlimited_custom_workouts:["Unlimited custom workouts","Keep creating workouts after your free plan's limit."],
 advanced_goals:["Advanced goals","Get more detailed goal insights when they become available."]
 };
 const PRISM_ENTITLEMENT_KEY="prismEntitlementV1";
@@ -1894,7 +1909,7 @@ return {tier:"free",betaView:"free",source:"local_default"};
 let prismEntitlement=readPrismEntitlement();
 function effectivePrismTier(){return prismEntitlement.tier==="beta"?(PRISM_ACCESS.betaControlsEnabled?prismEntitlement.betaView:"free"):prismEntitlement.tier}
 function canAccessFeature(feature){
-const rule=PRISM_ACCESS.features[feature];
+const rule=PRISM_ACCESS.features[PRISM_FEATURE_ALIASES[feature]||feature];
 if(!rule)return false;
 return rule==="free"||["pro","lifetime_pro"].includes(effectivePrismTier());
 }
@@ -2742,7 +2757,7 @@ card.className="exercise";
 const detailId=safeId(unique);
 const diagram=exerciseMuscleDiagram(ex);
 const showGoal=activeWorkoutKey!=="library";
-const smart=canAccessFeature("smart_progression"),canSubstitute=canAccessFeature("smart_substitutions");
+const smart=canAccessFeature("smart_progression");
 const goal=showGoal?overloadGoal(ex.id):null;
 const suggestion=showGoal&&smart?progressionSuggestion(ex.id):null;
 const manual=showGoal&&Number(tracking.manualTargets?.[overloadKey(ex.id)])>0;
@@ -2766,7 +2781,7 @@ ${showGoal?`<div class="goal-preview">${goalText}</div>`:""}
 
 <div class="details" id="${detailId}">
 
-${showGoal?`<div class="exercise-tools"><button type="button" class="swap-toggle">Replace exercise${canSubstitute?"":' <span class="prism-pro-badge">PRO</span>'}</button><button type="button" class="prism-info-toggle">Exercise info</button><div class="exercise-swap-list hidden"></div></div>`:""}
+${showGoal?`<div class="exercise-tools"><button type="button" class="swap-toggle">Replace exercise</button><button type="button" class="prism-info-toggle">Exercise info</button><div class="exercise-swap-list hidden"></div></div>`:""}
 
 ${showGoal?'<div class="tracking">':""}
 
@@ -2812,11 +2827,15 @@ input.addEventListener("change",()=>saveOverloadGoal(ex.id,input,card.querySelec
 const suggestedButton=card.querySelector(".use-suggestion");if(suggestedButton)suggestedButton.onclick=()=>{delete tracking.manualTargets[overloadKey(ex.id)];saveTracking();input.value=overloadGoal(ex.id)??"";card.querySelector(".goal-preview").textContent=overloadGoal(ex.id)?`Today: ${overloadGoal(ex.id)} lb × 8–10 reps`:'Choose a starting weight · 8–10 reps';suggestedButton.remove();renderWarmupGuide(ex.id,card)};
 const toggle=card.querySelector(".swap-toggle"),options=card.querySelector(".exercise-swap-list");
 toggle.onclick=()=>{
-if(!canAccessFeature("smart_substitutions")){showProPreview("smart_substitutions");return}
 options.replaceChildren();options.classList.toggle("hidden");if(options.classList.contains("hidden"))return;
 const alternatives=exerciseLibrary.filter(other=>other.muscle===ex.muscle&&other.id!==ex.id&&!activeWorkoutExerciseIds.includes(other.id));
 if(!alternatives.length){options.textContent="No other exercises for this muscle yet.";return}
-const description=document.createElement("p");description.className="swap-description";description.textContent=`These work ${ex.muscle.toLowerCase()} too. If you've already logged sets, we'll keep them and add your choice.`;options.appendChild(description);
+const description=document.createElement("p");description.className="swap-description";description.textContent=`Choose another ${ex.muscle.toLowerCase()} exercise. Logged sets remain saved.`;options.appendChild(description);
+if(canAccessFeature("smart_substitutions")){
+const equipment=prismEquipment(ex),preferred=workoutGoals?.focus==="balanced"?"Machine":equipment;
+alternatives.sort((a,b)=>Number(prismEquipment(b)===preferred)-Number(prismEquipment(a)===preferred)||a.name.localeCompare(b.name));
+const hint=document.createElement("p");hint.className="small";hint.textContent="PRISM Pro · Matching equipment options appear first.";options.appendChild(hint);
+}else alternatives.sort((a,b)=>a.name.localeCompare(b.name));
 alternatives.forEach(other=>{const button=document.createElement("button");button.textContent=other.name;button.onclick=()=>replaceExercise(ex.id,other.id);options.appendChild(button)})
 };
 renderWarmupGuide(ex.id,card);
@@ -3359,6 +3378,10 @@ const startDate=new Date(`${start}T12:00:00`),endDate=new Date(startDate);endDat
 const range=`${startDate.toLocaleDateString([],{month:"short",day:"numeric"})}–${endDate.toLocaleDateString([],{month:"short",day:"numeric"})}`;
 const target=workoutGoals&&!workoutGoals.skipped?Number(workoutGoals.days)||4:null;
 const sets=sessions.flatMap(s=>(s.exercises||[]).flatMap(ex=>ex.sets||[])).filter(s=>Number(s.weight)>0&&Number(s.reps)>0).length;
+if(!canAccessFeature("weekly_prism_summary")){
+area.innerHTML=`<div class="card weekly-dashboard"><h3>Weekly Progress</h3><p class="small">${range} · ${target?`${Math.min(sessions.length,target)} of ${target} planned workouts`:"Your workouts at a glance"}</p>${target?`<div class="progress-bar" role="progressbar" aria-label="Weekly workout goal" aria-valuemin="0" aria-valuemax="${target}" aria-valuenow="${Math.min(sessions.length,target)}"><div class="progress-fill" style="width:${Math.min(100,sessions.length/target*100)}%"></div></div>`:""}<div class="stat-grid"><div class="stat-card"><div class="stat-number">${sessions.length}${target?`/${target}`:""}</div><div class="stat-label">Workouts</div></div><div class="stat-card"><div class="stat-number">${sets}</div><div class="stat-label">Sets logged</div></div></div>${id==="weeklySummaryHome"?'<button class="dashboard-link" onclick="showOverallProgress()">See all progress →</button>':proFeatureCard("weekly_prism_summary")}</div>`;
+return;
+}
 let prs=0;const highest={};
 for(const session of workoutHistory.slice().reverse())for(const ex of session.exercises||[]){
 const best=Math.max(0,...(ex.sets||[]).filter(s=>Number(s.reps)>0).map(s=>Number(s.weight)||0));
@@ -3374,7 +3397,7 @@ const calorieText=ratios.length?`${Math.round(ratios.reduce((a,b)=>a+b,0)/ratios
 const weeks=new Map();for(const s of workoutHistory){const date=new Date(s.date);if(!Number.isNaN(date.getTime())){const key=weekStart(date);weeks.set(key,(weeks.get(key)||0)+1)}}
 let streak=0,weekDate=new Date();if((weeks.get(weekStart(weekDate))||0)<(target||1))weekDate.setDate(weekDate.getDate()-7);
 for(let i=0;i<52;i++){const key=weekStart(weekDate);if((weeks.get(key)||0)<(target||1))break;streak++;weekDate.setDate(weekDate.getDate()-7)}
-area.innerHTML=`<div class="card weekly-dashboard"><h3>${id==="weeklySummaryHome"?"Weekly Progress":"Your week"}</h3><p class="small">${range} · ${target?`${Math.min(sessions.length,target)} of ${target} planned workouts`:"Your workouts at a glance"}</p>${target?`<div class="progress-bar" role="progressbar" aria-label="Weekly workout goal" aria-valuemin="0" aria-valuemax="${target}" aria-valuenow="${Math.min(sessions.length,target)}"><div class="progress-fill" style="width:${Math.min(100,sessions.length/target*100)}%"></div></div>`:""}<div class="stat-grid"><div class="stat-card"><div class="stat-number">${sessions.length}${target?`/${target}`:""}</div><div class="stat-label">Workouts</div></div><div class="stat-card"><div class="stat-number">${sets}</div><div class="stat-label">Sets logged</div></div><div class="stat-card"><div class="stat-number">${prs}</div><div class="stat-label">Weight records</div></div><div class="stat-card"><div class="stat-number">${weightChange===null?"—":`${weightChange>0?"+":""}${weightChange.toFixed(1)}`}</div><div class="stat-label">Weight change (lb)</div></div></div><p class="small">${streak} ${streak===1?"week":"weeks"} reaching your workout goal · Calories: ${calorieText}.</p>${id==="weeklySummaryHome"?'<button class="dashboard-link" onclick="showOverallProgress()">See all progress →</button>':""}</div>`;
+area.innerHTML=`<div class="card weekly-dashboard"><h3>${id==="weeklySummaryHome"?"Weekly Progress":"Weekly PRISM Summary"}</h3><p class="small">${range} · ${target?`${Math.min(sessions.length,target)} of ${target} planned workouts`:"Your workouts at a glance"}</p>${target?`<div class="progress-bar" role="progressbar" aria-label="Weekly workout goal" aria-valuemin="0" aria-valuemax="${target}" aria-valuenow="${Math.min(sessions.length,target)}"><div class="progress-fill" style="width:${Math.min(100,sessions.length/target*100)}%"></div></div>`:""}<div class="stat-grid"><div class="stat-card"><div class="stat-number">${sessions.length}${target?`/${target}`:""}</div><div class="stat-label">Workouts</div></div><div class="stat-card"><div class="stat-number">${sets}</div><div class="stat-label">Sets logged</div></div><div class="stat-card"><div class="stat-number">${prs}</div><div class="stat-label">PRs</div></div><div class="stat-card"><div class="stat-number">${weightChange===null?"—":`${weightChange>0?"+":""}${weightChange.toFixed(1)}`}</div><div class="stat-label">Weight change (lb)</div></div></div><p class="small">${streak} ${streak===1?"week":"weeks"} reaching your workout goal · Calories: ${calorieText}.</p>${id==="weeklySummaryHome"?'<button class="dashboard-link" onclick="showOverallProgress()">See all progress →</button>':""}</div>`;
 }
 
 /* OVERALL PROGRESS */
@@ -3435,8 +3458,8 @@ else document.getElementById("muscleProgressVisual").innerHTML=proFeatureCard("a
 if(canAccessFeature("advanced_analytics"))renderMuscleRecovery();
 else document.getElementById("muscleRecoveryVisual").replaceChildren();
 renderWeeklySummary("weeklySummary");
-if(canAccessFeature("strength_trends"))renderTrendPicker();
-else document.getElementById("exerciseTrendVisual").innerHTML=proFeatureCard("strength_trends");
+if(canAccessFeature("basic_progress_trends"))renderTrendPicker();
+else document.getElementById("exerciseTrendVisual").replaceChildren();
 const area=document.getElementById("overallExerciseProgress");
 
 area.innerHTML=canAccessFeature("advanced_analytics")?"<h3>Exercise Progress</h3>":"";
@@ -4015,7 +4038,7 @@ showWorkoutTab("workout");
 /* CUSTOM BUILDER */
 
 function showBuilder(){
-if(customWorkouts.length>=customWorkoutLimit()){showProPreview("custom_workouts");return}
+if(customWorkouts.length>=customWorkoutLimit()){showProPreview("unlimited_custom_workouts");return}
 
 builderSelected=[];
 
@@ -4102,7 +4125,7 @@ area.appendChild(item);
 }
 
 function saveCustomWorkout(){
-if(customWorkouts.length>=customWorkoutLimit()){showProPreview("custom_workouts");return}
+if(customWorkouts.length>=customWorkoutLimit()){showProPreview("unlimited_custom_workouts");return}
 
 const name=document.getElementById("customWorkoutName").value.trim();
 
