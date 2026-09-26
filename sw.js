@@ -1,4 +1,4 @@
-const CACHE_NAME = "prism-v10.3-beta22";
+const CACHE_NAME = "prism-v10.3-beta23";
 
 const APP_FILES = [
   "./",
@@ -15,10 +15,11 @@ const APP_FILES = [
   "./in-workout-coach.js?v=2",
   "./set-coach.js?v=1",
   "./adaptive-set-coach.js?v=1",
-  "./next-session-coach.js?v=4",
+  "./next-session-coach.js?v=5",
   "./session-readiness.js?v=1",
   "./preworkout-plan.js?v=2",
   "./post-workout-coach.js?v=1",
+  "./coach-today.js?v=1",
   "./images/app-icon.png",
   "./images/app-icon-512.png",
   "./images/app-icon-192.png",
@@ -61,4 +62,4 @@ const ANDROID_ONBOARDING_HOTFIX = `
 `;
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE_NAME).then(async cache=>{await cache.addAll(APP_FILES.slice(0,6).map(file=>new Request(file,{cache:"reload"})));await Promise.allSettled(APP_FILES.slice(6).map(file=>cache.add(file)));await self.skipWaiting();}));});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));});
-self.addEventListener("fetch",event=>{if(event.request.method!=="GET")return;const url=new URL(event.request.url);if(url.pathname.endsWith("/onboarding.js")){event.respondWith(fetch(event.request,{cache:"no-cache"}).then(async response=>{if(!response.ok)return response;const source=await response.text(),headers=new Headers(response.headers);headers.set("content-type","application/javascript; charset=utf-8");return new Response(source+ANDROID_ONBOARDING_HOTFIX,{status:response.status,statusText:response.statusText,headers});}).catch(async()=>{const cached=await caches.match(event.request);if(!cached)throw new Error("No cached onboarding script available");const source=await cached.text(),headers=new Headers(cached.headers);headers.set("content-type","application/javascript; charset=utf-8");return new Response(source+ANDROID_ONBOARDING_HOTFIX,{status:cached.status,statusText:cached.statusText,headers});}));return;}if(url.pathname.endsWith("/")||url.pathname.endsWith("/index.html")||url.pathname.endsWith("/pro-experience.js")||url.pathname.endsWith("/ask-prism.js")){event.respondWith(fetch(event.request,{cache:"no-cache"}).then(response=>{const copy=response.clone();if(response.ok)caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));return response;}).catch(()=>caches.match(event.request)));return;}event.respondWith(caches.match(event.request).then(cached=>{if(cached)return cached;return fetch(event.request).then(response=>{const copy=response.clone();if(response.ok)caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));return response;});}));});
+self.addEventListener("fetch",event=>{if(event.request.method!=="GET")return;const url=new URL(event.request.url);if(url.pathname.endsWith("/onboarding.js")){event.respondWith(fetch(event.request,{cache:"no-cache"}).then(async response=>{if(!response.ok)return response;const source=await response.text(),headers=new Headers(response.headers);headers.set("content-type","application/javascript; charset=utf-8");return new Response(source+ANDROID_ONBOARDING_HOTFIX,{status:response.status,statusText:response.statusText,headers});}).catch(async()=>{const cached=await caches.match(event.request);if(!cached)throw new Error("No cached onboarding script available");const source=await cached.text(),headers=new Headers(cached.headers);headers.set("content-type","application/javascript; charset=utf-8");return new Response(source+ANDROID_ONBOARDING_HOTFIX,{status:cached.status,statusText:cached.statusText,headers});}));return;}if(url.pathname.endsWith("/")||url.pathname.endsWith("/index.html")||url.pathname.endsWith("/pro-experience.js")||url.pathname.endsWith("/ask-prism.js")||url.pathname.endsWith("/coach-today.js")){event.respondWith(fetch(event.request,{cache:"no-cache"}).then(response=>{const copy=response.clone();if(response.ok)caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));return response;}).catch(()=>caches.match(event.request)));return;}event.respondWith(caches.match(event.request).then(cached=>{if(cached)return cached;return fetch(event.request).then(response=>{const copy=response.clone();if(response.ok)caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));return response;});}));});
