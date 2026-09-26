@@ -1,4 +1,4 @@
-const CACHE_NAME = "prism-v10.3-beta37";
+const CACHE_NAME = "prism-v10.3-beta38";
 
 const APP_FILES = [
   "./",
@@ -20,7 +20,7 @@ const APP_FILES = [
   "./preworkout-plan.js?v=3",
   "./post-workout-coach.js?v=3",
   "./coach-today.js?v=3",
-  "./coach-learning.js?v=2",
+  "./coach-learning.js?v=3",
   "./coach-intervention-memory.js?v=2",
   "./images/app-icon.png",
   "./images/app-icon-512.png",
