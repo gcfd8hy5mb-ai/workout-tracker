@@ -8,7 +8,7 @@ function prismWeeklyExerciseBest(sessions){const out=new Map();for(const session
 function prismWeeklyMuscleSets(sessions){const groups=new Map();for(const session of sessions||[])for(const entry of session.exercises||[]){const count=(entry.sets||[]).filter(set=>Number(set.weight)>0&&Number(set.reps)>0).length;if(!count)continue;const muscle=getExercise(entry.id)?.muscle||"Other";groups.set(muscle,(groups.get(muscle)||0)+count);}return [...groups.entries()].map(([muscle,sets])=>({muscle,sets})).sort((a,b)=>b.sets-a.sets||a.muscle.localeCompare(b.muscle));}
 
 /* Only call a change meaningful when the logged performance itself moved.
-   This avoids celebrating tiny formula noise as progress. */
+   This avoids celebrating formula-only noise or a heavier load with a large rep loss. */
 function prismWeeklyPerformanceChange(current,prior){
   if(!current||!prior)return {direction:"new",meaningful:false,weightDelta:0,repDelta:0,change:0};
   const weightDelta=current.weight-prior.weight,repDelta=current.reps-prior.reps;
@@ -18,8 +18,6 @@ function prismWeeklyPerformanceChange(current,prior){
   else if(weightDelta===0&&repDelta>=1){direction="improved";meaningful=true;}
   else if(weightDelta<0&&current.reps<=prior.reps+1){direction="declined";meaningful=true;}
   else if(weightDelta===0&&repDelta<=-2){direction="declined";meaningful=true;}
-  else if(change>=2){direction="improved";meaningful=true;}
-  else if(change<=-2){direction="declined";meaningful=true;}
   return {direction,meaningful,weightDelta,repDelta,change};
 }
 function prismWeeklyPrCount(currentSessions,currentStart){const currentBest=prismWeeklyExerciseBest(currentSessions);const before=(workoutHistory||[]).filter(session=>sessionDay(session)<currentStart);const historicalBest=prismWeeklyExerciseBest(before);let count=0;for(const [id,current] of currentBest){const prior=historicalBest.get(id);if(!prior)continue;const result=prismWeeklyPerformanceChange(current,prior);if(result.direction==="improved"&&result.meaningful)count++;}return count;}
