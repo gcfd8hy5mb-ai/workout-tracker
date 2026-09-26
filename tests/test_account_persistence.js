@@ -36,6 +36,7 @@ function fakeTransport(){const accounts=new Map();return {accounts,read:async us
  const record={...r,user_id:user,revision:(old?.revision||0)+1};delete record.expected_revision;if(i<0)next.push(record);else next[i]=record;
  }accounts.set(user,next);return rows.map(r=>next.find(x=>x.id===r.id&&x.table===r.table));}};}
 (async()=>{
+ const raw={prismTimerAlertModeV1:'haptic_sound'};assert.deepEqual({...model.restoreSnapshot(await model.normalize(raw))},raw);
  const snapshot=asRaw(fixture),before=JSON.stringify(snapshot),rows=await model.normalize(snapshot);
  const restored=model.restoreSnapshot(rows);for(const [k,v]of Object.entries(fixture))assert.deepEqual(JSON.parse(restored[k]),v,k);
  assert.equal(JSON.stringify(snapshot),before,'normalization never mutates local data');

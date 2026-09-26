@@ -3,6 +3,7 @@
 ## Completed locally
 
 - 17 JavaScript regression files pass (15 existing plus 2 account-persistence tests).
+- Latest main PRISM regression suite: 25 checks pass.
 - 21 existing Python unit tests pass.
 - Embedded PostgreSQL executes both SQL migrations successfully with test-only
   Auth/Storage schemas. Tests cover A/B read isolation, forged-owner insert denial,

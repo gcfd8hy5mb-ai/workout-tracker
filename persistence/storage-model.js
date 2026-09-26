@@ -2,6 +2,7 @@
 (function(root,factory){const api=factory();if(typeof module==='object')module.exports=api;else root.PRISMStorageModel=api;})(globalThis,function(){
 'use strict';
 const RULES=Object.freeze({
+ prismTimerAlertModeV1:['ui_preferences','raw'],
  prismLocalProfileV1:['profile','fields'],prismJourneyV1:['onboarding','fields'],
  workoutGoalsV1:['goals','fields'],prismGoalPhasesV1:['goal_phases','list'],
  prismAthleteProfileV1:['athlete_preferences','fields'],dailyTrackingV1:['tracking','tracking'],
@@ -48,12 +49,13 @@ async function normalize(snapshot){
  }
  for(const [source,[table,kind]] of Object.entries(RULES)){
   if(!own(snapshot,source))continue;
-  let value;try{value=JSON.parse(snapshot[source]);}catch{throw Error('Invalid JSON in '+source+'; local data was not changed');}
+  let value;try{value=kind==='raw'?snapshot[source]:JSON.parse(snapshot[source]);}catch{throw Error('Invalid JSON in '+source+'; local data was not changed');}
   validate(value);
   const shape=value===null?'null':Array.isArray(value)?'array':typeof value==='object'?'object':'scalar';
   if(shape!=='null'&&((['list','sessions','workouts','interventions'].includes(kind)&&shape!=='array')||(['fields','tracking','adaptive'].includes(kind)&&shape!=='object')))throw Error('Unexpected shape in '+source);
   await add('sources',source,'source',{shape});
   if(shape==='null')continue;
+  if(kind==='raw'){await add(table,source,'value',value,{slot:'value'});continue;}
   if(kind==='fields'){for(const [slot,payload]of Object.entries(value))await add(table,source,slot,payload,{slot});continue;}
   if(kind==='adaptive'){
    for(const [group,entries]of Object.entries(value)){
@@ -105,6 +107,7 @@ function restoreSnapshot(rows){
   const [table,kind]=RULES[source],items=ordered(byTable(table).filter(r=>r.source_key===source));
   let value;
   if(marker.payload.shape==='null')value=null;
+  else if(kind==='raw')value=items[0]?.payload;
   else if(kind==='fields')value=Object.fromEntries(items.map(r=>[r.slot,r.payload]));
   else if(kind==='adaptive'){
    value=Object.fromEntries(items.filter(r=>!r.parent_id).map(r=>[r.slot,{}]));
@@ -117,7 +120,7 @@ function restoreSnapshot(rows){
     const item={...r.payload};for(const [field,t]of [['response','responses'],['outcome','outcomes']]){const child=children(t,r.id)[0];if(child)item[field]=child.payload;}return item;
    }return r.payload;
   });
-  validate(value);result[source]=JSON.stringify(value);
+  validate(value);result[source]=kind==='raw'?value:JSON.stringify(value);
  }
  return result;
 }

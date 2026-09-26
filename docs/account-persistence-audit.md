@@ -1,6 +1,7 @@
 # PRISM account persistence audit — 2026-09-26
 
 Audited baseline: `25306e2c987b8a154562a02d069cc5d239631d8f`.
+Refreshed against `07a53125627ac5ec86ce3395c2e27ec7021fba6e` after concurrent main updates.
 Working branch: `codex/account-persistence-staged`. This work is not a production rollout.
 
 ## Existing integration
@@ -51,6 +52,7 @@ SHOULD means useful preferences/feedback; LOCAL means never upload automatically
 | prismAskHistoryV1 | Coach Q&A history; capped at 20 | MUST |
 | prismMeasurementsV1 | Dated weight/body measurements and phase links | MUST |
 | prismProBetaFeedbackV1 | Product/pricing feedback, separate from workouts | SHOULD |
+| prismTimerAlertModeV1 | Raw string haptic/sound/off preference (added by concurrent main update) | SHOULD |
 | prismDrawerSectionsV1 | Drawer expansion preferences | SHOULD |
 | prismEntitlementV1 | Existing tier/betaView/source | LOCAL for this rollout; retain unchanged. Not a trusted paid entitlement. Future server-owned grants and separately synced beta preference require explicit design |
 | prismSupabaseSessionV1 | Access/refresh tokens and auth session | LOCAL ONLY; never snapshot or sync |
