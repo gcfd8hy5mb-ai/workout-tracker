@@ -14,8 +14,8 @@ assert.equal(context.prismPhaseAdd('cut','2026-09-01',200,12),true);assert.equal
 // Only workouts inside the phase are counted and repeated exercise performance is compared chronologically.
 context.workoutHistory=[session('2026-08-31',[ex('chest',200,10)]),session('2026-09-02',[ex('chest',100,10),ex('row',100,10)]),session('2026-09-20',[ex('chest',110,10),ex('row',90,10)]),session('2026-10-01',[ex('chest',120,10)])];
 let analyzed=context.prismPhaseAnalyze(active);assert.equal(analyzed.training.workouts,3);assert.equal(analyzed.training.sets,5);assert.equal(analyzed.training.volume,1000+1000+1100+900+1200);assert.equal(analyzed.improved[0].id,'chest');assert.ok(analyzed.improved[0].change>19);assert.equal(analyzed.declined[0].id,'row');
-// Finish validation rejects a date before the phase start.
-assert.equal(context.prismPhaseFinish(190,'2026-08-30'),false);assert.ok(context.prismActivePhase());assert.equal(context.prismPhaseFinish(190,'2026-09-30'),true);assert.equal(context.prismActivePhase(),null);let phases=context.prismPhaseRead();assert.equal(phases[0].endWeight,190);assert.equal(phases[0].endDate,'2026-09-30');assert.equal(context.prismPhaseAnalyze(phases[0]).weightChange,-10);
+// Finish validation rejects a date before the phase start. Finishing on Sep 30 excludes the Oct 1 session.
+assert.equal(context.prismPhaseFinish(190,'2026-08-30'),false);assert.ok(context.prismActivePhase());assert.equal(context.prismPhaseFinish(190,'2026-09-30'),true);assert.equal(context.prismActivePhase(),null);let phases=context.prismPhaseRead();assert.equal(phases[0].endWeight,190);assert.equal(phases[0].endDate,'2026-09-30');assert.equal(context.prismPhaseAnalyze(phases[0]).training.workouts,2);assert.equal(context.prismPhaseAnalyze(phases[0]).weightChange,-10);
 // A new phase can begin after the prior phase is finished.
 assert.equal(context.prismPhaseAdd('bulk','2026-10-01',190,8),true);assert.equal(context.prismActivePhase().type,'bulk');
 // Invalid goal types never write data.
