@@ -1,8 +1,8 @@
-/* Ask PRISM v1.3 — local, evidence-grounded Pro coaching Q&A. */
-const PRISM_ASK_VERSION='1.3';
+/* Ask PRISM v1.4 — local, evidence-grounded Pro coaching Q&A. */
+const PRISM_ASK_VERSION='1.4';
 const PRISM_ASK_KEY='prismAskHistoryV1';
 function prismAskSafe(fn,fallback=null){try{const v=fn();return v==null?fallback:v}catch{return fallback}}
-function prismAskHasProAccess(){return prismAskSafe(()=>typeof canAccessFeature==='function'&&canAccessFeature('coach_engine'),false)===true;}
+function prismAskHasProAccess(){return prismAskSafe(()=>typeof canAccessFeature==='function'&&canAccessFeature('advanced_analytics'),false)===true;}
 function prismAskHistory(){try{const v=JSON.parse(localStorage.getItem(PRISM_ASK_KEY)||'[]');return Array.isArray(v)?v:[]}catch{return []}}
 function prismAskSave(row){const rows=prismAskHistory();rows.unshift(row);localStorage.setItem(PRISM_ASK_KEY,JSON.stringify(rows.slice(0,20)));}
 function prismAskContext(){const coach=prismAskSafe(()=>typeof prismCoachAnalyze==='function'?prismCoachAnalyze():null,null),adaptive=prismAskSafe(()=>typeof prismAdaptiveAnalyze==='function'?prismAdaptiveAnalyze():null,null),athlete=prismAskSafe(()=>typeof prismAthleteCoachContext==='function'?prismAthleteCoachContext():null,null);return {coach,adaptive,athlete,signal:coach?.snapshot?.checkinSignal||null,weekly:coach?.snapshot?.weekly||null,plateaus:coach?.snapshot?.plateaus||[],decisions:coach?.decisions||[]};}
