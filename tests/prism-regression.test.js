@@ -4,11 +4,11 @@ function source(file){return fs.readFileSync(`${root}/${file}`,'utf8')}
 function syntax(file){new vm.Script(source(file),{filename:file})}
 function test(name,fn){try{fn();console.log(`✓ ${name}`);return true}catch(e){console.error(`✗ ${name}\n  ${e.message}`);return false}}
 let pass=0,fail=0;function run(name,fn){test(name,fn)?pass++:fail++}
-const required=['index.html','entitlements.js','adaptive-set-coach.js','coach-intervention-memory.js','workout-coach-targets.js','prism-test-mode.js','workout-experience.js'];
+const required=['index.html','adaptive-set-coach.js','coach-intervention-memory.js','workout-coach-targets.js','prism-test-mode.js','workout-experience.js'];
 run('Required PRISM production files exist',()=>required.forEach(f=>assert.ok(fs.existsSync(`${root}/${f}`),`${f} missing`)));
 for(const f of required.filter(x=>x.endsWith('.js')))run(`${f} parses as JavaScript`,()=>syntax(f));
-run('Free/Pro entitlement system remains centralized',()=>{const s=source('entitlements.js');assert.match(s,/canAccessFeature/);assert.match(s,/advanced_analytics/)});
-run('Ask/Coach target uses established Pro entitlement',()=>assert.match(source('workout-coach-targets.js'),/canAccessFeature\('advanced_analytics'\)/));
+run('Free/Pro entitlement system remains centralized',()=>{const s=source('index.html');assert.match(s,/canAccessFeature/);assert.match(s,/advanced_analytics/);assert.match(s,/PRISM_ACCESS/)});
+run('Coach target uses established Pro entitlement',()=>assert.match(source('workout-coach-targets.js'),/canAccessFeature\('advanced_analytics'\)/));
 run('Adaptive Coach supports automatic load progression',()=>{const s=source('adaptive-set-coach.js');assert.match(s,/increase_weight/);assert.match(s,/increase_reps/);assert.match(s,/prove_top_range/);assert.match(s,/recovery_hold/)});
 run('Synthetic decisions cannot write Coach memory',()=>{const s=source('adaptive-set-coach.js');assert.match(s,/decision\.synthetic/);assert.match(s,/d\.synthetic/)});
 run('Test mode uses session storage, not workout history storage',()=>{const s=source('prism-test-mode.js');assert.match(s,/sessionStorage/);assert.doesNotMatch(s,/localStorage\.setItem/)});
