@@ -14,7 +14,12 @@ run('Synthetic decisions cannot write Coach memory',()=>{const s=source('adaptiv
 run('Test mode uses session storage, not workout history storage',()=>{const s=source('prism-test-mode.js');assert.match(s,/sessionStorage/);assert.doesNotMatch(s,/localStorage\.setItem/)});
 run('Test scenarios cover progression, plateau, fatigue and learning',()=>{const s=source('prism-test-mode.js');for(const x of ['progression','plateau','fatigue','learning'])assert.match(s,new RegExp(x))});
 run('Planned workout sets require confirmation',()=>{const s=source('workout-experience.js');assert.match(s,/prismPlanned/);assert.match(s,/prismConfirmed/);assert.match(s,/confirmPlan/)});
-run('Workout polish retains repeat-set shortcut',()=>assert.match(source('workout-experience.js'),/Repeat last set/));
+run('Coach planned values are visual-only before confirmation',()=>{const s=source('workout-experience.js');assert.match(s,/applyVisualPlan/);assert.match(s,/restoreVisualPlan/);assert.match(s,/not logged until you confirm/i)});
+run('Editing a Coach target prevents immediate reseeding',()=>{const s=source('workout-experience.js');assert.match(s,/prismPlanDismissed/);assert.match(s,/dismissPlan/)});
+run('Coach confirmation starts the workout rest timer',()=>assert.match(source('workout-experience.js'),/typeof startWorkoutRest==='function'\)startWorkoutRest\(\)/));
+run('Coach confirmation emits a learning event',()=>assert.match(source('workout-experience.js'),/prism:coach-set-confirmed/));
+run('Workout polish retains repeat-set shortcut for Free and manual logging',()=>assert.match(source('workout-experience.js'),/Repeat last set/));
+run('Workout stack loads polished workout experience',()=>assert.match(source('workout-coach-targets.js'),/workout-experience\.js\?v=1\.3/));
 run('Timer alerts expose all four user modes',()=>{const s=source('timer-alerts.js');for(const x of ['haptic_sound','haptic','sound','off'])assert.match(s,new RegExp(x))});
 run('Timer alerts integrate with generic and workout rest completion',()=>{const s=source('timer-alerts.js');assert.match(s,/data-timer-display/);assert.match(s,/workoutRestStatus/);assert.match(s,/rest complete/i)});
 run('Timer alert mode can suppress existing vibration hooks',()=>{const s=source('timer-alerts.js');assert.match(s,/navigator\.vibrate=pattern/);assert.match(s,/mode\(\)\.includes\('haptic'\)/)});
