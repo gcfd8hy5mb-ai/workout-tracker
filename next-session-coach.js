@@ -1,5 +1,5 @@
-/* PRISM Next Session Coach v1 — builds an explainable next-workout plan from existing Coach context. */
-const PRISM_NEXT_SESSION_VERSION='1.0';
+/* PRISM Next Session Coach v1.1 — builds an explainable next-workout plan from existing Coach context. */
+const PRISM_NEXT_SESSION_VERSION='1.1';
 function prismNextSafe(fn,fallback=null){try{const v=fn();return v==null?fallback:v}catch{return fallback}}
 function prismNextSessionPlan(){const coach=prismNextSafe(()=>prismCoachAnalyze(),null),adaptive=prismNextSafe(()=>prismAdaptiveAnalyze(),null),accepted=prismNextSafe(()=>prismAdaptiveAccepted(),[])||[],athlete=prismNextSafe(()=>typeof prismAthleteCoachContext==='function'?prismAthleteCoachContext():null,null),fatigue=adaptive?.fatigue||prismNextSafe(()=>prismAdaptiveFatigueSignals(),null),history=Array.isArray(window.workoutHistory)?workoutHistory:[],last=history[0]||null;const actions=[];
 if(accepted.length)for(const p of accepted.slice(0,2))actions.push({type:'ACTIVE ADJUSTMENT',title:p.title,action:p.change,why:p.why});
@@ -12,3 +12,4 @@ function prismNextSessionMount(){const screen=document.getElementById('overallPr
 window.prismNextSessionPlan=prismNextSessionPlan;window.prismNextSessionRender=prismNextSessionRender;window.prismNextSessionMount=prismNextSessionMount;
 if(typeof showOverallProgress==='function'&&!showOverallProgress.__prismNextSession){const original=showOverallProgress;showOverallProgress=function(){original();prismNextSessionMount();};showOverallProgress.__prismNextSession=true;}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(prismNextSessionMount,250),{once:true});else setTimeout(prismNextSessionMount,250);
+(function loadPrismPreWorkoutPlan(){if(document.querySelector('script[data-prism-preworkout]'))return;const script=document.createElement('script');script.src='preworkout-plan.js?v=1';script.async=false;script.dataset.prismPreworkout='1';document.body.appendChild(script);})();
