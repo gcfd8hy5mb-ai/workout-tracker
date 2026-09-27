@@ -91,7 +91,7 @@ async function scenario(){
  const d2Manager=createStorage(d2Backing);d2Manager.select(D);
  const d2First=create({manager:d2Manager,cloud:dCloud,backing:d2Backing,createTransport:()=>transport});
  assert.equal((await d2First.connect()).status,'restored');
- assert.equal(d2Manager.storage.getItem('prismActiveWorkoutV1'),'{"id":"resume-test","title":"Resume Test"}');
+ assert.deepEqual(JSON.parse(d2Manager.storage.getItem('prismActiveWorkoutV1')),{id:'resume-test',title:'Resume Test'});
  d2First.stop();
  // Device 1 advances the same workout after device 2's checkpoint was established.
  const d1Again=create({manager:d1Manager,cloud:dCloud,backing:d1Backing,createTransport:()=>transport});
