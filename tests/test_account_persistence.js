@@ -33,7 +33,7 @@ const fixture={
  prismSessionReadinessV1:{date:'2026-09-01',energy:3},
  prismAskHistoryV1:[{id:'ask1',question:'Next?',answer:'Hold'}],
  prismMeasurementsV1:[{id:'m1',date:'2026-09-01',weight:180,waist:32}],
- prismProBetaFeedbackV1:{wouldPay:'maybe'},prismDrawerSectionsV1:{training:true}
+ prismProBetaFeedbackV1:{wouldPay:'maybe'},prismDrawerSectionsV1:{training:true},prismBetaPreviewPreferenceV1:{view:'pro'}
 };
 function fakeTransport(){const accounts=new Map();return {accounts,read:async user=>structuredClone(accounts.get(user)||[]),write:async(user,rows)=>{
  const previous=accounts.get(user)||[],next=structuredClone(previous);
