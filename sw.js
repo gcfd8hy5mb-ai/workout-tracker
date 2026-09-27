@@ -1,4 +1,4 @@
-const CACHE_NAME = "prism-v10.3-beta40.3";
+const CACHE_NAME = "prism-v10.3-beta40.4";
 
 const APP_FILES = [
   "./",
@@ -13,6 +13,7 @@ const APP_FILES = [
   "./persistence/reconcile.js",
   "./persistence/account-sync.js",
   "./persistence/account-controller.js",
+  "./persistence/photo-sync.js",
   "./persistence/account-ui.js",
   "./supabase-config.js",
   "./cloud-backup.js",
