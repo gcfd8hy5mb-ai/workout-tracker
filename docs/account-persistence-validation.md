@@ -7,16 +7,24 @@
   authenticated SELECT/INSERT grants present, and four owner-only policies
   restrict backup reads and writes to `auth.uid() = user_id`. There are no
   tracked database migrations or new account tables in production yet.
-- Refreshed against main `5a515c6`; adapter and staged schema now include
+- Refreshed against main `5a515c6`; PR #55's branch now contains a merge commit
+  with that main tip and all previous draft work. The adapter and staged schema include
   Coach goal, training phase, phase transition, program proposal and recovery
   plan records. Coach Memory v2/Athlete Intelligence reconstruct from persisted
   source feedback, interventions and workout history.
-- Added an opt-in account-local storage adapter that keeps legacy guest keys
-  untouched and isolates account A/B values by authenticated UUID. Its tests
-  cover explicit guest claim, cloud restore conflict rejection, tier isolation
-  and sign-out fallback. It is not yet wired into production startup.
+- Staged an account-local storage adapter, session refresh, opt-in sync
+  coordinator, early account namespace selection, and isolation of BOTH
+  IndexedDB photo databases. Legacy guest keys/photos remain untouched.
+  The coordinator's tests cover explicit guest claim, verified save/retry,
+  A/B isolation and restore into an empty second browser state. A startup
+  snapshot distinguishes default onboarding writes from preexisting account data.
+  These files are present only on draft PR #55, not on deployed main.
+- The service worker now bypasses other origins (including Supabase) and has
+  a new shell cache version. Its offline test passes. No browser auth session
+  or production data was modified.
 
-- 17 JavaScript regression files pass (15 existing plus 2 account-persistence tests).
+- All `tests/test_*.js`, 21 Python tests and the current main PRISM regression
+  test pass after the latest branch/main merge (2026-09-27).
 - Latest main PRISM regression suite: 25 checks pass.
 - 21 existing Python unit tests pass.
 - Embedded PostgreSQL executes both SQL migrations successfully with test-only
@@ -34,14 +42,17 @@
 
 ## Not yet implemented / verified (must block production activation)
 
-1. Apply additive migrations to staging, then validate the production plan.
+1. Revalidate the signed-in Supabase project and apply the two additive
+   migrations; browser session was found signed out on 2026-09-27 and secure
+   user authentication is required before any live database change. SQL has
+   passed embedded PostgreSQL tests but has NOT been applied to production.
 2. Verify real email auth, token refresh/revocation and existing auth UI/entrypoint.
    The current audited index does not load the Supabase scripts.
-3. Implement explicit local-account ownership claim, per-account local fallback,
-   account-switch UI and multi-tab coordination. The staged core rejects an unknown
-   owner; it does not silently claim data on login.
-4. Wire normal save hooks/outbox and bootstrap hydration only after ownership is
-   resolved. Current modules remain local-first and are not connected to this core.
+3. Finish explicit ownership-claim and account-switch UI plus multi-tab
+   coordination. The staged core has account-specific local fallback and
+   rejects an unknown owner; it does not silently claim data on login.
+4. Connect the staged on-write callback and startup hydration to real verified
+   auth in the app UI, then test offline/reload and in-flight edit conflicts.
 5. Implement explicit tombstones for deletion/reset and mutable collection ordering.
    Absence currently preserves cloud rows; this prevents accidental loss but is not
    sufficient for a finished two-way synchronization product. Adaptive accepted ↔
@@ -52,8 +63,9 @@
    restore offline copies and update local-only privacy wording before uploading.
 8. Preserve beta preferences across devices without treating a locally editable
    lifetime/pro value as a real server entitlement; finalized feature rules unchanged.
-9. Exclude Supabase endpoints from the existing service worker cache before loading
-   cloud integration. Do not clear localStorage or IndexedDB to update app assets.
+9. DONE IN DRAFT: Supabase is cross-origin and excluded from the service-worker
+   fetch handler; no localStorage or IndexedDB clearing was introduced. Recheck
+   with an installed PWA after live integration.
 10. Test genuine second-device restore, signout/signin, active workout resume,
     iPhone/Android, installed PWA and browser console. Fixture roundtrips and
     embedded PostgreSQL are not substitutes for those checks.
@@ -90,6 +102,7 @@ production until the existing schema review and staging checks are complete.
 - `.github/workflows/pages.yml`: PR tests and main-only deployment guard.
 - `.gitignore`: excludes dependency/generated Python files.
 
-No runtime HTML, workout logic, Pro rules or existing persistence writers changed.
-The existing main commit remains the stable version. Do not describe this draft
-as completed account synchronization or a live deployment.
+The draft now changes the startup HTML/photo database selector, cloud session
+helper and service worker. No workout logic or Free/Pro feature rule was edited.
+Main remains the stable deployed version. Do not describe this draft as
+completed account synchronization or a live deployment.
