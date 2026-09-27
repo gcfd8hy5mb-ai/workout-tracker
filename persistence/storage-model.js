@@ -104,7 +104,7 @@ async function normalize(snapshot){
  return rows;
 }
 function restoreSnapshot(rows){
- const result=Object.create(null),byTable=t=>rows.filter(r=>r.table===t);
+ const result=Object.create(null),byTable=t=>rows.filter(r=>r.table===t&&!(r.payload&&Object.keys(r.payload).length===1&&r.payload.__prismDeletedV1===true));
  const ordered=list=>list.slice().sort((a,b)=>(a.position??0)-(b.position??0)||a.id.localeCompare(b.id));
  const children=(table,parent)=>ordered(byTable(table).filter(r=>r.parent_id===parent));
  for(const marker of byTable('sources')){
