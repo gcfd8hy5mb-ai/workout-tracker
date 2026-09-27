@@ -3,10 +3,17 @@
 ## Completed locally
 
 - Authenticated live Supabase review on 2026-09-27: PRISM project is healthy;
-  the only public table is `prism_backups` (zero estimated rows), RLS enabled,
-  authenticated SELECT/INSERT grants present, and four owner-only policies
-  restrict backup reads and writes to `auth.uid() = user_id`. There are no
-  tracked database migrations or new account tables in production yet.
+  before these migrations the only public PRISM table was `prism_backups`
+  (zero estimated rows), with RLS and four owner-only policies. The two
+  additive SQL files were then run successfully against the actual project
+  in the dashboard SQL Editor. No existing table or user row was deleted.
+- Live catalog verification after execution: 40 `prism_account_*` tables all
+  have RLS enabled and forced, 40 owner-only table policies, 86 foreign keys,
+  one `prism_apply_account_batch` RPC, one private `prism-account-photos`
+  bucket (10 MiB object limit), and both owner-folder Storage policies.
+  These manual SQL Editor runs do not create tracked entries in the dashboard's
+  migration history. Real authenticated User A/User B RLS tests remain pending;
+  catalog inspection plus embedded PostgreSQL tests are not that test.
 - Refreshed against main `5a515c6`; PR #55's branch now contains a merge commit
   with that main tip and all previous draft work. The adapter and staged schema include
   Coach goal, training phase, phase transition, program proposal and recovery
@@ -20,8 +27,25 @@
   snapshot distinguishes default onboarding writes from preexisting account data.
   These files are present only on draft PR #55, not on deployed main.
 - The service worker now bypasses other origins (including Supabase) and has
-  a new shell cache version. Its offline test passes. No browser auth session
-  or production data was modified.
+  a new shell cache version. Its offline test passes. The only live project
+  changes in this session were the two additive database migrations; no
+  production PRISM user data was read, overwritten or deleted.
+- Draft-only runtime now loads the existing publishable-key config and auth
+  helper, refreshes expiring email sessions with a new expiry, clears a revoked
+  session, calls Supabase logout on sign-out, and presents account sign-in/
+  sign-up controls in Profile. Startup verifies the user before account sync;
+  a fresh account requires an explicit guest-data claim, while guest originals
+  remain available. A BroadcastChannel prompts other open tabs to reload on
+  auth changes. Unit fixtures cover these paths, but browser/installed-PWA
+  behavior and real email-confirmation flow are NOT yet verified.
+- Draft explicit-deletion ledger records the pre-delete source for user actions
+  (custom workout, history/progress reset, tracking/measurement entry and key
+  removal). Normalization derives stable row tombstones, the write RPC applies
+  them with revisions, and restoration omits them. Position is now included
+  in three-way comparisons so workout reordering syncs. Unit tests cover a
+  deleted workout staying deleted and a reorder surviving cloud restoration.
+  Capped Coach logs remain append/retention safe and are NOT inferred as user
+  deletions merely because old entries are absent locally.
 
 - All `tests/test_*.js`, 21 Python tests and the current main PRISM regression
   test pass after the latest branch/main merge (2026-09-27).
@@ -42,21 +66,25 @@
 
 ## Not yet implemented / verified (must block production activation)
 
-1. Revalidate the signed-in Supabase project and apply the two additive
-   migrations; browser session was found signed out on 2026-09-27 and secure
-   user authentication is required before any live database change. SQL has
-   passed embedded PostgreSQL tests but has NOT been applied to production.
-2. Verify real email auth, token refresh/revocation and existing auth UI/entrypoint.
-   The current audited index does not load the Supabase scripts.
-3. Finish explicit ownership-claim and account-switch UI plus multi-tab
-   coordination. The staged core has account-specific local fallback and
-   rejects an unknown owner; it does not silently claim data on login.
-4. Connect the staged on-write callback and startup hydration to real verified
-   auth in the app UI, then test offline/reload and in-flight edit conflicts.
-5. Implement explicit tombstones for deletion/reset and mutable collection ordering.
-   Absence currently preserves cloud rows; this prevents accidental loss but is not
-   sufficient for a finished two-way synchronization product. Adaptive accepted ↔
-   dismissed transitions and active-session completion need lifecycle handling.
+1. PARTIAL: both additive migrations applied to the live Supabase project;
+   table/policy/FK/RPC/private-bucket catalog verification passed. Execute
+   actual authenticated User A/User B read/write/deny tests before marking
+   the live security gate complete. Avoid real user data in test fixtures.
+2. PARTIAL: draft has email auth UI, refresh, revocation check, sign-out and
+   startup restore. Verify confirmation links, real login, reload and logout
+   through the live project and browser/PWA before marking complete.
+3. PARTIAL: draft has explicit guest claim, account-specific fallback, basic
+   A/B isolation and cross-tab auth-change broadcast. It still needs real
+   browser switching tests, an ownership-safe photo claim and write arbitration
+   when two tabs edit the same account simultaneously.
+4. PARTIAL: draft calls the normalized sync controller from Profile startup,
+   verifies auth before cloud work, hooks allowlisted saves, restores cloud
+   sources after archive and reload, and keeps local data on network failure.
+   Verify live account data, conflict UI, active workout and outbox retries.
+5. PARTIAL: explicit tombstones and list reordering implemented in draft with
+   regression tests. Audit all deletion UI paths, active-session completion and
+   Adaptive accepted ↔ dismissed transitions; test these with real two-device
+   accounts and simulate conflicting deletion versus remote edit.
 6. Reconcile old prism_backups rows through the allowlisted adapter with review of
    divergent data; never call the old blind restore as an automatic migration.
 7. Transfer and verify blobs/data URLs from BOTH photo databases to private Storage,
