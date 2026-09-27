@@ -1,4 +1,4 @@
-const CACHE_NAME = "prism-v10.3-beta39";
+const CACHE_NAME = "prism-v10.3-beta40.2";
 
 const APP_FILES = [
   "./",
@@ -7,6 +7,13 @@ const APP_FILES = [
   "./pro-experience.js",
   "./manifest.json",
   "./sw.js",
+  "./persistence/storage-model.js",
+  "./persistence/scoped-storage.js",
+  "./persistence/photo-scope.js",
+  "./persistence/reconcile.js",
+  "./persistence/account-sync.js",
+  "./supabase-config.js",
+  "./cloud-backup.js",
   "./coach-checkin.js?v=1",
   "./athlete-profile.js?v=1",
   "./adaptive-programming.js?v=4",
@@ -22,6 +29,13 @@ const APP_FILES = [
   "./coach-today.js?v=3",
   "./coach-learning.js?v=3",
   "./coach-intervention-memory.js?v=2",
+  "./plateau-detection.js",
+  "./exercise-library-expansion.js?v=5.1",
+  "./exercise-library-expansion-v1.js?v=1.0",
+  "./exercise-library-expansion-2.js?v=2.0",
+  "./exercise-library-expansion-3.js?v=3.0",
+  "./exercise-library-expansion-4.js?v=4.0",
+  "./exercise-library-expansion-5.js?v=5.0",
   "./images/app-icon.png",
   "./images/app-icon-512.png",
   "./images/app-icon-192.png",
@@ -64,4 +78,4 @@ const ANDROID_ONBOARDING_HOTFIX = `
 `;
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE_NAME).then(async cache=>{await cache.addAll(APP_FILES.slice(0,6).map(file=>new Request(file,{cache:"reload"})));await Promise.allSettled(APP_FILES.slice(6).map(file=>cache.add(file)));await self.skipWaiting();}));});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));});
-self.addEventListener("fetch",event=>{if(event.request.method!=="GET")return;const url=new URL(event.request.url);if(url.pathname.endsWith("/onboarding.js")){event.respondWith(fetch(event.request,{cache:"no-cache"}).then(async response=>{if(!response.ok)return response;const source=await response.text(),headers=new Headers(response.headers);headers.set("content-type","application/javascript; charset=utf-8");return new Response(source+ANDROID_ONBOARDING_HOTFIX,{status:response.status,statusText:response.statusText,headers});}).catch(async()=>{const cached=await caches.match(event.request);if(!cached)throw new Error("No cached onboarding script available");const source=await cached.text(),headers=new Headers(cached.headers);headers.set("content-type","application/javascript; charset=utf-8");return new Response(source+ANDROID_ONBOARDING_HOTFIX,{status:cached.status,statusText:cached.statusText,headers});}));return;}if(url.pathname.endsWith("/")||url.pathname.endsWith("/index.html")||url.pathname.endsWith("/pro-experience.js")||url.pathname.endsWith("/ask-prism.js")||url.pathname.endsWith("/coach-today.js")||url.pathname.endsWith("/in-workout-coach.js")||url.pathname.endsWith("/adaptive-set-coach.js")||url.pathname.endsWith("/adaptive-programming.js")||url.pathname.endsWith("/post-workout-coach.js")||url.pathname.endsWith("/coach-learning.js")||url.pathname.endsWith("/coach-intervention-memory.js")||url.pathname.endsWith("/next-session-coach.js")||url.pathname.endsWith("/preworkout-plan.js")){event.respondWith(fetch(event.request,{cache:"no-cache"}).then(response=>{const copy=response.clone();if(response.ok)caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));return response;}).catch(()=>caches.match(event.request)));return;}event.respondWith(caches.match(event.request).then(cached=>{if(cached)return cached;return fetch(event.request).then(response=>{const copy=response.clone();if(response.ok)caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));return response;});}));});
+self.addEventListener("fetch",event=>{if(event.request.method!=="GET")return;const url=new URL(event.request.url);if(url.origin!==self.location.origin)return;if(url.pathname.endsWith("/onboarding.js")){event.respondWith(fetch(event.request,{cache:"no-cache"}).then(async response=>{if(!response.ok)return response;const source=await response.text(),headers=new Headers(response.headers);headers.set("content-type","application/javascript; charset=utf-8");return new Response(source+ANDROID_ONBOARDING_HOTFIX,{status:response.status,statusText:response.statusText,headers});}).catch(async()=>{const cached=await caches.match(event.request);if(!cached)throw new Error("No cached onboarding script available");const source=await cached.text(),headers=new Headers(cached.headers);headers.set("content-type","application/javascript; charset=utf-8");return new Response(source+ANDROID_ONBOARDING_HOTFIX,{status:cached.status,statusText:cached.statusText,headers});}));return;}if(url.pathname.endsWith("/")||url.pathname.endsWith("/index.html")||url.pathname.endsWith("/pro-experience.js")||url.pathname.endsWith("/ask-prism.js")||url.pathname.endsWith("/coach-today.js")||url.pathname.endsWith("/in-workout-coach.js")||url.pathname.endsWith("/adaptive-set-coach.js")||url.pathname.endsWith("/adaptive-programming.js")||url.pathname.endsWith("/post-workout-coach.js")||url.pathname.endsWith("/coach-learning.js")||url.pathname.endsWith("/coach-intervention-memory.js")||url.pathname.endsWith("/next-session-coach.js")||url.pathname.endsWith("/preworkout-plan.js")||url.pathname.endsWith("/plateau-detection.js")||url.pathname.endsWith("/exercise-library-expansion.js")||url.pathname.endsWith("/exercise-library-expansion-v1.js")||url.pathname.endsWith("/exercise-library-expansion-2.js")||url.pathname.endsWith("/exercise-library-expansion-3.js")||url.pathname.endsWith("/exercise-library-expansion-4.js")||url.pathname.endsWith("/exercise-library-expansion-5.js")){event.respondWith(fetch(event.request,{cache:"no-cache"}).then(response=>{const copy=response.clone();if(response.ok)caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));return response;}).catch(()=>caches.match(event.request)));return;}event.respondWith(caches.match(event.request).then(cached=>{if(cached)return cached;return fetch(event.request).then(response=>{const copy=response.clone();if(response.ok)caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));return response;});}));});
