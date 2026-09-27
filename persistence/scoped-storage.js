@@ -9,9 +9,19 @@ function create(backing){
  let onWrite=null;
  function qualified(key){return owner&&DATA_KEYS.has(key)?PREFIX+owner+':'+key:key;}
  function visibleKeys(){return [...DATA_KEYS].filter(key=>backing.getItem(qualified(key))!==null);}
+ function flushCommittedSets(key,value){
+  if(key!=='setHistoryV5'||!owner||typeof globalThis.PRISMAccountLiveFlush!=='function')return;
+  try{
+   const sets=JSON.parse(value);
+   if(!sets||typeof sets!=='object'||!Object.values(sets).some(set=>set&&set.done===true))return;
+   // Complete Set is a user commit point. Start the verified cloud round-trip now;
+   // do not depend solely on a timer that iOS may suspend on a tab/app switch.
+   Promise.resolve().then(()=>globalThis.PRISMAccountLiveFlush()).catch(()=>{});
+  }catch{}
+ }
  const storage={
   getItem(key){return backing.getItem(qualified(String(key)));},
-  setItem(key,value){key=String(key);if(stale&&owner&&DATA_KEYS.has(key))throw Error('Account data changed in another tab. Refresh PRISM before saving.');backing.setItem(qualified(key),String(value));if(owner&&DATA_KEYS.has(key))onWrite?.(key);},
+  setItem(key,value){key=String(key);value=String(value);if(stale&&owner&&DATA_KEYS.has(key))throw Error('Account data changed in another tab. Refresh PRISM before saving.');backing.setItem(qualified(key),value);if(owner&&DATA_KEYS.has(key)){onWrite?.(key);flushCommittedSets(key,value);}},
   removeItem(key){key=String(key);if(stale&&owner&&DATA_KEYS.has(key))throw Error('Account data changed in another tab. Refresh PRISM before saving.');if(owner&&Object.hasOwn(model.RULES,key))recordDeletion(key);backing.removeItem(qualified(key));if(owner&&DATA_KEYS.has(key))onWrite?.(key);},
   key(index){return visibleKeys()[index]??null;},
   get length(){return visibleKeys().length;}
@@ -55,7 +65,7 @@ function create(backing){
  function claimGuest({replaceStartupDefaults=false}={}){
   if(!owner)throw Error('Select a signed-in account first');
   const legacy=model.capture(backing);
-  install(legacy,{replaceStartupDefaults}); // Guest keys are never removed.
+  install(legacy,{replaceStartupDefaults});
   return Object.keys(legacy).length;
  }
  return Object.freeze({storage,select,snapshot,install,claimGuest,recordDeletion,deletionLedger,acknowledgeDeletions,setOnWrite(callback){onWrite=callback;},invalidate(){stale=true;onWrite=null;},get stale(){return stale;},get owner(){return owner;}});
