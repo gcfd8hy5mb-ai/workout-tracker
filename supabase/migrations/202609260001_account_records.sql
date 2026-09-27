@@ -766,6 +766,117 @@ create policy owner_only on public.prism_account_outcomes for all to authenticat
  with check ((select auth.uid()) = user_id);
 create index prism_account_outcomes_parent on public.prism_account_outcomes(user_id,parent_id);
 
+-- Latest Coach goal/phase/proposal/recovery state, retained across devices and tiers.
+create table public.prism_account_coach_long_term_goals (
+ user_id uuid not null references auth.users(id),
+ id text not null check (id ~ '^[0-9a-f]{64}$'),
+ source_key text not null,
+ payload jsonb not null,
+ parent_id text,
+ slot text,
+ position integer check (position >= 0),
+ revision bigint not null default 1 check (revision > 0),
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now(),
+ primary key(user_id,id),
+ foreign key(user_id,source_key) references public.prism_account_sources(user_id,source_key) deferrable initially deferred
+);
+alter table public.prism_account_coach_long_term_goals enable row level security;
+alter table public.prism_account_coach_long_term_goals force row level security;
+revoke all on public.prism_account_coach_long_term_goals from public, anon, authenticated;
+grant select, insert, update on public.prism_account_coach_long_term_goals to authenticated;
+create policy owner_only on public.prism_account_coach_long_term_goals for all to authenticated
+ using ((select auth.uid()) = user_id)
+ with check ((select auth.uid()) = user_id);
+
+create table public.prism_account_coach_training_phases (
+ user_id uuid not null references auth.users(id),
+ id text not null check (id ~ '^[0-9a-f]{64}$'),
+ source_key text not null,
+ payload jsonb not null,
+ parent_id text,
+ slot text,
+ position integer check (position >= 0),
+ revision bigint not null default 1 check (revision > 0),
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now(),
+ primary key(user_id,id),
+ foreign key(user_id,source_key) references public.prism_account_sources(user_id,source_key) deferrable initially deferred
+);
+alter table public.prism_account_coach_training_phases enable row level security;
+alter table public.prism_account_coach_training_phases force row level security;
+revoke all on public.prism_account_coach_training_phases from public, anon, authenticated;
+grant select, insert, update on public.prism_account_coach_training_phases to authenticated;
+create policy owner_only on public.prism_account_coach_training_phases for all to authenticated
+ using ((select auth.uid()) = user_id)
+ with check ((select auth.uid()) = user_id);
+
+create table public.prism_account_coach_phase_transitions (
+ user_id uuid not null references auth.users(id),
+ id text not null check (id ~ '^[0-9a-f]{64}$'),
+ source_key text not null,
+ payload jsonb not null,
+ parent_id text,
+ slot text,
+ position integer check (position >= 0),
+ revision bigint not null default 1 check (revision > 0),
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now(),
+ primary key(user_id,id),
+ foreign key(user_id,source_key) references public.prism_account_sources(user_id,source_key) deferrable initially deferred
+);
+alter table public.prism_account_coach_phase_transitions enable row level security;
+alter table public.prism_account_coach_phase_transitions force row level security;
+revoke all on public.prism_account_coach_phase_transitions from public, anon, authenticated;
+grant select, insert, update on public.prism_account_coach_phase_transitions to authenticated;
+create policy owner_only on public.prism_account_coach_phase_transitions for all to authenticated
+ using ((select auth.uid()) = user_id)
+ with check ((select auth.uid()) = user_id);
+
+create table public.prism_account_coach_program_proposals (
+ user_id uuid not null references auth.users(id),
+ id text not null check (id ~ '^[0-9a-f]{64}$'),
+ source_key text not null,
+ payload jsonb not null,
+ parent_id text,
+ slot text,
+ position integer check (position >= 0),
+ revision bigint not null default 1 check (revision > 0),
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now(),
+ primary key(user_id,id),
+ foreign key(user_id,source_key) references public.prism_account_sources(user_id,source_key) deferrable initially deferred
+);
+alter table public.prism_account_coach_program_proposals enable row level security;
+alter table public.prism_account_coach_program_proposals force row level security;
+revoke all on public.prism_account_coach_program_proposals from public, anon, authenticated;
+grant select, insert, update on public.prism_account_coach_program_proposals to authenticated;
+create policy owner_only on public.prism_account_coach_program_proposals for all to authenticated
+ using ((select auth.uid()) = user_id)
+ with check ((select auth.uid()) = user_id);
+
+create table public.prism_account_coach_recovery_plans (
+ user_id uuid not null references auth.users(id),
+ id text not null check (id ~ '^[0-9a-f]{64}$'),
+ source_key text not null,
+ payload jsonb not null,
+ parent_id text,
+ slot text,
+ position integer check (position >= 0),
+ revision bigint not null default 1 check (revision > 0),
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now(),
+ primary key(user_id,id),
+ foreign key(user_id,source_key) references public.prism_account_sources(user_id,source_key) deferrable initially deferred
+);
+alter table public.prism_account_coach_recovery_plans enable row level security;
+alter table public.prism_account_coach_recovery_plans force row level security;
+revoke all on public.prism_account_coach_recovery_plans from public, anon, authenticated;
+grant select, insert, update on public.prism_account_coach_recovery_plans to authenticated;
+create policy owner_only on public.prism_account_coach_recovery_plans for all to authenticated
+ using ((select auth.uid()) = user_id)
+ with check ((select auth.uid()) = user_id);
+
 -- Queryable legacy fields without coercing or changing saved numeric/string values.
 alter table public.prism_account_sessions
  add column workout_key text generated always as (payload->>'workoutKey') stored,
@@ -796,7 +907,7 @@ begin
   raise exception 'Expected an array of at most 500 records';
  end if;
  for change in select value from jsonb_array_elements(changes) loop
-  if not (change->>'table' = any(array['sources','profile','onboarding','goals','goal_phases','athlete_preferences','tracking','workouts','sessions','current_sets','previous_sets','targets','completions','active_workout','coach_actions','coach_checkins','adaptive','fatigue','coach_feedback','interventions','post_workout','reflections','readiness','coach_questions','measurements','beta_feedback','ui_preferences','tracking_entries','tracking_maps','workout_exercises','session_exercises','sets','responses','outcomes'])) then
+  if not (change->>'table' = any(array['sources','profile','onboarding','goals','goal_phases','athlete_preferences','tracking','workouts','sessions','current_sets','previous_sets','targets','completions','active_workout','coach_actions','coach_checkins','adaptive','fatigue','coach_feedback','interventions','post_workout','reflections','readiness','coach_questions','measurements','beta_feedback','ui_preferences','coach_long_term_goals','coach_training_phases','coach_phase_transitions','coach_program_proposals','coach_recovery_plans','tracking_entries','tracking_maps','workout_exercises','session_exercises','sets','responses','outcomes'])) then
    raise exception 'Unknown account table';
   end if;
   table_name := 'prism_account_' || (change->>'table');
