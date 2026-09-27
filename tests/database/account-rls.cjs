@@ -51,7 +51,11 @@ const A='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',B='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbb
  await assert.rejects(()=>db.query('select public.prism_apply_account_batch($1::jsonb)',[JSON.stringify([{...exercise,id:'3'.repeat(64),parent_id:extra.id,expected_revision:0}])]),/foreign key/);
  // Private photo bucket policies, including forged user folder uploads.
  await db.query("insert into storage.objects(bucket_id,name) values ('prism-account-photos',$1)",[A+'/photo/hash.jpg']);
+ await db.query('insert into public.prism_account_photos(user_id,id,legacy_database,legacy_id,metadata,object_path,sha256,byte_size) values($1,$2,$3,$4,$5,$6,$7,$8)',[A,'a'.repeat(64),'workoutTrackerPhotosV1','old','{}',A+'/workoutTrackerPhotosV1/'+'b'.repeat(64)+'.jpg','b'.repeat(64),100]);
+ await db.query('update public.prism_account_photos set deleted_at=now() where user_id=$1',[A]);
  await as(B);assert.equal((await db.query('select * from storage.objects')).rows.length,0);
+ assert.equal((await db.query('select * from public.prism_account_photos')).rows.length,0);
+ assert.equal((await db.query('update public.prism_account_photos set deleted_at=now() where user_id=$1 returning id',[A])).rows.length,0);
  await assert.rejects(()=>db.query("insert into storage.objects(bucket_id,name) values ('prism-account-photos',$1)",[A+'/bad.jpg']),/row-level security/);
  await as(null,'anon');
  await assert.rejects(()=>db.exec('select * from public.prism_account_sessions'),/permission denied/);
