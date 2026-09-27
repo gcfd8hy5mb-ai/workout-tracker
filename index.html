@@ -1951,10 +1951,15 @@ advanced_goals:["Advanced goals","Get more detailed goal insights when they beco
 };
 const PRISM_ENTITLEMENT_KEY="prismEntitlementV1";
 function readPrismEntitlement(){
+let saved=null;
 try{
-const saved=JSON.parse(localStorage.getItem(PRISM_ENTITLEMENT_KEY)||"null");
-if(saved&&["free","pro","lifetime_pro","beta"].includes(saved.tier))return {tier:saved.tier,betaView:saved.betaView==="pro"?"pro":"free",source:typeof saved.source==="string"?saved.source:"local"};
+saved=JSON.parse(localStorage.getItem(PRISM_ENTITLEMENT_KEY)||"null");
 }catch{}
+if(saved&&["pro","lifetime_pro"].includes(saved.tier))return {tier:saved.tier,betaView:saved.betaView==="pro"?"pro":"free",source:typeof saved.source==="string"?saved.source:"local"};
+// A cloud-synced beta preference is a preview choice, never a paid entitlement.
+try{const preference=JSON.parse(localStorage.getItem("prismBetaPreviewPreferenceV1")||"null");
+if(PRISM_ACCESS.betaControlsEnabled&&["free","pro"].includes(preference?.view))return {tier:"beta",betaView:preference.view,source:"beta_preview"};}catch{}
+if(saved&&["free","beta"].includes(saved.tier))return {tier:saved.tier,betaView:saved.betaView==="pro"?"pro":"free",source:typeof saved.source==="string"?saved.source:"local"};
 return {tier:"free",betaView:"free",source:"local_default"};
 }
 let prismEntitlement=readPrismEntitlement();
@@ -1979,6 +1984,7 @@ if(!PRISM_ACCESS.betaControlsEnabled||!["free","pro"].includes(view))return;
 if(prismEntitlement.tier==="free"||prismEntitlement.tier==="beta")prismEntitlement={tier:"beta",betaView:view,source:"beta_preview"};
 else prismEntitlement.betaView=view; // Verified Pro or Lifetime Pro always stays Pro.
 localStorage.setItem(PRISM_ENTITLEMENT_KEY,JSON.stringify(prismEntitlement));
+localStorage.setItem("prismBetaPreviewPreferenceV1",JSON.stringify({view}));
 renderPrismAccessState();
 }
 function renderPrismAccessState(){
