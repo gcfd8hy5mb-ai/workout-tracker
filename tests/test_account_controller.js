@@ -62,6 +62,19 @@ async function scenario(){
  assert.equal(seededMap.get('prismLocalProfileV1'),'{"displayName":"Guest"}','original guest data stays');
  assert.equal((await seeded.flush()).status,'verified');
  seeded.stop();
+ const C='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+ const backupMap=new Map(),backupBacking={getItem:k=>backupMap.get(k)??null,setItem:(k,v)=>backupMap.set(k,v),removeItem:k=>backupMap.delete(k)};
+ const backupManager=createStorage(backupBacking);backupManager.select(C);
+ backupManager.storage.setItem('prismJourneyV1','{"status":"welcome"}');
+ const backupController=create({manager:backupManager,cloud:{...cloud,currentUser:async()=>({id:C})},backing:backupBacking,initialSnapshot:{},createTransport:()=>transport});
+ assert.equal((await backupController.connect()).status,'claim');
+ const older={user_id:C,backup_data:{localStorage:{prismLocalProfileV1:'{"displayName":"Older"}',workoutHistoryV52:'[]',prismEntitlementV1:'{"tier":"lifetime_pro"}',prismSupabaseSessionV1:'secret'}}};
+ await assert.rejects(()=>backupController.importLegacyBackup({...older,user_id:A}),/different account/);
+ assert.equal(await backupController.importLegacyBackup(older),2,'only allowlisted data imported');
+ assert.equal(backupManager.storage.getItem('prismEntitlementV1'),null,'legacy paid flag cannot grant access');
+ assert.equal((await backupController.flush()).status,'verified');
+ assert.equal(JSON.parse(model.restoreSnapshot(rows.get(C)).prismLocalProfileV1).displayName,'Older');
+ backupController.stop();
  assert(events.some(e=>e.kind==='synced'));
  console.log('Account controller: explicit claim, verified save, idempotence, A/B isolation and fresh device restore OK.');
 }
