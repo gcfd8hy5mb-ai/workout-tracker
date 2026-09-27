@@ -1,7 +1,7 @@
 /* Opt-in account coordinator; no implicit guest claim or production bootstrap. */
 (function(root,factory){const node=typeof module==='object';const api=factory(node?require('./storage-model.js'):root.PRISMStorageModel,node?require('./account-sync.js'):root.PRISMAccountSync);if(node)module.exports=api;else root.PRISMAccountController=api;})(globalThis,function(model,sync){
 'use strict';
-function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),onStatus=()=>{},createTransport=sync.createTransport}){
+function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),onStatus=()=>{},createTransport=sync.createTransport,initialSnapshot=null}){
  let userId=null,transport=null,busy=false,dirty=0,timer=null,closed=false;
  const CHECKPOINT='prismAccountCheckpointV1:',ARCHIVE='prismAccountRecoveryV1:';
  const status=(kind,message)=>onStatus({kind,message});
@@ -31,7 +31,9 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
    const session=await cloud.getSession();
    return session?.user?.id===userId?session:null;
   }});
-  const cloudRows=await transport.read(userId),local=manager.snapshot(),hasLocal=Object.keys(local).length>0;
+  // The onboarding script may create a default profile before async auth completes.
+  // Distinguish it from real account data captured before the app started.
+  const cloudRows=await transport.read(userId),local=manager.snapshot(),hasLocal=Object.keys(initialSnapshot||local).length>0;
   if(!hasLocal&&cloudRows.length){
    if(!persistVerified(model.restoreSnapshot(cloudRows),local))throw Error('Account changed during restoration');
    saveCheckpoint(cloudRows);
