@@ -12,6 +12,8 @@
   let controller = null;
   let accountEmail = '';
   let claimAvailable = false;
+  let legacyBackup = null;
+  let photos = null;
   let inFlight = false;
   const accountStatus = (message, isError = false) => {
     const output = host.querySelector('#prismAccountStatus');
@@ -54,7 +56,8 @@
     }
     host.innerHTML = `<div class="card"><h3>PRISM account</h3><p id="prismAccountIdentity" class="small"></p>
       <p id="prismAccountStatus" class="small" role="status">Checking your account…</p>
-      <div id="prismGuestClaim" hidden><p class="small">This account is empty. Move the PRISM workout, profile, goal and Coach data already on this device into this account?</p><button type="button" id="prismClaimGuest">Move my device data</button><button type="button" id="prismKeepSeparate">Keep guest data separate</button></div>
+      <div id="prismGuestClaim" hidden><p class="small">This account is empty. Move the PRISM workout, profile, goal and Coach data already on this device into this account?</p><button type="button" id="prismClaimGuest">Move my device data</button><button type="button" id="prismKeepSeparate">Keep guest data separate</button><button type="button" id="prismImportLegacy" hidden>Import older PRISM cloud backup</button></div>
+      <div id="prismGuestPhotos" hidden><p class="small">Photos saved in guest mode are still on this device. Choose to copy them into this account and its private photo storage.</p><button type="button" id="prismClaimPhotos">Move my guest photos</button></div>
       <button type="button" id="prismAccountSignOut">Sign out</button></div>`;
     host.querySelector('#prismAccountIdentity').textContent = accountEmail ? `Signed in as ${accountEmail}` : 'Signed in to PRISM';
     host.querySelector('#prismAccountSignOut').addEventListener('click', async () => {
@@ -84,6 +87,25 @@
       claimAvailable = false;host.querySelector('#prismGuestClaim').hidden = true;
       accountStatus('Your guest data stays on this device, separate from this account.');
     });
+    host.querySelector('#prismImportLegacy').addEventListener('click', async () => {
+      if(!claimAvailable || !legacyBackup || inFlight) return;
+      inFlight=true;
+      try{
+        const groups=await controller.importLegacyBackup(legacyBackup);
+        const result=await controller.flush();
+        if(result.status!=='verified')throw Error('Cloud and older backup changes need review.');
+        accountStatus(`${groups} saved data groups imported. The older backup was kept.`);
+        location.reload();
+      }catch(error){accountStatus(error.message||'Could not import the older backup. No original data was removed.',true)}
+      finally{inFlight=false}
+    });
+    host.querySelector('#prismClaimPhotos').addEventListener('click', async () => {
+      if(!photos||inFlight)return;
+      inFlight=true;
+      try{const count=await photos.claimGuest();accountStatus(`${count} photos copied to this account and private storage. Guest originals remain on this device.`);host.querySelector('#prismGuestPhotos').hidden=true;}
+      catch(error){accountStatus(error.message||'Photo transfer paused; originals remain on this device.',true)}
+      finally{inFlight=false}
+    });
   }
   render();
   try {
@@ -110,11 +132,23 @@
       accountEmail = user.email || '';
       render();
       const result = await controller.connect();
+      if(window.PRISMPhotoSync){
+        photos=window.PRISMPhotoSync.create({url:config.url,publishableKey:config.publishableKey,userId:user.id,getSession:()=>cloud.getSession(),backing:window.localStorage});
+        window.PRISMAccountPhotos=photos;
+        try{
+          await photos.push();
+          await photos.restore();
+          const guestCount=await photos.guestCount();
+          if(guestCount)host.querySelector('#prismGuestPhotos').hidden=false;
+        }catch(error){accountStatus(error.message||'Private photo sync paused; device photos remain available.',true)}
+      }
       if (result.status === 'restored') { location.reload(); return; }
       if (result.status === 'claim') {
         claimAvailable = true;
         host.querySelector('#prismGuestClaim').hidden = false;
-        accountStatus('Choose whether to move existing guest data into this account.');
+        try{legacyBackup=await cloud.getBackup()}catch{legacyBackup=null}
+        if(legacyBackup)host.querySelector('#prismImportLegacy').hidden=false;
+        accountStatus(legacyBackup?'Choose device data or the older cloud backup. Nothing is moved automatically.':'Choose whether to move existing guest data into this account.');
       }
     } catch (error) {
       accountStatus(error.message || 'Cloud is unavailable. Your local data remains on this device.',true);
