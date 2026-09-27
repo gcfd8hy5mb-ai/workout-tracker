@@ -1,8 +1,8 @@
 /* Opt-in account coordinator; no implicit guest claim or production bootstrap. */
 (function(root,factory){const node=typeof module==='object';const api=factory(node?require('./storage-model.js'):root.PRISMStorageModel,node?require('./account-sync.js'):root.PRISMAccountSync);if(node)module.exports=api;else root.PRISMAccountController=api;})(globalThis,function(model,sync){
 'use strict';
-function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),onStatus=()=>{},createTransport=sync.createTransport,initialSnapshot=null}){
- let userId=null,transport=null,busy=false,dirty=0,timer=null,closed=false,cloudEmpty=false;
+function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),onStatus=()=>{},createTransport=sync.createTransport,initialSnapshot=null,setTimer=setTimeout,clearTimer=clearTimeout}){
+ let userId=null,transport=null,busy=false,dirty=0,timer=null,closed=false,cloudEmpty=false,retryDelay=5000;
  const CHECKPOINT='prismAccountCheckpointV1:',ARCHIVE='prismAccountRecoveryV1:';
  const status=(kind,message)=>onStatus({kind,message});
  function checkpoint(){try{const value=JSON.parse(backing.getItem(CHECKPOINT+userId)||'[]');return Array.isArray(value)?value:[]}catch{return []}}
@@ -58,6 +58,7 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
  async function flush(){
   if(closed||!userId||!transport)return {status:'guest'};
   if(busy){dirty++;return {status:'queued'};}
+  if(timer!==null){clearTimer(timer);timer=null;}
   busy=true;
   try{
    const captured=manager.snapshot(),deletions=manager.deletionLedger(),revision=dirty;
@@ -67,6 +68,7 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
     return result;
    }
    saveCheckpoint(result.checkpoint);
+   retryDelay=5000;
    if(result.checkpoint.length)cloudEmpty=false;
    manager.acknowledgeDeletions(deletions);
    const restored=persistVerified(result.restoreCandidate,captured);
@@ -77,10 +79,19 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
    status('synced','Saved to your PRISM account.');
    if(dirty!==revision)queue();
    return result;
-  }catch(error){status('offline','Cloud sync is unavailable. Your device data is still here.');throw error;}
+  }catch(error){
+   status('offline','Cloud sync is unavailable. Your device data is still here.');
+   // A failed background save must not remain stranded until another edit.
+   // Authorization failures need a new sign-in, not repeated requests.
+   if(!closed&&manager.owner===userId&&error.status!==401&&error.status!==403){
+    const delay=retryDelay;retryDelay=Math.min(retryDelay*2,60000);
+    timer=setTimer(()=>{timer=null;flush().catch(()=>{});},delay);
+   }
+   throw error;
+  }
   finally{busy=false;}
  }
- function queue(){if(!userId||closed)return;dirty++;clearTimeout(timer);timer=setTimeout(()=>flush().catch(()=>{}),1200)}
+ function queue(){if(!userId||closed)return;dirty++;if(timer!==null)clearTimer(timer);timer=setTimer(()=>{timer=null;flush().catch(()=>{});},1200)}
  function claimGuest(){
   if(!userId||!cloudEmpty)throw Error('An empty verified account is required to move guest data');
   const seeded=initialSnapshot&&Object.keys(initialSnapshot).length===0;
@@ -105,7 +116,7 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
   status('syncing','Importing the older backup while keeping its original copy…');
   return Object.keys(values).length;
  }
- function stop(){closed=true;clearTimeout(timer);manager.setOnWrite(null);}
+ function stop(){closed=true;if(timer!==null)clearTimer(timer);manager.setOnWrite(null);}
  manager.setOnWrite(queue);
  return Object.freeze({connect,flush,queue,claimGuest,importLegacyBackup,stop,get userId(){return userId;}});
 }

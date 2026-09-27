@@ -1,5 +1,30 @@
 # Staged validation and rollout gates
 
+## Continuation checkpoint (2026-09-27)
+
+- Inspected current `main` (`5a515c6`) and draft PR #55 (`de7776a`); the
+  branch already contains the newer active-workout restore regression and all
+  prior Supabase work. Earlier successful tests were accepted as completed.
+- A read-only query on the actual PRISM Supabase project found two confirmed
+  Auth users with prior sign-ins, account profile rows owned by both users,
+  and one private photo object. It did **not** establish that either user's
+  JWT can read/write only their own records, or that the object is inaccessible
+  to the other user. No user records or photos were inspected or modified.
+- The owner-private nonproduction preview still shows its ChatGPT sign-in gate
+  in the validation browser. Authentication completed on another browser or
+  device does not transfer to this isolated browser. Real A/B API, email
+  lifecycle, photo Storage, account switching, second-browser/PWA and mobile
+  gates therefore remain open. Do not infer a pass from the aggregate query.
+- Fixed an offline outbox gap: after a transient authenticated save failure,
+  the account controller now retries automatically at 5, 10, 20, 40 and
+  60-second intervals (capped). A successful verified write resets the delay;
+  sign-out/stopping cancels it and 401/403 authorization failures wait for a
+  new sign-in. The local fallback is untouched. Targeted tests cover a failed
+  save followed by automatic recovery and no retry after revocation.
+- After that fix, all `tests/test_*.js`, 21 Python unit tests and the embedded
+  PostgreSQL account/RLS suite pass locally. This is **not** a real two-user
+  browser or Storage policy test. PR #55 remains draft; no production deploy.
+
 ## Isolated preview (2026-09-27)
 
 - PR #55's staged app assets were copied into a separate, owner-private
@@ -121,7 +146,8 @@
 4. PARTIAL: draft calls the normalized sync controller from Profile startup,
    verifies auth before cloud work, hooks allowlisted saves, restores cloud
    sources after archive and reload, and keeps local data on network failure.
-   Verify live account data, conflict UI, active workout and outbox retries.
+   Automatic retry after a failed save now passes the targeted fixture; verify
+   live account data, conflict UI, active workout and browser offline recovery.
 5. PARTIAL: explicit tombstones and list reordering implemented in draft with
    regression tests. Audit all deletion UI paths, active-session completion and
    Adaptive accepted ↔ dismissed transitions; test these with real two-device
