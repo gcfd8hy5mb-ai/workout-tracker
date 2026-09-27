@@ -1,5 +1,20 @@
 # Staged validation and rollout gates
 
+## Isolated preview (2026-09-27)
+
+- PR #55's staged app assets were copied into a separate, owner-private
+  nonproduction Site: `https://prism-pr55-validation.mdhrv77zhr.chatgpt.site`.
+  Its deployment succeeded; the GitHub Pages production site, `main` and the
+  draft PR's merge state were not changed. The preview is a snapshot; updates
+  to PR #55 require republishing its assets separately.
+- Opening the private preview currently requires the owner's ChatGPT sign-in.
+  Secure Apple sign-in did not submit through browser-assisted entry, so the
+  owner must finish that authentication via browser handoff before live app
+  behavior can be inspected. No PRISM test account has been signed in and no
+  production PRISM user data was copied into this preview.
+- Real User A/User B Supabase RLS, private Storage, email session, account
+  switching, browser/PWA and second-device restore remain **not verified**.
+
 ## Completed locally
 
 - Authenticated live Supabase review on 2026-09-27: PRISM project is healthy;
