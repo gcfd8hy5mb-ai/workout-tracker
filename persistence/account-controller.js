@@ -13,14 +13,10 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
  }
  function persistVerified(candidate,captured){
   if(!candidate||manager.owner!==userId||JSON.stringify(manager.snapshot())!==JSON.stringify(captured))return false;
-  const active=manager.storage.getItem('prismActiveWorkoutV1');
-  if(active){
-   const remoteActive=candidate.prismActiveWorkoutV1;
-   if(!remoteActive||!equivalent(active,remoteActive)){
-    status('pending','Another device has different active-workout changes. Finish, discard, or refresh that workout before applying them.');
-    return false;
-   }
-  }
+  // sync.migrate() already performs three-way conflict detection against the
+  // device checkpoint. If it returned a verified restore candidate, cloud-only
+  // active-workout changes are safe to apply. Do not blanket-block restoration
+  // merely because this browser still has an older active workout locally.
   const changed=Object.entries(candidate).filter(([key,value])=>{
    const local=manager.storage.getItem(key);
    if(local===null)return true;
