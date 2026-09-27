@@ -2,6 +2,7 @@
 (function(root,factory){const model=typeof module==='object'?require('./storage-model.js'):root.PRISMStorageModel;const api=factory(model);if(typeof module==='object')module.exports=api;else root.PRISMScopedStorage=api;})(globalThis,function(model){
 'use strict';
 const PREFIX='prismAccountLocalV1:';
+const DELETIONS='prismAccountDeletionsV1:';
 const DATA_KEYS=new Set([...Object.keys(model.RULES),'prismEntitlementV1','prismRestEndsAtV1']);
 function create(backing){
  let owner=null;
@@ -11,7 +12,7 @@ function create(backing){
  const storage={
   getItem(key){return backing.getItem(qualified(String(key)));},
   setItem(key,value){key=String(key);backing.setItem(qualified(key),String(value));if(owner&&DATA_KEYS.has(key))onWrite?.(key);},
-  removeItem(key){key=String(key);backing.removeItem(qualified(key));if(owner&&DATA_KEYS.has(key))onWrite?.(key);},
+  removeItem(key){key=String(key);if(owner&&Object.hasOwn(model.RULES,key))recordDeletion(key);backing.removeItem(qualified(key));if(owner&&DATA_KEYS.has(key))onWrite?.(key);},
   key(index){return visibleKeys()[index]??null;},
   get length(){return visibleKeys().length;}
  };
@@ -21,6 +22,25 @@ function create(backing){
   return storage;
  }
  function snapshot(){return model.capture(storage);}
+ function deletionLedger(){
+  if(!owner)return {};
+  try{const value=JSON.parse(backing.getItem(DELETIONS+owner)||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{}}catch{return {}}
+ }
+ function recordDeletion(key){
+  if(!owner||!Object.hasOwn(model.RULES,key))return;
+  const previous=storage.getItem(key);
+  if(previous===null)return;
+  const ledger=deletionLedger();
+  if(!Object.hasOwn(ledger,key)){
+   ledger[key]=previous;backing.setItem(DELETIONS+owner,JSON.stringify(ledger));
+  }
+  onWrite?.(key);
+ }
+ function acknowledgeDeletions(sent){
+  const ledger=deletionLedger();
+  for(const [key,previous] of Object.entries(sent))if(ledger[key]===previous)delete ledger[key];
+  if(owner)backing.setItem(DELETIONS+owner,JSON.stringify(ledger));
+ }
  function install(values){
   if(!owner)throw Error('Account must be selected before restore');
   for(const [key,value] of Object.entries(values)){
@@ -30,13 +50,15 @@ function create(backing){
   }
   for(const [key,value] of Object.entries(values))storage.setItem(key,value);
  }
- function claimGuest(){
+ function claimGuest({replaceStartupDefaults=false}={}){
   if(!owner)throw Error('Select a signed-in account first');
   const legacy=model.capture(backing);
-  install(legacy); // Conflicts stop before any write; legacy keys are never removed.
+  if(replaceStartupDefaults){
+   for(const [key,value] of Object.entries(legacy))storage.setItem(key,value);
+  }else install(legacy); // Conflicts stop before any write; legacy keys are never removed.
   return Object.keys(legacy).length;
  }
- return Object.freeze({storage,select,snapshot,install,claimGuest,setOnWrite(callback){onWrite=callback;},get owner(){return owner;}});
+ return Object.freeze({storage,select,snapshot,install,claimGuest,recordDeletion,deletionLedger,acknowledgeDeletions,setOnWrite(callback){onWrite=callback;},get owner(){return owner;}});
 }
 return Object.freeze({create,DATA_KEYS,PREFIX});
 });
