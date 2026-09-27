@@ -23,8 +23,23 @@
   }
 
   function writeSession(session) {
-    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify({
+      ...session,
+      expires_at: session.expires_at || Math.floor(Date.now() / 1000) + (session.expires_in || 3600)
+    }));
     else localStorage.removeItem(SESSION_KEY);
+  }
+
+  async function validSession() {
+    let session = readSession();
+    if (!session?.access_token) return null;
+    if (session.expires_at && session.expires_at <= Math.floor(Date.now() / 1000) + 60) {
+      if (!session.refresh_token) return null;
+      const refreshed = await authRequest("token?grant_type=refresh_token", { refresh_token: session.refresh_token });
+      session = { ...session, ...refreshed };
+      writeSession(session);
+    }
+    return session;
   }
 
   function snapshotLocalStorage() {
@@ -71,9 +86,9 @@
   function signOut() { writeSession(null); }
 
   async function currentUser() {
-    const session = readSession();
+    const session = await validSession();
     if (!session?.access_token) return null;
-    const response = await fetch(`${AUTH}/user`, { headers: headers(session.access_token) });
+    const response = await fetch(`${AUTH}/user`, { headers: headers(session.access_token), cache: "no-store" });
     if (!response.ok) return null;
     return response.json();
   }
@@ -123,6 +138,7 @@
     signUp,
     signIn,
     signOut,
+    getSession: validSession,
     currentUser,
     backupNow,
     getBackup,
