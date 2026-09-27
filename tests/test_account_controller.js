@@ -48,6 +48,20 @@ async function scenario(){
  assert.equal((await restored.connect()).status,'restored');
  assert.equal(freshManager.storage.getItem('prismLocalProfileV1'),'{"displayName":"Guest"}');
  restored.stop();
+ // A newly signed-in browser runs onboarding before async restoration; those
+ // automatically created defaults must not block an explicit guest claim.
+ const seededMap=new Map([['prismLocalProfileV1','{"displayName":"Guest"}'],['workoutHistoryV52','[]']]);
+ const seededBacking={getItem:k=>seededMap.get(k)??null,setItem:(k,v)=>seededMap.set(k,v),removeItem:k=>seededMap.delete(k)};
+ const seededManager=createStorage(seededBacking);seededManager.select(B);
+ seededManager.storage.setItem('prismLocalProfileV1','{"displayName":""}');
+ seededManager.storage.setItem('prismJourneyV1','{"status":"welcome"}');
+ const seeded=create({manager:seededManager,cloud:{...cloud,currentUser:async()=>({id:B})},backing:seededBacking,initialSnapshot:{},createTransport:()=>transport});
+ assert.equal((await seeded.connect()).status,'claim');
+ assert.equal(seeded.claimGuest(),2);
+ assert.equal(seededManager.storage.getItem('prismLocalProfileV1'),'{"displayName":"Guest"}');
+ assert.equal(seededMap.get('prismLocalProfileV1'),'{"displayName":"Guest"}','original guest data stays');
+ assert.equal((await seeded.flush()).status,'verified');
+ seeded.stop();
  assert(events.some(e=>e.kind==='synced'));
  console.log('Account controller: explicit claim, verified save, idempotence, A/B isolation and fresh device restore OK.');
 }
