@@ -15,7 +15,12 @@ const RULES=Object.freeze({
  prismCoachInterventionsV1:['interventions','interventions'],prismPostWorkoutCoachV1:['post_workout','list'],
  prismCoachSessionReflectionsV1:['reflections','list'],prismSessionReadinessV1:['readiness','fields'],
  prismAskHistoryV1:['coach_questions','list'],prismMeasurementsV1:['measurements','list'],
- prismProBetaFeedbackV1:['beta_feedback','fields'],prismDrawerSectionsV1:['ui_preferences','fields']
+ prismProBetaFeedbackV1:['beta_feedback','fields'],prismDrawerSectionsV1:['ui_preferences','fields'],
+ prismCoachLongTermGoalV1:['coach_long_term_goals','fields'],
+ prismCoachTrainingPhaseV1:['coach_training_phases','fields'],
+ prismCoachPhaseTransitionV1:['coach_phase_transitions','fields'],
+ prismCoachProgramProposalsV1:['coach_program_proposals','list'],
+ prismCoachRecoveryPlansV1:['coach_recovery_plans','list']
 });
 const TABLES=Object.freeze(['sources',...new Set(Object.values(RULES).map(x=>x[0])),
  'tracking_entries','tracking_maps','workout_exercises','session_exercises','sets','responses','outcomes']);
