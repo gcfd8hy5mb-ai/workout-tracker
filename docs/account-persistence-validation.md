@@ -14,6 +14,10 @@
   These manual SQL Editor runs do not create tracked entries in the dashboard's
   migration history. Real authenticated User A/User B RLS tests remain pending;
   catalog inspection plus embedded PostgreSQL tests are not that test.
+- Applied additive `202609270003_photo_tombstones.sql` in the live SQL Editor;
+  the query reported success. It adds a nullable photo deletion timestamp and
+  neither clears photos nor changes owner policies. These manual SQL Editor
+  runs are not recorded as CLI migration-history entries.
 - Refreshed against main `5a515c6`; PR #55's branch now contains a merge commit
   with that main tip and all previous draft work. The adapter and staged schema include
   Coach goal, training phase, phase transition, program proposal and recovery
@@ -46,6 +50,20 @@
   deleted workout staying deleted and a reorder surviving cloud restoration.
   Capped Coach logs remain append/retention safe and are NOT inferred as user
   deletions merely because old entries are absent locally.
+- Draft legacy `prism_backups` import is now explicitly offered only when the
+  verified account has no normalized records and no preexisting account-local
+  data. It allowlists/validates data, archives startup defaults, queues a
+  verified write and retains the older backup. No blind automatic restore.
+- Draft private-photo transport copies both legacy IndexedDB stores into
+  account-scoped databases after an explicit guest-photo claim, uploads image
+  bytes to private Storage and metadata to `prism_account_photos`, verifies
+  hash/size on restore, and keeps device copies for offline use. Account-photo
+  deletions use a persistent local retry marker and a verified cloud tombstone;
+  second-device restore removes the deleted local copy. Fixture tests cover
+  A/B isolation, idempotence, deletion and restore. No production photos were
+  moved. Live browser and real authenticated Storage policy checks remain.
+  Both existing photo UIs now queue account backup after normal save/delete;
+  local-first UI text distinguishes signed-in private sync from guest storage.
 
 - All `tests/test_*.js`, 21 Python tests and the current main PRISM regression
   test pass after the latest branch/main merge (2026-09-27).
@@ -85,10 +103,13 @@
    regression tests. Audit all deletion UI paths, active-session completion and
    Adaptive accepted ↔ dismissed transitions; test these with real two-device
    accounts and simulate conflicting deletion versus remote edit.
-6. Reconcile old prism_backups rows through the allowlisted adapter with review of
-   divergent data; never call the old blind restore as an automatic migration.
-7. Transfer and verify blobs/data URLs from BOTH photo databases to private Storage,
-   restore offline copies and update local-only privacy wording before uploading.
+6. PARTIAL: guarded older `prism_backups` import is implemented and fixture
+   tested. Verify first account import, divergent account refusal and retry in
+   a real browser; old blind restore is disabled for signed-in accounts.
+7. PARTIAL: both IndexedDB photo formats, private upload/restore, explicit
+   guest claim, deletion markers, account scoping and copy verification are
+   implemented and fixture tested. Verify real signed-in Storage policies,
+   installed PWA/photo capture and second-device restore before release.
 8. Preserve beta preferences across devices without treating a locally editable
    lifetime/pro value as a real server entitlement; finalized feature rules unchanged.
 9. DONE IN DRAFT: Supabase is cross-origin and excluded from the service-worker
@@ -123,7 +144,9 @@ production until the existing schema review and staging checks are complete.
 - `supabase/migrations/202609260001_account_records.sql`: domain tables, foreign
   keys, RLS and atomic revision-checked write function.
 - `supabase/migrations/202609260002_private_photos.sql`: private photo metadata
-  and Storage policy foundation; no uploads or changes to existing photo stores.
+  and Storage policies.
+- `supabase/migrations/202609270003_photo_tombstones.sql`: additive nullable
+  deletion marker to prevent photo resurrection across devices.
 - `tests/test_account_persistence.js`, `tests/test_account_transport.js`: fixtures.
 - `tests/database/`: pinned PostgreSQL test dependency and executable RLS tests.
 - `tests/test_advanced_analytics.js`: pins UTC for UTC date-only test fixtures.
