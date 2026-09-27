@@ -83,6 +83,9 @@
 - Deterministic identities, retry without duplicates, capped-log retention,
   divergent-edit conflicts, account-change race guards, and network failures pass.
 - A >500-record interrupted migration retries without duplicate records.
+- PR #55 head `2e6fd315` passed both GitHub workflows on 2026-09-27:
+  `PRISM Tests` and `Test and Deploy to GitHub Pages` test job succeeded;
+  the Pages deploy job was skipped for this draft branch.
 - Tier values never gate or delete these source records. Existing entitlement tests
   pass; the new adapter deliberately does not import client-written paid grants.
 - No production data was read, uploaded, restored, reset or deleted during tests.
