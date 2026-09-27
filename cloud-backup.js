@@ -112,7 +112,7 @@
   }
 
   async function backupNow() {
-    const session = readSession();
+    const session = await validSession();
     const user = await currentUser();
     if (!session?.access_token || !user?.id) throw new Error("Sign in to PRISM Cloud first.");
     const payload = {
@@ -133,7 +133,7 @@
   }
 
   async function getBackup() {
-    const session = readSession();
+    const session = await validSession();
     const user = await currentUser();
     if (!session?.access_token || !user?.id) throw new Error("Sign in to PRISM Cloud first.");
     const response = await fetch(`${API}?user_id=eq.${encodeURIComponent(user.id)}&select=*`, {
@@ -145,6 +145,8 @@
   }
 
   async function restoreBackup({ reload = true } = {}) {
+    if (window.PRISMDeviceStore?.owner)
+      throw new Error("Signed-in accounts must import older backups through the verified account migration.");
     const row = await getBackup();
     if (!row) throw new Error("No PRISM cloud backup exists for this account yet.");
     restoreLocalStorage(row.backup_data);
