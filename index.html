@@ -32,12 +32,16 @@ try{
   const session=JSON.parse(window.localStorage.getItem('prismSupabaseSessionV1')||'null');
   if(session?.user?.id)window.PRISMDeviceStore.select(session.user.id);
 }catch{}
+window.PRISMAccountInitialSnapshot=window.PRISMDeviceStore.snapshot();
+if(window.PRISMDeviceStore.owner)document.documentElement.classList.add('prism-account-booting');
 const localStorage=window.PRISMDeviceStore.storage;
 </script>
 
 <style>
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html.prism-account-booting body{visibility:hidden}
+html.prism-account-booting::after{content:"Restoring your PRISM account…";position:fixed;inset:0;display:grid;place-items:center;background:#0b111b;color:#fff;font:600 17px -apple-system,BlinkMacSystemFont,sans-serif;z-index:99999}
 
 :root{
 
@@ -1168,7 +1172,7 @@ Exercise Library
 
 <section id="exerciseInfoScreen" class="hidden"><button class="back" onclick="returnFromExerciseInfo()">← Back</button><div id="prismExerciseInfo"></div></section>
 
-<section id="profileScreen" class="hidden"><div class="prism-section-head"><div><span class="prism-eyebrow">YOUR SPACE</span><h2>Profile</h2></div></div><div id="prismLocalProfile"></div><div class="prism-profile-links">
+<section id="profileScreen" class="hidden"><div class="prism-section-head"><div><span class="prism-eyebrow">YOUR SPACE</span><h2>Profile</h2></div></div><div id="prismCloudAccount"></div><div id="prismLocalProfile"></div><div class="prism-profile-links">
 <button onclick="showTrackingGoals()">Goals & calorie targets <span>›</span></button><button onclick="showWeight()">Body weight <span>›</span></button><button onclick="showWater()">Water intake <span>›</span></button><button onclick="showFood()">Food tracking <span>›</span></button><button onclick="showWorkoutCalendar()">Workout calendar <span>›</span></button><button onclick="showPersonalRecords()">Personal records <span>›</span></button><button onclick="showMeasurements()">Measurements <span>›</span></button><button onclick="showProgressPhotos()">Private progress photos <span>›</span></button><button onclick="showManageWorkouts()">Manage workouts & data <span>›</span></button>
 </div><div class="card prism-tier-card"><div class="prism-tier-heading"><h3>Explore PRISM Pro</h3><span class="prism-pro-badge">PRO ✦</span></div><p class="small">PRISM doesn’t just track your workouts. It tells you what to do next.</p><button type="button" class="prism-primary prism-wide" onclick="showPrismPro()">See what Pro can do</button></div><div class="card prism-tier-card" id="prismBetaAccess"><div class="prism-tier-heading"><h3>PRISM Beta Access</h3><span class="prism-pro-badge">BETA</span></div><p id="prismTierStatus" class="small" role="status"></p><div class="prism-tier-choices" role="group" aria-label="Beta experience"><button type="button" data-beta-mode="free" onclick="setBetaPreview('free')" aria-pressed="false">FREE</button><button type="button" data-beta-mode="pro" onclick="setBetaPreview('pro')" aria-pressed="false">PRO</button></div><p class="small">Beta preview only — no purchase required. Switching access never deletes your data.</p></div><div class="card" id="profileSettings"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
 
@@ -2584,6 +2588,7 @@ both:"Delete all saved workout history, logged sets, weight targets, and progres
 };
 if(!messages[scope]||!confirm(messages[scope]))return;
 if(scope==="history"||scope==="both"){
+for(const key of ["workoutHistoryV52","previousHistoryV51","setHistoryV5","overloadTargetsV1"])window.PRISMDeviceStore.recordDeletion(key);
 workoutHistory=[];previousHistory={};setHistory={};overloadTargets={};
 localStorage.setItem("workoutHistoryV52","[]");
 localStorage.setItem("previousHistoryV51","{}");
@@ -2592,6 +2597,7 @@ localStorage.setItem("overloadTargetsV1","{}");
 localStorage.removeItem("prismActiveWorkoutV1");localStorage.removeItem("prismRestEndsAtV1");
 }
 if(scope==="progress"||scope==="both"){
+window.PRISMDeviceStore.recordDeletion("completedExercisesV5");
 completedExercises=[];
 localStorage.setItem("completedExercisesV5","[]");
 }
@@ -3855,7 +3861,7 @@ event.preventDefault();const area=document.getElementById("measurementArea").val
 if(!["Waist","Chest","Arm","Thigh","Hips"].includes(area)||!Number.isFinite(value)||value<1||value>200||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(day))return;
 tracking.measurements.push({id:newTrackingId(),area,value:Math.round(value*10)/10,day});saveTracking();document.getElementById("measurementValue").value="";document.getElementById("measurementChartArea").value=area;renderMeasurements();
 }
-function deleteMeasurement(id){if(!confirm("Remove this measurement?"))return;tracking.measurements=tracking.measurements.filter(m=>m.id!==id);saveTracking();renderMeasurements()}
+function deleteMeasurement(id){if(!confirm("Remove this measurement?"))return;window.PRISMDeviceStore.recordDeletion("dailyTrackingV1");tracking.measurements=tracking.measurements.filter(m=>m.id!==id);saveTracking();renderMeasurements()}
 function renderMeasurements(){
 const selected=document.getElementById("measurementChartArea").value;
 const points=tracking.measurements.filter(m=>m.area===selected&&Number.isFinite(Number(m.value))&&Number(m.value)>0).sort((a,b)=>a.day.localeCompare(b.day)).slice(-12);
@@ -4314,6 +4320,7 @@ const workout=customWorkouts[index];if(!workout)return;
 if(!confirm(`Delete "${workout.name}"?`))return;
 
 customWorkouts.splice(index,1);
+window.PRISMDeviceStore.recordDeletion("customWorkoutsV5");
 
 localStorage.setItem("customWorkoutsV5",JSON.stringify(customWorkouts));
 
@@ -4529,6 +4536,7 @@ document.getElementById("weightValue").value="";renderWeight();
 }
 function deleteTracking(type,id){
 if(!["water","food","weight"].includes(type))return;
+window.PRISMDeviceStore.recordDeletion("dailyTrackingV1");
 tracking[type]=tracking[type].filter(entry=>entry.id!==id);saveTracking();
 if(type==="water")renderWater();else if(type==="food")renderFood();else renderWeight();
 }
@@ -4606,6 +4614,12 @@ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{u
 </script>
 <script src="onboarding.js?v=10.3-beta5"></script>
 <script src="pro-experience.js"></script>
+<script src="supabase-config.js"></script>
+<script src="cloud-backup.js"></script>
+<script src="persistence/reconcile.js"></script>
+<script src="persistence/account-sync.js"></script>
+<script src="persistence/account-controller.js"></script>
+<script src="persistence/account-ui.js"></script>
 
 </body>
 
