@@ -1,0 +1,60 @@
+/* PRISM Exercise Library Expansion v4 — 50 additional unique exercises. */
+(()=>{
+ if(typeof exerciseLibrary==='undefined') return;
+ const x=(id,name,muscle,equipment,how)=>({id,name,muscle,equipment,how,tip:'Use controlled reps and a comfortable range of motion.',mistake:'Avoid rushing the movement or sacrificing form.'});
+ const additions=[
+ x('db-squeeze-press','Dumbbell Squeeze Press','Chest','Dumbbell','Press dumbbells together over the chest while maintaining inward pressure.'),
+ x('cable-bench-press','Cable Bench Press','Chest','Cable','Press cable handles from chest level while lying on a bench.'),
+ x('single-arm-machine-chest-press','Single-Arm Machine Chest Press','Chest','Machine','Press one handle forward at a time while keeping the torso stable.'),
+ x('incline-cable-fly','Incline Cable Fly','Chest','Cable','Sweep the handles together above the upper chest with soft elbows.'),
+ x('decline-cable-fly','Decline Cable Fly','Chest','Cable','Sweep high cable handles down and together in front of the lower chest.'),
+ x('neutral-grip-db-press','Neutral-Grip Dumbbell Press','Chest','Dumbbell','Press dumbbells with palms facing each other and elbows controlled.'),
+ x('wide-grip-lat-pulldown','Wide-Grip Lat Pulldown','Back','Machine','Pull the bar toward the upper chest while driving elbows down.'),
+ x('close-grip-lat-pulldown','Close-Grip Lat Pulldown','Back','Machine','Pull a close handle toward the chest while keeping the torso steady.'),
+ x('single-arm-lat-pulldown','Single-Arm Lat Pulldown','Back','Cable','Pull one handle down toward the ribs while keeping the shoulder depressed.'),
+ x('chest-supported-db-row','Chest-Supported Dumbbell Row','Back','Dumbbell','Row dumbbells toward the hips while supported on an incline bench.'),
+ x('seal-row','Seal Row','Back','Barbell','Row a barbell toward the torso while lying face down on an elevated bench.'),
+ x('cable-pullover','Cable Pullover','Back','Cable','Pull the cable from overhead toward the thighs with mostly straight arms.'),
+ x('machine-high-row','Machine High Row','Back','Machine','Pull handles down and back toward the upper ribs.'),
+ x('kneeling-cable-row','Kneeling Cable Row','Back','Cable','Row the handle toward the torso from a stable kneeling position.'),
+ x('lean-away-cable-lateral-raise','Lean-Away Cable Lateral Raise','Shoulders','Cable','Lean slightly away from the cable and raise the arm to shoulder height.'),
+ x('machine-rear-delt-row','Machine Rear-Delt Row','Shoulders','Machine','Row with elbows flared to emphasize the rear delts.'),
+ x('cable-front-raise','Cable Front Raise','Shoulders','Cable','Raise the cable forward to shoulder height with a controlled arm path.'),
+ x('db-arnold-press','Dumbbell Arnold Press','Shoulders','Dumbbell','Rotate the palms outward as you press the dumbbells overhead.'),
+ x('single-arm-machine-shoulder-press','Single-Arm Machine Shoulder Press','Shoulders','Machine','Press one machine handle overhead while keeping the torso braced.'),
+ x('incline-db-rear-delt-raise','Incline Dumbbell Rear-Delt Raise','Shoulders','Dumbbell','Raise dumbbells outward while chest-supported on an incline bench.'),
+ x('bayesian-cable-curl','Bayesian Cable Curl','Biceps','Cable','Curl a low cable with the working arm slightly behind the torso.'),
+ x('machine-preacher-curl','Machine Preacher Curl','Biceps','Machine','Curl through the elbow while keeping the upper arm fixed on the pad.'),
+ x('cross-body-hammer-curl','Cross-Body Hammer Curl','Biceps','Dumbbell','Curl the dumbbell toward the opposite shoulder with a neutral grip.'),
+ x('high-cable-biceps-curl','High Cable Biceps Curl','Biceps','Cable','Curl high cable handles toward the head while upper arms stay raised.'),
+ x('reverse-cable-curl','Reverse Cable Curl','Biceps','Cable','Curl a cable bar using an overhand grip.'),
+ x('single-arm-preacher-curl','Single-Arm Preacher Curl','Biceps','Dumbbell','Curl one dumbbell while the upper arm stays supported on the preacher pad.'),
+ x('cross-body-cable-triceps-extension','Cross-Body Cable Triceps Extension','Triceps','Cable','Extend one arm across the body until the elbow is straight.'),
+ x('machine-triceps-extension','Machine Triceps Extension','Triceps','Machine','Extend the elbows against the machine while keeping upper arms stable.'),
+ x('single-arm-rope-pushdown','Single-Arm Rope Pushdown','Triceps','Cable','Push a single rope attachment down until the elbow is fully extended.'),
+ x('db-tate-press','Dumbbell Tate Press','Triceps','Dumbbell','Lower dumbbells toward the chest by bending the elbows, then extend.'),
+ x('incline-skull-crusher','Incline Skull Crusher','Triceps','EZ Bar','Extend the elbows from an incline bench while upper arms remain steady.'),
+ x('cable-kickback','Cable Triceps Kickback','Triceps','Cable','Extend the elbow behind the body while keeping the upper arm fixed.'),
+ x('machine-sissy-squat','Machine Sissy Squat','Quads','Machine','Lower under control with knees traveling forward while the machine supports the body.'),
+ x('db-cyclist-squat','Dumbbell Cyclist Squat','Quads','Dumbbell','Squat with heels elevated and a narrow stance while holding dumbbells.'),
+ x('smith-front-squat','Smith Machine Front Squat','Quads','Smith Machine','Squat with the bar positioned across the front shoulders and torso upright.'),
+ x('single-leg-hack-squat','Single-Leg Hack Squat','Quads','Machine','Press through one leg on the hack squat while keeping the pelvis stable.'),
+ x('cable-leg-extension','Cable Leg Extension','Quads','Cable','Extend the knee against a low cable using an ankle attachment.'),
+ x('standing-single-leg-curl','Standing Single-Leg Curl','Hamstrings','Machine','Curl one heel toward the glute while keeping the thigh stable.'),
+ x('db-stiff-leg-deadlift','Dumbbell Stiff-Leg Deadlift','Hamstrings','Dumbbell','Hinge at the hips with nearly straight knees and lower dumbbells along the legs.'),
+ x('cable-pull-through','Cable Pull-Through','Glutes','Cable','Hinge forward then drive the hips through against a low cable.'),
+ x('single-leg-hip-thrust','Single-Leg Hip Thrust','Glutes','Bodyweight','Drive one foot into the floor and extend the hips while the other leg stays raised.'),
+ x('machine-glute-kickback','Machine Glute Kickback','Glutes','Machine','Drive the working leg backward through the hip against the machine pad.'),
+ x('cable-hip-abduction','Cable Hip Abduction','Glutes','Cable','Move the attached leg outward while keeping the pelvis level.'),
+ x('seated-calf-press-leg-press','Seated Calf Press on Leg Press','Calves','Machine','Press through the balls of the feet using ankle motion only.'),
+ x('single-leg-standing-calf-raise','Single-Leg Standing Calf Raise','Calves','Bodyweight','Rise onto one forefoot, pause at the top, and lower under control.'),
+ x('cable-woodchop','Cable Woodchop','Core','Cable','Rotate the torso and pull the cable diagonally across the body.'),
+ x('kneeling-cable-crunch','Kneeling Cable Crunch','Core','Cable','Flex the trunk downward against a high cable while kneeling.'),
+ x('hanging-knee-raise','Hanging Knee Raise','Core','Bodyweight','Curl the knees toward the torso while hanging without swinging.'),
+ x('dead-bug','Dead Bug','Core','Bodyweight','Lower opposite arm and leg while keeping the low back controlled.'),
+ x('assault-runner-walk','Curved Treadmill Power Walk','Cardio','Cardio','Walk briskly on a curved treadmill using a strong consistent stride.')
+ ];
+ const existing=new Set(exerciseLibrary.map(e=>e.id));
+ additions.forEach(e=>{if(!existing.has(e.id)){exerciseLibrary.push(e);existing.add(e.id)}});
+ try{if(typeof renderLibrary==='function')renderLibrary()}catch(_){ }
+})();
