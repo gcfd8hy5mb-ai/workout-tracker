@@ -22,6 +22,19 @@
 
 <title>PRISM · Train · Track · Progress</title>
 
+<!-- Installed before app state is read. The legacy guest keys remain untouched. -->
+<script src="persistence/storage-model.js"></script>
+<script src="persistence/scoped-storage.js"></script>
+<script src="persistence/photo-scope.js"></script>
+<script>
+window.PRISMDeviceStore=window.PRISMScopedStorage.create(window.localStorage);
+try{
+  const session=JSON.parse(window.localStorage.getItem('prismSupabaseSessionV1')||'null');
+  if(session?.user?.id)window.PRISMDeviceStore.select(session.user.id);
+}catch{}
+const localStorage=window.PRISMDeviceStore.storage;
+</script>
+
 <style>
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -3863,7 +3876,7 @@ let photoObjectUrls=[],selectedPhotoIds=[];
 function photoDatabase(){
 return new Promise((resolve,reject)=>{
 if(!window.indexedDB){reject(Error("Photo storage is unavailable in this browser."));return}
-const request=indexedDB.open("workoutTrackerPhotosV1",1);
+const request=indexedDB.open(PRISMPhotoScope.databaseName("workoutTrackerPhotosV1",window.PRISMDeviceStore.owner),1);
 request.onupgradeneeded=()=>request.result.createObjectStore("photos",{keyPath:"id"});
 request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
 });
