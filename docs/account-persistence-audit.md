@@ -2,6 +2,8 @@
 
 Audited baseline: `25306e2c987b8a154562a02d069cc5d239631d8f`.
 Refreshed against `07a53125627ac5ec86ce3395c2e27ec7021fba6e` after concurrent main updates.
+Refreshed again against main `5a515c6` to include the Coach decision engine v2,
+Athlete Intelligence, Coach Memory v2 and newer Coach goal/proposal modules.
 Working branch: `codex/account-persistence-staged`. This work is not a production rollout.
 
 ## Existing integration
@@ -16,9 +18,13 @@ partition local state by account, or synchronize normal saves.
 **No current HTML/module loader references either Supabase script.** Auth methods
 exist in the repository but are not wired into the audited application entrypoint.
 This differs from the reported setup and must be resolved before rollout.
-No database DDL or existing RLS policies are checked into this repository. Existing
-live table definitions/policies have not been inspected; a user_id query filter
-alone is not proof of isolation. Do not recreate or drop `prism_backups`.
+No DDL or policies for the original backup table are checked into this repository.
+The live PRISM project was inspected on 2026-09-27 via its authenticated dashboard:
+`public.prism_backups` is the only public table and has zero estimated rows;
+RLS is enabled, authenticated SELECT/INSERT grants exist, and four authenticated
+owner-only SELECT/INSERT/UPDATE/DELETE policies reference `auth.uid() = user_id`.
+No account-record migration is applied yet. No existing rows or policies were changed.
+The existing `prism_backups` table must not be recreated or dropped.
 
 ## Complete observed persistence inventory
 
@@ -48,6 +54,11 @@ SHOULD means useful preferences/feedback; LOCAL means never upload automatically
 | prismCoachInterventionsV1 | Recommendation, policy, response and outcome; capped at 180 | MUST |
 | prismPostWorkoutCoachV1 | Session totals, improvements/declines, actions, interventions; capped at 30 | MUST |
 | prismCoachSessionReflectionsV1 | Session difficulty responses; capped at 60 | MUST |
+| prismCoachLongTermGoalV1 | Coach long-term strength/training goal and horizon | MUST |
+| prismCoachTrainingPhaseV1 | Proposed/accepted Coach training phase | MUST |
+| prismCoachPhaseTransitionV1 | Proposed/accepted/declined phase transition and timestamps | MUST |
+| prismCoachProgramProposalsV1 | Program adaptation proposals and responses; capped at 30 | MUST |
+| prismCoachRecoveryPlansV1 | Recovery/deload proposals and responses; capped at 20 | MUST |
 | prismSessionReadinessV1 | Latest daily energy/soreness/motivation and timestamp | MUST |
 | prismAskHistoryV1 | Coach Q&A history; capped at 20 | MUST |
 | prismMeasurementsV1 | Dated weight/body measurements and phase links | MUST |
@@ -73,8 +84,10 @@ preferredWeightUnit and trainingLevel. Preserve unrecognized future fields too.
 
 Exercise definitions, muscle/equipment metadata and preset programs are bundled
 code, not user-owned localStorage records. Selected plans/custom exercise ordering
-are persistent. Volume, PR analyses, weekly summaries, plateaus and learned Coach
-policies are computed from history and feedback, not separate saved keys. Preserve
+are persistent. Coach Memory v2 and Athlete Intelligence derive learning profiles
+from feedback/interventions and workout history; their source records and newer
+phase, program, recovery and transition proposals must persist. Volume, PR analyses,
+weekly summaries and plateaus are computed from stored source history. Preserve
 session recordIds and all learning source records. Never interpret capped arrays
 as requests to delete older cloud history.
 
