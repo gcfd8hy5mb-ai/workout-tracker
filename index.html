@@ -1318,7 +1318,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 <section id="measurementsScreen" class="hidden"><h2>Measurements</h2><div class="card"><form class="tracker-form" onsubmit="saveMeasurement(event)"><label for="measurementArea">Body area</label><select id="measurementArea"><option>Waist</option><option>Chest</option><option>Arm</option><option>Thigh</option><option>Hips</option></select><label for="measurementValue">Measurement (inches)</label><input id="measurementValue" type="number" min="1" max="200" step="0.1" inputmode="decimal" required><label for="measurementDay">Date</label><input id="measurementDay" type="date" required><button type="submit">Save measurement</button></form></div><div class="card"><label for="measurementChartArea">See trend for</label><select id="measurementChartArea" onchange="renderMeasurements()"><option>Waist</option><option>Chest</option><option>Arm</option><option>Thigh</option><option>Hips</option></select><div id="measurementChart"></div></div><div id="measurementList" class="measure-list"></div></section>
 
-<section id="photosScreen" class="hidden"><h2>Progress photos</h2><div class="card"><p class="small">Stored only on this device. Photos are not uploaded. Select two to compare them.</p><label for="progressPhotoInput">Add a photo</label><input id="progressPhotoInput" type="file" accept="image/*" onchange="addProgressPhoto(event)"><p id="photoStatus" class="small" role="status"></p></div><div id="photoComparison" class="card hidden"></div><div id="photoList" class="photo-list"></div></section>
+<section id="photosScreen" class="hidden"><h2>Progress photos</h2><div class="card"><p class="small">Photos stay on this device. When signed in, they also sync privately to your account; guest photos move only when you choose to copy them. Select two to compare.</p><label for="progressPhotoInput">Add a photo</label><input id="progressPhotoInput" type="file" accept="image/*" onchange="addProgressPhoto(event)"><p id="photoStatus" class="small" role="status"></p></div><div id="photoComparison" class="card hidden"></div><div id="photoList" class="photo-list"></div></section>
 
 <section id="globalHistoryScreen" class="hidden">
 
@@ -3920,13 +3920,14 @@ canvas.getContext("2d").drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.
 const data=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.8));if(!data)throw Error("Could not prepare that photo.");
 if(!canAccessFeature("photo_comparison")){showProPreview("photo_comparison");return}
 const latest=weightEntriesNewestFirst()[0];await saveProgressPhoto({id:newTrackingId(),day:localDay(),weight:latest?.value||null,data});
-photoStatus("Saved on this device. Include photos when you export a backup before switching phones.");await renderProgressPhotos();
+photoStatus("Saved on this device.");await renderProgressPhotos();
+if(window.PRISMAccountPhotos)window.PRISMAccountPhotos.push().then(()=>photoStatus("Saved privately to your account and on this device.")).catch(()=>photoStatus("Saved on this device. Account photo backup will retry when you open PRISM again."));
 }catch(error){photoStatus(error.message||"Could not save photo.")}finally{event.target.value=""}
 }
 async function deleteProgressPhoto(id){
 if(!canAccessFeature("photo_comparison")){showProPreview("photo_comparison");return}
 if(!confirm("Delete this progress photo from this device?"))return;
-try{await removeProgressPhoto(id);selectedPhotoIds=selectedPhotoIds.filter(item=>item!==id);await renderProgressPhotos()}catch{photoStatus("Could not remove photo.")}
+try{await removeProgressPhoto(id);window.PRISMAccountPhotos?.markDeleted("workoutTrackerPhotosV1",id);selectedPhotoIds=selectedPhotoIds.filter(item=>item!==id);await renderProgressPhotos();if(window.PRISMAccountPhotos)window.PRISMAccountPhotos.push().catch(()=>photoStatus("Removed on this device. Account deletion will retry when you open PRISM again."))}catch{photoStatus("Could not remove photo.")}
 }
 async function togglePhotoSelection(id){
 if(!canAccessFeature("photo_comparison")){showProPreview("photo_comparison");return}
@@ -4619,6 +4620,7 @@ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{u
 <script src="persistence/reconcile.js"></script>
 <script src="persistence/account-sync.js"></script>
 <script src="persistence/account-controller.js"></script>
+<script src="persistence/photo-sync.js"></script>
 <script src="persistence/account-ui.js"></script>
 
 </body>
