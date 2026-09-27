@@ -31,10 +31,18 @@ function createTransport({url,publishableKey,getSession,fetcher=globalThis.fetch
   }
  };
 }
-async function migrate({snapshot,owner,userId,transport,checkpoint=[],isCurrent=()=>true}){
+async function migrate({snapshot,owner,userId,transport,checkpoint=[],deletions={},isCurrent=()=>true}){
  reconcile.assertOwner(owner,userId);
  if(!isCurrent())throw Error('Account changed');
  const local=await model.normalize(snapshot),cloud=await transport.read(userId);
+ const currentIds=new Set(local.map(row=>row.table+':'+row.id));
+ for(const [source,prior] of Object.entries(deletions)){
+  if(!Object.hasOwn(model.RULES,source)||typeof prior!=='string')throw Error('Unknown deletion source');
+  const before=await model.normalize({[source]:prior});
+  for(const row of before){
+   if(!currentIds.has(row.table+':'+row.id))local.push({...row,payload:{__prismDeletedV1:true}});
+  }
+ }
  const plan=reconcile.plan(local,cloud,checkpoint);
  if(!plan.ready)return {status:'conflict',conflicts:plan.conflicts,writes:0};
  if(!isCurrent())throw Error('Account changed');
