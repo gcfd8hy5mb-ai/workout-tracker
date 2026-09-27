@@ -2,7 +2,7 @@
 (function(root,factory){const api=factory(typeof module==='object'?require('./storage-model.js'):root.PRISMStorageModel);if(typeof module==='object')module.exports=api;else root.PRISMReconcile=api;})(globalThis,function(model){
 'use strict';
 const key=r=>r.table+':'+r.id;
-function content(r){return model.canonical({source_key:r.source_key,payload:r.payload,parent_id:r.parent_id??null,slot:r.slot??null});}
+function content(r){return model.canonical({source_key:r.source_key,payload:r.payload,parent_id:r.parent_id??null,slot:r.slot??null,position:r.position??null});}
 function plan(local,remote,base=[]){
  const cloud=new Map(remote.map(r=>[key(r),r])),previous=new Map(base.map(r=>[key(r),r]));
  const writes=[],conflicts=[],merged=new Map(remote.map(r=>[key(r),r]));
