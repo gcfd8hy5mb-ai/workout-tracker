@@ -91,7 +91,10 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
   }
   finally{busy=false;}
  }
- function queue(){if(!userId||closed)return;dirty++;if(timer!==null)clearTimer(timer);timer=setTimer(()=>{timer=null;flush().catch(()=>{});},1200)}
+ // Keep the debounce short enough that mobile Safari cannot normally suspend a
+ // freshly-completed set before its account write starts when the user switches
+ // tabs/apps. Writes made in the same UI action still coalesce into one flush.
+ function queue(){if(!userId||closed)return;dirty++;if(timer!==null)clearTimer(timer);timer=setTimer(()=>{timer=null;flush().catch(()=>{});},100)}
  function claimGuest(){
   if(!userId||!cloudEmpty)throw Error('An empty verified account is required to move guest data');
   const seeded=initialSnapshot&&Object.keys(initialSnapshot).length===0;
