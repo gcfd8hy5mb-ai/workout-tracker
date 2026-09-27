@@ -65,6 +65,7 @@
       inFlight = true;
       try { await controller?.flush(); } catch { /* device copy remains available */ }
       controller?.stop();
+      window.PRISMAccountLiveFlush = null;
       try { await cloud.signOut(); } catch { /* local session was still cleared */ }
       try { new BroadcastChannel('prism-account-session').postMessage({type:'auth-changed'}); } catch {}
       location.reload();
@@ -88,7 +89,7 @@
       accountStatus('Your guest data stays on this device, separate from this account.');
     });
     host.querySelector('#prismImportLegacy').addEventListener('click', async () => {
-      if(!claimAvailable || !legacyBackup || inFlight) return;
+      if(!claimAvailable || !legacyBackup || inFlight)return;
       inFlight=true;
       try{
         const groups=await controller.importLegacyBackup(legacyBackup);
@@ -117,30 +118,33 @@
   if (!manager.owner) return;
   window.addEventListener('storage', event => {
     if(event.storageArea!==window.localStorage||!event.key?.startsWith('prismAccountLocalV1:'+manager.owner+':'))return;
-    manager.invalidate();controller?.stop();
+    manager.invalidate();controller?.stop();window.PRISMAccountLiveFlush=null;
     accountStatus('This account changed in another tab. Refresh PRISM before saving here.',true);
     let button=document.getElementById('prismRefreshAccount');
     if(!button){button=document.createElement('button');button.id='prismRefreshAccount';button.type='button';button.textContent='Account changed in another tab · Refresh';button.style.cssText='position:fixed;z-index:9999;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));min-height:48px;background:#168bff;color:white;border-radius:12px';button.onclick=()=>location.reload();document.body.appendChild(button)}
   });
   const unlock = () => document.documentElement.classList.remove('prism-account-booting');
-  // Never strand an installed PWA behind the loading veil during an outage.
   const timeout = setTimeout(() => { unlock();accountStatus('Account check is taking longer. Your device copy is still available.'); }, 12000);
   controller = window.PRISMAccountController.create({
     manager,cloud,url:config.url,publishableKey:config.publishableKey,
     backing:window.localStorage,initialSnapshot:window.PRISMAccountInitialSnapshot,
     onStatus:({kind,message}) => { accountStatus(message,kind === 'conflict' || kind === 'offline'); }
   });
+  // Workout completion is a user commit point. Give it a direct, verified flush
+  // path instead of relying only on a debounce that mobile Safari may suspend.
+  window.PRISMAccountLiveFlush = async () => {
+    if (!controller || !manager.owner) return {status:'guest'};
+    return controller.flush();
+  };
   (async () => {
     try {
       const user = await cloud.currentUser();
       if (!user?.id || user.id !== manager.owner) {
-        controller.stop();await cloud.signOut();location.reload();return;
+        controller.stop();window.PRISMAccountLiveFlush=null;await cloud.signOut();location.reload();return;
       }
       accountEmail = user.email || '';
       render();
       const result = await controller.connect();
-      // Account verification is complete here. Photo sync reports its own
-      // failures; it must not leave the account check timeout on screen.
       clearTimeout(timeout);
       if(window.PRISMPhotoSync){
         photos=window.PRISMPhotoSync.create({url:config.url,publishableKey:config.publishableKey,userId:user.id,getSession:()=>cloud.getSession(),backing:window.localStorage});
