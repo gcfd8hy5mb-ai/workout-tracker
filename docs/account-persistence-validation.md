@@ -2,6 +2,16 @@
 
 ## Completed locally
 
+- Authenticated live Supabase review on 2026-09-27: PRISM project is healthy;
+  the only public table is `prism_backups` (zero estimated rows), RLS enabled,
+  authenticated SELECT/INSERT grants present, and four owner-only policies
+  restrict backup reads and writes to `auth.uid() = user_id`. There are no
+  tracked database migrations or new account tables in production yet.
+- Refreshed against main `5a515c6`; adapter and staged schema now include
+  Coach goal, training phase, phase transition, program proposal and recovery
+  plan records. Coach Memory v2/Athlete Intelligence reconstruct from persisted
+  source feedback, interventions and workout history.
+
 - 17 JavaScript regression files pass (15 existing plus 2 account-persistence tests).
 - Latest main PRISM regression suite: 25 checks pass.
 - 21 existing Python unit tests pass.
@@ -20,8 +30,7 @@
 
 ## Not yet implemented / verified (must block production activation)
 
-1. Inspect existing live prism_backups schema/policies with authenticated admin
-   access; apply additive migrations to staging, then validate production plan.
+1. Apply additive migrations to staging, then validate the production plan.
 2. Verify real email auth, token refresh/revocation and existing auth UI/entrypoint.
    The current audited index does not load the Supabase scripts.
 3. Implement explicit local-account ownership claim, per-account local fallback,
