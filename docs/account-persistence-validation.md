@@ -11,6 +11,10 @@
   Coach goal, training phase, phase transition, program proposal and recovery
   plan records. Coach Memory v2/Athlete Intelligence reconstruct from persisted
   source feedback, interventions and workout history.
+- Added an opt-in account-local storage adapter that keeps legacy guest keys
+  untouched and isolates account A/B values by authenticated UUID. Its tests
+  cover explicit guest claim, cloud restore conflict rejection, tier isolation
+  and sign-out fallback. It is not yet wired into production startup.
 
 - 17 JavaScript regression files pass (15 existing plus 2 account-persistence tests).
 - Latest main PRISM regression suite: 25 checks pass.
