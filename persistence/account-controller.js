@@ -2,7 +2,7 @@
 (function(root,factory){const node=typeof module==='object';const api=factory(node?require('./storage-model.js'):root.PRISMStorageModel,node?require('./account-sync.js'):root.PRISMAccountSync);if(node)module.exports=api;else root.PRISMAccountController=api;})(globalThis,function(model,sync){
 'use strict';
 function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),onStatus=()=>{},createTransport=sync.createTransport,initialSnapshot=null}){
- let userId=null,transport=null,busy=false,dirty=0,timer=null,closed=false;
+ let userId=null,transport=null,busy=false,dirty=0,timer=null,closed=false,cloudEmpty=false;
  const CHECKPOINT='prismAccountCheckpointV1:',ARCHIVE='prismAccountRecoveryV1:';
  const status=(kind,message)=>onStatus({kind,message});
  function checkpoint(){try{const value=JSON.parse(backing.getItem(CHECKPOINT+userId)||'[]');return Array.isArray(value)?value:[]}catch{return []}}
@@ -41,6 +41,7 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
    return {status:'restored'};
   }
   if(!hasLocal&&!cloudRows.length){
+   cloudEmpty=true;
    status('claim','This account is empty. Your device data can be moved to it only if you choose to.');
    return {status:'claim'};
   }
@@ -59,6 +60,7 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
     return result;
    }
    saveCheckpoint(result.checkpoint);
+   if(result.checkpoint.length)cloudEmpty=false;
    manager.acknowledgeDeletions(deletions);
    persistVerified(result.restoreCandidate,captured);
   status('synced','Saved to your PRISM account.');
@@ -69,16 +71,32 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
  }
  function queue(){if(!userId||closed)return;dirty++;clearTimeout(timer);timer=setTimeout(()=>flush().catch(()=>{}),1200)}
  function claimGuest(){
-  if(!userId)throw Error('Sign in before choosing to move guest data');
+  if(!userId||!cloudEmpty)throw Error('An empty verified account is required to move guest data');
   const seeded=initialSnapshot&&Object.keys(initialSnapshot).length===0;
   if(seeded)backing.setItem(ARCHIVE+userId+':'+clock(),JSON.stringify(manager.snapshot()));
   const count=manager.claimGuest({replaceStartupDefaults:seeded});
   status('syncing','Moving your existing PRISM data into this account…');
   queue();return count;
  }
+ async function importLegacyBackup(backup){
+  if(!userId||!cloudEmpty||!initialSnapshot||Object.keys(initialSnapshot).length)
+   throw Error('Existing account changes require review before importing an older backup');
+  if(backup?.user_id!==userId)throw Error('The older backup belongs to a different account');
+  const source=backup?.backup_data?.localStorage;
+  if(!source||typeof source!=='object'||Array.isArray(source))throw Error('Invalid older backup');
+  const values=model.capture({getItem:key=>Object.hasOwn(source,key)&&typeof source[key]==='string'?source[key]:null});
+  if(!Object.keys(values).length)throw Error('The older backup contains no supported PRISM data');
+  await model.normalize(values); // Reject malformed/unsafe data before any local writes.
+  if((await transport.read(userId)).length)throw Error('Account data changed; review it before importing the older backup');
+  backing.setItem(ARCHIVE+userId+':'+clock(),JSON.stringify(manager.snapshot()));
+  manager.install(values,{replaceStartupDefaults:true});
+  queue();
+  status('syncing','Importing the older backup while keeping its original copy…');
+  return Object.keys(values).length;
+ }
  function stop(){closed=true;clearTimeout(timer);manager.setOnWrite(null);}
  manager.setOnWrite(queue);
- return Object.freeze({connect,flush,queue,claimGuest,stop,get userId(){return userId;}});
+ return Object.freeze({connect,flush,queue,claimGuest,importLegacyBackup,stop,get userId(){return userId;}});
 }
 return Object.freeze({create});
 });
