@@ -52,13 +52,14 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
   if(busy){dirty++;return {status:'queued'};}
   busy=true;
   try{
-   const captured=manager.snapshot(),revision=dirty;
-   const result=await sync.migrate({snapshot:captured,owner:manager.owner,userId,transport,checkpoint:checkpoint(),isCurrent:()=>!closed&&manager.owner===userId});
+   const captured=manager.snapshot(),deletions=manager.deletionLedger(),revision=dirty;
+   const result=await sync.migrate({snapshot:captured,owner:manager.owner,userId,transport,checkpoint:checkpoint(),deletions,isCurrent:()=>!closed&&manager.owner===userId});
    if(result.status==='conflict'){
     status('conflict','This device and your cloud account have different changes. Nothing was overwritten.');
     return result;
    }
    saveCheckpoint(result.checkpoint);
+   manager.acknowledgeDeletions(deletions);
    persistVerified(result.restoreCandidate,captured);
   status('synced','Saved to your PRISM account.');
    if(dirty!==revision)queue();
@@ -69,7 +70,9 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
  function queue(){if(!userId||closed)return;dirty++;clearTimeout(timer);timer=setTimeout(()=>flush().catch(()=>{}),1200)}
  function claimGuest(){
   if(!userId)throw Error('Sign in before choosing to move guest data');
-  const count=manager.claimGuest();
+  const seeded=initialSnapshot&&Object.keys(initialSnapshot).length===0;
+  if(seeded)backing.setItem(ARCHIVE+userId+':'+clock(),JSON.stringify(manager.snapshot()));
+  const count=manager.claimGuest({replaceStartupDefaults:seeded});
   status('syncing','Moving your existing PRISM data into this account…');
   queue();return count;
  }
