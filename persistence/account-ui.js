@@ -139,6 +139,9 @@
       accountEmail = user.email || '';
       render();
       const result = await controller.connect();
+      // Account verification is complete here. Photo sync reports its own
+      // failures; it must not leave the account check timeout on screen.
+      clearTimeout(timeout);
       if(window.PRISMPhotoSync){
         photos=window.PRISMPhotoSync.create({url:config.url,publishableKey:config.publishableKey,userId:user.id,getSession:()=>cloud.getSession(),backing:window.localStorage});
         window.PRISMAccountPhotos=photos;
