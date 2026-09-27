@@ -23,3 +23,5 @@ jobs:
           node-version: '20'
       - name: Run PRISM regression tests
         run: node tests/prism-regression.test.js
+      - name: Run Coach decision simulations
+        run: node tests/coach-decision-simulation.test.js
