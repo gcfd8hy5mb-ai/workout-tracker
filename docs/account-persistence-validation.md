@@ -25,10 +25,13 @@
   showed no photos; returning to A showed the synthetic photo again. This is
   app-level isolation and same-browser persistence, not an explicit B-token
   download/list/overwrite denial or an independent-device blob restore.
-  **The synthetic A photo remains**: automatic approval review rejected its
-  browser deletion pending action-time confirmation. Do not confuse it with
-  a real user photo; remove it when deletion is authorized and verify the
-  tombstone, second-device disappearance and no resurrection.
+  After the owner's action-time confirmation, deleted the synthetic A photo
+  through the UI and accepted its native confirmation dialog. Live catalog
+  counts then showed zero active photo metadata rows, two tombstoned rows
+  and two retained Storage objects. Reloading A's Progress photos showed the
+  empty state without resurrecting the image. This verifies the same-browser
+  deletion and metadata tombstone, not second-device disappearance; the
+  retained objects were not purged from Storage.
 - On B's later sign-in, the account panel showed `Account check is taking
   longer` even after B's data was visible. The account timeout could overwrite
   the completed account status while the separate photo sync continued. The
