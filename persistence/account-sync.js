@@ -12,16 +12,23 @@ function createTransport({url,publishableKey,getSession,fetcher=globalThis.fetch
  return {
   async read(userId){
    if((await getSession())?.user?.id!==userId)throw Error('Account changed');
-   const rows=[];
-   for(const table of model.TABLES){
-    let offset=0;for(;;){
+   // Read independent account tables concurrently. The previous serial scan could
+   // spend several seconds issuing ~40 requests before a changed workout set was
+   // written, long enough for mobile Safari to suspend the page after a tab/app
+   // switch. Each table still paginates in order and every returned row is checked
+   // against the authenticated owner before it is accepted.
+   const groups=await Promise.all(model.TABLES.map(async table=>{
+    const rows=[];let offset=0;
+    for(;;){
      if((await getSession())?.user?.id!==userId)throw Error('Account changed');
      const page=await request('prism_account_'+table+'?user_id=eq.'+encodeURIComponent(userId)+'&select=*&order=id&limit=500&offset='+offset,userId);
      if(!Array.isArray(page))throw Error('Invalid account response');
      for(const row of page){if(row.user_id!==userId)throw Error('Unexpected account owner');rows.push({...row,table});}
      if(page.length<500)break;offset+=page.length;
     }
-   }return rows;
+    return rows;
+   }));
+   return groups.flat();
   },
   async write(userId,changes){
    if((await getSession())?.user?.id!==userId)throw Error('Account changed');
