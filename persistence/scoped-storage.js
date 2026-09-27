@@ -41,21 +41,19 @@ function create(backing){
   for(const [key,previous] of Object.entries(sent))if(ledger[key]===previous)delete ledger[key];
   if(owner)backing.setItem(DELETIONS+owner,JSON.stringify(ledger));
  }
- function install(values){
+ function install(values,{replaceStartupDefaults=false}={}){
   if(!owner)throw Error('Account must be selected before restore');
   for(const [key,value] of Object.entries(values)){
    if(!Object.hasOwn(model.RULES,key)||typeof value!=='string')throw Error('Unrecognized cloud data');
    const present=storage.getItem(key);
-   if(present!==null&&present!==value)throw Error('Local account data differs from cloud for '+key);
+   if(!replaceStartupDefaults&&present!==null&&present!==value)throw Error('Local account data differs from cloud for '+key);
   }
   for(const [key,value] of Object.entries(values))storage.setItem(key,value);
  }
  function claimGuest({replaceStartupDefaults=false}={}){
   if(!owner)throw Error('Select a signed-in account first');
   const legacy=model.capture(backing);
-  if(replaceStartupDefaults){
-   for(const [key,value] of Object.entries(legacy))storage.setItem(key,value);
-  }else install(legacy); // Conflicts stop before any write; legacy keys are never removed.
+  install(legacy,{replaceStartupDefaults}); // Guest keys are never removed.
   return Object.keys(legacy).length;
  }
  return Object.freeze({storage,select,snapshot,install,claimGuest,recordDeletion,deletionLedger,acknowledgeDeletions,setOnWrite(callback){onWrite=callback;},get owner(){return owner;}});
