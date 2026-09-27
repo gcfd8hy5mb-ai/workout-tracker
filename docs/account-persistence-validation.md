@@ -23,7 +23,11 @@
   save followed by automatic recovery and no retry after revocation.
 - After that fix, all `tests/test_*.js`, 21 Python unit tests and the embedded
   PostgreSQL account/RLS suite pass locally. This is **not** a real two-user
-  browser or Storage policy test. PR #55 remains draft; no production deploy.
+  browser or Storage policy test. Both GitHub PR workflows on commit `e4655245`
+  succeeded: `PRISM Tests` and `Test and Deploy to GitHub Pages` (test job;
+  Pages publication remains main-only). The owner-private isolated preview was
+  refreshed with the retry fix and deployed successfully at the same preview
+  URL. PR #55 remains draft; no production deploy.
 
 ## Isolated preview (2026-09-27)
 
