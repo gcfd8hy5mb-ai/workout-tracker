@@ -75,7 +75,38 @@ async function scenario(){
  assert.equal((await backupController.flush()).status,'verified');
  assert.equal(JSON.parse(model.restoreSnapshot(rows.get(C)).prismLocalProfileV1).displayName,'Older');
  backupController.stop();
+
+ // Same active workout: cloud-only set progress should restore on refresh in a second browser.
+ const D='dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+ owner=D;
+ const d1Map=new Map(),d1Backing={getItem:k=>d1Map.get(k)??null,setItem:(k,v)=>d1Map.set(k,v),removeItem:k=>d1Map.delete(k)};
+ const d1Manager=createStorage(d1Backing);d1Manager.select(D);
+ d1Manager.storage.setItem('prismActiveWorkoutV1','{"id":"resume-test","title":"Resume Test"}');
+ d1Manager.storage.setItem('setHistoryV5','{"resume-test-set1":{"weight":"","reps":""}}');
+ const dCloud={currentUser:async()=>({id:D}),getSession:async()=>({access_token:'test',user:{id:D}})};
+ const d1=create({manager:d1Manager,cloud:dCloud,backing:d1Backing,createTransport:()=>transport});
+ assert.equal((await d1.connect()).status,'verified');
+ d1.stop();
+ const d2Map=new Map(),d2Backing={getItem:k=>d2Map.get(k)??null,setItem:(k,v)=>d2Map.set(k,v),removeItem:k=>d2Map.delete(k)};
+ const d2Manager=createStorage(d2Backing);d2Manager.select(D);
+ const d2First=create({manager:d2Manager,cloud:dCloud,backing:d2Backing,createTransport:()=>transport});
+ assert.equal((await d2First.connect()).status,'restored');
+ assert.equal(d2Manager.storage.getItem('prismActiveWorkoutV1'),'{"id":"resume-test","title":"Resume Test"}');
+ d2First.stop();
+ // Device 1 advances the same workout after device 2's checkpoint was established.
+ const d1Again=create({manager:d1Manager,cloud:dCloud,backing:d1Backing,createTransport:()=>transport});
+ assert.equal((await d1Again.connect()).writes,0);
+ d1Manager.storage.setItem('setHistoryV5','{"resume-test-set1":{"weight":130,"reps":4}}');
+ assert.equal((await d1Again.flush()).status,'verified');
+ d1Again.stop();
+ // Device 2 refreshes with an unchanged active-workout identity. Cloud-only set progress is safe to apply.
+ const d2Refresh=create({manager:d2Manager,cloud:dCloud,backing:d2Backing,createTransport:()=>transport});
+ const d2Result=await d2Refresh.connect();
+ assert.equal(d2Result.status,'restored','same-workout cloud progress should request a reload');
+ assert.deepEqual(JSON.parse(d2Manager.storage.getItem('setHistoryV5'))['resume-test-set1'],{weight:130,reps:4});
+ d2Refresh.stop();
+
  assert(events.some(e=>e.kind==='synced'));
- console.log('Account controller: explicit claim, verified save, idempotence, A/B isolation and fresh device restore OK.');
+ console.log('Account controller: explicit claim, verified save, idempotence, A/B isolation, fresh device restore and active-workout cross-browser restore OK.');
 }
 scenario().catch(error=>{console.error(error);process.exitCode=1;});
