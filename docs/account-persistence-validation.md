@@ -2,6 +2,49 @@
 
 ## Continuation checkpoint (2026-09-27)
 
+- The owner completed Apple authentication and the owner-private PR #55
+  preview became accessible. A disposable guest profile was created there;
+  its data was never claimed into either account.
+- Live preview Account A sign-in restored `Test account 1`, its Maintain goal
+  and 1,850-calorie target. A page reload retained the signed-in account and
+  restored the same data. Signing out returned to the separate guest profile.
+- Completed A -> B -> A in the same browser. B restored `Test account 2`, a
+  Recomp goal, 1,900-calorie target and its partially logged Day 4 workout
+  (70 lb x 4 reps, one of eight sets). Returning to A restored A's profile,
+  goal and target without B's active-workout resume card. This validates the
+  app's account switching and account-scoped restore in this browser; it does
+  not prove direct cross-account API denial or a separate device/PWA restore.
+- Two live tabs displayed A. Saving a test name in one caused the other to
+  show its account-changed refresh warning. A stale save in that tab was
+  refused with `Refresh PRISM before saving here`. A's original test name was
+  restored. This verifies the stale local writer guard, not simultaneous
+  remote conflicting writes from independent devices.
+- Uploaded one deliberately synthetic PNG in A's Progress photos UI. The UI
+  reported private account save; live catalog counts changed from zero to one
+  active photo metadata row and from one to two bucket objects. B's photo UI
+  showed no photos; returning to A showed the synthetic photo again. This is
+  app-level isolation and same-browser persistence, not an explicit B-token
+  download/list/overwrite denial or an independent-device blob restore.
+  **The synthetic A photo remains**: automatic approval review rejected its
+  browser deletion pending action-time confirmation. Do not confuse it with
+  a real user photo; remove it when deletion is authorized and verify the
+  tombstone, second-device disappearance and no resurrection.
+- On B's later sign-in, the account panel showed `Account check is taking
+  longer` even after B's data was visible. The account timeout could overwrite
+  the completed account status while the separate photo sync continued. The
+  draft now clears that timer immediately after `controller.connect()`; this
+  small status fix passed the JS, Python, PostgreSQL and PRISM regression
+  suites locally. The owner-private preview is a snapshot and does **not**
+  contain this newer draft change yet.
+- Browser console inspection found `Identifier 'PRISM_GOAL_NAMES' has already
+  been declared` in `phase-insights.js`, which shares the classic-script scope
+  with `onboarding.js`. It predates this account change and the module has
+  additional global function overlap; the mobile/console gate remains open.
+- Still open: actual A/B JWT read/write/cross-account denial and private
+  Storage denial; live email confirmation and expired-token refresh/revocation;
+  independent browser/device and installed-PWA restore; offline recovery,
+  legacy import, conflicting remote edits/deletions and iPhone/Android checks.
+
 - Resumed from PR #55 head `236c46c` and main `5a515c6`. Both PR workflows
   completed successfully on this exact head; no previously passing suite was
   rerun. The draft remains unmerged and Pages deployment remains main-only.
