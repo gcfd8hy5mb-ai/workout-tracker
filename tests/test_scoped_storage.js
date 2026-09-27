@@ -20,6 +20,10 @@ assert.throws(()=>manager.install({prismSupabaseSessionV1:'unsafe'}),/Unrecogniz
 manager.select(A);
 assert.equal(manager.storage.getItem('prismLocalProfileV1'),'{"displayName":"A"}');
 assert.equal(manager.storage.getItem('workoutHistoryV52'),'[{"id":1}]');
+manager.invalidate();
+assert.throws(()=>manager.storage.setItem('workoutHistoryV52','[]'),/another tab/);
+assert.throws(()=>manager.storage.removeItem('workoutHistoryV52'),/another tab/);
+assert.equal(manager.storage.getItem('workoutHistoryV52'),'[{"id":1}]','stale tab cannot replace a newer account copy');
 assert.equal(raw.get('prismLocalProfileV1'),'{"displayName":"Local guest"}','legacy data is untouched');
 manager.select(null);
 assert.equal(manager.storage.getItem('prismLocalProfileV1'),'{"displayName":"Local guest"}');
