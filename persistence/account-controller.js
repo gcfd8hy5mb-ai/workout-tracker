@@ -7,13 +7,24 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
  const status=(kind,message)=>onStatus({kind,message});
  function checkpoint(){try{const value=JSON.parse(backing.getItem(CHECKPOINT+userId)||'[]');return Array.isArray(value)?value:[]}catch{return []}}
  function saveCheckpoint(rows){backing.setItem(CHECKPOINT+userId,JSON.stringify(rows))}
+ function equivalent(left,right){
+  if(left===right)return true;
+  try{return model.canonical(JSON.parse(left))===model.canonical(JSON.parse(right))}catch{return false}
+ }
  function persistVerified(candidate,captured){
   if(!candidate||manager.owner!==userId||JSON.stringify(manager.snapshot())!==JSON.stringify(captured))return false;
-  if(manager.storage.getItem('prismActiveWorkoutV1')){status('pending','Cloud changes will appear after your active workout.');return false;}
+  const active=manager.storage.getItem('prismActiveWorkoutV1');
+  if(active){
+   const remoteActive=candidate.prismActiveWorkoutV1;
+   if(!remoteActive||!equivalent(active,remoteActive)){
+    status('pending','Another device has different active-workout changes. Finish, discard, or refresh that workout before applying them.');
+    return false;
+   }
+  }
   const changed=Object.entries(candidate).filter(([key,value])=>{
    const local=manager.storage.getItem(key);
    if(local===null)return true;
-   try{return model.canonical(JSON.parse(local))!==model.canonical(JSON.parse(value))}catch{return local!==value}
+   return !equivalent(local,value);
   });
   if(!changed.length)return false;
   // Preserve the previous account-local snapshot before changing the active mirror.
@@ -62,8 +73,12 @@ function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),o
    saveCheckpoint(result.checkpoint);
    if(result.checkpoint.length)cloudEmpty=false;
    manager.acknowledgeDeletions(deletions);
-   persistVerified(result.restoreCandidate,captured);
-  status('synced','Saved to your PRISM account.');
+   const restored=persistVerified(result.restoreCandidate,captured);
+   if(restored){
+    if(dirty!==revision)queue();
+    return {...result,status:'restored',restored:true};
+   }
+   status('synced','Saved to your PRISM account.');
    if(dirty!==revision)queue();
    return result;
   }catch(error){status('offline','Cloud sync is unavailable. Your device data is still here.');throw error;}
