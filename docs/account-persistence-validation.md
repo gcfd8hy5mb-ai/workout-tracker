@@ -2,6 +2,28 @@
 
 ## Continuation checkpoint (2026-09-27)
 
+- Resumed from PR #55 head `236c46c` and main `5a515c6`. Both PR workflows
+  completed successfully on this exact head; no previously passing suite was
+  rerun. The draft remains unmerged and Pages deployment remains main-only.
+- Checked the remaining Data API grant question against the live project:
+  `authenticated` has SELECT privilege on all 40 account tables, while `anon`
+  has SELECT privilege on none. This checks grants only; it does not test a
+  real user's JWT, the Data API exposure setting, cross-account denial, or
+  private photo download. Keep the authenticated RLS/Storage gate open.
+- The validation browser was still at an Apple ID login page. Automatic
+  approval review rejected inspection of that unrelated authentication page,
+  so no sign-in or preview browser test occurred in this continuation.
+  Browser, PWA, email lifecycle and second-device gates remain open.
+- Audited the existing completion, custom workout deletion, tracking removal,
+  measurement removal and photo deletion call sites. Their explicit deletion
+  ledger or photo tombstone hooks are present; real conflicting two-device
+  behavior and UI completion still need validation.
+- Supabase documents that a signed-out access JWT can remain usable until its
+  expiry even when its refresh token is revoked. The local sign-out and
+  `/auth/v1/user` failure fixtures do not establish immediate server-side JWT
+  invalidation. Test the live sign-out/revocation semantics and describe the
+  observed window accurately before marking that gate complete.
+
 - Inspected current `main` (`5a515c6`) and draft PR #55 (`de7776a`); the
   branch already contains the newer active-workout restore regression and all
   prior Supabase work. Earlier successful tests were accepted as completed.
