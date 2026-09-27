@@ -115,6 +115,13 @@
     };
   } catch { /* tab broadcast is optional; local account namespaces still isolate data */ }
   if (!manager.owner) return;
+  window.addEventListener('storage', event => {
+    if(event.storageArea!==window.localStorage||!event.key?.startsWith('prismAccountLocalV1:'+manager.owner+':'))return;
+    manager.invalidate();controller?.stop();
+    accountStatus('This account changed in another tab. Refresh PRISM before saving here.',true);
+    let button=document.getElementById('prismRefreshAccount');
+    if(!button){button=document.createElement('button');button.id='prismRefreshAccount';button.type='button';button.textContent='Account changed in another tab · Refresh';button.style.cssText='position:fixed;z-index:9999;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));min-height:48px;background:#168bff;color:white;border-radius:12px';button.onclick=()=>location.reload();document.body.appendChild(button)}
+  });
   const unlock = () => document.documentElement.classList.remove('prism-account-booting');
   // Never strand an installed PWA behind the loading veil during an outage.
   const timeout = setTimeout(() => { unlock();accountStatus('Account check is taking longer. Your device copy is still available.'); }, 12000);
