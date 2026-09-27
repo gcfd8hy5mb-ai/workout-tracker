@@ -40,8 +40,10 @@
   sign-up controls in Profile. Startup verifies the user before account sync;
   a fresh account requires an explicit guest-data claim, while guest originals
   remain available. A BroadcastChannel prompts other open tabs to reload on
-  auth changes. Unit fixtures cover these paths, but browser/installed-PWA
-  behavior and real email-confirmation flow are NOT yet verified.
+  auth changes. A second tab's account-local storage change now invalidates
+  stale writes and prompts refresh before further saves. Unit fixtures cover
+  the stale writer; real simultaneous-tab behavior, installed-PWA behavior
+  and email-confirmation flow are NOT yet verified.
 - Draft explicit-deletion ledger records the pre-delete source for user actions
   (custom workout, history/progress reset, tracking/measurement entry and key
   removal). Normalization derives stable row tombstones, the write RPC applies
@@ -64,6 +66,9 @@
   moved. Live browser and real authenticated Storage policy checks remain.
   Both existing photo UIs now queue account backup after normal save/delete;
   local-first UI text distinguishes signed-in private sync from guest storage.
+- Only the beta preview choice (`free` or `pro`) syncs as a UI preference.
+  Paid/Lifetime tier values, session tokens and developer flags remain local
+  and are not interpreted as server-authoritative grants.
 
 - All `tests/test_*.js`, 21 Python tests and the current main PRISM regression
   test pass after the latest branch/main merge (2026-09-27).
@@ -93,8 +98,8 @@
    through the live project and browser/PWA before marking complete.
 3. PARTIAL: draft has explicit guest claim, account-specific fallback, basic
    A/B isolation and cross-tab auth-change broadcast. It still needs real
-   browser switching tests, an ownership-safe photo claim and write arbitration
-   when two tabs edit the same account simultaneously.
+   browser switching and simultaneous-tab tests; a stale tab now blocks writes
+   and requires a refresh before saving new account data.
 4. PARTIAL: draft calls the normalized sync controller from Profile startup,
    verifies auth before cloud work, hooks allowlisted saves, restores cloud
    sources after archive and reload, and keeps local data on network failure.
@@ -110,8 +115,9 @@
    guest claim, deletion markers, account scoping and copy verification are
    implemented and fixture tested. Verify real signed-in Storage policies,
    installed PWA/photo capture and second-device restore before release.
-8. Preserve beta preferences across devices without treating a locally editable
-   lifetime/pro value as a real server entitlement; finalized feature rules unchanged.
+8. PARTIAL: beta Free/Pro preview preference is included in the normalized
+   account data, while locally editable paid/lifetime flags remain excluded.
+   Verify restore on a second real browser; finalized feature map is unchanged.
 9. DONE IN DRAFT: Supabase is cross-origin and excluded from the service-worker
    fetch handler; no localStorage or IndexedDB clearing was introduced. Recheck
    with an installed PWA after live integration.
