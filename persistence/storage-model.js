@@ -16,6 +16,7 @@ const RULES=Object.freeze({
  prismCoachSessionReflectionsV1:['reflections','list'],prismSessionReadinessV1:['readiness','fields'],
  prismAskHistoryV1:['coach_questions','list'],prismMeasurementsV1:['measurements','list'],
  prismProBetaFeedbackV1:['beta_feedback','fields'],prismDrawerSectionsV1:['ui_preferences','fields'],
+ prismBetaPreviewPreferenceV1:['ui_preferences','fields'],
  prismCoachLongTermGoalV1:['coach_long_term_goals','fields'],
  prismCoachTrainingPhaseV1:['coach_training_phases','fields'],
  prismCoachPhaseTransitionV1:['coach_phase_transitions','fields'],
