@@ -82,7 +82,8 @@
   }
 
   async function signUp(email, password) {
-    const json = await authRequest("signup", { email, password });
+    const redirectTo = new URL(".", location.href).href;
+    const json = await authRequest(`signup?redirect_to=${encodeURIComponent(redirectTo)}`, { email, password });
     if (json.access_token) writeSession(json);
     return json;
   }
