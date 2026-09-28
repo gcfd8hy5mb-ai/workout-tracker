@@ -1,0 +1,12 @@
+const fs=require('node:fs');const vm=require('node:vm');const assert=require('node:assert/strict');
+const source=fs.readFileSync('coach-engine.js','utf8');
+const history=[{date:'2026-09-28',exercises:[{id:'press',name:'Machine Chest Press',sets:[{weight:100,reps:12}]}]}];
+let confidence={level:'LOW',exposures:2,score:.25,ready:false,autoProgress:false};
+const ctx={console,Math,Number,String,Date,Map,window:{workoutHistory:history,PRISM_GOAL_NAMES:{}},workoutHistory:history,getExercise:id=>({name:id==='press'?'Machine Chest Press':id}),progressionSuggestion:id=>id==='press'?{status:'ready',weight:105,lastWeight:100,range:{min:8,max:12}}:null,prismCoachConfidence:()=>confidence,prismPlateauAnalyze:()=>[],prismMeasurementRead:()=>[],prismWeeklySummaryData:()=>null,prismActivePhase:()=>null,canAccessFeature:()=>true,escapeHTML:v=>String(v),document:{getElementById:()=>null,createElement:()=>({})},showOverallProgress:function(){}};
+vm.createContext(ctx);vm.runInContext(source,ctx);
+function progression(){return ctx.prismCoachAnalyze().decisions.find(d=>d.source==='smart_progression')}
+let d=progression();assert.equal(d.meta.action,'hold_for_evidence');assert.equal(d.meta.targetWeight,100);assert.equal(d.meta.proposedWeight,105);assert.match(d.title,/Build confidence/);assert.doesNotMatch(d.action,/Try 105 lb/);
+confidence={level:'MEDIUM',exposures:4,score:.58,ready:true,autoProgress:false};d=progression();assert.equal(d.meta.action,'prove_top_range');assert.equal(d.meta.targetWeight,100);assert.equal(d.meta.proposedWeight,105);assert.match(d.title,/Prove/);assert.match(d.action,/one more clean exposure/);assert.doesNotMatch(d.action,/Try 105 lb/);
+confidence={level:'HIGH',exposures:6,score:.9,ready:true,autoProgress:true};d=progression();assert.equal(d.meta.action,'increase_weight');assert.equal(d.meta.targetWeight,105);assert.match(d.title,/Progress/);assert.match(d.action,/Try 105 lb/);
+ctx.prismCheckinCoachSignal=()=>({load:'conservative',days:4,reason:'Recovery is below normal.'});confidence={level:'HIGH',exposures:8,score:.95,ready:true,autoProgress:true};d=progression();assert.equal(d.meta.action,'hold');assert.equal(d.meta.targetWeight,100);assert.match(d.title,/Hold/);assert.doesNotMatch(d.action,/Try 105 lb/);
+console.log('LIFTOVA Coach confidence gating: low=learn, medium=prove, high=progress, recovery override=hold: OK');
