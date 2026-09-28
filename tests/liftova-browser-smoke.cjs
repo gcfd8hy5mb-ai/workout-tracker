@@ -25,12 +25,11 @@ async function runPass(browser,url,pass){
  await page.goto(url,{waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>window.LiftovaAnatomy&&typeof window.showWorkouts==='function'&&typeof window.goHome==='function',{timeout:15000});
  await page.evaluate(()=>goHome());
- await page.locator('#lv3StartWorkout').waitFor();
- await page.locator('#lv3StartWorkout').click();
- await page.locator('#workoutScreen:not(.hidden) #exerciseList').waitFor();
- assert.equal(await page.locator('#workoutDetailScreen:not(.hidden)').count(),0,'Home Start must skip workout detail');
- assert.equal(await page.locator('#exerciseList .exercise').count()>0,true,'live exercise cards must render');
- assert.equal(await page.locator('#exerciseList .liftova-anatomy').count()>0,true,'live exercise mini anatomy must render');
+ // Canonical compact Home intentionally has no legacy photo-card Start Workout button.
+ await page.locator('#home:not(.hidden)').waitFor();
+ await page.waitForTimeout(500);
+ assert.equal(await page.locator('#lv3StartWorkout:visible').count(),0,'legacy Home Start button must not reappear');
+ assert.equal(await page.locator('#home:not(.hidden)').count(),1,'canonical Home must remain visible');
  await page.evaluate(()=>showWorkouts());
  await page.locator('#workoutDetailScreen:not(.hidden) .lv3-exercise-row').first().waitFor();
  assert.equal(await page.locator('.lv3-exercise-row').count(),8,'full workout list must render');
@@ -54,7 +53,7 @@ async function runPass(browser,url,pass){
  assert.equal(visibleBrand,null,'no visible Prism branding');
  assert.deepEqual(errors,[],'no uncaught page errors');
  await context.close();
- console.log(`LIFTOVA browser smoke pass ${pass}: workout, live start, details, library, navigation, atlas and branding PASS`);
+ console.log(`LIFTOVA browser smoke pass ${pass}: canonical home, details, library, navigation, atlas and branding PASS`);
 }
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
