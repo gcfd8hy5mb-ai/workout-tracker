@@ -8,6 +8,6 @@ const html=(s,large=false)=>`<div class="lv4-anatomy ${large?'large':''}"><figur
 function rows(){document.querySelectorAll('.lv3-exercise-row[data-exercise-id]').forEach(r=>{const s=map[r.dataset.exerciseId],old=r.querySelector('.lv3-anatomy');if(s&&old)old.outerHTML=html(s);});}
 function detail(id){const s=map[String(id||'').replace(/[^a-z0-9-]/gi,'')];if(!s)return;document.querySelectorAll('#prismExerciseInfo .lv3-anatomy.large,#prismExerciseInfo .lv3-anatomy.xl').forEach(old=>old.outerHTML=html(s,true));}
 function patch(n,after){const f=window[n];if(typeof f!=='function'||f.__lv4)return;const w=function(...a){const r=f.apply(this,a);requestAnimationFrame(()=>after(...a));return r};w.__lv4=true;window[n]=w;}
-function install(){patch('showPrismWorkoutDetail',rows);patch('showExerciseInfo',detail);requestAnimationFrame(rows);}
+function install(){if(!document.querySelector('link[data-lv4-anatomy]')){const l=document.createElement('link');l.rel='stylesheet';l.href='liftova-anatomy-v4.css?v=1';l.dataset.lv4Anatomy='true';document.head.appendChild(l);}patch('showPrismWorkoutDetail',rows);patch('showExerciseInfo',detail);requestAnimationFrame(rows);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
