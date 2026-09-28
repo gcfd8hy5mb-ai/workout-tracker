@@ -87,7 +87,7 @@
       if (start) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        openCanonicalWorkout();
+        startCanonicalWorkout(canonicalItem());
         return;
       }
       const back = event.target.closest?.('[data-lv3-back]');

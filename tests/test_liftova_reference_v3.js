@@ -34,11 +34,8 @@ assert.match(js, /insertBefore\(historyBtn,progress\)/, 'Log must be ordered bef
 for (const marker of ['lv3-detail-top','lv3-tabs','lv3-workout-metrics','lv3-exercise-row','lv3-set-box','lv3-start-workout']) {
   assert.match(js, new RegExp(marker), `Workout detail must render ${marker}`);
 }
-assert.match(js, /muscleFigure\('Front'/, 'anatomy must render the front figure');
-assert.match(js, /muscleFigure\('Back'/, 'anatomy must render the back figure');
-assert.match(css, /path\[fill="#dc5477"\]/, 'active anatomical regions must be recolored by the LIFTOVA anatomy layer');
-assert.match(css, /fill:#9d25ff!important/, 'active muscle groups must use the approved purple highlight');
-assert.match(js, /Upper Chest/, 'incline press must distinguish the upper-chest target');
+assert.match(js, /LiftovaAnatomy\.render\(ex/, 'workout details and rows use the shared premium anatomy renderer');
+assert.match(js, /LiftovaAnatomy\?\.profile\(ex\)/, 'target labels use the per-exercise anatomy map');
 assert.match(js, /Rest \$\{scheme\.rest\}/, 'each exercise row must show a rest prescription');
 
 // Exercise guide reference: Overview, How To, Muscles and History.

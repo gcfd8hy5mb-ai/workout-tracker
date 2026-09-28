@@ -60,7 +60,7 @@ assert.equal(
 );
 
 const sw = read('sw.js');
-assert.match(sw, /prism-v10\.3-beta40\.9-liftova-exact/, 'LIFTOVA exact-image release must use the new cache namespace');
+assert.match(sw, /prism-v10\.3-beta40\.10-liftova-atlas/, 'LIFTOVA exact-image release must use the new cache namespace');
 assert.match(sw, /url\.pathname\.includes\("\/liftova-"\)/, 'LIFTOVA presentation assets must use network-first refresh');
 for (const asset of [
   './images/app-icon-192.png',
