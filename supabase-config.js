@@ -19,6 +19,7 @@ window.PRISM_SUPABASE_CONFIG = Object.freeze({
     'liftova-polish.js?v=7',
     'liftova-native-navigation.js?v=1',
     'liftova-native-forms.js?v=1',
+    'liftova-native-states.js?v=1',
     'liftova-reference-v3.js?v=1',
     'liftova-workout-tab-v3.js?v=1',
     'liftova-quick-log.js?v=1'
