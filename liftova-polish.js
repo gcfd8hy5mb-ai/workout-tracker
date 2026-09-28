@@ -12,6 +12,14 @@
     if (appleTitle) appleTitle.setAttribute('content', BRAND);
     const theme = document.querySelector('meta[name="theme-color"]');
     if (theme) theme.setAttribute('content', '#07050d');
+
+    let favicon=document.querySelector('link[rel="icon"]');
+    if(!favicon){ favicon=document.createElement('link'); favicon.rel='icon'; document.head.appendChild(favicon); }
+    favicon.type='image/svg+xml'; favicon.href='images/liftova-icon.svg';
+
+    let touch=document.querySelector('link[rel="apple-touch-icon"]');
+    if(!touch){ touch=document.createElement('link'); touch.rel='apple-touch-icon'; document.head.appendChild(touch); }
+    touch.href='images/liftova-icon.svg';
   }
 
   function cleanNode(root=document.body){
@@ -45,6 +53,7 @@
       .prism-bottom-nav{background:rgba(8,6,14,.96)!important;border-top-color:rgba(154,85,255,.24)!important;}
       .prism-bottom-nav button[aria-current=page]{color:#b66dff!important;background:rgba(126,48,255,.15)!important;}
       button:focus-visible{outline-color:rgba(166,88,255,.55)!important;}
+      html.prism-account-booting::after{content:'Restoring your LIFTOVA account…'!important;background:#07050d url('images/liftova-splash.svg') center/cover no-repeat!important;color:transparent!important;}
     `;
     document.head.appendChild(style);
   }
