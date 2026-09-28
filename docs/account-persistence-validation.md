@@ -1,5 +1,30 @@
 # Staged validation and rollout gates
 
+## Beta release decision (2026-09-27, America/Chicago)
+
+The live checks below used the owner-private PR #55 preview and the actual
+PRISM Supabase project. The valid existing Account B (`Test account 2`) was
+used after its owner authenticated; a third disposable Auth user was not
+created. Neither account's password, JWT nor service-role key was displayed
+or copied into the validation record.
+
+| Safety-critical gate | Result and exact evidence |
+| --- | --- |
+| Authenticated database isolation | **PASS.** `/auth/v1/user` verified each ordinary A/B session. A read six own profile rows and zero B rows; B read six own profile rows and zero A rows. Forged other-owner profile inserts returned HTTP 403 / PostgreSQL `42501` for each direction. No admin/service-role credential was used for these HTTP denials. |
+| Private photo isolation | **PASS.** Each account listed one own object and zero other-folder objects. Exact-path own downloads returned 200; exact-path other-owner downloads returned 400. B's overwrite and DELETE of A's exact retained object both returned 400. A's 2,444-byte object remained after B's denied DELETE; A's own download succeeded. |
+| Switching and stale-tab protection | **PASS.** A -> B -> A restored the correct profiles/goals without B's active workout appearing in A. A separate live tab detected another tab's edit and refused a stale save until refresh. |
+| Existing-account sign-in, persistence, refresh and logout | **PASS.** A and B authenticated and restored their own data. B's expired access token refreshed to a different token, remained the same verified user, and survived app reload with its partially logged Day 4 workout. Live B logout cleared the local session, its former refresh token was denied HTTP 400, and the app reloaded as guest. A signed-out access JWT may remain valid until its normal expiry; immediate server-side access-JWT invalidation is not claimed. |
+| Fresh storage restore and photo deletion | **PASS for browser storage.** A restored profile/goal/target in a newly initialized browser storage context. B's synthetic active photo restored from private Storage into an empty cache with matching byte size and SHA-256. A and B synthetic photo deletions produced cloud tombstones and empty UI after reload. A disposable cached B tombstoned photo was removed by the live photo restore path. Physical second-device and installed-PWA behavior were not tested. |
+| Live account-data deletion propagation | **PASS for independent browser storage simulation.** A disposable B waist entry (`2026-09-27`, 44.4 in) was saved in PRISM. Live `prism_account_tracking_entries` showed the entry at revision 1. A separate empty in-memory store, using B's actual session and the real account controller/transport, restored that entry and B's profile. With the owner's action-time confirmation, the entry was removed through PRISM; the same cloud row became revision 2 with `{"__prismDeletedV1":true}`. Reconnecting the previously cached independent store removed the entry. No extra workout sets were logged. |
+
+**Beta scope:** These gates support the existing confirmed-account PRISM beta.
+Live new-user email confirmation remains unverified, so do not invite new
+self-signups until that flow is checked. A physical second device, installed
+PWA, iPhone/Android-specific behavior, legacy import, offline conflict recovery
+and concurrent remote edits remain follow-ups; they are not represented as
+passed. The older implementation checklist below records the initial draft
+requirements and is superseded by this release decision for beta scope.
+
 ## Continuation checkpoint (2026-09-27)
 
 - Release validation continuation (evening): in a newly initialized browser
@@ -24,11 +49,13 @@
   six rows and A's returned zero; B listed one own private object and zero
   A objects. B's own exact-path photo download returned HTTP 200 and A's
   known exact path returned HTTP 400. B's forged A-owner profile insert
-  returned HTTP 403 / PostgreSQL `42501`, and B's attempt to overwrite A's
-  exact existing object path returned HTTP 400. The requested fresh disposable
+  returned HTTP 403 / PostgreSQL `42501`, and B's attempts to overwrite and
+  delete A's exact existing object path each returned HTTP 400. A's retained
+  2,444-byte object remained in Storage after the denied delete. The requested fresh disposable
   third test user was not created; the valid existing B session provides the
-  reciprocal ordinary authenticated isolation evidence. Direct B deletion of
-  A's retained synthetic object remains unverified.
+  reciprocal ordinary authenticated isolation evidence. These B-token requests
+  complete reciprocal live database and exact-path private Storage denial for
+  list, download, overwrite and delete; A's own download succeeded.
 - B's real expired-token refresh rotated its access token and `/auth/v1/user`
   still verified the same account; app reload retained B's Recomp goal,
   1,950-calorie target and partially logged Day 4 workout. This tests refresh,
@@ -37,8 +64,11 @@
   context, a disposable local cache entry corresponding to B's existing
   tombstoned photo was removed by live `photos.restore()`. A fresh synthetic
   B photo was saved privately, locally removed without a cloud tombstone,
-  and restored from private Storage with matching size and SHA-256. Its
-  active test row/photo must be deleted after validation. This validates
+  and restored from private Storage with matching size and SHA-256. After the
+  owner's action-time confirmation, the synthetic B photo was deleted through
+  the UI. B's Progress photo view remained empty after a reload. Live catalog
+  counts then showed zero active photo rows, three tombstones and three retained
+  objects (the retained bytes are not publicly accessible). This validates
   empty-cache active restore and cached-photo tombstone application in an
   isolated browser storage context; an actual second physical device and
   conflicting account-data deletions have not been exercised.
@@ -87,12 +117,11 @@
   been declared` in `phase-insights.js`, which shares the classic-script scope
   with `onboarding.js`. It predates this account change and the module has
   additional global function overlap; the mobile/console gate remains open.
-- Still open: direct B-token deletion of A's exact Storage object; live email
-  confirmation and post-logout revocation semantics; a physical second-device
-  test and account-data deletion under divergent local state; installed-PWA
-  restore, offline recovery, legacy import, conflicting remote edits and
-  iPhone/Android checks. Classify lower-risk beta follow-ups separately before
-  deciding whether the remaining items block this beta merge.
+- Later checks completed the logout/refresh-token revocation and live
+  account-data deletion propagation described in the beta release table.
+  Open follow-ups are new-user email confirmation, a physical second device,
+  installed-PWA restore, offline recovery, legacy import, conflicting remote
+  edits and iPhone/Android checks.
 
 - Resumed from PR #55 head `236c46c` and main `5a515c6`. Both PR workflows
   completed successfully on this exact head; no previously passing suite was
@@ -248,7 +277,10 @@
   pass; the new adapter deliberately does not import client-written paid grants.
 - No production data was read, uploaded, restored, reset or deleted during tests.
 
-## Not yet implemented / verified (must block production activation)
+## Original draft implementation checklist (historical)
+
+The PARTIAL labels below describe the earlier draft checkpoint. The beta
+release table above gives the current verified result and narrower beta scope.
 
 1. PARTIAL: both additive migrations applied to the live Supabase project;
    table/policy/FK/RPC/private-bucket catalog verification passed. Execute
