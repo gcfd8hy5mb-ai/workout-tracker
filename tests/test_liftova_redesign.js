@@ -49,7 +49,7 @@ assert.equal(manifest.short_name, 'LIFTOVA');
 assert.match(manifest.name, /^LIFTOVA/);
 assert.equal(manifest.display, 'standalone');
 assert.equal(
-  manifest.icons.some(item => item.src === 'images/apple-touch-icon-180.png?v=6' && item.type === 'image/png'),
+  manifest.icons.some(item => item.src === 'images/apple-touch-icon-180.png?v=7' && item.type === 'image/png'),
   true,
   'LIFTOVA PNG install icon must be present'
 );
