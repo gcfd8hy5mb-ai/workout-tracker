@@ -1,0 +1,71 @@
+/* LIFTOVA mobile exercise-library layout guard.
+   Keeps thumbnails, labels and actions in separate grid columns on narrow iPhones. */
+@media (max-width: 520px){
+  #libraryScreen .library-item{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    align-items:center!important;
+    column-gap:12px!important;
+    width:100%!important;
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+  #libraryScreen .library-preview{
+    display:grid!important;
+    grid-template-columns:76px minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:12px!important;
+    width:100%!important;
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+  #libraryScreen .prism-library-thumb,
+  #libraryScreen .exercise-mini-map{
+    position:relative!important;
+    inset:auto!important;
+    float:none!important;
+    flex:none!important;
+    width:76px!important;
+    min-width:76px!important;
+    max-width:76px!important;
+    height:76px!important;
+    margin:0!important;
+    transform:none!important;
+    z-index:1!important;
+  }
+  #libraryScreen .library-preview > :not(.prism-library-thumb):not(.exercise-mini-map),
+  #libraryScreen .library-copy,
+  #libraryScreen .library-info{
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+  }
+  #libraryScreen .library-name{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+  #libraryScreen .badge{
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+  #libraryScreen .add-small{
+    position:relative!important;
+    inset:auto!important;
+    flex:none!important;
+    min-width:58px!important;
+    margin:0!important;
+    z-index:2!important;
+  }
+}
+@media (max-width:390px){
+  #libraryScreen .library-preview{grid-template-columns:68px minmax(0,1fr)!important;gap:10px!important}
+  #libraryScreen .prism-library-thumb,
+  #libraryScreen .exercise-mini-map{width:68px!important;min-width:68px!important;max-width:68px!important;height:68px!important}
+}
