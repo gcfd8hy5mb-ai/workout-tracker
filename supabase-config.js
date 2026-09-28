@@ -7,7 +7,7 @@ window.PRISM_SUPABASE_CONFIG = Object.freeze({
 
 // Redesign branch loaders. Keep the proven account/data system intact while the UI is rebuilt.
 (() => {
-  for (const src of ['liftova-onboarding.js','liftova-home.js','liftova-workouts.js','liftova-active-workout.js']) {
+  for (const src of ['liftova-onboarding.js','liftova-home.js','liftova-workouts.js','liftova-active-workout.js','liftova-library.js']) {
     const script = document.createElement('script');
     script.src = src;
     script.defer = true;
