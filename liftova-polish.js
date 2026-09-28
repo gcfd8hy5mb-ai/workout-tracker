@@ -1,5 +1,5 @@
-// Final visual/branding cleanup for the LIFTOVA redesign branch.
-// This changes presentation text only; PRISM-prefixed storage keys/functions remain untouched for compatibility.
+// Final visual/branding cleanup for LIFTOVA.
+// Presentation only; PRISM-prefixed storage keys/functions remain untouched for compatibility.
 (() => {
   'use strict';
 
@@ -20,6 +20,18 @@
     let touch=document.querySelector('link[rel="apple-touch-icon"]');
     if(!touch){ touch=document.createElement('link'); touch.rel='apple-touch-icon'; document.head.appendChild(touch); }
     touch.href='images/liftova-icon.svg';
+  }
+
+  function updateHeaderBrand(){
+    const header=document.querySelector('header');
+    if(!header)return;
+    const image=header.querySelector('img');
+    if(image){
+      image.src='images/liftova-icon.svg';
+      image.alt='LIFTOVA';
+      image.style.objectFit='contain';
+      image.style.background='transparent';
+    }
   }
 
   function cleanNode(root=document.body){
@@ -48,6 +60,7 @@
       :root{--liftova-purple:#8c3cff;--liftova-purple-2:#b36cff;--liftova-bg:#07050d;}
       html,body{background:#07050d!important;}
       header{background:rgba(7,5,13,.94)!important;border-bottom-color:rgba(154,85,255,.2)!important;}
+      header img{background:transparent!important;border:0!important;box-shadow:none!important;}
       .prism-wordmark{letter-spacing:.16em!important;background:linear-gradient(180deg,#fff,#b8b3c4);-webkit-background-clip:text;background-clip:text;color:transparent!important;}
       .prism-eyebrow{color:#a55bff!important;}
       .prism-bottom-nav{background:rgba(8,6,14,.96)!important;border-top-color:rgba(154,85,255,.24)!important;}
@@ -58,18 +71,20 @@
     document.head.appendChild(style);
   }
 
-  function run(){ updateMetadata(); addStyle(); cleanNode(); }
+  function run(){ updateMetadata(); addStyle(); cleanNode(); updateHeaderBrand(); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run,{once:true}); else run();
 
   const observer=new MutationObserver(records=>{
+    let headerChanged=false;
     for(const record of records){
       for(const node of record.addedNodes){
-        if(node.nodeType===Node.ELEMENT_NODE) cleanNode(node);
+        if(node.nodeType===Node.ELEMENT_NODE){ cleanNode(node); if(node.matches?.('header,header *')||node.querySelector?.('header')) headerChanged=true; }
         else if(node.nodeType===Node.TEXT_NODE){
           const next=replaceBrand(node.nodeValue); if(next!==node.nodeValue) node.nodeValue=next;
         }
       }
     }
+    if(headerChanged)updateHeaderBrand();
   });
   const startObserver=()=>{ if(document.body) observer.observe(document.body,{childList:true,subtree:true}); };
   if(document.body) startObserver(); else document.addEventListener('DOMContentLoaded',startObserver,{once:true});
