@@ -74,18 +74,8 @@
   function run(){ updateMetadata(); addStyle(); cleanNode(); updateHeaderBrand(); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run,{once:true}); else run();
 
-  const observer=new MutationObserver(records=>{
-    let headerChanged=false;
-    for(const record of records){
-      for(const node of record.addedNodes){
-        if(node.nodeType===Node.ELEMENT_NODE){ cleanNode(node); if(node.matches?.('header,header *')||node.querySelector?.('header')) headerChanged=true; }
-        else if(node.nodeType===Node.TEXT_NODE){
-          const next=replaceBrand(node.nodeValue); if(next!==node.nodeValue) node.nodeValue=next;
-        }
-      }
-    }
-    if(headerChanged)updateHeaderBrand();
-  });
-  const startObserver=()=>{ if(document.body) observer.observe(document.body,{childList:true,subtree:true}); };
-  if(document.body) startObserver(); else document.addEventListener('DOMContentLoaded',startObserver,{once:true});
+  // Do not watch the full document for child-list mutations. History/Progress can render
+  // large dynamic trees, and repeatedly walking every added subtree caused iOS freezes.
+  // Re-run only the tiny header branding step when the page becomes active again.
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) updateHeaderBrand(); });
 })();
