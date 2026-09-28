@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" role="img" aria-labelledby="title desc">
+<title id="title">LIFTOVA chest press target muscles</title>
+<desc id="desc">Detailed front and back anatomical figures with pectorals highlighted as the primary target and anterior deltoids and triceps highlighted as secondary targets.</desc>
+<defs>
+  <radialGradient id="bg" cx="50%" cy="38%" r="78%"><stop offset="0" stop-color="#17111f"/><stop offset=".55" stop-color="#09070d"/><stop offset="1" stop-color="#040406"/></radialGradient>
+  <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8d6de"/><stop offset=".5" stop-color="#8d8997"/><stop offset="1" stop-color="#4c4855"/></linearGradient>
+  <linearGradient id="muscle" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c968ff"/><stop offset=".45" stop-color="#8f28ff"/><stop offset="1" stop-color="#5c09d6"/></linearGradient>
+  <linearGradient id="secondary" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8a0ff"/><stop offset="1" stop-color="#9443c9"/></linearGradient>
+  <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="soft"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#8b20ff" flood-opacity=".24"/></filter>
+</defs>
+<rect width="960" height="560" rx="30" fill="url(#bg)"/>
+<g opacity=".22" stroke="#7c2cff" fill="none"><path d="M20 455H940"/><path d="M480 42V500"/></g>
+
+<!-- FRONT FIGURE -->
+<g transform="translate(120 34)" filter="url(#soft)">
+  <ellipse cx="220" cy="53" rx="39" ry="47" fill="url(#skin)"/>
+  <path d="M191 91c-12 14-19 33-18 54l8 82-35 99 25 15 46-88 3-52h1l3 52 46 88 25-15-35-99 8-82c1-21-6-40-18-54-17 10-52 10-69 0z" fill="url(#skin)"/>
+  <path d="M167 137c-28 2-47 20-56 51l-22 101 28 7 33-91 31-29z" fill="url(#skin)"/>
+  <path d="M273 137c28 2 47 20 56 51l22 101-28 7-33-91-31-29z" fill="url(#skin)"/>
+  <path d="M177 322l-24 156 34 2 32-132h2l32 132 34-2-24-156-43 12z" fill="url(#skin)"/>
+  <!-- muscle segmentation -->
+  <g stroke="#57525f" stroke-width="3" fill="none" opacity=".9">
+    <path d="M220 99v226"/><path d="M182 185c19 12 57 12 76 0"/><path d="M182 213c20 10 56 10 76 0"/>
+    <path d="M190 242h60M193 266h54M197 290h46"/>
+    <path d="M161 166l-18 53m136-53 18 53"/><path d="M191 335l-13 115m71-115 13 115"/>
+  </g>
+  <!-- primary chest -->
+  <path d="M181 129c12-21 29-28 39-23v72c-23 9-47 0-57-19 1-10 7-22 18-30z" fill="url(#muscle)" stroke="#e7bfff" stroke-width="2.5" filter="url(#glow)"/>
+  <path d="M259 129c-12-21-29-28-39-23v72c23 9 47 0 57-19-1-10-7-22-18-30z" fill="url(#muscle)" stroke="#e7bfff" stroke-width="2.5" filter="url(#glow)"/>
+  <path d="M178 156c18 15 34 18 42 17m42-17c-18 15-34 18-42 17" fill="none" stroke="#f2d7ff" stroke-width="2" opacity=".7"/>
+  <!-- anterior delts -->
+  <path d="M159 133c-18 4-33 19-37 38 8 10 20 13 31 7l22-28c0-8-6-14-16-17z" fill="url(#secondary)" stroke="#dfb0ff" stroke-width="2"/>
+  <path d="M281 133c18 4 33 19 37 38-8 10-20 13-31 7l-22-28c0-8 6-14 16-17z" fill="url(#secondary)" stroke="#dfb0ff" stroke-width="2"/>
+  <!-- triceps visible from front/side -->
+  <path d="M121 178c-8 20-11 41-12 65l17 6 18-54-5-23z" fill="#9b59c7" opacity=".9"/>
+  <path d="M319 178c8 20 11 41 12 65l-17 6-18-54 5-23z" fill="#9b59c7" opacity=".9"/>
+  <text x="220" y="520" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="25" font-weight="700">FRONT</text>
+</g>
+
+<!-- BACK FIGURE -->
+<g transform="translate(520 34)" filter="url(#soft)">
+  <ellipse cx="220" cy="53" rx="39" ry="47" fill="url(#skin)"/>
+  <path d="M191 91c-12 14-19 33-18 54l8 82-35 99 25 15 46-88 3-52h1l3 52 46 88 25-15-35-99 8-82c1-21-6-40-18-54-17 10-52 10-69 0z" fill="url(#skin)"/>
+  <path d="M167 137c-28 2-47 20-56 51l-22 101 28 7 33-91 31-29z" fill="url(#skin)"/>
+  <path d="M273 137c28 2 47 20 56 51l22 101-28 7-33-91-31-29z" fill="url(#skin)"/>
+  <path d="M177 322l-24 156 34 2 32-132h2l32 132 34-2-24-156-43 12z" fill="url(#skin)"/>
+  <g stroke="#57525f" stroke-width="3" fill="none" opacity=".92">
+    <path d="M220 98v228"/><path d="M181 154c19 14 59 14 78 0"/><path d="M176 197c22-14 66-14 88 0"/>
+    <path d="M182 233c26-10 50-10 76 0"/><path d="M190 270c20-5 40-5 60 0"/>
+    <path d="M191 335l-13 115m71-115 13 115"/>
+  </g>
+  <!-- rear/side shoulder secondary -->
+  <path d="M159 133c-18 4-33 19-37 38 8 10 20 13 31 7l22-28c0-8-6-14-16-17z" fill="url(#secondary)" stroke="#dfb0ff" stroke-width="2"/>
+  <path d="M281 133c18 4 33 19 37 38-8 10-20 13-31 7l-22-28c0-8 6-14 16-17z" fill="url(#secondary)" stroke="#dfb0ff" stroke-width="2"/>
+  <!-- triceps secondary -->
+  <path d="M121 176c-10 23-13 51-11 75l18 7 18-63-6-25z" fill="url(#secondary)" stroke="#dfb0ff" stroke-width="2"/>
+  <path d="M319 176c10 23 13 51 11 75l-18 7-18-63 6-25z" fill="url(#secondary)" stroke="#dfb0ff" stroke-width="2"/>
+  <!-- subtle back muscle contours -->
+  <path d="M190 125c10 18 15 34 15 52l-24 37 7 68M250 125c-10 18-15 34-15 52l24 37-7 68" fill="none" stroke="#75717c" stroke-width="4" opacity=".85"/>
+  <text x="220" y="520" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="25" font-weight="700">BACK</text>
+</g>
+
+<g transform="translate(270 518)" font-family="Arial,sans-serif" font-size="19" fill="#ddd">
+  <circle cx="0" cy="0" r="9" fill="#922cff" filter="url(#glow)"/><text x="18" y="6">Primary: Pectorals</text>
+  <circle cx="270" cy="0" r="9" fill="#a463cc"/><text x="288" y="6">Secondary: Deltoids · Triceps</text>
+</g>
+</svg>

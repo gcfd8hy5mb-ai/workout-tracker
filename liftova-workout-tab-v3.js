@@ -41,7 +41,8 @@
     return false;
   }
 
-  function startCanonicalWorkout(item){
+  function startCanonicalWorkout(item=canonicalItem()){
+    if (!item?.ids?.length || typeof openWorkout !== 'function') return false;
     try {
       activeWorkoutKey = 'liftova-reference-upper-body';
       activeWorkoutTitle = 'Upper Body';
@@ -79,15 +80,15 @@
       return legacyStartPrismWorkout?.apply(this, arguments);
     };
 
-    // The reference Home start button previously searched the hidden legacy Home DOM
-    // and could launch the old 3-exercise preset. Capture it first and send it to the
-    // same canonical 8-exercise screen used by the Workout tab.
+    // Home's START WORKOUT is already an explicit start action. Do not make the user
+    // land on the workout-detail screen and press Start a second time. Launch the
+    // canonical eight-exercise active workout immediately.
     document.addEventListener('click', event => {
       const start = event.target.closest?.('#lv3StartWorkout');
       if (start) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        openCanonicalWorkout();
+        startCanonicalWorkout();
         return;
       }
       const back = event.target.closest?.('[data-lv3-back]');

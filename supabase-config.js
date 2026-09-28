@@ -18,8 +18,8 @@ window.PRISM_SUPABASE_CONFIG = Object.freeze({
     'liftova-pro.js?v=7',
     'liftova-polish.js?v=7',
     'liftova-reference-v3.js?v=1',
-    'liftova-workout-tab-v3.js?v=1',
-    'liftova-anatomy-v4.js?v=2',
+    'liftova-workout-tab-v3.js?v=2',
+    'liftova-anatomy-v4.js?v=3',
     'liftova-quick-log.js?v=1'
   ]) {
     const script = document.createElement('script');

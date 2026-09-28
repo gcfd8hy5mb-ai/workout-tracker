@@ -32,7 +32,7 @@ function patchRows(){
 }
 function detailPanel(row,id){
   if(id==='machine-chest-press'){
-    return '<div class="lv5-realistic-detail"><img src="images/liftova-chest-anatomy.webp?v=1" alt="Realistic front and back chest press anatomy showing chest as the primary target and triceps and anterior deltoids as secondary targets"></div>';
+    return '<div class="lv5-realistic-detail"><img src="images/liftova-chest-anatomy-realistic.svg?v=1" alt="Detailed front and back chest press anatomy showing pectorals as the primary target and deltoids and triceps as secondary targets"></div>';
   }
   return `<div class="lv5-detail-sprite" style="--row:${row}" role="img" aria-label="Realistic highlighted target-muscle anatomy"></div>`;
 }
