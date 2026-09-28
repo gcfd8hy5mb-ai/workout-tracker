@@ -42,9 +42,11 @@ const manifest = JSON.parse(read('manifest.json'));
 assert.equal(manifest.short_name, 'LIFTOVA');
 assert.match(manifest.name, /^LIFTOVA/);
 assert.equal(manifest.display, 'standalone');
-for (const icon of ['images/app-icon-192.png','images/app-icon-512.png','images/app-icon.png']) {
-  assert.equal(manifest.icons.some(item => item.src === icon), true, `${icon} must be referenced by the manifest`);
-}
+assert.equal(
+  manifest.icons.some(item => item.src === 'images/liftova-icon.svg' && item.type === 'image/svg+xml'),
+  true,
+  'LIFTOVA manifest icon must be present'
+);
 
 const sw = read('sw.js');
 assert.match(sw, /prism-v10\.3-beta40\.6-liftova/, 'LIFTOVA release must advance the compatible cache version');
