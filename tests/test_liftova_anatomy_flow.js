@@ -5,6 +5,7 @@ const anatomy=require('../liftova-anatomy.js');
 const js=fs.readFileSync('liftova-workout-tab-v3.js','utf8');
 const html=fs.readFileSync('index.html','utf8');
 const polish=fs.readFileSync('liftova-polish.js','utf8');
+assert.doesNotMatch(fs.readFileSync('phase-insights.js','utf8'),/^const PRISM_GOAL_NAMES=/m,'the insights script must not redeclare onboarding’s global constant');
 assert.match(polish,/screenObserver\.observe\(screen,\{subtree:true,childList:true\}\)/);
 assert.doesNotMatch(polish,/observe\(document\.(body|documentElement)/);
 const events={};const calls=[];
