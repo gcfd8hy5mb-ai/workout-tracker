@@ -82,7 +82,7 @@ assert.match(polish, /LIFTOVA · Train · Track · Progress/, 'document title mu
 assert.match(polish, /apple-mobile-web-app-title/, 'iOS installed-app title must be rebranded');
 assert.match(polish, /function updateMenuBrand/, 'Navigation drawer must receive explicit LIFTOVA branding');
 assert.match(polish, /#sideMenu\{background:radial-gradient/, 'Navigation drawer must use the LIFTOVA visual system');
-assert.match(polish, /\.prism-bottom-nav\{background:rgba\(7,5,13/, 'Bottom navigation must use the LIFTOVA visual system');
+assert.match(polish, /\.prism-bottom-nav\{[^}]*background:rgba\(7,5,13/, 'Bottom navigation must use the LIFTOVA visual system');
 
 const progressJs = read('liftova-progress.js');
 const progressCss = read('liftova-progress.css');
