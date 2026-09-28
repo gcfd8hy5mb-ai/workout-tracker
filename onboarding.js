@@ -122,7 +122,7 @@ if(window.visualViewport){
 window.visualViewport.addEventListener("resize",prismProfileViewport);
 window.visualViewport.addEventListener("scroll",prismProfileViewport);
 }
-function prismBack(){if(prismJourney.step===0){showPrismWelcome();return}prismJourney.step--;savePrismJourney();renderPrismJourney()}
+function prismBack(){if(prismJourney.origin==="goals"&&prismJourney.step<=1){prismJourney.status="complete";prismJourney.step=6;prismJourney.draft={};delete prismJourney.origin;savePrismJourney();showTrackingGoals();return}if(prismJourney.step===0){showPrismWelcome();return}prismJourney.step--;savePrismJourney();renderPrismJourney()}
 function prismNext(){
 const step=prismJourney.step,d=prismJourney.draft,error=document.getElementById("journeyError");
 if(step===0){const name=document.getElementById("journey-name")?.value.trim();if(!name||name.length>40){error.textContent="Enter a display name (up to 40 characters).";return}d.displayName=name;d.units=document.getElementById("journey-profile-units")?.value||"lb";savePrismJourney();if(prismJourney.resumeStep){prismJourney.step=prismJourney.resumeStep;delete prismJourney.resumeStep;savePrismJourney();renderPrismJourney();return}}
@@ -239,7 +239,7 @@ tracking.calorieActivity=document.getElementById("goalEditActivity").value;track
 saveTracking();savePrismPhases();showTrackingGoals();
 }
 function showCalorieSettings(){document.getElementById("calorieMode").scrollIntoView({block:"center"});document.getElementById("calorieMode").focus()}
-function startNewPrismGoal(){prismJourney={status:"onboarding",mode:"guest",step:prismProfileName()?1:0,localProfileStepVersion:1,draft:{displayName:prismProfileName(),avatarId:prismLocalProfile.avatarId,units:tracking.preferredWeightUnit||"lb"}};savePrismJourney();renderPrismJourney()}
+function startNewPrismGoal(){prismJourney={status:"onboarding",mode:"guest",origin:"goals",step:prismProfileName()?1:0,localProfileStepVersion:1,draft:{displayName:prismProfileName(),avatarId:prismLocalProfile.avatarId,units:tracking.preferredWeightUnit||"lb"}};savePrismJourney();renderPrismJourney()}
 function prismGoalReviewDue(){const phase=prismActivePhase();return phase&&localDay()>=phase.endDate&&prismJourney.reviewSnoozedDay!==localDay()&&!readPrismActiveWorkout()}
 function showPrismGoalReview(){
 const phase=prismActivePhase();if(!phase)return;

@@ -257,8 +257,8 @@
     const isLower=/lower|leg/i.test(title);
     const subtitle=isLower?'QUADS · HAMSTRINGS · GLUTES · CALVES':'CHEST · BACK · SHOULDERS · ARMS';
     area.innerHTML=`
-      <div class="lv3-detail-top"><button data-lv3-back>${icon('back')}</button><div><h2>${escapeHTML(title)}</h2><p>${subtitle}</p></div><button>${icon('more')}</button></div>
-      <div class="lv3-tabs" role="tablist"><button>OVERVIEW</button><button class="active">EXERCISES</button><button data-lv3-log>LOG</button><button data-lv3-history>HISTORY</button></div>
+      <div class="lv3-detail-top"><button data-lv3-back>${icon('back')}</button><div><h2>${escapeHTML(title)}</h2><p>${subtitle}</p></div><button data-lv3-more aria-label="Open menu">${icon('more')}</button></div>
+      <div class="lv3-tabs" role="tablist"><button data-lv3-overview>OVERVIEW</button><button class="active" data-lv3-exercises>EXERCISES</button><button data-lv3-log>LOG</button><button data-lv3-history>HISTORY</button></div>
       <div class="lv3-workout-metrics"><div>${icon('timer')}<b>45 – 60 min</b><span>Estimated Time</span></div><div>${icon('chart')}<b>${ids.length}</b><span>Exercises</span></div><div>${icon('target')}<b>Hypertrophy</b><span>Goal</span></div><div>${icon('dumbbell')}<b>${isLower?'Lower':'Upper'}</b><span>Focus</span></div></div>
       <div class="lv3-exercise-list">${ids.map((id,index)=>{
         const ex=getEx(id),scheme=setScheme(ex),primary=primaryLabel(ex),secondary=secondaryMuscles(ex);
@@ -267,6 +267,8 @@
       <button class="lv3-start-workout" id="lv3DetailStart">▶ <b>START WORKOUT</b></button>`;
     const screen=qs('#workoutDetailScreen');screen?.classList.add('lv3-workout-detail');
     qs('[data-lv3-back]',area)?.addEventListener('click',()=>window.showWorkouts?.());
+    qs('[data-lv3-more]',area)?.addEventListener('click',()=>qs('#menuToggle')?.click());
+    for(const [button,target] of [['overview','.lv3-workout-metrics'],['exercises','.lv3-exercise-list']])qs(`[data-lv3-${button}]`,area)?.addEventListener('click',()=>{qsa('.lv3-tabs button',area).forEach(b=>b.classList.toggle('active',b.dataset[`lv3${button[0].toUpperCase()+button.slice(1)}`]!==undefined));qs(target,area)?.scrollIntoView({block:'start',behavior:'smooth'})});
     qsa('[data-exercise-id]',area).forEach(btn=>btn.addEventListener('click',()=>window.showExerciseInfo?.(btn.dataset.exerciseId,'workoutDetailScreen')));
     qs('#lv3DetailStart',area)?.addEventListener('click',()=>window.startPrismWorkout?.(item));
     qs('[data-lv3-log]',area)?.addEventListener('click',()=>window.showGlobalHistory?.());
@@ -293,7 +295,7 @@
     const min=Math.min(...chartPoints.map(x=>x.best)),max=Math.max(...chartPoints.map(x=>x.best));
     const coords=chartPoints.map((x,i)=>`${10+i*(280/Math.max(1,chartPoints.length-1))},${110-((x.best-min)/Math.max(1,max-min))*80}`).join(' ');
     area.innerHTML=`
-      <div class="lv3-exercise-top"><button data-ex-back>${icon('back')}</button><h2>${escapeHTML(displayName(ex))}</h2><button>${icon('more')}</button></div>
+      <div class="lv3-exercise-top"><button data-ex-back>${icon('back')}</button><h2>${escapeHTML(displayName(ex))}</h2><button data-ex-more aria-label="Open menu">${icon('more')}</button></div>
       <div class="lv3-tabs lv3-ex-tabs" role="tablist"><button class="active" data-tab="overview">OVERVIEW</button><button data-tab="howto">HOW TO</button><button data-tab="muscles">MUSCLES</button><button data-tab="history">HISTORY</button></div>
       <section class="lv3-ex-panel active" data-panel="overview">${ex.image?`<img class="lv3-detail-photo" src="${escapeHTML(ex.image)}" alt="${escapeHTML(displayName(ex))}">`:''}<div class="lv3-ex-name"><h3>${escapeHTML(displayName(ex))}</h3><div class="lv3-muscle-chips"><i>${escapeHTML(primary)}</i>${secondary.map(m=>`<em>${escapeHTML(m)}</em>`).join('')}</div></div><div class="lv3-target-title">TARGET MUSCLES</div>${anatomy(ex,'large')}<button class="lv3-add-workout">▶ ADD TO WORKOUT</button></section>
       <section class="lv3-ex-panel" data-panel="howto"><div class="lv3-howto-list">${steps.map((s,i)=>`<article><b>${i+1}</b>${ex.image?`<img src="${escapeHTML(ex.image)}" alt="Step ${i+1}">`:''}<div><h3>${escapeHTML(s[0])}</h3><p>${escapeHTML(s[1])}</p></div></article>`).join('')}</div></section>
@@ -301,13 +303,14 @@
       <section class="lv3-ex-panel" data-panel="history"><div class="lv3-history-card"><header><b>PERFORMANCE HISTORY</b><span>● Weight (lbs)</span></header><svg viewBox="0 0 300 130" preserveAspectRatio="none"><g class="grid"><path d="M10 30H290M10 56H290M10 82H290M10 108H290"/></g><polyline points="${coords}"/><g>${chartPoints.map((x,i)=>`<circle cx="${10+i*(280/Math.max(1,chartPoints.length-1))}" cy="${110-((x.best-min)/Math.max(1,max-min))*80}" r="3"/>`).join('')}</g></svg><div class="lv3-chart-labels">${chartPoints.map(x=>`<span>${x.d.getMonth()+1}/${x.d.getDate()}</span>`).join('')}</div></div></section>`;
     const screen=qs('#exerciseInfoScreen');screen?.classList.add('lv3-exercise-info');
     qs('[data-ex-back]',area)?.addEventListener('click',()=>window.returnFromExerciseInfo?.());
+    qs('[data-ex-more]',area)?.addEventListener('click',()=>qs('#menuToggle')?.click());
     qsa('[data-tab]',area).forEach(btn=>btn.addEventListener('click',()=>{
       qsa('[data-tab]',area).forEach(b=>b.classList.toggle('active',b===btn));
       qsa('[data-panel]',area).forEach(p=>p.classList.toggle('active',p.dataset.panel===btn.dataset.tab));
     }));
     qs('.lv3-add-workout',area)?.addEventListener('click',()=>{
       if(returnTo==='workoutDetailScreen'||returnTo==='workoutScreen')window.returnFromExerciseInfo?.();
-      else window.showBuilder?.();
+      else {window.showBuilder?.();if(!qs('#builderScreen')?.classList.contains('hidden'))window.addBuilderExercise?.(ex.id)}
     });
   }
 
@@ -316,8 +319,11 @@
     let top=qs('.lv3-progress-top',screen);
     if(!top){
       top=document.createElement('div');top.className='lv3-progress-top';
-      top.innerHTML=`<h2>PROGRESS</h2><button>${icon('more')}</button><div class="lv3-tabs"><button class="active">OVERVIEW</button><button>STRENGTH</button><button>VOLUME</button><button>BODY STATS</button></div>`;
+      top.innerHTML=`<h2>PROGRESS</h2><button data-lv3-more aria-label="Open menu">${icon('more')}</button><div class="lv3-tabs"><button class="active" data-progress-target="overview">OVERVIEW</button><button data-progress-target="strength">STRENGTH</button><button data-progress-target="volume">VOLUME</button><button data-progress-target="body">BODY STATS</button></div>`;
       screen.prepend(top);
+      qs('[data-lv3-more]',top)?.addEventListener('click',()=>qs('#menuToggle')?.click());
+      const targets={overview:'.prism-segments',strength:'#exerciseTrendVisual',volume:'#prismAdvancedAnalytics',body:'#prismMeasurements'};
+      qsa('[data-progress-target]',top).forEach(button=>button.addEventListener('click',()=>{qsa('[data-progress-target]',top).forEach(b=>b.classList.toggle('active',b===button));(qs(targets[button.dataset.progressTarget],screen)||qs(button.dataset.progressTarget==='body'?'.progress-links':'#prismPeriodStats',screen))?.scrollIntoView({block:'start',behavior:'smooth'})}));
     }
     screen.classList.add('lv3-progress-screen');
   }
