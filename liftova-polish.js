@@ -106,6 +106,35 @@
   function run(){ updateMetadata(); addStyle(); cleanNode(); updateHeaderBrand(); updateMenuBrand(); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run,{once:true}); else run();
 
+  // Watch only the active screen. New cards and async results can arrive after
+  // navigation; clean just those added nodes instead of rescanning the app.
+  let screenObserver;
+  function watchScreen(id){
+    screenObserver?.disconnect();
+    const screen=document.getElementById(id);
+    if(!screen)return;
+    screenObserver=new MutationObserver(records=>{
+      for(const record of records)for(const node of record.addedNodes){
+        if(node.nodeType===Node.TEXT_NODE)node.nodeValue=replaceBrand(node.nodeValue);
+        else if(node.nodeType===Node.ELEMENT_NODE)cleanNode(node);
+      }
+    });
+    screenObserver.observe(screen,{subtree:true,childList:true});
+    requestAnimationFrame(()=>cleanNode(screen));
+  }
+  const originalShowScreen=window.showScreen;
+  if(typeof originalShowScreen==='function'&&!originalShowScreen.__liftovaBrand){
+    const brandedShowScreen=function(id){
+      const result=originalShowScreen.apply(this,arguments);
+      watchScreen(id);
+      return result;
+    };
+    brandedShowScreen.__liftovaBrand=true;
+    window.showScreen=brandedShowScreen;
+  }
+  const visibleScreen=[...document.querySelectorAll('.container > section[id],main > section[id]')].find(el=>!el.classList.contains('hidden'));
+  if(visibleScreen)watchScreen(visibleScreen.id);
+
   // Avoid document-wide mutation observers: they caused iOS freezes on large screens.
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ updateHeaderBrand(); updateMenuBrand(); } });
 })();

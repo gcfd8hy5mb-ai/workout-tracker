@@ -95,22 +95,11 @@
   }
 
   function primaryLabel(ex){
-    const name=String(ex?.name||'').toLowerCase();
-    if(name.includes('incline')&&String(ex?.muscle||'').toLowerCase()==='chest')return 'Upper Chest';
-    return ex?.muscle||'Target';
+    return window.LiftovaAnatomy?.profile(ex).primaryLabels.join(' / ')||ex?.muscle||'Target';
   }
 
   function secondaryMuscles(ex){
-    const n=String(ex?.name||'').toLowerCase();
-    if(n.includes('chest press'))return ['Triceps','Shoulders'];
-    if(n.includes('chest fly')||n.includes('pec deck'))return ['Shoulders'];
-    if(n.includes('pulldown')||n.includes('row'))return ['Biceps'];
-    if(n.includes('shoulder press'))return ['Triceps'];
-    if(n.includes('lateral raise'))return [];
-    if(n.includes('triceps'))return [];
-    if(String(ex?.muscle||'')==='Back')return ['Biceps'];
-    if(String(ex?.muscle||'')==='Chest')return ['Triceps'];
-    return [];
+    return window.LiftovaAnatomy?.profile(ex).secondaryLabels||[];
   }
 
   function setScheme(ex){
@@ -151,18 +140,7 @@
   }
 
   function anatomy(ex,cls=''){
-    let front='',back='';
-    const counts={[ex?.muscle||'Chest']:1};
-    for(const m of secondaryMuscles(ex))counts[m]=1;
-    try{
-      if(typeof window.muscleFigure==='function'){
-        front=window.muscleFigure('Front',counts);
-        back=window.muscleFigure('Back',counts);
-      }else if(typeof window.exerciseMuscleDiagram==='function'){
-        front=window.exerciseMuscleDiagram(ex);back=front;
-      }
-    }catch{}
-    return `<div class="lv3-anatomy ${cls}" aria-label="Target muscle anatomy"><div>${front}</div><div>${back}</div></div>`;
+    return window.LiftovaAnatomy.render(ex,{size:cls==='compact'?'compact':'detail'});
   }
 
   function icon(name){
@@ -317,7 +295,7 @@
     area.innerHTML=`
       <div class="lv3-exercise-top"><button data-ex-back>${icon('back')}</button><h2>${escapeHTML(displayName(ex))}</h2><button>${icon('more')}</button></div>
       <div class="lv3-tabs lv3-ex-tabs" role="tablist"><button class="active" data-tab="overview">OVERVIEW</button><button data-tab="howto">HOW TO</button><button data-tab="muscles">MUSCLES</button><button data-tab="history">HISTORY</button></div>
-      <section class="lv3-ex-panel active" data-panel="overview">${ex.image?`<img class="lv3-detail-photo" src="${escapeHTML(ex.image)}" alt="${escapeHTML(displayName(ex))}">`:''}<div class="lv3-ex-name"><h3>${escapeHTML(displayName(ex))}</h3><div class="lv3-muscle-chips"><i>${escapeHTML(primary)}</i>${secondary.map(m=>`<em>${escapeHTML(m)}</em>`).join('')}</div></div><div class="lv3-target-title">TARGET MUSCLES</div>${anatomy(ex,'large')}<div class="lv3-anatomy-legend"><span><i></i>Primary Muscles</span><span><i></i>Secondary Muscles</span></div><button class="lv3-add-workout">▶ ADD TO WORKOUT</button></section>
+      <section class="lv3-ex-panel active" data-panel="overview">${ex.image?`<img class="lv3-detail-photo" src="${escapeHTML(ex.image)}" alt="${escapeHTML(displayName(ex))}">`:''}<div class="lv3-ex-name"><h3>${escapeHTML(displayName(ex))}</h3><div class="lv3-muscle-chips"><i>${escapeHTML(primary)}</i>${secondary.map(m=>`<em>${escapeHTML(m)}</em>`).join('')}</div></div><div class="lv3-target-title">TARGET MUSCLES</div>${anatomy(ex,'large')}<button class="lv3-add-workout">▶ ADD TO WORKOUT</button></section>
       <section class="lv3-ex-panel" data-panel="howto"><div class="lv3-howto-list">${steps.map((s,i)=>`<article><b>${i+1}</b>${ex.image?`<img src="${escapeHTML(ex.image)}" alt="Step ${i+1}">`:''}<div><h3>${escapeHTML(s[0])}</h3><p>${escapeHTML(s[1])}</p></div></article>`).join('')}</div></section>
       <section class="lv3-ex-panel" data-panel="muscles"><div class="lv3-target-title">PRIMARY & SECONDARY MUSCLES</div>${anatomy(ex,'xl')}<div class="lv3-muscle-detail"><h3>${escapeHTML(primary)}</h3><p>The purple highlighted regions are the muscles emphasized by this movement. Secondary muscles assist with control and force production.</p></div></section>
       <section class="lv3-ex-panel" data-panel="history"><div class="lv3-history-card"><header><b>PERFORMANCE HISTORY</b><span>● Weight (lbs)</span></header><svg viewBox="0 0 300 130" preserveAspectRatio="none"><g class="grid"><path d="M10 30H290M10 56H290M10 82H290M10 108H290"/></g><polyline points="${coords}"/><g>${chartPoints.map((x,i)=>`<circle cx="${10+i*(280/Math.max(1,chartPoints.length-1))}" cy="${110-((x.best-min)/Math.max(1,max-min))*80}" r="3"/>`).join('')}</g></svg><div class="lv3-chart-labels">${chartPoints.map(x=>`<span>${x.d.getMonth()+1}/${x.d.getDate()}</span>`).join('')}</div></div></section>`;

@@ -1,0 +1,17 @@
+.liftova-anatomy{position:relative;display:block;overflow:hidden;width:100%;margin:0 auto;border:1px solid rgba(169,83,255,.42);border-radius:18px;background:radial-gradient(ellipse at 50% 31%,rgba(111,38,187,.16),transparent 63%),#08060e;box-shadow:inset 0 0 0 1px rgba(228,185,255,.025),0 18px 38px rgba(0,0,0,.27)}
+.liftova-anatomy svg{display:block;width:100%;height:auto;aspect-ratio:1190/1024;filter:drop-shadow(0 8px 25px rgba(0,0,0,.5))}
+.liftova-anatomy .liftova-muscle{stroke-width:2;stroke-linejoin:round;vector-effect:non-scaling-stroke;mix-blend-mode:screen}
+.liftova-anatomy .liftova-muscle--primary{fill:url(#lv-muscle-primary);fill-opacity:.63;stroke:#d98dff;stroke-opacity:.88;filter:drop-shadow(0 0 9px #9c22ff)}
+.liftova-anatomy .liftova-muscle--secondary{fill:url(#lv-muscle-secondary);fill-opacity:.38;stroke:#b291d0;stroke-opacity:.72;filter:drop-shadow(0 0 4px #75439e)}
+.liftova-anatomy__legend{display:flex;justify-content:center;gap:20px;margin:-9px 0 13px;color:#aaa1b6;font-size:11px;font-weight:700;letter-spacing:.025em}
+.liftova-anatomy__legend span{display:flex;align-items:center;gap:7px}.liftova-anatomy__legend i{width:8px;height:8px;border-radius:50%;background:#b038ff;box-shadow:0 0 9px #9b28f7}.liftova-anatomy__legend span+span i{background:#9274ac;box-shadow:0 0 5px #795095}
+.liftova-anatomy--small{min-width:0;border-radius:11px}.liftova-anatomy--small svg{height:100%;aspect-ratio:auto;min-height:0}
+.lv3-exercise-row .liftova-anatomy{margin:0;max-height:94px;align-self:center}.lv3-exercise-row .liftova-anatomy svg{height:91px}
+#libraryScreen .liftova-anatomy{width:86px;height:86px;margin:0;border-radius:14px}#libraryScreen .liftova-anatomy svg{height:85px}
+#prismExerciseInfo .liftova-anatomy--detail{max-width:640px;margin:12px auto 17px}
+#prismExerciseInfo .prism-info-map .liftova-anatomy{border:0;box-shadow:none;background:transparent}
+.lv3-ex-panel .liftova-anatomy--detail{max-width:610px}
+.prism-detail-hero .liftova-anatomy--small,.prism-detail-list .liftova-anatomy--small{max-width:100px}
+@media(max-width:430px){.lv3-exercise-row .liftova-anatomy{max-height:70px}.lv3-exercise-row .liftova-anatomy svg{height:68px}#libraryScreen .liftova-anatomy{width:74px;height:74px}#libraryScreen .liftova-anatomy svg{height:73px}.liftova-anatomy__legend{margin:0 0 10px}}
+
+.body-pair>.liftova-anatomy{max-width:420px}.body-pair>.liftova-anatomy svg{max-height:none}.exercise-mini-map .liftova-anatomy{width:100%;height:100%;border:0;border-radius:inherit}.exercise-mini-map .liftova-anatomy svg{width:100%;height:100%}.prism-browser-thumb .liftova-anatomy{width:50px;height:54px}.prism-browser-thumb .liftova-anatomy svg{height:54px}.exercise-image-anatomy .liftova-anatomy{max-width:460px}.prism-info-map>.liftova-anatomy{max-width:520px}
