@@ -2,6 +2,28 @@
 
 ## Continuation checkpoint (2026-09-27)
 
+- Release validation continuation (evening): in a newly initialized browser
+  storage context, Account A signed in through the secure PRISM form and
+  restored `Test account 1`, Maintain and its 1,850-calorie target without
+  claiming the disposable guest profile. Its photo UI showed the empty state
+  after the earlier synthetic photo tombstone. This verifies fresh-browser
+  account restore and non-resurrection; a second device that already cached
+  the image before deletion has not been exercised.
+- A private preview-only diagnostic made live requests with Account A's actual
+  access JWT (without displaying or exporting the token). `/auth/v1/user`
+  verified A. A's profile read returned six rows; filtering B's profile
+  returned zero. A's private Storage list returned one object in A's folder;
+  listing B's folder returned zero. Downloading A's known existing exact
+  object path returned HTTP 200; B's exact path returned HTTP 400. An insert
+  forged with B's user ID returned HTTP 403, PostgreSQL code `42501`. These
+  are actual user-session API checks for A; reciprocal B-token denial remains
+  open. The B sign-in attempt returned `Invalid login credentials`; await
+  secure reauthentication before running B's direct checks. No cross-account
+  row or object was created by these denied requests.
+- Separate live SQL tests with `SET LOCAL ROLE authenticated` and each test
+  subject also saw six own profile rows, zero other profile/photo/Storage rows,
+  and rejected a forged owner insert with `42501`. This supports the policies
+  but does not substitute for the B-token HTTP checks.
 - The owner completed Apple authentication and the owner-private PR #55
   preview became accessible. A disposable guest profile was created there;
   its data was never claimed into either account.
