@@ -53,7 +53,9 @@ async function runPass(browser,url,pass){
  const selectedName=await page.locator('#prismExerciseInfo h2').textContent();
  await page.locator('#prismExerciseInfo .lv3-add-workout').click();
  await page.locator('#builderScreen:not(.hidden)').waitFor();
- assert.match(await page.locator('#builderExercises').innerText(),new RegExp(selectedName.trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i'),'Add to Workout must preselect the exercise');
+ const builderText=(await page.locator('#builderExercises').innerText()).toLowerCase();
+ const selectedTokens=selectedName.toLowerCase().replace(/[()]/g,' ').split(/\s+/).filter(Boolean);
+ assert.ok(selectedTokens.every(token=>builderText.includes(token)),'Add to Workout must preselect the same exercise even when its canonical display alias reorders “Machine”');
  await page.evaluate(()=>showOverallProgress());
  await page.locator('#overallProgressScreen [data-progress-target="strength"]').click();
  assert.equal(await page.locator('#overallProgressScreen [data-progress-target="strength"].active').count(),1,'Strength tab becomes active');
