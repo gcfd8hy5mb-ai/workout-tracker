@@ -1,0 +1,35 @@
+name: Fix iOS install icon
+on:
+  push:
+    branches: [fix-ios-home-icon-clean]
+permissions:
+  contents: write
+jobs:
+  fix-icon-reference:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-ios-home-icon-clean
+      - name: Use raster Apple touch icon and refresh icon manifest
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('images/liftova-icon.svg?v=2\">\n<link rel="icon"', 'images/apple-touch-icon-180.png?v=7\">\n<link rel="icon"', 1)
+          p.write_text(s)
+          m=Path('manifest.json')
+          t=m.read_text().replace('?v=6','?v=7')
+          m.write_text(t)
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html manifest.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Use raster PNG for iOS Home Screen icon"
+            git push origin HEAD:fix-ios-home-icon-clean
+          fi
