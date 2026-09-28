@@ -16,10 +16,32 @@
   listing B's folder returned zero. Downloading A's known existing exact
   object path returned HTTP 200; B's exact path returned HTTP 400. An insert
   forged with B's user ID returned HTTP 403, PostgreSQL code `42501`. These
-  are actual user-session API checks for A; reciprocal B-token denial remains
-  open. The B sign-in attempt returned `Invalid login credentials`; await
-  secure reauthentication before running B's direct checks. No cross-account
-  row or object was created by these denied requests.
+  are actual user-session API checks for A. No cross-account row or object
+  was created by these denied requests.
+- The first B sign-in attempt returned `Invalid login credentials`, but the
+  owner subsequently signed in to the existing `Test account 2` successfully.
+  `/auth/v1/user` verified B's real access JWT. B's own profile read returned
+  six rows and A's returned zero; B listed one own private object and zero
+  A objects. B's own exact-path photo download returned HTTP 200 and A's
+  known exact path returned HTTP 400. B's forged A-owner profile insert
+  returned HTTP 403 / PostgreSQL `42501`, and B's attempt to overwrite A's
+  exact existing object path returned HTTP 400. The requested fresh disposable
+  third test user was not created; the valid existing B session provides the
+  reciprocal ordinary authenticated isolation evidence. Direct B deletion of
+  A's retained synthetic object remains unverified.
+- B's real expired-token refresh rotated its access token and `/auth/v1/user`
+  still verified the same account; app reload retained B's Recomp goal,
+  1,950-calorie target and partially logged Day 4 workout. This tests refresh,
+  session persistence and workout restore, not server-side immediate JWT
+  invalidation after logout. In the newly initialized browser storage
+  context, a disposable local cache entry corresponding to B's existing
+  tombstoned photo was removed by live `photos.restore()`. A fresh synthetic
+  B photo was saved privately, locally removed without a cloud tombstone,
+  and restored from private Storage with matching size and SHA-256. Its
+  active test row/photo must be deleted after validation. This validates
+  empty-cache active restore and cached-photo tombstone application in an
+  isolated browser storage context; an actual second physical device and
+  conflicting account-data deletions have not been exercised.
 - Separate live SQL tests with `SET LOCAL ROLE authenticated` and each test
   subject also saw six own profile rows, zero other profile/photo/Storage rows,
   and rejected a forged owner insert with `42501`. This supports the policies
@@ -65,10 +87,12 @@
   been declared` in `phase-insights.js`, which shares the classic-script scope
   with `onboarding.js`. It predates this account change and the module has
   additional global function overlap; the mobile/console gate remains open.
-- Still open: actual A/B JWT read/write/cross-account denial and private
-  Storage denial; live email confirmation and expired-token refresh/revocation;
-  independent browser/device and installed-PWA restore; offline recovery,
-  legacy import, conflicting remote edits/deletions and iPhone/Android checks.
+- Still open: direct B-token deletion of A's exact Storage object; live email
+  confirmation and post-logout revocation semantics; a physical second-device
+  test and account-data deletion under divergent local state; installed-PWA
+  restore, offline recovery, legacy import, conflicting remote edits and
+  iPhone/Android checks. Classify lower-risk beta follow-ups separately before
+  deciding whether the remaining items block this beta merge.
 
 - Resumed from PR #55 head `236c46c` and main `5a515c6`. Both PR workflows
   completed successfully on this exact head; no previously passing suite was
