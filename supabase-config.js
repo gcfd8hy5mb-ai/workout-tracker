@@ -5,14 +5,9 @@ window.PRISM_SUPABASE_CONFIG = Object.freeze({
   publishableKey: "sb_publishable_yYMnCM3k14zaEtpHo4-xkQ_Cd1Aty90"
 });
 
-// Redesign branch loader. Keeps the proven account/data system intact while the UI is rebuilt.
+// Redesign branch loaders. Keep the proven account/data system intact while the UI is rebuilt.
 (() => {
-  const css = document.createElement('link');
-  css.rel = 'stylesheet';
-  css.href = 'liftova-home.css';
-  document.head.appendChild(css);
-
-  for (const src of ['liftova-onboarding.js','liftova-home.js']) {
+  for (const src of ['liftova-onboarding.js','liftova-home.js','liftova-workouts.js']) {
     const script = document.createElement('script');
     script.src = src;
     script.defer = true;
