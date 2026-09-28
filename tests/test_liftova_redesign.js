@@ -29,11 +29,15 @@ assert.match(accountUi, /cloud\.signIn/, 'Existing Supabase sign-in path must re
 assert.match(accountUi, /cloud\.signUp/, 'Existing Supabase sign-up path must remain wired');
 
 const loader = read('supabase-config.js');
-const loadedRedesignFiles = redesignFiles.filter(file => file !== 'liftova-home.js');
-for (const file of loadedRedesignFiles) {
+for (const file of redesignFiles) {
   assert.match(loader, new RegExp(file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${file} must be loaded`);
 }
-assert.doesNotMatch(loader, /['"]liftova-home\.js(?:\?[^'"]*)?['"]/, 'legacy duplicate Home overlay must not be loaded');
+
+const home = read('liftova-home.js');
+const homeCss = read('liftova-home.css');
+assert.match(home, /className = 'liftova-home-shell'/, 'LIFTOVA Home shell must be mounted');
+assert.doesNotMatch(home, /observer\.observe\(document\.body/, 'Home must not use a document-wide MutationObserver');
+assert.match(homeCss, /#home\.liftova-home>:\not\(\.liftova-home-shell\)/, 'Legacy Home presentation must be hidden behind the LIFTOVA Home shell');
 
 const html = read('index.html');
 for (const screen of ['workoutsScreen','workoutScreen','libraryScreen','overallProgressScreen','profileScreen']) {
@@ -51,7 +55,7 @@ assert.equal(
 );
 
 const sw = read('sw.js');
-assert.match(sw, /prism-v10\.3-beta40\.7-liftova/, 'LIFTOVA release must advance the compatible cache namespace');
+assert.match(sw, /prism-v10\.3-beta40\.7-liftova/, 'LIFTOVA release must retain the compatible cache namespace');
 assert.match(sw, /url\.pathname\.includes\("\/liftova-"\)/, 'LIFTOVA presentation assets must use network-first refresh');
 for (const asset of [
   './images/app-icon-192.png',
