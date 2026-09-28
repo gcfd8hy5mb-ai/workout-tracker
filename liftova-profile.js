@@ -40,11 +40,6 @@
   `;
   document.head.appendChild(style);
 
-  function valueText(id, fallback){
-    const el=document.getElementById(id);
-    return el && 'value' in el && el.value ? el.value : fallback;
-  }
-
   function buildHero(){
     const screen=document.getElementById('profileScreen');
     if(!screen || screen.querySelector('.liftova-profile-hero')) return;
@@ -63,7 +58,11 @@
     const days=screen.querySelector('#prismEditDays')?.value || (window.workoutGoals?.days ?? '—');
     const level=screen.querySelector('#prismEditLevel')?.value || (window.tracking?.trainingLevel ?? '—');
     const units=screen.querySelector('#prismEditUnits')?.value || (window.tracking?.preferredWeightUnit ?? 'lb');
-    const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=String(val)};
+    const set=(id,val)=>{
+      const el=document.getElementById(id);
+      const next=String(val);
+      if(el && el.textContent!==next) el.textContent=next;
+    };
     set('liftovaProfileDays',days==='—'?'—':`${days}`);
     set('liftovaProfileLevel',level);
     set('liftovaProfileUnits',String(units).toUpperCase());
@@ -73,15 +72,24 @@
   if(typeof originalShowProfile==='function'){
     window.showProfile=function(){
       const result=originalShowProfile.apply(this,arguments);
-      setTimeout(refreshHero,0);
+      requestAnimationFrame(refreshHero);
       return result;
     };
   }
 
-  const observer=new MutationObserver(()=>{
+  const boot=()=>{
     const screen=document.getElementById('profileScreen');
-    if(screen && !screen.classList.contains('hidden')) refreshHero();
-  });
-  observer.observe(document.documentElement,{subtree:true,childList:true});
-  setTimeout(refreshHero,0);
+    if(!screen) return;
+    // Only react to this screen becoming visible. A document-wide childList observer
+    // created a feedback loop because refreshHero itself updated text nodes on iOS.
+    new MutationObserver(()=>{
+      if(!screen.classList.contains('hidden')) requestAnimationFrame(refreshHero);
+    }).observe(screen,{attributes:true,attributeFilter:['class']});
+    screen.addEventListener('input',refreshHero);
+    screen.addEventListener('change',refreshHero);
+    refreshHero();
+  };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
+  else boot();
 })();
