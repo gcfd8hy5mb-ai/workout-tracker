@@ -86,12 +86,12 @@ assert.match(polish, /\.prism-bottom-nav\{background:rgba\(7,5,13/, 'Bottom navi
 
 const progressJs = read('liftova-progress.js');
 const progressCss = read('liftova-progress.css');
-assert.match(progressJs, /liftova-progress\.css\?v=5/, 'Progress styles must be cache-busted');
+assert.match(progressJs, /liftova-progress\.css\?v=6/, 'Progress styles must be cache-busted');
 assert.match(progressCss, /#overallProgressScreen\{position:relative;color:#f8f5ff!important/, 'Progress screen must use canonical dark LIFTOVA styling');
-assert.match(progressCss, /background:linear-gradient\(135deg,#6822e1,#a044ff\)/, 'Progress period control must use LIFTOVA purple treatment');
+assert.match(progressCss, /background:#6424d0!important/, 'Progress period control must use LIFTOVA purple treatment');
 
 const profile = read('liftova-profile.js');
 assert.doesNotMatch(profile, /observe\(document\.documentElement,\{subtree:true,childList:true\}\)/, 'Profile must not observe the whole document');
-assert.match(profile, /el\.textContent!==next/, 'Profile summary updates must be idempotent');
+assert.match(profile, /el&&el\.textContent!==next/, 'Profile summary updates must be idempotent');
 
 console.log('LIFTOVA redesign pre-merge smoke checks: OK');
