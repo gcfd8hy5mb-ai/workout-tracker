@@ -1,6 +1,14 @@
-// PRISM Supabase public browser configuration.
+// LIFTOVA Supabase public browser configuration.
 // The publishable key is safe for client-side use. Never place a secret/service-role key here.
 window.PRISM_SUPABASE_CONFIG = Object.freeze({
   url: "https://kirlpjflaoriiusfamsk.supabase.co",
   publishableKey: "sb_publishable_yYMnCM3k14zaEtpHo4-xkQ_Cd1Aty90"
 });
+
+// Redesign branch loader. Keeps the proven account/data system intact while the UI is rebuilt.
+(() => {
+  const script = document.createElement('script');
+  script.src = 'liftova-onboarding.js';
+  script.defer = true;
+  document.head.appendChild(script);
+})();
