@@ -8,6 +8,7 @@
   "background_color": "#07050d",
   "theme_color": "#07050d",
   "icons": [
+    {"src": "images/apple-touch-icon-180.png?v=4", "sizes": "180x180", "type": "image/png", "purpose": "any"},
     {"src": "images/liftova-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
   ]
 }

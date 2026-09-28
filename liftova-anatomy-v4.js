@@ -1,13 +1,79 @@
-// LIFTOVA anatomical target overlay — detailed, exercise-specific, observer-free.
+// LIFTOVA exact-reference visual layer — observer-free.
 (() => {
 'use strict';
-const map={'machine-chest-press':{primary:['chest'],secondary:['triceps','front-delts']},'incline-chest-press':{primary:['upper-chest'],secondary:['triceps','front-delts']},'pec-deck':{primary:['chest'],secondary:['front-delts']},'lat-pulldown':{primary:['lats'],secondary:['biceps','rear-delts']},'seated-row':{primary:['mid-back','lats'],secondary:['biceps','rear-delts']},'shoulder-press':{primary:['delts'],secondary:['triceps','upper-chest']},'lateral-raise':{primary:['side-delts'],secondary:['traps']},'triceps-pushdown':{primary:['triceps'],secondary:[]}};
-const active=(s,n)=>s.primary.includes(n)?' primary':s.secondary.includes(n)?' secondary':'';
-function figure(s,side){const a=n=>active(s,n),back=side==='back';return `<svg class="lv4-body" viewBox="0 0 180 330" role="img" aria-label="${back?'Back':'Front'} anatomical muscle map"><defs><linearGradient id="lv4skin" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d9d9df"/><stop offset=".48" stop-color="#74737c"/><stop offset="1" stop-color="#292932"/></linearGradient><radialGradient id="lv4muscle"><stop stop-color="#e7b0ff"/><stop offset=".38" stop-color="#bd4cff"/><stop offset="1" stop-color="#6814d9"/></radialGradient></defs><g class="base"><ellipse cx="90" cy="30" rx="24" ry="29"/><path d="M73 57Q90 69 107 57L116 82 139 96 151 146 143 190 124 181 116 137 111 188 120 239 109 315 91 315 88 240 72 315 53 315 61 239 69 188 64 137 56 181 37 190 29 146 41 96 64 82Z"/></g>${back?`<g class="muscles"><path class="m traps${a('traps')}" d="M68 66 90 58 112 66 103 99 90 89 77 99Z"/><path class="m rear-delts${a('rear-delts')}" d="M57 86Q42 88 39 106L58 113 70 96Z"/><path class="m rear-delts${a('rear-delts')}" d="M123 86Q138 88 141 106L122 113 110 96Z"/><path class="m lats${a('lats')}" d="M66 100Q53 112 57 158L77 179 87 115Z"/><path class="m lats${a('lats')}" d="M114 100Q127 112 123 158L103 179 93 115Z"/><path class="m mid-back${a('mid-back')}" d="M78 98 90 88 102 98 100 160 90 176 80 160Z"/><path class="m triceps${a('triceps')}" d="M42 112 58 115 55 157 42 165Z"/><path class="m triceps${a('triceps')}" d="M138 112 122 115 125 157 138 165Z"/></g>`:`<g class="muscles"><path class="m upper-chest${a('upper-chest')} chest${a('chest')}" d="M67 82Q77 68 89 78L88 105Q72 103 61 94Z"/><path class="m upper-chest${a('upper-chest')} chest${a('chest')}" d="M113 82Q103 68 91 78L92 105Q108 103 119 94Z"/><path class="m chest${a('chest')}" d="M61 95Q73 105 88 107L86 129Q68 130 58 116Z"/><path class="m chest${a('chest')}" d="M119 95Q107 105 92 107L94 129Q112 130 122 116Z"/><path class="m delts${a('delts')} front-delts${a('front-delts')} side-delts${a('side-delts')}" d="M57 83Q42 84 39 105L58 112 70 95Z"/><path class="m delts${a('delts')} front-delts${a('front-delts')} side-delts${a('side-delts')}" d="M123 83Q138 84 141 105L122 112 110 95Z"/><path class="m biceps${a('biceps')}" d="M42 112 58 114 55 151 43 158Z"/><path class="m biceps${a('biceps')}" d="M138 112 122 114 125 151 137 158Z"/><path class="m triceps${a('triceps')}" d="M38 116 44 116 42 161 34 166Z"/><path class="m triceps${a('triceps')}" d="M142 116 136 116 138 161 146 166Z"/></g>`}<g class="detail"><path d="M90 60v180M69 132l-8 107M111 132l8 107M61 239l27 1 31-1"/><path d="M74 139q16 12 32 0M72 158q18 11 36 0M70 178q20 10 40 0"/></g></svg>`;}
-const html=(s,large=false)=>`<div class="lv4-anatomy ${large?'large':''}"><figure>${figure(s,'front')}<figcaption>Front</figcaption></figure><figure>${figure(s,'back')}<figcaption>Back</figcaption></figure></div>`;
-function rows(){document.querySelectorAll('.lv3-exercise-row[data-exercise-id]').forEach(r=>{const s=map[r.dataset.exerciseId],old=r.querySelector('.lv3-anatomy');if(s&&old)old.outerHTML=html(s);});}
-function detail(id){const s=map[String(id||'').replace(/[^a-z0-9-]/gi,'')];if(!s)return;document.querySelectorAll('#prismExerciseInfo .lv3-anatomy.large,#prismExerciseInfo .lv3-anatomy.xl').forEach(old=>old.outerHTML=html(s,true));}
-function patch(n,after){const f=window[n];if(typeof f!=='function'||f.__lv4)return;const w=function(...a){const r=f.apply(this,a);requestAnimationFrame(()=>after(...a));return r};w.__lv4=true;window[n]=w;}
-function install(){if(!document.querySelector('link[data-lv4-anatomy]')){const l=document.createElement('link');l.rel='stylesheet';l.href='liftova-anatomy-v4.css?v=1';l.dataset.lv4Anatomy='true';document.head.appendChild(l);}patch('showPrismWorkoutDetail',rows);patch('showExerciseInfo',detail);requestAnimationFrame(rows);}
+const rows={
+  'machine-chest-press':0,
+  'incline-chest-press':1,
+  'pec-deck':2,
+  'lat-pulldown':3,
+  'seated-row':4,
+  'shoulder-press':5,
+  'lateral-raise':6,
+  'triceps-pushdown':7
+};
+const clean=id=>String(id||'').toLowerCase().replace(/[^a-z0-9-]/g,'');
+function sprite(el,row,kind){
+  if(!el)return;
+  el.replaceChildren();
+  el.classList.remove('lv4-anatomy','large','xl');
+  el.classList.add(kind==='photo'?'lv5-photo-sprite':'lv5-anatomy-sprite');
+  el.style.setProperty('--row',String(row));
+  el.setAttribute('aria-label',kind==='photo'?'Exercise demonstration':'Highlighted target muscles');
+}
+function patchRows(){
+  document.querySelectorAll('#prismWorkoutDetail .lv3-exercise-row[data-exercise-id]').forEach(card=>{
+    const id=clean(card.dataset.exerciseId),row=rows[id];
+    if(row===undefined)return;
+    const photo=card.querySelector('.lv3-ex-photo');
+    sprite(photo,row,'photo');
+    const anatomy=card.querySelector('.lv3-anatomy,.lv4-anatomy,.lv5-anatomy-sprite');
+    if(anatomy)sprite(anatomy,row,'anatomy');
+  });
+}
+function detailPanel(row,id){
+  if(id==='machine-chest-press'){
+    return '<div class="lv5-realistic-detail"><img src="images/liftova-chest-anatomy.webp?v=1" alt="Realistic front and back chest press anatomy showing chest as the primary target and triceps and anterior deltoids as secondary targets"></div>';
+  }
+  return `<div class="lv5-detail-sprite" style="--row:${row}" role="img" aria-label="Realistic highlighted target-muscle anatomy"></div>`;
+}
+function patchDetail(id){
+  id=clean(id); const row=rows[id]; if(row===undefined)return;
+  const root=document.querySelector('#prismExerciseInfo'); if(!root)return;
+  if(id==='machine-chest-press'){
+    root.querySelectorAll('.lv3-detail-photo').forEach(img=>{
+      img.src='images/liftova-chest-press-detail.webp?v=1';
+      img.alt='Chest Press machine start and finish positions';
+      img.classList.add('lv5-exact-detail-photo');
+    });
+  }
+  root.querySelectorAll('.lv3-anatomy.large,.lv3-anatomy.xl,.lv4-anatomy.large,.lv4-anatomy.xl,.lv5-detail-sprite,.lv5-realistic-detail').forEach(old=>{
+    const box=document.createElement('div');
+    box.innerHTML=detailPanel(row,id);
+    old.replaceWith(box.firstElementChild);
+  });
+}
+function updateInstallBrand(){
+  document.title='LIFTOVA · Train · Track · Progress';
+  const title=document.querySelector('meta[name="apple-mobile-web-app-title"]'); if(title)title.content='LIFTOVA';
+  let apple=document.querySelector('link[rel="apple-touch-icon"]');
+  if(!apple){apple=document.createElement('link');apple.rel='apple-touch-icon';document.head.appendChild(apple);}
+  apple.setAttribute('sizes','180x180');
+  apple.href='images/apple-touch-icon-180.png?v=4';
+}
+function wrap(name,after){
+  const fn=window[name]; if(typeof fn!=='function'||fn.__lv5Exact)return false;
+  const wrapped=function(...args){const out=fn.apply(this,args);requestAnimationFrame(()=>after(...args));return out;};
+  wrapped.__lv5Exact=true; wrapped.__lv5Original=fn; window[name]=wrapped; return true;
+}
+let tries=0;
+function install(){
+  updateInstallBrand();
+  if(!document.querySelector('link[data-lv5-exact]')){
+    const l=document.createElement('link');l.rel='stylesheet';l.href='liftova-anatomy-v4.css?v=2';l.dataset.lv5Exact='true';document.head.appendChild(l);
+  }
+  const a=wrap('showPrismWorkoutDetail',patchRows),b=wrap('showExerciseInfo',patchDetail);
+  requestAnimationFrame(()=>{patchRows();const active=document.querySelector('#prismExerciseInfo .lv3-ex-tabs');if(active){const heading=document.querySelector('#prismExerciseInfo h2');const match=[...document.querySelectorAll('#prismWorkoutDetail [data-exercise-id]')].find(x=>(x.textContent||'').includes(heading?.textContent||''));if(match)patchDetail(match.dataset.exerciseId);}});
+  if((!a||!b)&&tries++<18)setTimeout(install,120);
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
