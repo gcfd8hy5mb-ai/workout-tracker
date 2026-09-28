@@ -51,11 +51,16 @@ assert.equal(manifest.display, 'standalone');
 assert.equal(
   manifest.icons.some(item => item.src === 'images/liftova-icon.svg' && item.type === 'image/svg+xml'),
   true,
-  'LIFTOVA manifest icon must be present'
+  'LIFTOVA manifest SVG icon must be present'
+);
+assert.equal(
+  manifest.icons.some(item => item.src === 'images/apple-touch-icon-180.png?v=4' && item.type === 'image/png'),
+  true,
+  'Updated LIFTOVA PNG install icon must be present'
 );
 
 const sw = read('sw.js');
-assert.match(sw, /prism-v10.3-beta40.8-liftova-anatomy/, 'LIFTOVA release must retain the compatible cache namespace');
+assert.match(sw, /prism-v10\.3-beta40\.9-liftova-exact/, 'LIFTOVA exact-image release must use the new cache namespace');
 assert.match(sw, /url\.pathname\.includes\("\/liftova-"\)/, 'LIFTOVA presentation assets must use network-first refresh');
 for (const asset of [
   './images/app-icon-192.png',
@@ -64,7 +69,10 @@ for (const asset of [
   './images/apple-touch-icon-180.png',
   './images/favicon-32.png',
   './images/liftova-icon.svg',
-  './images/liftova-splash.svg'
+  './images/liftova-splash.svg',
+  './images/liftova-workout-row-sprite.webp',
+  './images/liftova-chest-press-detail.webp',
+  './images/liftova-chest-anatomy.webp'
 ]) {
   assert.match(sw, new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${asset} must be cached or refreshed by the service worker`);
 }
