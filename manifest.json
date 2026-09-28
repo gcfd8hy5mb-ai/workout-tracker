@@ -1,12 +1,12 @@
 {
-  "name": "PRISM · Train · Track · Progress",
-  "short_name": "PRISM",
-  "description": "Performance · Records · Insights · Strength · Metrics",
+  "name": "LIFTOVA · Train · Track · Progress",
+  "short_name": "LIFTOVA",
+  "description": "Premium workout tracking with adaptive training intelligence",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0b111b",
-  "theme_color": "#0b111b",
+  "background_color": "#07050d",
+  "theme_color": "#07050d",
   "icons": [
     {"src": "images/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
     {"src": "images/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
