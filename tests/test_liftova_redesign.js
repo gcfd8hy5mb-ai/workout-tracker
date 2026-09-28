@@ -72,6 +72,15 @@ for (const asset of [
 const polish = read('liftova-polish.js');
 assert.match(polish, /LIFTOVA · Train · Track · Progress/, 'document title must be rebranded');
 assert.match(polish, /apple-mobile-web-app-title/, 'iOS installed-app title must be rebranded');
+assert.match(polish, /function updateMenuBrand/, 'Navigation drawer must receive explicit LIFTOVA branding');
+assert.match(polish, /#sideMenu\{background:radial-gradient/, 'Navigation drawer must use the LIFTOVA visual system');
+assert.match(polish, /\.prism-bottom-nav\{background:rgba\(7,5,13/, 'Bottom navigation must use the LIFTOVA visual system');
+
+const progressJs = read('liftova-progress.js');
+const progressCss = read('liftova-progress.css');
+assert.match(progressJs, /liftova-progress\.css\?v=5/, 'Progress styles must be cache-busted');
+assert.match(progressCss, /#overallProgressScreen\{position:relative;color:#f8f5ff!important/, 'Progress screen must use canonical dark LIFTOVA styling');
+assert.match(progressCss, /background:linear-gradient\(135deg,#6822e1,#a044ff\)/, 'Progress period control must use LIFTOVA purple treatment');
 
 const profile = read('liftova-profile.js');
 assert.doesNotMatch(profile, /observe\(document\.documentElement,\{subtree:true,childList:true\}\)/, 'Profile must not observe the whole document');
