@@ -1,4 +1,4 @@
-const CACHE_NAME = "liftova-home-v12-approved-compact";
+const CACHE_NAME = "liftova-home-v13-functional-qa";
 
 const APP_FILES = [
   "./",
@@ -16,7 +16,7 @@ const APP_FILES = [
   "./persistence/photo-sync.js",
   "./persistence/account-ui.js",
   "./supabase-config.js",
-  "./liftova-home.js?v=10",
+  "./liftova-home.js?v=12",
   "./liftova-home.css?v=8",
   "./liftova-onboarding.js?v=7",
   "./liftova-workouts.js?v=7",

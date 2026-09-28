@@ -46,7 +46,7 @@ assert.match(js, /Adjust the seat/, 'exercise how-to must include step-by-step s
 assert.match(js, /PERFORMANCE HISTORY/, 'exercise detail must include performance history');
 
 // Progress + settings reference layouts.
-assert.match(js, /OVERVIEW<\/button><button>STRENGTH<\/button><button>VOLUME<\/button><button>BODY STATS/, 'Progress must expose the four approved tabs');
+for (const target of ['overview','strength','volume','body']) assert.match(js, new RegExp(`data-progress-target="${target}"`), `Progress must expose the ${target} tab`);
 for (const setting of ['My Profile','Units','Rest Timer','Theme','Notifications']) assert.match(js, new RegExp(setting), `Settings must include ${setting}`);
 
 // iOS stability: no full-document child-list mutation observers in the new reference layer.

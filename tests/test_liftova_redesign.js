@@ -32,10 +32,13 @@ const loader = read('supabase-config.js');
 for (const file of redesignFiles) {
   assert.match(loader, new RegExp(file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${file} must be loaded`);
 }
+assert.match(loader, /liftova-functional-fixes\.js\?v=1/, 'functional QA compatibility fixes must be loaded');
 
 const home = read('liftova-home.js');
 const homeCss = read('liftova-home.css');
 assert.match(home, /className='liftova-home-shell'/, 'LIFTOVA Home shell must be mounted');
+assert.match(home, /data-lh-action="analytics"/, 'Home dashboard analytics cards must be interactive');
+assert.match(home, /function openAnalytics\(/, 'Home dashboard cards must route to Progress');
 assert.doesNotMatch(home, /observer\.observe\(document\.body/, 'Home must not use a document-wide MutationObserver');
 assert.match(homeCss, /#home\.liftova-home>:not\(\.liftova-home-shell\)/, 'Legacy Home presentation must be hidden behind the LIFTOVA Home shell');
 
@@ -55,7 +58,7 @@ assert.equal(
 );
 
 const sw = read('sw.js');
-assert.match(sw, /liftova-home-v12-approved-compact/, 'LIFTOVA compact Home release must use the new cache namespace');
+assert.match(sw, /liftova-home-v13-functional-qa/, 'LIFTOVA functional QA release must use the new cache namespace');
 assert.match(sw, /url\.pathname\.includes\("\/liftova-"\)/, 'LIFTOVA presentation assets must use network-first refresh');
 for (const asset of [
   './images/apple-touch-icon-180.png',
@@ -63,6 +66,10 @@ for (const asset of [
 ]) {
   assert.match(sw, new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${asset} must be cached or refreshed by the service worker`);
 }
+
+const functionalFixes = read('liftova-functional-fixes.js');
+assert.match(functionalFixes, /showWorkoutSummary/, 'completion summary compatibility fix must wrap the legacy renderer');
+assert.match(functionalFixes, /undefined\|NaN/, 'invalid next-target values must be removed');
 
 const polish = read('liftova-polish.js');
 assert.match(polish, /LIFTOVA · Train · Track · Progress/, 'document title must be rebranded');
