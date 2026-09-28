@@ -1,0 +1,42 @@
+/* LIFTOVA active workout + exercise detail presentation layer */
+body:has(#workoutScreen:not(.hidden)),body:has(#exerciseInfoScreen:not(.hidden)){background:#050509!important;color:#fff!important}
+body:has(#workoutScreen:not(.hidden)) header,body:has(#exerciseInfoScreen:not(.hidden)) header{background:rgba(5,5,9,.94)!important;border-bottom-color:#25183d!important}
+#workoutScreen,#exerciseInfoScreen{color:#f8f5ff}
+#workoutScreen>.back,#exerciseInfoScreen>.back{color:#b887ff!important;font-weight:750!important}
+#workoutScreen>h2,#exerciseInfoScreen h2{font-size:30px!important;letter-spacing:-.045em!important;margin:7px 0 14px!important}
+#workoutScreen .workout-progress,#workoutScreen .workout-readiness,#workoutScreen .rest-strip,#workoutScreen .calorie-workout{background:linear-gradient(155deg,rgba(22,16,34,.98),rgba(10,10,17,.98))!important;border:1px solid #3c255d!important;box-shadow:0 14px 40px rgba(0,0,0,.28)!important}
+#workoutScreen .workout-progress .progress-bar{background:#20152f!important}
+#workoutScreen .workout-progress .progress-fill{background:linear-gradient(90deg,#7026f1,#b45cff)!important;box-shadow:0 0 18px rgba(157,70,255,.55)}
+#workoutScreen .workout-readiness strong,#workoutScreen .rest-strip strong{color:#fff!important}
+#workoutScreen .workout-readiness p,#workoutScreen .rest-strip p,#workoutScreen .workout-progress p{color:#aaa2b7!important}
+#workoutScreen .readiness-options button,#workoutScreen .rest-presets button,#workoutScreen .rest-strip button{background:#17121f!important;color:#ddd5e8!important;border:1px solid #3e3150!important;border-radius:12px!important}
+#workoutScreen .readiness-options button[aria-pressed=true],#workoutScreen .rest-presets button[aria-pressed=true]{background:linear-gradient(135deg,#5520b8,#8b3cff)!important;color:#fff!important;border-color:#a45cff!important}
+#workoutScreen .rest-display{color:#c79cff!important;text-shadow:0 0 18px rgba(164,92,255,.45)}
+#workoutScreen .exercise{background:linear-gradient(160deg,#111018,#09090f)!important;border:1px solid #37234e!important;border-radius:24px!important;overflow:hidden!important;box-shadow:0 18px 48px rgba(0,0,0,.34)!important;margin-bottom:18px!important}
+#workoutScreen .exercise-header{padding:15px!important;background:linear-gradient(180deg,rgba(115,39,238,.08),transparent)!important}
+#workoutScreen .exercise-title{font-size:21px!important;font-weight:820!important;color:#fff!important;letter-spacing:-.025em}
+#workoutScreen .muscle,#workoutScreen .badge{background:rgba(124,49,255,.15)!important;border:1px solid rgba(164,92,255,.36)!important;color:#cdaeff!important}
+#workoutScreen .exercise-image{background:radial-gradient(circle at 50% 42%,#231534 0,#0c0b12 72%)!important;border:1px solid #342246!important;border-radius:18px!important;max-height:320px!important;object-fit:contain!important;padding:8px!important}
+#workoutScreen .exercise-mini-map,#workoutScreen .prism-info-map{background:linear-gradient(180deg,#17111f,#0d0b12)!important;border:1px solid #36244a!important;border-radius:18px!important;padding:10px!important}
+#workoutScreen .body-figure svg,#exerciseInfoScreen .body-figure svg{filter:drop-shadow(0 0 7px rgba(151,74,255,.26))}
+#workoutScreen .details{border-top:1px solid #2d203d!important;background:#0a090e!important;padding:0 15px 18px!important}
+#workoutScreen .details p,#workoutScreen .details li{color:#bbb2c7!important}
+#workoutScreen .detail-title{color:#f7f3ff!important}
+#workoutScreen .tracking,#workoutScreen .overload-guide{background:#100d17!important;border:1px solid #342348!important}
+#workoutScreen .picker-button,#workoutScreen .set-done,#workoutScreen .set-clear,#workoutScreen .exercise-tools button{background:#17121f!important;color:#fff!important;border:1px solid #3b2d4b!important}
+#workoutScreen .picker-button{font-size:18px!important;min-height:60px!important}
+#workoutScreen .set-done{background:linear-gradient(135deg,#6823db,#9e46ff)!important;border-color:#aa65ff!important;box-shadow:0 8px 22px rgba(128,43,239,.25)}
+#workoutScreen .set-done[aria-pressed=true]{background:#1b3328!important;border-color:#2f7958!important;color:#bff3d8!important;box-shadow:none}
+#workoutScreen .previous{color:#82798f!important}
+#workoutScreen .goal-preview{color:#c7bbd2!important}
+#workoutScreen .finish-workout{background:linear-gradient(135deg,#6924df,#a347ff)!important;border:1px solid #b26fff!important;border-radius:16px!important;box-shadow:0 12px 30px rgba(125,39,237,.3)!important}
+#exerciseInfoScreen #prismExerciseInfo{max-width:680px;margin:auto}
+#exerciseInfoScreen .small{color:#aaa1b5!important}
+#exerciseInfoScreen .prism-info-photo{width:100%!important;max-height:440px!important;object-fit:contain!important;background:radial-gradient(circle at 50% 40%,#2a173c 0,#09090e 70%)!important;border:1px solid #43285f!important;border-radius:24px!important;padding:12px!important;box-shadow:0 18px 50px rgba(0,0,0,.36)!important}
+#exerciseInfoScreen .prism-info-map{background:linear-gradient(155deg,#15101d,#09090e)!important;border:1px solid #3b2553!important;border-radius:22px!important;padding:14px!important;margin:15px 0!important;box-shadow:0 14px 36px rgba(0,0,0,.3)!important}
+#exerciseInfoScreen .card,#exerciseInfoScreen .prism-instruction-card{background:linear-gradient(155deg,#121019,#0a090e)!important;border:1px solid #352348!important;color:#fff!important;border-radius:22px!important;box-shadow:0 14px 36px rgba(0,0,0,.28)!important}
+#exerciseInfoScreen p,#exerciseInfoScreen li{color:#bbb2c7!important}
+#exerciseInfoScreen h3{color:#f6f1ff!important}
+.liftova-exercise-kicker{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:rgba(134,49,255,.14);border:1px solid rgba(166,93,255,.35);color:#c9a9ff;font-size:11px;font-weight:800;letter-spacing:.08em;margin-bottom:8px}
+.liftova-exercise-kicker:before{content:'✦';font-size:10px}
+@media(max-width:430px){#workoutScreen>h2,#exerciseInfoScreen h2{font-size:27px!important}#workoutScreen .exercise{border-radius:21px!important}}

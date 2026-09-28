@@ -1,0 +1,31 @@
+/* LIFTOVA progress dashboard */
+#overallProgressScreen{position:relative;color:#f8f5ff;padding-bottom:26px}
+#overallProgressScreen:before{content:"";position:absolute;inset:-24px -16px auto;height:230px;z-index:-1;background:radial-gradient(circle at 20% 0,rgba(142,67,255,.32),transparent 48%),radial-gradient(circle at 90% 20%,rgba(89,25,190,.22),transparent 42%)}
+#overallProgressScreen>h2{font-size:31px!important;margin:4px 0 5px!important;letter-spacing:-.04em!important}
+#overallProgressScreen>h2:before{content:"YOUR RESULTS";display:block;margin-bottom:7px;color:#a45cff;font-size:10px;font-weight:850;letter-spacing:.18em}
+#overallProgressScreen>h3{font-size:18px;margin:23px 2px 12px;color:#f5f0ff}
+#overallProgressScreen .prism-segments{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:5px;margin:17px 0 16px;background:rgba(17,13,28,.92);border:1px solid #312247;border-radius:16px;box-shadow:inset 0 1px rgba(255,255,255,.025)}
+#overallProgressScreen .prism-segments button{min-height:43px;border:0;border-radius:12px;background:transparent;color:#888199;font-weight:760}
+#overallProgressScreen .prism-segments button[aria-pressed=true]{background:linear-gradient(135deg,#6320dc,#9641ff);color:#fff;box-shadow:0 7px 20px rgba(120,40,255,.28)}
+#overallProgressScreen .stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 14px}
+#overallProgressScreen .stat-card{min-height:105px;padding:17px;border:1px solid #2f2542!important;border-radius:20px!important;background:linear-gradient(155deg,rgba(24,19,36,.97),rgba(12,10,20,.98))!important;box-shadow:0 14px 34px rgba(0,0,0,.26)!important}
+#overallProgressScreen .stat-number{font-size:29px!important;font-weight:850!important;color:#fff!important;letter-spacing:-.045em}
+#overallProgressScreen .stat-label{margin-top:6px!important;color:#9d96aa!important;font-size:11px!important;font-weight:690;letter-spacing:.04em;text-transform:uppercase}
+#overallProgressScreen .card,#overallProgressScreen .progress-exercise{border:1px solid #302541!important;border-radius:22px!important;background:linear-gradient(150deg,rgba(24,19,37,.96),rgba(11,10,18,.98))!important;color:#fff!important;box-shadow:0 16px 38px rgba(0,0,0,.26)!important}
+#overallProgressScreen .card h3{margin:0 0 15px;color:#fff;font-size:17px}
+#overallProgressScreen .small,#overallProgressScreen .progress-detail{color:#9b94a8!important}
+#overallProgressScreen .progress-name{color:#f7f3ff;font-weight:760}
+#overallProgressScreen .progress-bar{height:7px!important;background:#20192b!important;border-radius:999px!important;overflow:hidden}
+#overallProgressScreen .progress-fill{background:linear-gradient(90deg,#6d22eb,#a65cff)!important;box-shadow:0 0 15px rgba(153,72,255,.45)}
+#overallProgressScreen .prism-volume-row{display:grid;grid-template-columns:1fr auto;gap:7px 12px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.055)}
+#overallProgressScreen .prism-volume-row:last-child{border-bottom:0}
+#overallProgressScreen .prism-volume-row>span:first-child{font-weight:680;color:#e9e4f1}
+#overallProgressScreen .prism-volume-row>span:nth-child(2){font-size:12px;color:#9c94aa}
+#overallProgressScreen .prism-volume-row .progress-bar{grid-column:1/-1;margin:0}
+#overallProgressScreen .progress-links{display:grid!important;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+#overallProgressScreen .progress-links button,#overallProgressScreen button.dashboard-link{min-height:50px;border:1px solid #3b2a53!important;border-radius:15px!important;background:#171221!important;color:#d9caff!important;font-weight:720!important}
+#overallProgressScreen .progress-links button:active{background:#25193a!important}
+.liftova-progress-hero{margin:0 0 15px;padding:20px;border:1px solid rgba(159,78,255,.5);border-radius:24px;background:radial-gradient(circle at 90% 0,rgba(159,78,255,.28),transparent 43%),linear-gradient(145deg,#171022,#0c0911);box-shadow:0 18px 45px rgba(0,0,0,.28)}
+.liftova-progress-hero .eyebrow{color:#a65cff;font-size:10px;font-weight:850;letter-spacing:.18em}
+.liftova-progress-hero strong{display:block;margin-top:8px;font-size:23px;letter-spacing:-.035em}.liftova-progress-hero p{margin:7px 0 0;color:#a8a0b4;font-size:13px;line-height:1.45}
+@media(min-width:620px){#overallProgressScreen .stat-grid{grid-template-columns:repeat(4,1fr)}}
