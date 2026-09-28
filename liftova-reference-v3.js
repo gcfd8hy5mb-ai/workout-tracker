@@ -332,6 +332,12 @@
       qs('[data-setting="profile"]',shell)?.addEventListener('click',()=>{screen.classList.toggle('lv3-settings-expanded');setTimeout(()=>qs('#prismLocalProfile',screen)?.scrollIntoView({behavior:'smooth',block:'start'}),50)});
       qs('[data-setting="units"]',shell)?.addEventListener('click',()=>{screen.classList.add('lv3-settings-expanded');setTimeout(()=>qs('#prismEditUnits',screen)?.scrollIntoView({behavior:'smooth',block:'center'}),50)});
       qs('[data-setting="timer"]',shell)?.addEventListener('click',()=>window.showGlobalTimer?.());
+      qs('[data-setting="theme"]',shell)?.addEventListener('click',()=>window.alert('Dark (Purple) is the current theme. Other themes are not available yet.'));
+      qs('[data-setting="notifications"]',shell)?.addEventListener('click',async()=>{
+        await window.enableRestAlerts?.();
+        window.alert(qs('#workoutRestStatus')?.textContent||'Rest timer alerts are unavailable in this browser.');
+      });
+      qs('.lv3-settings-top>button',shell)?.addEventListener('click',()=>window.openMenu?.());
     }
     screen.classList.add('lv3-settings-screen');
   }
