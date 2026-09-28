@@ -9,7 +9,16 @@ window.PRISM_SUPABASE_CONFIG = Object.freeze({
 // The separate liftova-home overlay is intentionally not loaded because the app's
 // native Home dashboard is now the canonical LIFTOVA Home screen.
 (() => {
-  for (const src of ['liftova-onboarding.js','liftova-workouts.js','liftova-active-workout.js','liftova-library.js','liftova-progress.js?v=2','liftova-profile.js','liftova-pro.js','liftova-polish.js?v=3']) {
+  for (const src of [
+    'liftova-onboarding.js?v=4',
+    'liftova-workouts.js?v=4',
+    'liftova-active-workout.js?v=4',
+    'liftova-library.js?v=4',
+    'liftova-progress.js?v=4',
+    'liftova-profile.js?v=4',
+    'liftova-pro.js?v=4',
+    'liftova-polish.js?v=4'
+  ]) {
     const script = document.createElement('script');
     script.src = src;
     script.defer = true;

@@ -1,10 +1,11 @@
 // LIFTOVA presentation layer for active workouts and exercise detail screens.
 (() => {
   'use strict';
-  if (!document.querySelector('link[href="liftova-active-workout.css"]')) {
+  if (!document.querySelector('link[data-liftova-active-workout]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'liftova-active-workout.css';
+    link.href = 'liftova-active-workout.css?v=2';
+    link.dataset.liftovaActiveWorkout = 'true';
     document.head.appendChild(link);
   }
 
@@ -33,8 +34,33 @@
     }
   };
 
-  const observer = new MutationObserver(polish);
-  observer.observe(document.documentElement, {subtree:true, childList:true, attributes:true, attributeFilter:['class']});
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', polish);
-  else polish();
+  let queued = false;
+  const schedulePolish = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      polish();
+    });
+  };
+
+  const observeScreen = id => {
+    const screen = document.getElementById(id);
+    if (!screen) return;
+    new MutationObserver(schedulePolish).observe(screen, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  };
+
+  const boot = () => {
+    observeScreen('workoutScreen');
+    observeScreen('exerciseInfoScreen');
+    polish();
+  };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, {once:true});
+  else boot();
 })();
