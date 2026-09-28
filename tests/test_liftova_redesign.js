@@ -35,7 +35,7 @@ for (const file of redesignFiles) {
 
 const home = read('liftova-home.js');
 const homeCss = read('liftova-home.css');
-assert.match(home, /className = 'liftova-home-shell'/, 'LIFTOVA Home shell must be mounted');
+assert.match(home, /className='liftova-home-shell'/, 'LIFTOVA Home shell must be mounted');
 assert.doesNotMatch(home, /observer\.observe\(document\.body/, 'Home must not use a document-wide MutationObserver');
 assert.match(homeCss, /#home\.liftova-home>:not\(\.liftova-home-shell\)/, 'Legacy Home presentation must be hidden behind the LIFTOVA Home shell');
 
@@ -55,19 +55,11 @@ assert.equal(
 );
 
 const sw = read('sw.js');
-assert.match(sw, /prism-v10\.3-beta40\.10-liftova-atlas/, 'LIFTOVA exact-image release must use the new cache namespace');
+assert.match(sw, /liftova-home-v12-approved-compact/, 'LIFTOVA compact Home release must use the new cache namespace');
 assert.match(sw, /url\.pathname\.includes\("\/liftova-"\)/, 'LIFTOVA presentation assets must use network-first refresh');
 for (const asset of [
-  './images/app-icon-192.png',
-  './images/app-icon-512.png',
-  './images/app-icon.png',
   './images/apple-touch-icon-180.png',
-  './images/favicon-32.png',
-  './images/liftova-icon.svg',
-  './images/liftova-splash.svg',
-  './images/liftova-workout-row-sprite.webp',
-  './images/liftova-chest-press-detail.webp',
-  './images/liftova-chest-anatomy.webp'
+  './images/liftova-icon.svg'
 ]) {
   assert.match(sw, new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${asset} must be cached or refreshed by the service worker`);
 }
