@@ -28,12 +28,20 @@
     return type === 'weight' ? 5 : 10;
   }
 
-  function save(key, type, value){
+  function refreshDone(block){
+    const done = block?.querySelector('.set-done');
+    if (!done) return;
+    done.classList.add('liftova-one-tap-done');
+    done.textContent = done.getAttribute('aria-pressed') === 'true' ? '✓ SET LOGGED' : '✓ LOG SET';
+  }
+
+  function save(key, type, value, block){
     if (typeof window.saveSet !== 'function') return;
     const min = type === 'weight' ? 2.5 : 1;
     const max = type === 'weight' ? 500 : 50;
     const normalized = type === 'reps' ? Math.round(value) : Math.round(value * 2) / 2;
     window.saveSet(key, type, Math.max(min, Math.min(max, normalized)));
+    requestAnimationFrame(() => refreshDone(block));
   }
 
   function adjust(block, type, amount){
@@ -41,7 +49,7 @@
     const info = parseKey(button);
     if (!info) return;
     const previous = previousValues(block);
-    save(info.key, type, currentValue(button, type, previous) + amount);
+    save(info.key, type, currentValue(button, type, previous) + amount, block);
   }
 
   function usePrevious(block){
@@ -50,12 +58,14 @@
     const weightInfo = parseKey(weightButton);
     const repsInfo = parseKey(repsButton);
     const previous = previousValues(block);
-    if (weightInfo && Number.isFinite(previous.weight)) save(weightInfo.key, 'weight', previous.weight);
-    if (repsInfo && Number.isFinite(previous.reps)) save(repsInfo.key, 'reps', previous.reps);
+    if (weightInfo && Number.isFinite(previous.weight)) save(weightInfo.key, 'weight', previous.weight, block);
+    if (repsInfo && Number.isFinite(previous.reps)) save(repsInfo.key, 'reps', previous.reps, block);
   }
 
   function enhanceBlock(block){
-    if (!block || block.dataset.liftovaQuickLog === '1') return;
+    if (!block) return;
+    refreshDone(block);
+    if (block.dataset.liftovaQuickLog === '1') return;
     const row = block.querySelector('.set-row');
     const buttons = row?.querySelectorAll('.picker-button');
     if (!row || !buttons || buttons.length < 2) return;
@@ -76,12 +86,6 @@
       ${Number.isFinite(previous.weight) || Number.isFinite(previous.reps) ? '<button type="button" class="liftova-use-last" data-quick="last">↺ USE LAST SET VALUES</button>' : ''}
     `;
     row.after(quick);
-
-    const done = block.querySelector('.set-done');
-    if (done) {
-      done.classList.add('liftova-one-tap-done');
-      done.textContent = done.getAttribute('aria-pressed') === 'true' ? '✓ SET LOGGED' : '✓ LOG SET';
-    }
   }
 
   function enhance(){
