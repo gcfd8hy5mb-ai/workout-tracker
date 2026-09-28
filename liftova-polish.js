@@ -57,7 +57,7 @@
     const style=document.createElement('style');
     style.id='liftovaFinalPolish';
     style.textContent=`
-      :root{--liftova-purple:#8c3cff;--liftova-purple-2:#b36cff;--liftova-bg:#07050d;--liftova-surface:#0e0c13;--liftova-border:#30243f;--liftova-muted:#958da1;}
+      :root{--liftova-purple:#8c3cff;--liftova-purple-2:#b36cff;--liftova-bg:#07050d;--liftova-surface:#0e0c13;--liftova-surface-2:#121019;--liftova-border:#30243f;--liftova-muted:#958da1;--liftova-text:#f8f5ff;}
       html,body{background:#07050d!important;color:#f8f5ff!important;-webkit-tap-highlight-color:transparent;}
       body{overscroll-behavior-y:none;}
       header{background:rgba(7,5,13,.96)!important;border-bottom:1px solid rgba(154,85,255,.22)!important;box-shadow:0 7px 22px rgba(0,0,0,.24)!important;}
@@ -93,12 +93,34 @@
       @keyframes liftovaScreenIn{from{opacity:.82;transform:translateY(2px)}to{opacity:1;transform:none}}
       button,input,select,textarea{font-family:inherit;}
       button{touch-action:manipulation;}
-      button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid rgba(166,88,255,.55)!important;outline-offset:2px!important;}
+      button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid rgba(166,88,255,.55)!important;outline-offset:2px!important;}
       button:disabled{opacity:.42!important;cursor:not-allowed!important;}
       .card{box-shadow:none;}
       .back{display:inline-flex;align-items:center;min-height:38px;color:#bca2ff!important;font-size:11px!important;font-weight:760!important;}
       .empty{color:#948c9f!important;}
+
+      /* Final consistency pass: controls, cards, dialogs and status surfaces */
+      .container input:not([type=checkbox]):not([type=radio]),.container select,.container textarea{background:#100e16;color:#f8f5ff;border:1px solid #302740;border-radius:11px;box-shadow:none;}
+      .container input::placeholder,.container textarea::placeholder{color:#706a78;opacity:1;}
+      .container input:focus,.container select:focus,.container textarea:focus{border-color:#7146a6!important;box-shadow:0 0 0 3px rgba(140,60,255,.08)!important;}
+      .container hr{border:0;border-top:1px solid rgba(255,255,255,.07);}
+      .container .small,.container small{line-height:1.4;}
+      .container .badge,.container [class*=badge]{box-shadow:none;}
+      .container button:not(.prism-bottom-nav button):not(.menu-toggle):not(.header-today){box-shadow:none;}
+      .container button:active{transform:scale(.985);}
+      [role=dialog],dialog,.modal,.sheet,.prism-modal{background:#0e0c13!important;color:#f8f5ff!important;border-color:#352944!important;box-shadow:0 18px 55px rgba(0,0,0,.55)!important;}
+      .toast,.prism-toast,[role=status]{border-radius:11px!important;box-shadow:0 10px 30px rgba(0,0,0,.38)!important;}
+      .danger,.danger-button,.delete-button,[data-danger=true]{box-shadow:none!important;}
+      .container table{border-collapse:separate;border-spacing:0;color:#eeeaf4;}
+      .container th{color:#8f879a;font-size:9px;letter-spacing:.07em;text-transform:uppercase;}
+      .container td,.container th{border-color:rgba(255,255,255,.07)!important;}
+      .container a{color:#b98aff;}
+      .container h1,.container h2,.container h3{color:#fff;}
+      .container p{line-height:1.5;}
+      ::selection{background:rgba(142,61,255,.38);color:#fff;}
+      *{scrollbar-color:#3d2b51 #0b0910;}
       html.prism-account-booting::after{content:'Restoring your LIFTOVA account…'!important;background:#07050d url('images/liftova-splash.svg') center/cover no-repeat!important;color:transparent!important;}
+      @media(max-width:430px){.container{padding-left:max(13px,env(safe-area-inset-left))!important;padding-right:max(13px,env(safe-area-inset-right))!important}.container>section:not(.hidden){max-width:100%;overflow-x:hidden}.container button{min-width:0}}
       @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}}
     `;
     document.head.appendChild(style);
