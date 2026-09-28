@@ -1,3 +1,5 @@
+// Date-only fixture values are UTC; keep expectations independent of runner timezone.
+process.env.TZ='UTC';
 const fs=require('node:fs');
 const vm=require('node:vm');
 const assert=require('node:assert/strict');

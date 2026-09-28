@@ -1,0 +1,75 @@
+/* Opt-in account coordinator; no implicit guest claim or production bootstrap. */
+(function(root,factory){const node=typeof module==='object';const api=factory(node?require('./storage-model.js'):root.PRISMStorageModel,node?require('./account-sync.js'):root.PRISMAccountSync);if(node)module.exports=api;else root.PRISMAccountController=api;})(globalThis,function(model,sync){
+'use strict';
+function create({manager,cloud,url,publishableKey,backing,clock=()=>Date.now(),onStatus=()=>{},createTransport=sync.createTransport,initialSnapshot=null,setTimer=setTimeout,clearTimer=clearTimeout}){
+ let userId=null,transport=null,busy=false,dirty=0,timer=null,closed=false,cloudEmpty=false,retryDelay=5000;
+ const CHECKPOINT='prismAccountCheckpointV1:',ARCHIVE='prismAccountRecoveryV1:';
+ const status=(kind,message)=>onStatus({kind,message});
+ function checkpoint(){try{const value=JSON.parse(backing.getItem(CHECKPOINT+userId)||'[]');return Array.isArray(value)?value:[]}catch{return []}}
+ function saveCheckpoint(rows){backing.setItem(CHECKPOINT+userId,JSON.stringify(rows))}
+ function equivalent(left,right){if(left===right)return true;try{return model.canonical(JSON.parse(left))===model.canonical(JSON.parse(right))}catch{return false}}
+ function persistVerified(candidate,captured){
+  if(!candidate||manager.owner!==userId||JSON.stringify(manager.snapshot())!==JSON.stringify(captured))return false;
+  const changed=Object.entries(candidate).filter(([key,value])=>{const local=manager.storage.getItem(key);if(local===null)return true;return !equivalent(local,value)});
+  if(!changed.length)return false;
+  backing.setItem(ARCHIVE+userId+':'+clock(),JSON.stringify(captured));
+  for(const [key,value] of changed)manager.storage.setItem(key,value);
+  status('restored','Your account data is ready. Reload PRISM to view the updates.');return true;
+ }
+ function scheduleFlush(delay=100){
+  if(closed||!userId||!transport||busy||timer!==null)return;
+  timer=setTimer(()=>{timer=null;flush().catch(()=>{})},delay);
+ }
+ async function connect(){
+  const user=await cloud.currentUser();if(!user?.id){status('guest','Sign in to enable cloud sync.');return {status:'guest'}};
+  if(manager.owner!==user.id)throw Error('The account changed while PRISM was loading. Reload before viewing data.');
+  userId=user.id;transport=createTransport({url,publishableKey,getSession:async()=>{const session=await cloud.getSession();return session?.user?.id===userId?session:null}});
+  const cloudRows=await transport.read(userId),local=manager.snapshot(),hasLocal=Object.keys(initialSnapshot||local).length>0;
+  if(!hasLocal&&cloudRows.length){if(!persistVerified(model.restoreSnapshot(cloudRows),local))throw Error('Account changed during restoration');saveCheckpoint(cloudRows);status('restored','Your account was restored. Reload PRISM to view your data.');return {status:'restored'}}
+  if(!hasLocal&&!cloudRows.length){cloudEmpty=true;status('claim','This account is empty. Your device data can be moved to it only if you choose to.');return {status:'claim'}}
+  status('syncing','Checking your account data…');return flush();
+ }
+ async function flush(){
+  if(closed||!userId||!transport)return {status:'guest'};
+  if(busy){return {status:'queued'}};
+  if(timer!==null){clearTimer(timer);timer=null}
+  busy=true;const revision=dirty;
+  try{
+   const captured=manager.snapshot(),deletions=manager.deletionLedger();
+   const result=await sync.migrate({snapshot:captured,owner:manager.owner,userId,transport,checkpoint:checkpoint(),deletions,isCurrent:()=>!closed&&manager.owner===userId});
+   if(result.status==='conflict'){status('conflict','This device and your cloud account have different changes. Nothing was overwritten.');return result}
+   saveCheckpoint(result.checkpoint);retryDelay=5000;if(result.checkpoint.length)cloudEmpty=false;manager.acknowledgeDeletions(deletions);
+   const restored=persistVerified(result.restoreCandidate,captured);
+   if(restored)return {...result,status:'restored',restored:true};
+   status('synced','Saved to your PRISM account.');return result;
+  }catch(error){
+   status('offline','Cloud sync is unavailable. Your device data is still here.');
+   if(!closed&&manager.owner===userId&&error.status!==401&&error.status!==403){const delay=retryDelay;retryDelay=Math.min(retryDelay*2,60000);timer=setTimer(()=>{timer=null;flush().catch(()=>{})},delay)}
+   throw error;
+  }finally{
+   busy=false;
+   // A local write can arrive while the previous cloud round-trip is still in
+   // progress. Schedule it only after clearing busy; otherwise mobile Safari can
+   // leave that edit stranded locally until some unrelated future edit occurs.
+   if(!closed&&manager.owner===userId&&dirty!==revision&&timer===null)scheduleFlush(0);
+  }
+ }
+ function queue(){if(!userId||closed)return;dirty++;if(timer!==null){clearTimer(timer);timer=null}scheduleFlush(100)}
+ function claimGuest(){
+  if(!userId||!cloudEmpty)throw Error('An empty verified account is required to move guest data');
+  const seeded=initialSnapshot&&Object.keys(initialSnapshot).length===0;if(seeded)backing.setItem(ARCHIVE+userId+':'+clock(),JSON.stringify(manager.snapshot()));
+  const count=manager.claimGuest({replaceStartupDefaults:seeded});status('syncing','Moving your existing PRISM data into this account…');queue();return count;
+ }
+ async function importLegacyBackup(backup){
+  if(!userId||!cloudEmpty||!initialSnapshot||Object.keys(initialSnapshot).length)throw Error('Existing account changes require review before importing an older backup');
+  if(backup?.user_id!==userId)throw Error('The older backup belongs to a different account');
+  const source=backup?.backup_data?.localStorage;if(!source||typeof source!=='object'||Array.isArray(source))throw Error('Invalid older backup');
+  const values=model.capture({getItem:key=>Object.hasOwn(source,key)&&typeof source[key]==='string'?source[key]:null});if(!Object.keys(values).length)throw Error('The older backup contains no supported PRISM data');
+  await model.normalize(values);if((await transport.read(userId)).length)throw Error('Account data changed; review it before importing the older backup');
+  backing.setItem(ARCHIVE+userId+':'+clock(),JSON.stringify(manager.snapshot()));manager.install(values,{replaceStartupDefaults:true});queue();status('syncing','Importing the older backup while keeping its original copy…');return Object.keys(values).length;
+ }
+ function stop(){closed=true;if(timer!==null)clearTimer(timer);manager.setOnWrite(null)}
+ manager.setOnWrite(queue);return Object.freeze({connect,flush,queue,claimGuest,importLegacyBackup,stop,get userId(){return userId}});
+}
+return Object.freeze({create});
+});

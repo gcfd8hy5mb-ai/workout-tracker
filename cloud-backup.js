@@ -23,8 +23,29 @@
   }
 
   function writeSession(session) {
-    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify({
+      ...session,
+      expires_at: session.expires_at || Math.floor(Date.now() / 1000) + (session.expires_in || 3600)
+    }));
     else localStorage.removeItem(SESSION_KEY);
+  }
+
+  async function validSession() {
+    let session = readSession();
+    if (!session?.access_token) return null;
+    if (session.expires_at && session.expires_at <= Math.floor(Date.now() / 1000) + 60) {
+      if (!session.refresh_token) return null;
+      let refreshed;
+      try { refreshed = await authRequest("token?grant_type=refresh_token", { refresh_token: session.refresh_token }); }
+      catch (error) {
+        if (error.status === 400 || error.status === 401) writeSession(null);
+        throw error;
+      }
+      session = { ...session, ...refreshed,
+        expires_at: Math.floor(Date.now() / 1000) + (refreshed.expires_in || 3600) };
+      writeSession(session);
+    }
+    return session;
   }
 
   function snapshotLocalStorage() {
@@ -52,7 +73,11 @@
       body: JSON.stringify(body)
     });
     const json = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(json.msg || json.message || json.error_description || "Authentication failed.");
+    if (!response.ok) {
+      const error = new Error(json.msg || json.message || json.error_description || "Authentication failed.");
+      error.status = response.status;
+      throw error;
+    }
     return json;
   }
 
@@ -68,18 +93,26 @@
     return json;
   }
 
-  function signOut() { writeSession(null); }
+  async function signOut() {
+    const session = readSession();
+    try {
+      if (session?.access_token) await fetch(`${AUTH}/logout`, {
+        method: "POST", headers: headers(session.access_token), cache: "no-store"
+      });
+    } finally { writeSession(null); }
+  }
 
   async function currentUser() {
-    const session = readSession();
+    const session = await validSession();
     if (!session?.access_token) return null;
-    const response = await fetch(`${AUTH}/user`, { headers: headers(session.access_token) });
-    if (!response.ok) return null;
+    const response = await fetch(`${AUTH}/user`, { headers: headers(session.access_token), cache: "no-store" });
+    if (response.status === 401 || response.status === 403) { writeSession(null); return null; }
+    if (!response.ok) throw new Error("Could not verify the PRISM account. Device data was kept.");
     return response.json();
   }
 
   async function backupNow() {
-    const session = readSession();
+    const session = await validSession();
     const user = await currentUser();
     if (!session?.access_token || !user?.id) throw new Error("Sign in to PRISM Cloud first.");
     const payload = {
@@ -100,7 +133,7 @@
   }
 
   async function getBackup() {
-    const session = readSession();
+    const session = await validSession();
     const user = await currentUser();
     if (!session?.access_token || !user?.id) throw new Error("Sign in to PRISM Cloud first.");
     const response = await fetch(`${API}?user_id=eq.${encodeURIComponent(user.id)}&select=*`, {
@@ -112,6 +145,8 @@
   }
 
   async function restoreBackup({ reload = true } = {}) {
+    if (window.PRISMDeviceStore?.owner)
+      throw new Error("Signed-in accounts must import older backups through the verified account migration.");
     const row = await getBackup();
     if (!row) throw new Error("No PRISM cloud backup exists for this account yet.");
     restoreLocalStorage(row.backup_data);
@@ -123,6 +158,7 @@
     signUp,
     signIn,
     signOut,
+    getSession: validSession,
     currentUser,
     backupNow,
     getBackup,

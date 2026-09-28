@@ -3,6 +3,8 @@ name: Test and Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +13,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -38,7 +40,13 @@ jobs:
             node "$test_file"
           done
 
+      - name: Test staged account database isolation
+        run: |
+          npm ci --prefix tests/database --ignore-scripts
+          npm test --prefix tests/database
+
   deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: test
     environment:
       name: github-pages

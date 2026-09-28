@@ -22,13 +22,16 @@ const cache={
   async put(){}
 };
 const caches={open:async name=>{assert.equal(name,currentCache);return cache},keys:async()=>[oldCache,currentCache],delete:async key=>{deleted.push(key)}};
-const self={addEventListener:(name,handler)=>{handlers[name]=handler},skipWaiting:async()=>{assert.equal(entries.has("shell"),true)},clients:{claim:async()=>{claimed=true}}};
+const self={location:{origin:"https://gcfd8hy5mb-ai.github.io"},addEventListener:(name,handler)=>{handlers[name]=handler},skipWaiting:async()=>{assert.equal(entries.has("shell"),true)},clients:{claim:async()=>{claimed=true}}};
 vm.runInNewContext(swSource,{self,caches,Promise,URL,Request:class{constructor(url,options){this.url=url;this.cache=options.cache}},fetch:async()=>({ok:true,clone(){return this}})});
 async function dispatch(name){let task;handlers[name]({waitUntil(promise){task=promise}});await task}
 (async()=>{
 await dispatch("install");
 assert.equal(entries.has("./images/app-icon-192.png"),true,"other images remain available when an optional image fails");
 await dispatch("activate");
+let intercepted=false;
+handlers.fetch({request:{method:"GET",url:"https://kirlpjflaoriiusfamsk.supabase.co/rest/v1/prism_account_sources"},respondWith(){intercepted=true;}});
+assert.equal(intercepted,false,"service worker must leave all cross-origin Supabase traffic uncached");
 assert.deepEqual(deleted,[oldCache]);
 assert.equal(claimed,true);
 console.log(`Service worker ${currentCache} shell update and optional image failure: OK`);

@@ -22,9 +22,26 @@
 
 <title>PRISM · Train · Track · Progress</title>
 
+<!-- Installed before app state is read. The legacy guest keys remain untouched. -->
+<script src="persistence/storage-model.js"></script>
+<script src="persistence/scoped-storage.js"></script>
+<script src="persistence/photo-scope.js"></script>
+<script>
+window.PRISMDeviceStore=window.PRISMScopedStorage.create(window.localStorage);
+try{
+  const session=JSON.parse(window.localStorage.getItem('prismSupabaseSessionV1')||'null');
+  if(session?.user?.id)window.PRISMDeviceStore.select(session.user.id);
+}catch{}
+window.PRISMAccountInitialSnapshot=window.PRISMDeviceStore.snapshot();
+if(window.PRISMDeviceStore.owner)document.documentElement.classList.add('prism-account-booting');
+const localStorage=window.PRISMDeviceStore.storage;
+</script>
+
 <style>
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html.prism-account-booting body{visibility:hidden}
+html.prism-account-booting::after{content:"Restoring your PRISM account…";position:fixed;inset:0;display:grid;place-items:center;background:#0b111b;color:#fff;font:600 17px -apple-system,BlinkMacSystemFont,sans-serif;z-index:99999}
 
 :root{
 
@@ -1155,7 +1172,7 @@ Exercise Library
 
 <section id="exerciseInfoScreen" class="hidden"><button class="back" onclick="returnFromExerciseInfo()">← Back</button><div id="prismExerciseInfo"></div></section>
 
-<section id="profileScreen" class="hidden"><div class="prism-section-head"><div><span class="prism-eyebrow">YOUR SPACE</span><h2>Profile</h2></div></div><div id="prismLocalProfile"></div><div class="prism-profile-links">
+<section id="profileScreen" class="hidden"><div class="prism-section-head"><div><span class="prism-eyebrow">YOUR SPACE</span><h2>Profile</h2></div></div><div id="prismCloudAccount"></div><div id="prismLocalProfile"></div><div class="prism-profile-links">
 <button onclick="showTrackingGoals()">Goals & calorie targets <span>›</span></button><button onclick="showWeight()">Body weight <span>›</span></button><button onclick="showWater()">Water intake <span>›</span></button><button onclick="showFood()">Food tracking <span>›</span></button><button onclick="showWorkoutCalendar()">Workout calendar <span>›</span></button><button onclick="showPersonalRecords()">Personal records <span>›</span></button><button onclick="showMeasurements()">Measurements <span>›</span></button><button onclick="showProgressPhotos()">Private progress photos <span>›</span></button><button onclick="showManageWorkouts()">Manage workouts & data <span>›</span></button>
 </div><div class="card prism-tier-card"><div class="prism-tier-heading"><h3>Explore PRISM Pro</h3><span class="prism-pro-badge">PRO ✦</span></div><p class="small">PRISM doesn’t just track your workouts. It tells you what to do next.</p><button type="button" class="prism-primary prism-wide" onclick="showPrismPro()">See what Pro can do</button></div><div class="card prism-tier-card" id="prismBetaAccess"><div class="prism-tier-heading"><h3>PRISM Beta Access</h3><span class="prism-pro-badge">BETA</span></div><p id="prismTierStatus" class="small" role="status"></p><div class="prism-tier-choices" role="group" aria-label="Beta experience"><button type="button" data-beta-mode="free" onclick="setBetaPreview('free')" aria-pressed="false">FREE</button><button type="button" data-beta-mode="pro" onclick="setBetaPreview('pro')" aria-pressed="false">PRO</button></div><p class="small">Beta preview only — no purchase required. Switching access never deletes your data.</p></div><div class="card" id="profileSettings"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
 
@@ -1301,7 +1318,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 <section id="measurementsScreen" class="hidden"><h2>Measurements</h2><div class="card"><form class="tracker-form" onsubmit="saveMeasurement(event)"><label for="measurementArea">Body area</label><select id="measurementArea"><option>Waist</option><option>Chest</option><option>Arm</option><option>Thigh</option><option>Hips</option></select><label for="measurementValue">Measurement (inches)</label><input id="measurementValue" type="number" min="1" max="200" step="0.1" inputmode="decimal" required><label for="measurementDay">Date</label><input id="measurementDay" type="date" required><button type="submit">Save measurement</button></form></div><div class="card"><label for="measurementChartArea">See trend for</label><select id="measurementChartArea" onchange="renderMeasurements()"><option>Waist</option><option>Chest</option><option>Arm</option><option>Thigh</option><option>Hips</option></select><div id="measurementChart"></div></div><div id="measurementList" class="measure-list"></div></section>
 
-<section id="photosScreen" class="hidden"><h2>Progress photos</h2><div class="card"><p class="small">Stored only on this device. Photos are not uploaded. Select two to compare them.</p><label for="progressPhotoInput">Add a photo</label><input id="progressPhotoInput" type="file" accept="image/*" onchange="addProgressPhoto(event)"><p id="photoStatus" class="small" role="status"></p></div><div id="photoComparison" class="card hidden"></div><div id="photoList" class="photo-list"></div></section>
+<section id="photosScreen" class="hidden"><h2>Progress photos</h2><div class="card"><p class="small">Photos stay on this device. When signed in, they also sync privately to your account; guest photos move only when you choose to copy them. Select two to compare.</p><label for="progressPhotoInput">Add a photo</label><input id="progressPhotoInput" type="file" accept="image/*" onchange="addProgressPhoto(event)"><p id="photoStatus" class="small" role="status"></p></div><div id="photoComparison" class="card hidden"></div><div id="photoList" class="photo-list"></div></section>
 
 <section id="globalHistoryScreen" class="hidden">
 
@@ -1934,10 +1951,15 @@ advanced_goals:["Advanced goals","Get more detailed goal insights when they beco
 };
 const PRISM_ENTITLEMENT_KEY="prismEntitlementV1";
 function readPrismEntitlement(){
+let saved=null;
 try{
-const saved=JSON.parse(localStorage.getItem(PRISM_ENTITLEMENT_KEY)||"null");
-if(saved&&["free","pro","lifetime_pro","beta"].includes(saved.tier))return {tier:saved.tier,betaView:saved.betaView==="pro"?"pro":"free",source:typeof saved.source==="string"?saved.source:"local"};
+saved=JSON.parse(localStorage.getItem(PRISM_ENTITLEMENT_KEY)||"null");
 }catch{}
+if(saved&&["pro","lifetime_pro"].includes(saved.tier))return {tier:saved.tier,betaView:saved.betaView==="pro"?"pro":"free",source:typeof saved.source==="string"?saved.source:"local"};
+// A cloud-synced beta preference is a preview choice, never a paid entitlement.
+try{const preference=JSON.parse(localStorage.getItem("prismBetaPreviewPreferenceV1")||"null");
+if(PRISM_ACCESS.betaControlsEnabled&&["free","pro"].includes(preference?.view))return {tier:"beta",betaView:preference.view,source:"beta_preview"};}catch{}
+if(saved&&["free","beta"].includes(saved.tier))return {tier:saved.tier,betaView:saved.betaView==="pro"?"pro":"free",source:typeof saved.source==="string"?saved.source:"local"};
 return {tier:"free",betaView:"free",source:"local_default"};
 }
 let prismEntitlement=readPrismEntitlement();
@@ -1962,6 +1984,7 @@ if(!PRISM_ACCESS.betaControlsEnabled||!["free","pro"].includes(view))return;
 if(prismEntitlement.tier==="free"||prismEntitlement.tier==="beta")prismEntitlement={tier:"beta",betaView:view,source:"beta_preview"};
 else prismEntitlement.betaView=view; // Verified Pro or Lifetime Pro always stays Pro.
 localStorage.setItem(PRISM_ENTITLEMENT_KEY,JSON.stringify(prismEntitlement));
+localStorage.setItem("prismBetaPreviewPreferenceV1",JSON.stringify({view}));
 renderPrismAccessState();
 }
 function renderPrismAccessState(){
@@ -2571,6 +2594,7 @@ both:"Delete all saved workout history, logged sets, weight targets, and progres
 };
 if(!messages[scope]||!confirm(messages[scope]))return;
 if(scope==="history"||scope==="both"){
+for(const key of ["workoutHistoryV52","previousHistoryV51","setHistoryV5","overloadTargetsV1"])window.PRISMDeviceStore.recordDeletion(key);
 workoutHistory=[];previousHistory={};setHistory={};overloadTargets={};
 localStorage.setItem("workoutHistoryV52","[]");
 localStorage.setItem("previousHistoryV51","{}");
@@ -2579,6 +2603,7 @@ localStorage.setItem("overloadTargetsV1","{}");
 localStorage.removeItem("prismActiveWorkoutV1");localStorage.removeItem("prismRestEndsAtV1");
 }
 if(scope==="progress"||scope==="both"){
+window.PRISMDeviceStore.recordDeletion("completedExercisesV5");
 completedExercises=[];
 localStorage.setItem("completedExercisesV5","[]");
 }
@@ -3842,7 +3867,7 @@ event.preventDefault();const area=document.getElementById("measurementArea").val
 if(!["Waist","Chest","Arm","Thigh","Hips"].includes(area)||!Number.isFinite(value)||value<1||value>200||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(day))return;
 tracking.measurements.push({id:newTrackingId(),area,value:Math.round(value*10)/10,day});saveTracking();document.getElementById("measurementValue").value="";document.getElementById("measurementChartArea").value=area;renderMeasurements();
 }
-function deleteMeasurement(id){if(!confirm("Remove this measurement?"))return;tracking.measurements=tracking.measurements.filter(m=>m.id!==id);saveTracking();renderMeasurements()}
+function deleteMeasurement(id){if(!confirm("Remove this measurement?"))return;window.PRISMDeviceStore.recordDeletion("dailyTrackingV1");tracking.measurements=tracking.measurements.filter(m=>m.id!==id);saveTracking();renderMeasurements()}
 function renderMeasurements(){
 const selected=document.getElementById("measurementChartArea").value;
 const points=tracking.measurements.filter(m=>m.area===selected&&Number.isFinite(Number(m.value))&&Number(m.value)>0).sort((a,b)=>a.day.localeCompare(b.day)).slice(-12);
@@ -3863,7 +3888,7 @@ let photoObjectUrls=[],selectedPhotoIds=[];
 function photoDatabase(){
 return new Promise((resolve,reject)=>{
 if(!window.indexedDB){reject(Error("Photo storage is unavailable in this browser."));return}
-const request=indexedDB.open("workoutTrackerPhotosV1",1);
+const request=indexedDB.open(PRISMPhotoScope.databaseName("workoutTrackerPhotosV1",window.PRISMDeviceStore.owner),1);
 request.onupgradeneeded=()=>request.result.createObjectStore("photos",{keyPath:"id"});
 request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
 });
@@ -3901,13 +3926,14 @@ canvas.getContext("2d").drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.
 const data=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",.8));if(!data)throw Error("Could not prepare that photo.");
 if(!canAccessFeature("photo_comparison")){showProPreview("photo_comparison");return}
 const latest=weightEntriesNewestFirst()[0];await saveProgressPhoto({id:newTrackingId(),day:localDay(),weight:latest?.value||null,data});
-photoStatus("Saved on this device. Include photos when you export a backup before switching phones.");await renderProgressPhotos();
+photoStatus("Saved on this device.");await renderProgressPhotos();
+if(window.PRISMAccountPhotos)window.PRISMAccountPhotos.push().then(()=>photoStatus("Saved privately to your account and on this device.")).catch(()=>photoStatus("Saved on this device. Account photo backup will retry when you open PRISM again."));
 }catch(error){photoStatus(error.message||"Could not save photo.")}finally{event.target.value=""}
 }
 async function deleteProgressPhoto(id){
 if(!canAccessFeature("photo_comparison")){showProPreview("photo_comparison");return}
 if(!confirm("Delete this progress photo from this device?"))return;
-try{await removeProgressPhoto(id);selectedPhotoIds=selectedPhotoIds.filter(item=>item!==id);await renderProgressPhotos()}catch{photoStatus("Could not remove photo.")}
+try{await removeProgressPhoto(id);window.PRISMAccountPhotos?.markDeleted("workoutTrackerPhotosV1",id);selectedPhotoIds=selectedPhotoIds.filter(item=>item!==id);await renderProgressPhotos();if(window.PRISMAccountPhotos)window.PRISMAccountPhotos.push().catch(()=>photoStatus("Removed on this device. Account deletion will retry when you open PRISM again."))}catch{photoStatus("Could not remove photo.")}
 }
 async function togglePhotoSelection(id){
 if(!canAccessFeature("photo_comparison")){showProPreview("photo_comparison");return}
@@ -4301,6 +4327,7 @@ const workout=customWorkouts[index];if(!workout)return;
 if(!confirm(`Delete "${workout.name}"?`))return;
 
 customWorkouts.splice(index,1);
+window.PRISMDeviceStore.recordDeletion("customWorkoutsV5");
 
 localStorage.setItem("customWorkoutsV5",JSON.stringify(customWorkouts));
 
@@ -4516,6 +4543,7 @@ document.getElementById("weightValue").value="";renderWeight();
 }
 function deleteTracking(type,id){
 if(!["water","food","weight"].includes(type))return;
+window.PRISMDeviceStore.recordDeletion("dailyTrackingV1");
 tracking[type]=tracking[type].filter(entry=>entry.id!==id);saveTracking();
 if(type==="water")renderWater();else if(type==="food")renderFood();else renderWeight();
 }
@@ -4593,6 +4621,13 @@ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{u
 </script>
 <script src="onboarding.js?v=10.3-beta5"></script>
 <script src="pro-experience.js"></script>
+<script src="supabase-config.js"></script>
+<script src="cloud-backup.js"></script>
+<script src="persistence/reconcile.js"></script>
+<script src="persistence/account-sync.js"></script>
+<script src="persistence/account-controller.js"></script>
+<script src="persistence/photo-sync.js"></script>
+<script src="persistence/account-ui.js"></script>
 
 </body>
 

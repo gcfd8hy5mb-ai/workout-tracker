@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const path=require('node:path');
 const source=fs.readFileSync(path.join(__dirname,'../plateau-detection.js'),'utf8');
 const exercises={chest:{id:'chest',name:'Chest Press',muscle:'Chest'}};
-const context={console,Map,Math,Number,String,CSS:{escape:v=>String(v)},workoutHistory:[],getExercise:id=>exercises[id]||null,sessionDay:s=>s.date,escapeHTML:v=>String(v),canAccessFeature:()=>true,showProPreview:()=>{},window:{},document:{body:null},MutationObserver:undefined,setTimeout:()=>{}};
+const context={console,Map,Math,Number,String,CSS:{escape:v=>String(v)},workoutHistory:[],getExercise:id=>exercises[id]||null,sessionDay:s=>s.date,escapeHTML:v=>String(v),canAccessFeature:()=>true,showProPreview:()=>{},window:{},document:{body:{appendChild:()=>{}},querySelector:()=>null,createElement:()=>({dataset:{}})},MutationObserver:undefined,setTimeout:()=>{}};
 vm.createContext(context);vm.runInContext(source,context);
 function history(points){return points.map((p,i)=>({date:`2026-09-${String(1+i*3).padStart(2,'0')}`,exercises:[{id:'chest',sets:[{weight:p[0],reps:p[1]}]}]}));}
 context.workoutHistory=history([[100,10],[100,10],[100,10]]);assert.equal(context.prismDetectPlateaus().length,0);
