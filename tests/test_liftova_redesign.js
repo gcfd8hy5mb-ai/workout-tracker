@@ -55,7 +55,7 @@ assert.equal(
 );
 
 const sw = read('sw.js');
-assert.match(sw, /liftova-home-v12-approved-compact/, 'LIFTOVA compact Home release must use the new cache namespace');
+assert.match(sw, /liftova-home-v13-functional-qa/, 'LIFTOVA compact Home release must use the new cache namespace');
 assert.match(sw, /url\.pathname\.includes\("\/liftova-"\)/, 'LIFTOVA presentation assets must use network-first refresh');
 for (const asset of [
   './images/apple-touch-icon-180.png',
