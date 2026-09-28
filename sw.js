@@ -1,4 +1,4 @@
-const CACHE_NAME = "prism-v10.3-beta40.8-liftova-anatomy";
+const CACHE_NAME = "prism-v10.3-beta40.9-liftova-exact";
 
 const APP_FILES = [
   "./",
@@ -26,13 +26,16 @@ const APP_FILES = [
   "./liftova-polish.js?v=4",
   "./liftova-reference-v3.js?v=1",
   "./liftova-workout-tab-v3.js?v=1",
-  "./liftova-anatomy-v4.js?v=1",
-  "./liftova-anatomy-v4.css?v=1",
+  "./liftova-anatomy-v4.js?v=2",
+  "./liftova-anatomy-v4.css?v=2",
   "./liftova-workouts.css?v=2",
   "./liftova-active-workout.css?v=2",
   "./liftova-progress.css",
   "./images/liftova-icon.svg",
   "./images/liftova-splash.svg",
+  "./images/liftova-workout-row-sprite.webp",
+  "./images/liftova-chest-press-detail.webp",
+  "./images/liftova-chest-anatomy.webp",
   "./cloud-backup.js",
   "./coach-checkin.js?v=1",
   "./athlete-profile.js?v=1",
