@@ -5,7 +5,7 @@
     if (document.querySelector('link[data-liftova-workouts]')) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'liftova-workouts.css';
+    link.href = 'liftova-workouts.css?v=2';
     link.dataset.liftovaWorkouts = 'true';
     document.head.appendChild(link);
   };
@@ -24,10 +24,16 @@
     }
     screen.querySelectorAll('.prism-eyebrow').forEach(el => { if (el.textContent.includes('YOUR TRAINING')) el.textContent = 'LIFTOVA TRAINING'; });
   };
+
+  const originalShowWorkouts = window.showWorkouts;
+  if (typeof originalShowWorkouts === 'function') {
+    window.showWorkouts = function(...args) {
+      const result = originalShowWorkouts.apply(this, args);
+      requestAnimationFrame(enhance);
+      return result;
+    };
+  }
+
   document.addEventListener('DOMContentLoaded', enhance, {once:true});
-  const observer = new MutationObserver(() => {
-    const screen = document.getElementById('workoutsScreen');
-    if (screen && !screen.classList.contains('hidden')) enhance();
-  });
-  observer.observe(document.documentElement, {subtree:true,attributes:true,attributeFilter:['class']});
+  if (document.readyState !== 'loading') enhance();
 })();
