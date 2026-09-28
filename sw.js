@@ -1,4 +1,4 @@
-const CACHE_NAME = "liftova-redesign-v1";
+const CACHE_NAME = "prism-v10.3-beta40.6-liftova";
 
 const APP_FILES = [
   "./",
