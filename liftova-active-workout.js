@@ -4,7 +4,7 @@
   if (!document.querySelector('link[data-liftova-active-workout]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'liftova-active-workout.css?v=2';
+    link.href = 'liftova-active-workout.css?v=3';
     link.dataset.liftovaActiveWorkout = 'true';
     document.head.appendChild(link);
   }
@@ -19,6 +19,17 @@
     heading.before(kicker);
   };
 
+  const markExerciseState = card => {
+    if (!card) return;
+    card.classList.add('liftova-premium-exercise');
+    const image = card.querySelector('.exercise-image');
+    if (image) image.loading = 'lazy';
+    const done = card.querySelectorAll('.set-done[aria-pressed="true"]').length;
+    const total = card.querySelectorAll('.set-done').length;
+    card.classList.toggle('liftova-exercise-complete', total > 0 && done === total);
+    card.classList.toggle('liftova-exercise-started', done > 0 && done < total);
+  };
+
   const polish = () => {
     const info = document.getElementById('prismExerciseInfo');
     const infoScreen = document.getElementById('exerciseInfoScreen');
@@ -26,11 +37,8 @@
 
     const workout = document.getElementById('workoutScreen');
     if (workout && !workout.classList.contains('hidden')) {
-      workout.querySelectorAll('.exercise').forEach(card => {
-        card.classList.add('liftova-premium-exercise');
-        const image = card.querySelector('.exercise-image');
-        if (image) image.loading = 'lazy';
-      });
+      workout.classList.add('liftova-live-session');
+      workout.querySelectorAll('.exercise').forEach(markExerciseState);
     }
   };
 
@@ -51,7 +59,7 @@
       subtree: true,
       childList: true,
       attributes: true,
-      attributeFilter: ['class']
+      attributeFilter: ['class','aria-pressed']
     });
   };
 
