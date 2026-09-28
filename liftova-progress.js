@@ -5,7 +5,7 @@
     if(document.querySelector('link[data-liftova-progress]'))return;
     const link=document.createElement('link');
     link.rel='stylesheet';
-    link.href='liftova-progress.css';
+    link.href='liftova-progress.css?v=5';
     link.dataset.liftovaProgress='true';
     document.head.appendChild(link);
   }
