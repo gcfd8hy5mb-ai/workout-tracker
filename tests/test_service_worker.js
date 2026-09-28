@@ -27,12 +27,13 @@ vm.runInNewContext(swSource,{self,caches,Promise,URL,Request:class{constructor(u
 async function dispatch(name){let task;handlers[name]({waitUntil(promise){task=promise}});await task}
 (async()=>{
 await dispatch("install");
-assert.equal(entries.has("./images/app-icon-192.png"),true,"other images remain available when an optional image fails");
+assert.equal(entries.has("./images/apple-touch-icon-180.png"),true,"current LIFTOVA install icon remains available when an optional asset fails");
+assert.equal(entries.has("./images/liftova-icon.svg"),true,"current LIFTOVA brand icon remains available when an optional asset fails");
 await dispatch("activate");
 let intercepted=false;
 handlers.fetch({request:{method:"GET",url:"https://kirlpjflaoriiusfamsk.supabase.co/rest/v1/prism_account_sources"},respondWith(){intercepted=true;}});
 assert.equal(intercepted,false,"service worker must leave all cross-origin Supabase traffic uncached");
 assert.deepEqual(deleted,[oldCache]);
 assert.equal(claimed,true);
-console.log(`Service worker ${currentCache} shell update and optional image failure: OK`);
+console.log(`Service worker ${currentCache} shell update and optional asset failure: OK`);
 })().catch(error=>{console.error(error);process.exitCode=1});
