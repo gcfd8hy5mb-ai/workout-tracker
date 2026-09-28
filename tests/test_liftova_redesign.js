@@ -51,7 +51,8 @@ assert.equal(
 );
 
 const sw = read('sw.js');
-assert.match(sw, /prism-v10\.3-beta40\.6-liftova/, 'LIFTOVA release must retain the compatible cache namespace');
+assert.match(sw, /prism-v10\.3-beta40\.7-liftova/, 'LIFTOVA release must advance the compatible cache namespace');
+assert.match(sw, /url\.pathname\.includes\("\/liftova-"\)/, 'LIFTOVA presentation assets must use network-first refresh');
 for (const asset of [
   './images/app-icon-192.png',
   './images/app-icon-512.png',
@@ -67,5 +68,9 @@ for (const asset of [
 const polish = read('liftova-polish.js');
 assert.match(polish, /LIFTOVA · Train · Track · Progress/, 'document title must be rebranded');
 assert.match(polish, /apple-mobile-web-app-title/, 'iOS installed-app title must be rebranded');
+
+const profile = read('liftova-profile.js');
+assert.doesNotMatch(profile, /observe\(document\.documentElement,\{subtree:true,childList:true\}\)/, 'Profile must not observe the whole document');
+assert.match(profile, /el\.textContent!==next/, 'Profile summary updates must be idempotent');
 
 console.log('LIFTOVA redesign pre-merge smoke checks: OK');
