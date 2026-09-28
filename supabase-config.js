@@ -8,15 +8,16 @@ window.PRISM_SUPABASE_CONFIG = Object.freeze({
 // LIFTOVA presentation modules. Keep the proven account/data system intact.
 (() => {
   for (const src of [
-    'liftova-onboarding.js?v=6',
-    'liftova-home.js?v=6',
-    'liftova-workouts.js?v=6',
-    'liftova-active-workout.js?v=6',
-    'liftova-library.js?v=6',
-    'liftova-progress.js?v=6',
-    'liftova-profile.js?v=6',
-    'liftova-pro.js?v=6',
-    'liftova-polish.js?v=6'
+    'liftova-onboarding.js?v=7',
+    'liftova-home.js?v=7',
+    'liftova-workouts.js?v=7',
+    'liftova-active-workout.js?v=7',
+    'liftova-library.js?v=7',
+    'liftova-progress.js?v=7',
+    'liftova-profile.js?v=7',
+    'liftova-pro.js?v=7',
+    'liftova-polish.js?v=7',
+    'liftova-reference-v3.js?v=1'
   ]) {
     const script = document.createElement('script');
     script.src = src;
