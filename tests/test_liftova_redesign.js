@@ -37,7 +37,7 @@ const home = read('liftova-home.js');
 const homeCss = read('liftova-home.css');
 assert.match(home, /className = 'liftova-home-shell'/, 'LIFTOVA Home shell must be mounted');
 assert.doesNotMatch(home, /observer\.observe\(document\.body/, 'Home must not use a document-wide MutationObserver');
-assert.match(homeCss, /#home\.liftova-home>:\not\(\.liftova-home-shell\)/, 'Legacy Home presentation must be hidden behind the LIFTOVA Home shell');
+assert.match(homeCss, /#home\.liftova-home>:not\(\.liftova-home-shell\)/, 'Legacy Home presentation must be hidden behind the LIFTOVA Home shell');
 
 const html = read('index.html');
 for (const screen of ['workoutsScreen','workoutScreen','libraryScreen','overallProgressScreen','profileScreen']) {
