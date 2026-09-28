@@ -2,6 +2,14 @@
 (() => {
   'use strict';
 
+  if (!document.querySelector('link[data-liftova-library-mobile-fix]')) {
+    const mobileFix = document.createElement('link');
+    mobileFix.rel = 'stylesheet';
+    mobileFix.href = 'liftova-library-mobile-fix.css?v=1';
+    mobileFix.dataset.liftovaLibraryMobileFix = 'true';
+    document.head.appendChild(mobileFix);
+  }
+
   const style = document.createElement('style');
   style.id = 'liftovaLibraryStyles';
   style.textContent = `
