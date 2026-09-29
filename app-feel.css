@@ -1,10 +1,10 @@
 /* LIFTOVA App Feel V5 — presentation only. No training/Coach/data logic. */
 @import url('./app-feel-v4-base.css');
+/* Keep foundational iPhone safe-area contract explicit in the primary stylesheet. */
+body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
 /* Lifecycle/connectivity affordances are opt-in surfaces; no application state is modified. */
 .liftova-offline .online-only{display:none!important}.liftova-online .offline-only{display:none!important}.offline-only{display:none}.liftova-offline .offline-only{display:initial}
 .liftova-backgrounded *{animation-play-state:paused!important}.liftova-resuming{--liftova-resume-state:1}
-/* Connection banners can use this class without blocking the workout. */
 .liftova-connectivity-banner{position:sticky;top:max(env(safe-area-inset-top),0px);z-index:120;width:100%;padding:8px 14px;text-align:center;font-size:.82rem;font-weight:650;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-/* Preserve interaction if network state changes mid-workout: never blanket-disable controls. */
 .liftova-offline button:not(:disabled),.liftova-offline input:not(:disabled),.liftova-offline select:not(:disabled){pointer-events:auto}
 @media (prefers-reduced-motion:reduce){.liftova-resuming{transition:none!important}}
