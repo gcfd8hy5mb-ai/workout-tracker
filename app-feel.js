@@ -1,24 +1,12 @@
-/* LIFTOVA App Feel V2 — UI shell only. Never reads/writes workout, Coach, auth, Supabase, or persistence state. */
-(()=>{
- 'use strict';
- const root=document.documentElement;
- const standalone=window.matchMedia?.('(display-mode: standalone)').matches||window.navigator.standalone===true;
- root.classList.toggle('liftova-standalone',standalone);
- const syncViewport=()=>{const vv=window.visualViewport;const h=vv?.height||window.innerHeight;root.style.setProperty('--liftova-vh',`${h*.01}px`);root.style.setProperty('--liftova-keyboard-offset',`${Math.max(0,window.innerHeight-h-(vv?.offsetTop||0))}px`)};
- syncViewport();
- window.visualViewport?.addEventListener('resize',syncViewport,{passive:true});
- window.visualViewport?.addEventListener('scroll',syncViewport,{passive:true});
- window.addEventListener('orientationchange',()=>setTimeout(syncViewport,80),{passive:true});
- let lastTap=0;
- document.addEventListener('touchend',event=>{const control=event.target.closest?.('button,[role="button"],a,.day-button,.action-button');if(!control)return;const now=Date.now();if(now-lastTap<280)event.preventDefault();lastTap=now},{passive:false});
- // Keep focused form controls visible when the iOS keyboard opens.
- document.addEventListener('focusin',event=>{const el=event.target;if(!el?.matches?.('input,textarea,select,[contenteditable="true"]'))return;setTimeout(()=>el.scrollIntoView?.({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}),120)});
- // Escape closes native dialogs where supported; existing custom modal logic remains untouched.
- document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;const dialog=document.querySelector('dialog[open]');if(dialog?.close)dialog.close()});
- // Reflect existing aria-busy state visually without changing application state.
- const syncBusy=el=>el instanceof HTMLElement&&el.classList.toggle('liftova-busy',el.getAttribute('aria-busy')==='true');
- document.querySelectorAll('[aria-busy]').forEach(syncBusy);
- new MutationObserver(records=>records.forEach(r=>syncBusy(r.target))).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['aria-busy']});
- // Mark external web links so installed-mode CSS/UX can distinguish them later; no navigation interception.
- document.querySelectorAll('a[href]').forEach(a=>{try{const u=new URL(a.href,location.href);if(u.origin!==location.origin)a.dataset.liftovaExternal='true'}catch{}});
+/* LIFTOVA App Feel V5 — UI shell only. Never reads/writes workout, Coach, auth, Supabase, or persistence state. */
+(()=>{'use strict';const root=document.documentElement;const standalone=window.matchMedia?.('(display-mode: standalone)').matches||window.navigator.standalone===true;root.classList.toggle('liftova-standalone',standalone);
+const syncViewport=()=>{const vv=window.visualViewport,h=vv?.height||window.innerHeight;root.style.setProperty('--liftova-vh',`${h*.01}px`);root.style.setProperty('--liftova-keyboard-offset',`${Math.max(0,window.innerHeight-h-(vv?.offsetTop||0))}px`)};syncViewport();window.visualViewport?.addEventListener('resize',syncViewport,{passive:true});window.visualViewport?.addEventListener('scroll',syncViewport,{passive:true});window.addEventListener('orientationchange',()=>setTimeout(syncViewport,80),{passive:true});
+let lastTap=0;document.addEventListener('touchend',e=>{const c=e.target.closest?.('button,[role="button"],a,.day-button,.action-button');if(!c)return;const n=Date.now();if(n-lastTap<280)e.preventDefault();lastTap=n},{passive:false});
+document.addEventListener('focusin',e=>{const el=e.target;if(!el?.matches?.('input,textarea,select,[contenteditable="true"]'))return;setTimeout(()=>el.scrollIntoView?.({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}),120)});document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const d=document.querySelector('dialog[open]');if(d?.close)d.close()});
+const syncBusy=el=>el instanceof HTMLElement&&el.classList.toggle('liftova-busy',el.getAttribute('aria-busy')==='true');document.querySelectorAll('[aria-busy]').forEach(syncBusy);new MutationObserver(rs=>rs.forEach(r=>syncBusy(r.target))).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['aria-busy']});
+document.querySelectorAll('a[href]').forEach(a=>{try{const u=new URL(a.href,location.href);if(u.origin!==location.origin)a.dataset.liftovaExternal='true'}catch{}});
+/* Presentation-only lifecycle/connectivity state. No network calls and no app-data mutation. */
+const syncConnectivity=()=>{root.classList.toggle('liftova-offline',navigator.onLine===false);root.classList.toggle('liftova-online',navigator.onLine!==false)};syncConnectivity();window.addEventListener('online',syncConnectivity,{passive:true});window.addEventListener('offline',syncConnectivity,{passive:true});
+const syncVisibility=()=>root.classList.toggle('liftova-backgrounded',document.visibilityState==='hidden');document.addEventListener('visibilitychange',syncVisibility,{passive:true});syncVisibility();
+window.addEventListener('pageshow',()=>{syncViewport();syncConnectivity();root.classList.remove('liftova-resuming');requestAnimationFrame(()=>root.classList.add('liftova-resuming'));setTimeout(()=>root.classList.remove('liftova-resuming'),180)},{passive:true});
 })();
