@@ -23,3 +23,5 @@ jobs:
           node-version: '20'
       - name: Run PRISM regression tests
         run: node tests/prism-regression.test.js
+      - name: Run LIFTOVA adaptive 6-week simulation
+        run: node tests/test_adaptive_6_week_simulation.js
