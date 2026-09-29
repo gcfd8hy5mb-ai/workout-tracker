@@ -27,6 +27,8 @@ jobs:
         run: node tests/test_adaptive_feedback_confidence.js
       - name: Run LIFTOVA adaptive feedback quality tests
         run: node tests/test_adaptive_feedback_quality.js
+      - name: Run LIFTOVA adaptive feedback explainability tests
+        run: node tests/test_adaptive_feedback_explainability.js
       - name: Run LIFTOVA adaptive 6-week simulation
         run: node tests/test_adaptive_6_week_simulation.js
       - name: Run LIFTOVA adaptive 12-week adversarial simulation
