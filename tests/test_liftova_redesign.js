@@ -72,7 +72,7 @@ assert.match(functionalFixes, /showWorkoutSummary/, 'completion summary compatib
 assert.match(functionalFixes, /undefined\|NaN/, 'invalid next-target values must be removed');
 
 const polish = read('liftova-polish.js');
-assert.match(polish, /LIFTOVA · Train · Track · Progress/, 'document title compatibility branding must remain present');
+assert.match(polish, /MYLIFTCOACH · Train · Track · Progress/, 'MYLIFTCOACH document title branding must remain present');
 assert.match(polish, /apple-mobile-web-app-title/, 'iOS installed-app title handling must remain present');
 assert.match(polish, /function updateMenuBrand/, 'Navigation drawer must receive explicit branding');
 assert.match(polish, /#sideMenu\{[^}]*position:fixed!important;[^}]*left:0!important;[^}]*background:radial-gradient/, 'Navigation drawer must remain a fixed left-side drawer');
