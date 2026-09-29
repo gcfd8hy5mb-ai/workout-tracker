@@ -1,29 +1,28 @@
-/* LIFTOVA App Feel V2 — presentation only. No training/Coach/data logic. */
+/* LIFTOVA App Feel V3 — presentation only. No training/Coach/data logic. */
 :root{--liftova-tap-scale:.985;--liftova-sheet-radius:22px;--liftova-focus:#007aff;--liftova-vh:1vh;--liftova-keyboard-offset:0px}
 html{height:100%;-webkit-text-size-adjust:100%;touch-action:manipulation;scroll-behavior:smooth}
 body{min-height:100%;min-height:calc(var(--liftova-vh)*100);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-user-select:none;user-select:none;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
-input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;user-select:text}
-a,button,[role="button"],.card,.day-button,.action-button{-webkit-tap-highlight-color:transparent}
-button,a,[role="button"],input,select,textarea{touch-action:manipulation}
-button:not(:disabled),a,[role="button"]{cursor:pointer}
-button:disabled,[aria-disabled="true"]{opacity:.48;cursor:default}
-button,[role="button"],select,input[type="button"],input[type="submit"]{min-height:44px}
-button:focus-visible,a:focus-visible,[role="button"]:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid color-mix(in srgb,var(--liftova-focus) 35%,transparent);outline-offset:2px}
-/* Consistent tactile feedback across tappable app surfaces. */
-@media (hover:none) and (pointer:coarse){button:not(:disabled):active,[role="button"]:not([aria-disabled="true"]):active,.day-button:active,.action-button:active,.menu-link:active,.bottom-nav button:active{transform:scale(var(--liftova-tap-scale));transition:transform 55ms ease-out}}
+input,textarea,select,[contenteditable=true]{-webkit-user-select:text;user-select:text}
+a,button,[role=button],.card,.day-button,.action-button{-webkit-tap-highlight-color:transparent}
+button,a,[role=button],input,select,textarea{touch-action:manipulation}button:not(:disabled),a,[role=button]{cursor:pointer}button:disabled,[aria-disabled=true]{opacity:.48;cursor:default}
+button,[role=button],select,input[type=button],input[type=submit]{min-height:44px}
+button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid color-mix(in srgb,var(--liftova-focus) 35%,transparent);outline-offset:2px}
+@media (hover:none) and (pointer:coarse){button:not(:disabled):active,[role=button]:not([aria-disabled=true]):active,.day-button:active,.action-button:active,.menu-link:active,.bottom-nav button:active,.exercise:active{transform:scale(var(--liftova-tap-scale));transition:transform 55ms ease-out}}
 @supports (-webkit-touch-callout:none){input,select,textarea{font-size:max(16px,1em)}}
-[style*="overflow"],.container,.side-menu{-webkit-overflow-scrolling:touch}
-/* Keyboard-aware overlays and sheets stay above the iOS keyboard. */
-dialog{border:0;border-radius:var(--liftova-sheet-radius);max-width:min(92vw,560px);max-height:calc(var(--liftova-vh)*88);overflow:auto;box-shadow:0 18px 60px rgba(0,0,0,.28);margin-bottom:max(1em,var(--liftova-keyboard-offset))}
-dialog::backdrop{background:rgba(0,0,0,.42);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
-/* Existing overlays get safe bottom clearance without altering their logic. */
-[role="dialog"],.modal,.sheet,.prism-pro-overlay{padding-bottom:max(env(safe-area-inset-bottom),var(--liftova-keyboard-offset))}
-/* Native-like state feedback for existing semantic busy state. */
-.liftova-busy{pointer-events:none;position:relative;opacity:.72}
-.liftova-busy::after{content:"";position:absolute;width:16px;height:16px;right:12px;top:50%;margin-top:-8px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:liftova-spin .7s linear infinite}
-@keyframes liftova-spin{to{transform:rotate(360deg)}}
-/* Avoid content jumping underneath fixed app chrome when focused/navigated. */
-:target,[tabindex],input,select,textarea{scroll-margin-top:calc(var(--header-height,72px) + env(safe-area-inset-top) + 14px);scroll-margin-bottom:calc(80px + env(safe-area-inset-bottom))}
-/* Installed app behaves as a contained application surface. */
+[style*=overflow],.container,.side-menu{-webkit-overflow-scrolling:touch}
+dialog{border:0;border-radius:var(--liftova-sheet-radius);max-width:min(92vw,560px);max-height:calc(var(--liftova-vh)*88);overflow:auto;box-shadow:0 18px 60px rgba(0,0,0,.28);margin-bottom:max(1em,var(--liftova-keyboard-offset))}dialog::backdrop{background:rgba(0,0,0,.42);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+[role=dialog],.modal,.sheet,.prism-pro-overlay{padding-bottom:max(env(safe-area-inset-bottom),var(--liftova-keyboard-offset))}
+.liftova-busy{pointer-events:none;position:relative;opacity:.72}.liftova-busy::after{content:"";position:absolute;width:16px;height:16px;right:12px;top:50%;margin-top:-8px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:liftova-spin .7s linear infinite}@keyframes liftova-spin{to{transform:rotate(360deg)}}
+:target,[tabindex],input,select,textarea{scroll-margin-top:calc(var(--header-height,72px) + env(safe-area-inset-top) + 14px);scroll-margin-bottom:calc(96px + env(safe-area-inset-bottom))}
+/* Workout flow: controls remain reachable and cards read as app surfaces, without changing handlers/state. */
+.exercise,.history-card,.progress-exercise,.stat-card{transform:translateZ(0);backface-visibility:hidden}
+.tracking{scroll-margin-top:calc(var(--header-height,72px) + env(safe-area-inset-top) + 10px)}
+.finish-workout,.save-button,.timer-start{min-height:52px}
+/* Bottom/fixed navigation gets native safe-area breathing room when those components exist. */
+.bottom-nav,[data-bottom-nav]{padding-bottom:max(env(safe-area-inset-bottom),8px);transform:translateZ(0)}
+/* Prevent a focused workout input from being hidden behind fixed controls/keyboard. */
+body:has(input:focus,select:focus,textarea:focus){padding-bottom:max(calc(25px + env(safe-area-inset-bottom)),var(--liftova-keyboard-offset))}
+/* Full-width action bars/sheets can opt into sticky behavior using existing semantic class names. */
+.workout-actions,.sticky-actions{position:sticky;bottom:0;z-index:40;padding-bottom:max(10px,env(safe-area-inset-bottom));background:linear-gradient(to bottom,transparent 0%,var(--bg,#f2f2f7) 24%)}
 @media (display-mode:standalone){html,body{overscroll-behavior:none}body{-webkit-touch-callout:none}.liftova-standalone-only{display:initial}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
