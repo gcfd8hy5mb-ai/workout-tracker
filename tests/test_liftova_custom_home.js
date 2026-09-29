@@ -4,9 +4,12 @@ const assert = require('assert');
 const config = fs.readFileSync('supabase-config.js', 'utf8');
 const customHome = fs.readFileSync('liftova-custom-home.js', 'utf8');
 
-const canonicalPos = config.indexOf("'liftova-home.js?v=12'");
-const customPos = config.indexOf("'liftova-custom-home.js?v=1'");
-assert(canonicalPos >= 0, 'canonical Home must remain loaded');
+const canonicalMatch = config.match(/'liftova-home\.js\?v=\d+'/);
+const customMatch = config.match(/'liftova-custom-home\.js\?v=\d+'/);
+assert(canonicalMatch, 'canonical Home must remain loaded');
+assert(customMatch, 'custom workout Home sync must remain loaded');
+const canonicalPos = config.indexOf(canonicalMatch[0]);
+const customPos = config.indexOf(customMatch[0]);
 assert(customPos > canonicalPos, 'custom workout Home sync must load after canonical Home');
 assert(customHome.includes("customWorkoutsV5"), 'custom Home must read saved custom workouts');
 assert(customHome.includes("workoutHistoryV52"), 'custom Home must use workout history to choose the next custom workout');
