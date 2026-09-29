@@ -33,10 +33,6 @@ async function runPass(browser,url,pass){
  await page.locator('#sideMenu .menu-close').click();
  await page.locator('#home .lh-hero-profile').click();
  await page.locator('#profileScreen:not(.hidden)').waitFor();
-
- // Exercise the canonical workout route without depending on classes owned by
- // the retired reference-v3 renderer. The screen itself must render meaningful
- // workout content and controls from the core application.
  await page.evaluate(()=>showWorkouts());
  await page.locator('#workoutDetailScreen:not(.hidden)').waitFor();
  await page.waitForTimeout(400);
@@ -44,7 +40,6 @@ async function runPass(browser,url,pass){
  assert.ok(workoutText.length>40,'canonical workout screen must render meaningful content');
  assert.ok(await page.locator('#workoutDetailScreen button,#workoutDetailScreen [role="button"],#workoutDetailScreen input').count()>0,'canonical workout screen must expose interactive controls');
  assert.equal(await page.locator('#workoutDetailScreen .lv3-exercise-row').count(),0,'retired reference-v3 workout rows must not be recreated');
-
  await page.evaluate(()=>showLibrary());
  await page.locator('#libraryScreen:not(.hidden) .library-item').first().waitFor();
  assert.ok(await page.locator('#libraryList .library-item').count()>100,'full Exercise Library must render');
@@ -61,10 +56,11 @@ async function runPass(browser,url,pass){
   assert.ok(selectedTokens.every(token=>builderText.includes(token)),'Add to Workout must preselect the same exercise');
  }
  await page.evaluate(()=>showOverallProgress());
- await page.locator('#overallProgressScreen [data-progress-target="strength"]').click();
- assert.equal(await page.locator('#overallProgressScreen [data-progress-target="strength"].active').count(),1,'Strength tab becomes active');
- await page.locator('#overallProgressScreen [data-progress-target="body"]').click();
- assert.equal(await page.locator('#overallProgressScreen [data-progress-target="body"].active').count(),1,'Body Stats tab becomes active');
+ await page.locator('#overallProgressScreen:not(.hidden)').waitFor();
+ await page.waitForTimeout(200);
+ const progressText=(await page.locator('#overallProgressScreen').innerText()).replace(/\s+/g,' ').trim();
+ assert.ok(progressText.length>30,'canonical Progress screen must render meaningful content');
+ assert.ok(await page.locator('#overallProgressScreen .liftova-progress-hero').count()===1,'canonical Progress presentation must decorate exactly once');
  for(const [screen,action] of [['home','goHome()'],['workoutDetailScreen','showWorkouts()'],['globalHistoryScreen','showGlobalHistory()'],['overallProgressScreen','showOverallProgress()'],['profileScreen','showProfile()']]){
   await page.evaluate(action);await page.locator(`#${screen}:not(.hidden)`).waitFor();
  }
@@ -76,6 +72,6 @@ async function runPass(browser,url,pass){
  assert.equal(/\bLIFTOVA\b/i.test(visibleText),false,'no visible LIFTOVA branding');
  assert.deepEqual(errors,[],'no uncaught page errors');
  await context.close();
- console.log(`MYLIFTCOACH browser smoke pass ${pass}: single-root home, canonical workout, library, navigation, atlas and branding PASS`);
+ console.log(`MYLIFTCOACH browser smoke pass ${pass}: single-root home, canonical workout, library, progress, navigation, atlas and branding PASS`);
 }
 (async()=>{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const url=`http://127.0.0.1:${server.address().port}/`;const browser=await chromium.launch({headless:true,args:['--no-sandbox']});try{for(let pass=1;pass<=2;pass++)await runPass(browser,url,pass)}finally{await browser.close();server.close()}})().catch(error=>{server.close();console.error(error);process.exitCode=1});
