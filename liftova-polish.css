@@ -1,10 +1,10 @@
 /* LIFTOVA production polish pass 1 + visual refinement pass 2 — presentation only. */
 :root{--liftova-tap:44px;--liftova-radius:18px;--liftova-gap:14px}
-body.liftova-ui{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body.liftova-ui{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 body.liftova-ui button,body.liftova-ui a,body.liftova-ui input,body.liftova-ui select,body.liftova-ui textarea{font:inherit}
 body.liftova-ui button,body.liftova-ui [role="button"]{min-height:var(--liftova-tap);touch-action:manipulation}
 body.liftova-ui button:focus-visible,body.liftova-ui a:focus-visible,body.liftova-ui input:focus-visible,body.liftova-ui select:focus-visible,body.liftova-ui textarea:focus-visible{outline:2px solid #b955ff;outline-offset:2px}
-body.liftova-ui input,body.liftova-ui select,body.liftova-ui textarea{font-size:16px}
+body.liftova-ui input,body.liftova-ui select,body.liftova-ui textarea{font-size:16px;max-width:100%}
 body.liftova-ui .container{width:100%;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
 body.liftova-ui .card{border-radius:var(--liftova-radius)}
 body.liftova-ui .section-heading{letter-spacing:-.02em;line-height:1.15}
@@ -13,7 +13,7 @@ body.liftova-ui .back{display:inline-flex;align-items:center;min-height:44px;pad
 body.liftova-ui .action-button,body.liftova-ui .day-button{min-height:52px;line-height:1.2}
 body.liftova-ui .picker-button{min-height:48px}
 body.liftova-ui .finish-workout{min-height:54px}
-body.liftova-ui img{max-width:100%}
+body.liftova-ui img{max-width:100%;height:auto}
 body.liftova-ui .exercise-title{line-height:1.2}
 body.liftova-ui .details p,body.liftova-ui .details li{line-height:1.55}
 body.liftova-ui .prism-bottom-nav{padding-bottom:max(env(safe-area-inset-bottom),8px)}
@@ -92,6 +92,18 @@ body.liftova-ui input,body.liftova-ui select,body.liftova-ui textarea{transition
 body.liftova-ui input:focus,body.liftova-ui select:focus,body.liftova-ui textarea:focus{box-shadow:0 0 0 3px rgba(185,85,255,.12)}
 body.liftova-ui [role="dialog"]{border-radius:22px;max-height:calc(100dvh - 32px);overflow:auto}
 
-@media(max-width:430px){body.liftova-ui .container{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}body.liftova-ui .card{padding:15px}body.liftova-ui .section-heading{margin-top:20px}body.liftova-ui .set-row{grid-template-columns:44px minmax(0,1fr) minmax(0,1fr)}body.liftova-ui .previous,body.liftova-ui .compare{margin-left:52px}body.liftova-ui .stat-grid{gap:9px}body.liftova-ui .timer-presets{gap:7px}body.liftova-ui .history-card,body.liftova-ui .progress-exercise{padding:15px}}
+/* Pass 3: final mobile edge-case polish. */
+body.liftova-ui main,body.liftova-ui section,body.liftova-ui .screen{min-width:0}
+body.liftova-ui h1,body.liftova-ui h2,body.liftova-ui h3,body.liftova-ui p{overflow-wrap:break-word}
+body.liftova-ui button{user-select:none;-webkit-user-select:none}
+body.liftova-ui button:disabled,body.liftova-ui [aria-disabled="true"]{opacity:.5;filter:saturate(.65)}
+body.liftova-ui [hidden]{display:none!important}
+body.liftova-ui .empty:empty{display:none}
+body.liftova-ui .prism-bottom-nav{transform:translateZ(0)}
+body.liftova-ui .side-menu{padding-bottom:max(16px,env(safe-area-inset-bottom))}
+body.liftova-ui [role="dialog"]{overscroll-behavior:contain;padding-bottom:max(16px,env(safe-area-inset-bottom))}
+body.liftova-ui :where(.error,.error-message,[role="alert"]){overflow-wrap:anywhere;line-height:1.45}
+
+@media(max-width:430px){body.liftova-ui .container{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}body.liftova-ui .card{padding:15px}body.liftova-ui .section-heading{margin-top:20px}body.liftova-ui .set-row{grid-template-columns:44px minmax(0,1fr) minmax(0,1fr)}body.liftova-ui .previous,body.liftova-ui .compare{margin-left:52px}body.liftova-ui .stat-grid{gap:9px}body.liftova-ui .timer-presets{gap:7px}body.liftova-ui .history-card,body.liftova-ui .progress-exercise{padding:15px}body.liftova-ui [role="dialog"]{max-width:calc(100vw - 20px)}}
 @media(max-width:360px){body.liftova-ui .lh-insights,body.liftova-ui .lh-lower-grid{grid-template-columns:1fr}body.liftova-ui .lh-shortcuts{grid-template-columns:1fr}body.liftova-ui .lh-shortcuts button{grid-template-columns:32px 1fr 12px}body.liftova-ui .stat-grid{grid-template-columns:1fr}body.liftova-ui .timer-presets{grid-template-columns:1fr 1fr}body.liftova-ui .library-item{align-items:flex-start;flex-wrap:wrap}body.liftova-ui .library-preview{flex:1 1 210px}}
 @media(prefers-reduced-motion:reduce){body.liftova-ui *,body.liftova-ui *:before,body.liftova-ui *:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
