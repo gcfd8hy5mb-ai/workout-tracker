@@ -1,4 +1,4 @@
-const CACHE_NAME = "liftova-home-v13-functional-qa";
+const CACHE_NAME = "myliftcoach-home-v14-source-rebrand";
 
 const APP_FILES = [
   "./",
@@ -52,7 +52,7 @@ const ANDROID_ONBOARDING_HOTFIX = `
     if(typeof closeMenu==="function"&&!closeMenu.__prismScrollPatched){const originalCloseMenu=closeMenu;const patchedCloseMenu=function(...args){try{return originalCloseMenu.apply(this,args)}finally{document.body.classList.remove("prism-drawer-open");document.body.style.overflow="";}};patchedCloseMenu.__prismScrollPatched=true;window.closeMenu=patchedCloseMenu;}
     const menu=document.getElementById("sideMenu");if(menu&&window.MutationObserver)new MutationObserver(clearStaleDrawerLock).observe(menu,{attributes:true,attributeFilter:["class","aria-hidden"]});
     const actions=document.querySelector(".journey-profile-actions");if(actions)actions.style.bottom="";
-  } catch(error){console.warn("LIFTOVA Android scroll hotfix could not initialize",error);}
+  } catch(error){console.warn("MYLIFTCOACH Android scroll hotfix could not initialize",error);}
 })();
 `;
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE_NAME).then(async cache=>{await cache.addAll(APP_FILES.slice(0,6).map(file=>new Request(file,{cache:"reload"})));await Promise.allSettled(APP_FILES.slice(6).map(file=>cache.add(file)));await self.skipWaiting();}));});
