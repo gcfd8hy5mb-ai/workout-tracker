@@ -1,0 +1,25 @@
+name: App Feel V1
+on:
+  pull_request:
+    paths:
+      - 'app-feel.css'
+      - 'app-feel.js'
+      - 'persistence/photo-scope.js'
+      - 'tests/app-feel-shell.test.js'
+      - '.github/workflows/app-feel-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app-feel.css'
+      - 'app-feel.js'
+      - 'persistence/photo-scope.js'
+      - 'tests/app-feel-shell.test.js'
+jobs:
+  isolation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tests/app-feel-shell.test.js
