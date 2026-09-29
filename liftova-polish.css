@@ -1,0 +1,80 @@
+/* LIFTOVA production polish pass 1 — presentation only. */
+:root{--liftova-tap:44px;--liftova-radius:18px;--liftova-gap:14px}
+body.liftova-ui{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body.liftova-ui button,body.liftova-ui a,body.liftova-ui input,body.liftova-ui select,body.liftova-ui textarea{font:inherit}
+body.liftova-ui button,body.liftova-ui [role="button"]{min-height:var(--liftova-tap);touch-action:manipulation}
+body.liftova-ui button:focus-visible,body.liftova-ui a:focus-visible,body.liftova-ui input:focus-visible,body.liftova-ui select:focus-visible,body.liftova-ui textarea:focus-visible{outline:2px solid #b955ff;outline-offset:2px}
+body.liftova-ui input,body.liftova-ui select,body.liftova-ui textarea{font-size:16px}
+body.liftova-ui .container{width:100%;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+body.liftova-ui .card{border-radius:var(--liftova-radius)}
+body.liftova-ui .section-heading{letter-spacing:-.02em;line-height:1.15}
+body.liftova-ui .small{line-height:1.45}
+body.liftova-ui .back{display:inline-flex;align-items:center;min-height:44px;padding:8px 4px;margin-left:-4px}
+body.liftova-ui .action-button,body.liftova-ui .day-button{min-height:52px;line-height:1.2}
+body.liftova-ui .picker-button{min-height:48px}
+body.liftova-ui .finish-workout{min-height:54px}
+body.liftova-ui img{max-width:100%}
+body.liftova-ui .exercise-title{line-height:1.2}
+body.liftova-ui .details p,body.liftova-ui .details li{line-height:1.55}
+body.liftova-ui .prism-bottom-nav{padding-bottom:max(env(safe-area-inset-bottom),8px)}
+body.liftova-ui .prism-bottom-nav button{min-width:44px;min-height:48px}
+body.liftova-ui #sideMenu button,body.liftova-ui #sideMenu a{min-height:44px}
+body.liftova-ui .lh-hero-menu,body.liftova-ui .lh-hero-profile{isolation:isolate}
+body.liftova-ui .lh-shortcuts button{min-height:66px!important}
+body.liftova-ui #workoutsScreen{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+body.liftova-ui #workoutBrowserSearch{font-size:16px!important}
+body.liftova-ui #workoutBrowserList .card{margin-bottom:14px}
+body.liftova-ui #workoutBrowserList .card button{min-height:46px}
+
+/* Core screen rhythm and interaction polish. */
+body.liftova-ui .workout-tabs{gap:4px;padding:4px;border-radius:16px}
+body.liftova-ui .workout-tab{min-height:44px;padding:9px 8px;line-height:1.15}
+body.liftova-ui .exercise{border-radius:20px}
+body.liftova-ui .exercise-header{padding:17px 16px}
+body.liftova-ui .tracking{padding:14px;border-radius:16px}
+body.liftova-ui .set-block{padding:14px 0}
+body.liftova-ui .picker-button{width:100%;font-variant-numeric:tabular-nums}
+body.liftova-ui .finish-workout{margin-top:12px;border-radius:16px}
+body.liftova-ui .library-item{min-height:64px;padding:12px 0}
+body.liftova-ui .library-preview-text{overflow:hidden}
+body.liftova-ui .library-name{line-height:1.25;overflow-wrap:anywhere}
+body.liftova-ui .add-small,body.liftova-ui .remove-small{min-height:44px;padding:10px 13px}
+body.liftova-ui .save-button,body.liftova-ui .delete-button{min-height:50px}
+body.liftova-ui .builder-exercise{padding:14px;border-radius:14px}
+body.liftova-ui .history-card,body.liftova-ui .progress-exercise,body.liftova-ui .stat-card{border-radius:18px}
+body.liftova-ui .history-title,body.liftova-ui .progress-name{line-height:1.25}
+body.liftova-ui .history-date,body.liftova-ui .history-set,body.liftova-ui .progress-detail{line-height:1.4}
+body.liftova-ui .stat-number{font-variant-numeric:tabular-nums;line-height:1}
+body.liftova-ui .timer-display{font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+body.liftova-ui .timer-button,body.liftova-ui .timer-start,body.liftova-ui .timer-reset{min-height:48px}
+body.liftova-ui .side-menu{overscroll-behavior:contain}
+body.liftova-ui .menu-link{display:flex;align-items:center;min-height:50px}
+body.liftova-ui .menu-close{min-width:44px;min-height:44px}
+body.liftova-ui .lh-hero-menu,body.liftova-ui .lh-hero-profile{touch-action:manipulation}
+body.liftova-ui .lh-week{overflow:hidden}
+body.liftova-ui .lh-day{min-width:0}
+body.liftova-ui .lh-workout h2{overflow-wrap:anywhere}
+body.liftova-ui .lh-recent-row{min-height:44px}
+body.liftova-ui .lh-recent-row p b,body.liftova-ui .lh-recent-row p small{max-width:100%}
+
+/* Tracking, progress, account and settings polish. */
+body.liftova-ui label{line-height:1.3}
+body.liftova-ui input,body.liftova-ui select,body.liftova-ui textarea{min-height:48px;border-radius:13px}
+body.liftova-ui textarea{line-height:1.45;resize:vertical}
+body.liftova-ui input[type="checkbox"],body.liftova-ui input[type="radio"]{min-height:0;width:auto}
+body.liftova-ui .stat-grid{align-items:stretch}
+body.liftova-ui .stat-card{min-width:0}
+body.liftova-ui .stat-label{line-height:1.3}
+body.liftova-ui .progress-exercise,body.liftova-ui .history-card{overflow:hidden}
+body.liftova-ui .progress-detail,body.liftova-ui .history-set{overflow-wrap:anywhere}
+body.liftova-ui [id*="weight" i] input,body.liftova-ui [id*="water" i] input,body.liftova-ui [id*="measurement" i] input{font-variant-numeric:tabular-nums}
+body.liftova-ui [id*="settings" i] button,body.liftova-ui [id*="profile" i] button,body.liftova-ui [id*="goal" i] button{min-height:48px}
+body.liftova-ui [id*="settings" i] .card,body.liftova-ui [id*="profile" i] .card,body.liftova-ui [id*="goal" i] .card{overflow:hidden}
+body.liftova-ui [role="dialog"]{max-width:calc(100vw - 28px)}
+body.liftova-ui [role="dialog"] button{min-height:46px}
+body.liftova-ui .empty{line-height:1.5;padding:28px 18px}
+body.liftova-ui .menu-version{line-height:1.35}
+
+@media(max-width:430px){body.liftova-ui .container{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}body.liftova-ui .card{padding:15px}body.liftova-ui .section-heading{margin-top:20px}body.liftova-ui .set-row{grid-template-columns:44px minmax(0,1fr) minmax(0,1fr)}body.liftova-ui .previous,body.liftova-ui .compare{margin-left:52px}body.liftova-ui .stat-grid{gap:9px}body.liftova-ui .timer-presets{gap:7px}}
+@media(max-width:360px){body.liftova-ui .lh-insights,body.liftova-ui .lh-lower-grid{grid-template-columns:1fr}body.liftova-ui .lh-shortcuts{grid-template-columns:1fr}body.liftova-ui .lh-shortcuts button{grid-template-columns:32px 1fr 12px}body.liftova-ui .stat-grid{grid-template-columns:1fr}body.liftova-ui .timer-presets{grid-template-columns:1fr 1fr}body.liftova-ui .library-item{align-items:flex-start;flex-wrap:wrap}body.liftova-ui .library-preview{flex:1 1 210px}}
+@media(prefers-reduced-motion:reduce){body.liftova-ui *,body.liftova-ui *:before,body.liftova-ui *:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
