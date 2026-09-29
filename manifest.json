@@ -1,13 +1,15 @@
 {
-  "name": "MYLIFTCOACH · Train · Track · Progress",
+  "name": "MYLIFTCOACH",
   "short_name": "MYLIFTCOACH",
   "description": "Premium workout tracking with adaptive training intelligence",
-  "start_url": "./",
+  "id": "./?app=myliftcoach",
+  "start_url": "./?app=myliftcoach",
   "scope": "./",
   "display": "standalone",
   "background_color": "#07050d",
   "theme_color": "#07050d",
   "icons": [
-    {"src": "images/liftova-icon.svg?v=8", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+    {"src": "images/apple-touch-icon-180.png?v=10", "sizes": "180x180", "type": "image/png", "purpose": "any"},
+    {"src": "images/liftova-icon.svg?v=10", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
   ]
 }

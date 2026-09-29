@@ -52,9 +52,14 @@ assert.equal(manifest.short_name, 'MYLIFTCOACH');
 assert.match(manifest.name, /^MYLIFTCOACH/);
 assert.equal(manifest.display, 'standalone');
 assert.equal(
-  manifest.icons.some(item => item.src === 'images/liftova-icon.svg?v=8' && item.type === 'image/svg+xml'),
+  manifest.icons.some(item => item.src === 'images/liftova-icon.svg?v=10' && item.type === 'image/svg+xml'),
   true,
   'MYLIFTCOACH install icon must be present'
+);
+assert.equal(
+  manifest.icons.some(item => item.src === 'images/apple-touch-icon-180.png?v=10' && item.type === 'image/png'),
+  true,
+  'MYLIFTCOACH Apple touch icon must be present'
 );
 
 const sw = read('sw.js');
