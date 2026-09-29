@@ -1,4 +1,4 @@
-const CACHE_NAME = "myliftcoach-home-v14-source-rebrand";
+const CACHE_NAME = "myliftcoach-home-v15-clean-rebrand";
 
 const APP_FILES = [
   "./",
