@@ -1,0 +1,47 @@
+name: Fix MYLIFTCOACH iOS install branding
+on:
+  push:
+    branches: [fix-myliftcoach-ios-install]
+permissions:
+  contents: write
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-myliftcoach-ios-install
+      - name: Fix stale branding and rebuild iOS icon
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html'); s=p.read_text()
+          for old,new in {
+            '<meta name="apple-mobile-web-app-title" content="LIFTOVA">':'<meta name="apple-mobile-web-app-title" content="MYLIFTCOACH">',
+            '<link rel="apple-touch-icon" href="images/apple-touch-icon-180.png?v=7">':'<link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon-180.png?v=9">',
+            '<link rel="icon" type="image/svg+xml" href="images/liftova-icon.svg?v=2">':'<link rel="icon" type="image/svg+xml" href="images/liftova-icon.svg?v=9">',
+            '<title>LIFTOVA · Train · Track · Progress</title>':'<title>MYLIFTCOACH · Train · Track · Progress</title>',
+            'Restoring your LIFTOVA account…':'Restoring your MYLIFTCOACH account…'
+          }.items():
+            if old not in s: raise SystemExit(f'Missing expected stale string: {old}')
+            s=s.replace(old,new)
+          p.write_text(s)
+          PY
+          python3 -m pip install --quiet cairosvg
+          python3 - <<'PY'
+          import cairosvg
+          cairosvg.svg2png(url='images/liftova-icon.svg',write_to='images/apple-touch-icon-180.png',output_width=180,output_height=180)
+          PY
+          grep -q 'apple-mobile-web-app-title" content="MYLIFTCOACH"' index.html
+          grep -q '<title>MYLIFTCOACH · Train · Track · Progress</title>' index.html
+          grep -q 'apple-touch-icon-180.png?v=9' index.html
+          test -s images/apple-touch-icon-180.png
+          ! grep -q 'apple-mobile-web-app-title" content="LIFTOVA"' index.html
+      - name: Commit fix
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html images/apple-touch-icon-180.png
+          git commit -m "Fix MYLIFTCOACH iOS Home Screen branding"
+          git push origin HEAD:fix-myliftcoach-ios-install
