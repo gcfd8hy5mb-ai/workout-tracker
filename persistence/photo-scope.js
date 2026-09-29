@@ -15,3 +15,15 @@
   }
   return Object.freeze({ databaseName });
 });
+
+/* Presentation-only shell loader. Browser guarded so photo-scope Node/regression tests are unchanged. */
+if (typeof document !== 'undefined') {
+  const css = document.createElement('link');
+  css.rel = 'stylesheet';
+  css.href = 'app-feel.css?v=1';
+  document.head.appendChild(css);
+  const script = document.createElement('script');
+  script.src = 'app-feel.js?v=1';
+  script.defer = true;
+  document.head.appendChild(script);
+}
