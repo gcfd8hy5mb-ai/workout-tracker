@@ -32,7 +32,7 @@ const loader = read('supabase-config.js');
 for (const file of redesignFiles) {
   assert.match(loader, new RegExp(file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${file} must be loaded`);
 }
-assert.match(loader, /liftova-functional-fixes\.js\?v=1/, 'functional QA compatibility fixes must be loaded');
+assert.match(loader, /liftova-functional-fixes\.js\?v=2/, 'functional QA compatibility fixes must be loaded');
 
 const home = read('liftova-home.js');
 const homeCss = read('liftova-home.css');
@@ -48,13 +48,13 @@ for (const screen of ['workoutsScreen','workoutScreen','libraryScreen','overallP
 }
 
 const manifest = JSON.parse(read('manifest.json'));
-assert.equal(manifest.short_name, 'LIFTOVA');
-assert.match(manifest.name, /^LIFTOVA/);
+assert.equal(manifest.short_name, 'MYLIFTCOACH');
+assert.match(manifest.name, /^MYLIFTCOACH/);
 assert.equal(manifest.display, 'standalone');
 assert.equal(
-  manifest.icons.some(item => item.src === 'images/apple-touch-icon-180.png?v=7' && item.type === 'image/png'),
+  manifest.icons.some(item => item.src === 'images/liftova-icon.svg?v=8' && item.type === 'image/svg+xml'),
   true,
-  'LIFTOVA PNG install icon must be present'
+  'MYLIFTCOACH install icon must be present'
 );
 
 const sw = read('sw.js');
@@ -72,20 +72,20 @@ assert.match(functionalFixes, /showWorkoutSummary/, 'completion summary compatib
 assert.match(functionalFixes, /undefined\|NaN/, 'invalid next-target values must be removed');
 
 const polish = read('liftova-polish.js');
-assert.match(polish, /LIFTOVA · Train · Track · Progress/, 'document title must be rebranded');
-assert.match(polish, /apple-mobile-web-app-title/, 'iOS installed-app title must be rebranded');
-assert.match(polish, /function updateMenuBrand/, 'Navigation drawer must receive explicit LIFTOVA branding');
-assert.match(polish, /#sideMenu\{[^}]*position:fixed!important;[^}]*left:0!important;[^}]*background:radial-gradient/, 'Navigation drawer must remain a fixed left-side LIFTOVA drawer');
-assert.match(polish, /\.prism-bottom-nav\{[^}]*background:rgba\(7,5,13/, 'Bottom navigation must use the LIFTOVA visual system');
+assert.match(polish, /LIFTOVA · Train · Track · Progress/, 'document title compatibility branding must remain present');
+assert.match(polish, /apple-mobile-web-app-title/, 'iOS installed-app title handling must remain present');
+assert.match(polish, /function updateMenuBrand/, 'Navigation drawer must receive explicit branding');
+assert.match(polish, /#sideMenu\{[^}]*position:fixed!important;[^}]*left:0!important;[^}]*background:radial-gradient/, 'Navigation drawer must remain a fixed left-side drawer');
+assert.match(polish, /\.prism-bottom-nav\{[^}]*background:rgba\(7,5,13/, 'Bottom navigation must use the established visual system');
 
 const progressJs = read('liftova-progress.js');
 const progressCss = read('liftova-progress.css');
 assert.match(progressJs, /liftova-progress\.css\?v=6/, 'Progress styles must be cache-busted');
-assert.match(progressCss, /#overallProgressScreen\{position:relative;color:#f8f5ff!important/, 'Progress screen must use canonical dark LIFTOVA styling');
-assert.match(progressCss, /background:#6424d0!important/, 'Progress period control must use LIFTOVA purple treatment');
+assert.match(progressCss, /#overallProgressScreen\{position:relative;color:#f8f5ff!important/, 'Progress screen must use canonical dark styling');
+assert.match(progressCss, /background:#6424d0!important/, 'Progress period control must use purple treatment');
 
 const profile = read('liftova-profile.js');
 assert.doesNotMatch(profile, /observe\(document\.documentElement,\{subtree:true,childList:true\}\)/, 'Profile must not observe the whole document');
 assert.match(profile, /el&&el\.textContent!==next/, 'Profile summary updates must be idempotent');
 
-console.log('LIFTOVA redesign pre-merge smoke checks: OK');
+console.log('MYLIFTCOACH redesign pre-merge smoke checks: OK');
