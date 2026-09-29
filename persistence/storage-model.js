@@ -1,4 +1,4 @@
-/* Staged, side-effect-free legacy adapter. Not loaded by production PRISM yet. */
+/* Staged legacy adapter plus LIFTOVA visible-brand cleanup. */
 (function(root,factory){const api=factory();if(typeof module==='object')module.exports=api;else root.PRISMStorageModel=api;})(globalThis,function(){
 'use strict';
 const RULES=Object.freeze({
@@ -23,112 +23,34 @@ const RULES=Object.freeze({
  prismCoachProgramProposalsV1:['coach_program_proposals','list'],
  prismCoachRecoveryPlansV1:['coach_recovery_plans','list']
 });
-const TABLES=Object.freeze(['sources',...new Set(Object.values(RULES).map(x=>x[0])),
- 'tracking_entries','tracking_maps','workout_exercises','session_exercises','sets','responses','outcomes']);
-const LOCAL_ONLY=Object.freeze(['prismEntitlementV1','prismSupabaseSessionV1','prismRestEndsAtV1',
- 'workoutRestEndsAt','prismCoachPlanV1','prismDeveloperTestModeV1','prismDeveloperScenarioV1']);
+const TABLES=Object.freeze(['sources',...new Set(Object.values(RULES).map(x=>x[0])),'tracking_entries','tracking_maps','workout_exercises','session_exercises','sets','responses','outcomes']);
+const LOCAL_ONLY=Object.freeze(['prismEntitlementV1','prismSupabaseSessionV1','prismRestEndsAtV1','workoutRestEndsAt','prismCoachPlanV1','prismDeveloperTestModeV1','prismDeveloperScenarioV1']);
 const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
-function canonical(v){
- if(v===null||typeof v!=='object')return JSON.stringify(v);
- if(Array.isArray(v))return '['+v.map(canonical).join(',')+']';
- return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canonical(v[k])).join(',')+'}';
-}
-function validate(v){if(!v||typeof v!=='object')return;for(const k of Object.keys(v)){
- if(['__proto__','prototype','constructor'].includes(k))throw Error('Unsafe data property: '+k);validate(v[k]);}}
-async function identity(...parts){const bytes=new TextEncoder().encode(canonical(parts));
- const cryptoAPI=globalThis.crypto||(typeof require==='function'?require('node:crypto').webcrypto:null);
- if(!cryptoAPI?.subtle)throw Error('Secure context required for migration identities');
- return Array.from(new Uint8Array(await cryptoAPI.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');}
-function natural(v){if(v&&typeof v==='object'){
- if(v.id!==undefined)return ['id',typeof v.id,v.id];
- if(v.sessionId!==undefined)return ['session',v.sessionId];
- if(v.week!==undefined)return ['week',v.week];
- if(v.at)return ['event',v.at,v.exerciseId||null];
- }return ['content',v];}
+function canonical(v){if(v===null||typeof v!=='object')return JSON.stringify(v);if(Array.isArray(v))return '['+v.map(canonical).join(',')+']';return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canonical(v[k])).join(',')+'}';}
+function validate(v){if(!v||typeof v!=='object')return;for(const k of Object.keys(v)){if(['__proto__','prototype','constructor'].includes(k))throw Error('Unsafe data property: '+k);validate(v[k]);}}
+async function identity(...parts){const bytes=new TextEncoder().encode(canonical(parts));const cryptoAPI=globalThis.crypto||(typeof require==='function'?require('node:crypto').webcrypto:null);if(!cryptoAPI?.subtle)throw Error('Secure context required for migration identities');return Array.from(new Uint8Array(await cryptoAPI.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');}
+function natural(v){if(v&&typeof v==='object'){if(v.id!==undefined)return ['id',typeof v.id,v.id];if(v.sessionId!==undefined)return ['session',v.sessionId];if(v.week!==undefined)return ['week',v.week];if(v.at)return ['event',v.at,v.exerciseId||null];}return ['content',v];}
 function capture(storage){const out={};for(const key of Object.keys(RULES)){const raw=storage.getItem(key);if(raw!==null)out[key]=raw;}return out;}
-async function normalize(snapshot){
- const rows=[],seen=new Set();
- async function add(table,source,token,payload,extra={}){
-  const id=await identity(source,table,token),key=table+':'+id;
-  if(seen.has(key))throw Error('Ambiguous duplicate legacy identity in '+source);
-  seen.add(key);const row={table,id,source_key:source,payload,...extra};rows.push(row);return id;
- }
- for(const [source,[table,kind]] of Object.entries(RULES)){
-  if(!own(snapshot,source))continue;
-  let value;try{value=kind==='raw'?snapshot[source]:JSON.parse(snapshot[source]);}catch{throw Error('Invalid JSON in '+source+'; local data was not changed');}
-  validate(value);
-  const shape=value===null?'null':Array.isArray(value)?'array':typeof value==='object'?'object':'scalar';
-  if(shape!=='null'&&((['list','sessions','workouts','interventions'].includes(kind)&&shape!=='array')||(['fields','tracking','adaptive'].includes(kind)&&shape!=='object')))throw Error('Unexpected shape in '+source);
-  await add('sources',source,'source',{shape});
-  if(shape==='null')continue;
-  if(kind==='raw'){await add(table,source,'value',value,{slot:'value'});continue;}
-  if(kind==='fields'){for(const [slot,payload]of Object.entries(value))await add(table,source,slot,payload,{slot});continue;}
-  if(kind==='adaptive'){
-   for(const [group,entries]of Object.entries(value)){
-    if(!['accepted','dismissed'].includes(group))throw Error('Unknown Adaptive state group; review schema before migration');
-    if(!entries||Array.isArray(entries)||typeof entries!=='object')throw Error('Invalid Adaptive decisions');
-    await add(table,source,['group',group],null,{slot:group});
-    for(const [slot,payload]of Object.entries(entries))await add(table,source,[group,slot],payload,{slot:group+'/'+slot,parent_id:await identity(source,table,['group',group])});
-   }continue;
-  }
-  if(kind==='tracking'){
-   for(const [slot,payload]of Object.entries(value)){
-    if(Array.isArray(payload)){
-     const parent_id=await add(table,source,slot,{shape:'array'},{slot});
-     for(let i=0;i<payload.length;i++)await add('tracking_entries',source,[slot,natural(payload[i])],payload[i],{parent_id,position:i,slot});
-    }else if(['readiness','manualTargets','substitutions','calendarNotes'].includes(slot)&&payload&&typeof payload==='object'){
-     const parent_id=await add(table,source,slot,{shape:'map'},{slot});
-     for(const [key,item]of Object.entries(payload))await add('tracking_maps',source,[slot,key],item,{parent_id,slot:key});
-    }else await add(table,source,slot,{value:payload},{slot});
-   }continue;
-  }
-  for(let position=0;position<value.length;position++){
-   const item=value[position],token=natural(item);
-   if(['sessions','workouts'].includes(kind)){
-    if(!item||!Array.isArray(item.exercises))throw Error('Missing exercise list in '+source);
-    const {exercises,...payload}=item,parent_id=await add(table,source,token,payload,{position});
-    for(let n=0;n<exercises.length;n++){
-     if(kind==='workouts'){await add('workout_exercises',source,[parent_id,n],exercises[n],{parent_id,position:n});continue;}
-     const {sets,...exercise}=exercises[n];if(!Array.isArray(sets))throw Error('Missing sets in '+source);
-     const exid=await add('session_exercises',source,[parent_id,n],exercise,{parent_id,position:n});
-     for(let s=0;s<sets.length;s++)await add('sets',source,[exid,s],sets[s],{parent_id:exid,position:s});
-    }
-   }else if(kind==='interventions'){
-    const {response,outcome,...payload}=item;
-    const parent_id=await add(table,source,token,payload,{position});
-    // Preserve null versus absent legacy fields, too.
-    if(own(item,'response'))await add('responses',source,parent_id,response,{parent_id});
-    if(own(item,'outcome'))await add('outcomes',source,parent_id,outcome,{parent_id});
-   }else await add(table,source,token,item,{position});
-  }
- }
- return rows;
-}
-function restoreSnapshot(rows){
- const result=Object.create(null),byTable=t=>rows.filter(r=>r.table===t&&!(r.payload&&Object.keys(r.payload).length===1&&r.payload.__prismDeletedV1===true));
- const ordered=list=>list.slice().sort((a,b)=>(a.position??0)-(b.position??0)||a.id.localeCompare(b.id));
- const children=(table,parent)=>ordered(byTable(table).filter(r=>r.parent_id===parent));
- for(const marker of byTable('sources')){
-  const source=marker.source_key;if(!own(RULES,source))throw Error('Unknown cloud source');
-  const [table,kind]=RULES[source],items=ordered(byTable(table).filter(r=>r.source_key===source));
-  let value;
-  if(marker.payload.shape==='null')value=null;
-  else if(kind==='raw')value=items[0]?.payload;
-  else if(kind==='fields')value=Object.fromEntries(items.map(r=>[r.slot,r.payload]));
-  else if(kind==='adaptive'){
-   value=Object.fromEntries(items.filter(r=>!r.parent_id).map(r=>[r.slot,{}]));
-   for(const r of items.filter(r=>r.parent_id)){const n=r.slot.indexOf('/');value[r.slot.slice(0,n)][r.slot.slice(n+1)]=r.payload;}
-  }else if(kind==='tracking')value=Object.fromEntries(items.map(r=>[r.slot,r.payload.shape==='array'?children('tracking_entries',r.id).map(x=>x.payload):r.payload.shape==='map'?Object.fromEntries(children('tracking_maps',r.id).map(x=>[x.slot,x.payload])):r.payload.value]));
-  else value=items.map(r=>{
-   if(kind==='sessions')return {...r.payload,exercises:children('session_exercises',r.id).map(e=>({...e.payload,sets:children('sets',e.id).map(s=>s.payload)}))};
-   if(kind==='workouts')return {...r.payload,exercises:children('workout_exercises',r.id).map(e=>e.payload)};
-   if(kind==='interventions'){
-    const item={...r.payload};for(const [field,t]of [['response','responses'],['outcome','outcomes']]){const child=children(t,r.id)[0];if(child)item[field]=child.payload;}return item;
-   }return r.payload;
-  });
-  validate(value);result[source]=kind==='raw'?value:JSON.stringify(value);
- }
- return result;
-}
+async function normalize(snapshot){const rows=[],seen=new Set();async function add(table,source,token,payload,extra={}){const id=await identity(source,table,token),key=table+':'+id;if(seen.has(key))throw Error('Ambiguous duplicate legacy identity in '+source);seen.add(key);const row={table,id,source_key:source,payload,...extra};rows.push(row);return id;}for(const [source,[table,kind]] of Object.entries(RULES)){if(!own(snapshot,source))continue;let value;try{value=kind==='raw'?snapshot[source]:JSON.parse(snapshot[source]);}catch{throw Error('Invalid JSON in '+source+'; local data was not changed');}validate(value);const shape=value===null?'null':Array.isArray(value)?'array':typeof value==='object'?'object':'scalar';if(shape!=='null'&&((['list','sessions','workouts','interventions'].includes(kind)&&shape!=='array')||(['fields','tracking','adaptive'].includes(kind)&&shape!=='object')))throw Error('Unexpected shape in '+source);await add('sources',source,'source',{shape});if(shape==='null')continue;if(kind==='raw'){await add(table,source,'value',value,{slot:'value'});continue;}if(kind==='fields'){for(const [slot,payload]of Object.entries(value))await add(table,source,slot,payload,{slot});continue;}if(kind==='adaptive'){for(const [group,entries]of Object.entries(value)){if(!['accepted','dismissed'].includes(group))throw Error('Unknown Adaptive state group; review schema before migration');if(!entries||Array.isArray(entries)||typeof entries!=='object')throw Error('Invalid Adaptive decisions');await add(table,source,['group',group],null,{slot:group});for(const [slot,payload]of Object.entries(entries))await add(table,source,[group,slot],payload,{slot:group+'/'+slot,parent_id:await identity(source,table,['group',group])});}continue;}if(kind==='tracking'){for(const [slot,payload]of Object.entries(value)){if(Array.isArray(payload)){const parent_id=await add(table,source,slot,{shape:'array'},{slot});for(let i=0;i<payload.length;i++)await add('tracking_entries',source,[slot,natural(payload[i])],payload[i],{parent_id,position:i,slot});}else if(['readiness','manualTargets','substitutions','calendarNotes'].includes(slot)&&payload&&typeof payload==='object'){const parent_id=await add(table,source,slot,{shape:'map'},{slot});for(const [key,item]of Object.entries(payload))await add('tracking_maps',source,[slot,key],item,{parent_id,slot:key});}else await add(table,source,slot,{value:payload},{slot});}continue;}for(let position=0;position<value.length;position++){const item=value[position],token=natural(item);if(['sessions','workouts'].includes(kind)){if(!item||!Array.isArray(item.exercises))throw Error('Missing exercise list in '+source);const {exercises,...payload}=item,parent_id=await add(table,source,token,payload,{position});for(let n=0;n<exercises.length;n++){if(kind==='workouts'){await add('workout_exercises',source,[parent_id,n],exercises[n],{parent_id,position:n});continue;}const {sets,...exercise}=exercises[n];if(!Array.isArray(sets))throw Error('Missing sets in '+source);const exid=await add('session_exercises',source,[parent_id,n],exercise,{parent_id,position:n});for(let s=0;s<sets.length;s++)await add('sets',source,[exid,s],sets[s],{parent_id:exid,position:s});}}else if(kind==='interventions'){const {response,outcome,...payload}=item;const parent_id=await add(table,source,token,payload,{position});if(own(item,'response'))await add('responses',source,parent_id,response,{parent_id});if(own(item,'outcome'))await add('outcomes',source,parent_id,outcome,{parent_id});}else await add(table,source,token,item,{position});}}return rows;}
+function restoreSnapshot(rows){const result=Object.create(null),byTable=t=>rows.filter(r=>r.table===t&&!(r.payload&&Object.keys(r.payload).length===1&&r.payload.__prismDeletedV1===true));const ordered=list=>list.slice().sort((a,b)=>(a.position??0)-(b.position??0)||a.id.localeCompare(b.id));const children=(table,parent)=>ordered(byTable(table).filter(r=>r.parent_id===parent));for(const marker of byTable('sources')){const source=marker.source_key;if(!own(RULES,source))throw Error('Unknown cloud source');const [table,kind]=RULES[source],items=ordered(byTable(table).filter(r=>r.source_key===source));let value;if(marker.payload.shape==='null')value=null;else if(kind==='raw')value=items[0]?.payload;else if(kind==='fields')value=Object.fromEntries(items.map(r=>[r.slot,r.payload]));else if(kind==='adaptive'){value=Object.fromEntries(items.filter(r=>!r.parent_id).map(r=>[r.slot,{}]));for(const r of items.filter(r=>r.parent_id)){const n=r.slot.indexOf('/');value[r.slot.slice(0,n)][r.slot.slice(n+1)]=r.payload;}}else if(kind==='tracking')value=Object.fromEntries(items.map(r=>[r.slot,r.payload.shape==='array'?children('tracking_entries',r.id).map(x=>x.payload):r.payload.shape==='map'?Object.fromEntries(children('tracking_maps',r.id).map(x=>[x.slot,x.payload])):r.payload.value]));else value=items.map(r=>{if(kind==='sessions')return {...r.payload,exercises:children('session_exercises',r.id).map(e=>({...e.payload,sets:children('sets',e.id).map(s=>s.payload)}))};if(kind==='workouts')return {...r.payload,exercises:children('workout_exercises',r.id).map(e=>e.payload)};if(kind==='interventions'){const item={...r.payload};for(const [field,t]of [['response','responses'],['outcome','outcomes']]){const child=children(t,r.id)[0];if(child)item[field]=child.payload;}return item;}return r.payload;});validate(value);result[source]=kind==='raw'?value:JSON.stringify(value);}return result;}
 return Object.freeze({RULES,TABLES,LOCAL_ONLY,capture,normalize,restoreSnapshot,canonical,identity});
 });
+
+/* Visible-brand compatibility layer. Internal prism* storage keys intentionally stay unchanged. */
+if(typeof document!=='undefined'){
+  const rebrand=s=>typeof s==='string'?s.replace(/MYLIFTCOACH/gi,'LIFTOVA').replace(/\bPRISM\b/g,'LIFTOVA').replace(/\bPrism\b/g,'LIFTOVA'):s;
+  const fixNode=node=>{
+    if(node.nodeType===3){const next=rebrand(node.nodeValue);if(next!==node.nodeValue)node.nodeValue=next;return;}
+    if(node.nodeType!==1)return;
+    for(const attr of ['title','aria-label','placeholder','alt'])if(node.hasAttribute?.(attr)){const old=node.getAttribute(attr),next=rebrand(old);if(next!==old)node.setAttribute(attr,next);}
+    for(const child of node.childNodes)fixNode(child);
+  };
+  const fixMeta=()=>{
+    document.title=rebrand(document.title);
+    document.querySelectorAll('meta[content]').forEach(el=>{const old=el.content,next=rebrand(old);if(next!==old)el.content=next;});
+  };
+  const run=()=>{fixMeta();fixNode(document.body);};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
+  const observer=new MutationObserver(records=>{for(const record of records){if(record.type==='characterData')fixNode(record.target);for(const node of record.addedNodes)fixNode(node);}fixMeta();});
+  document.addEventListener('DOMContentLoaded',()=>observer.observe(document.body,{subtree:true,childList:true,characterData:true}),{once:true});
+}
