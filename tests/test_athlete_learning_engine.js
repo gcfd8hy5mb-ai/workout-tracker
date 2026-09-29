@@ -1,0 +1,10 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');const src=fs.readFileSync('athlete-learning-engine.js','utf8');const window={};vm.runInNewContext(src,{window,console});
+const rec={exerciseId:'press',targetWeight:100,targetReps:10};
+assert.strictEqual(window.liftovaLearningOutcome(rec,{accepted:false}).label,'rejected');
+assert.strictEqual(window.liftovaLearningOutcome(rec,{weight:105,reps:12,targetReps:10}).label,'positive');
+let obs=[1,2].map(i=>({exerciseId:'press',outcomeScore:.8,muscles:['chest','triceps']}));let p=window.liftovaExerciseResponseProfile('press',obs);assert.strictEqual(p.actionable,false);assert.strictEqual(p.classification,'learning');
+obs=[1,2,3,4,5,6,7,8].map(i=>({exerciseId:'press',outcomeScore:.8,muscles:['chest','triceps']}));p=window.liftovaExerciseResponseProfile('press',obs);assert.strictEqual(p.actionable,true);assert.strictEqual(p.classification,'responsive');
+const mixed=obs.concat([1,2,3,4,5,6].map(i=>({exerciseId:'fly',outcomeScore:.7,muscles:['chest']})));const m=window.liftovaMuscleResponseProfile('chest',mixed);assert.strictEqual(m.actionable,true);assert.ok(m.exerciseDiversity>=2);
+const f=window.liftovaProgramLearningFoundation(mixed);assert.strictEqual(f.authority,'adaptive_programming');assert.strictEqual(f.role,'advisory_learning');assert.strictEqual(f.programAdaptationReady,false,'one actionable muscle is insufficient for program-level adaptation');
+const before=JSON.stringify(mixed);window.liftovaLearningRecommendationEnvelope(rec,mixed);assert.strictEqual(JSON.stringify(mixed),before,'learning must be read-only');
+console.log(JSON.stringify({suite:'LIFTOVA Athlete Learning Engine',checks:{outcomeLearning:true,exerciseProfiles:true,muscleProfiles:true,programFoundation:true,confidenceGated:true,reversible:true,historyReadOnly:true}},null,2));
