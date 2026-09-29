@@ -3,6 +3,56 @@
   'use strict';
   const liftovaIcon = () => '<img src="images/liftova-icon.svg" alt="">';
 
+  function scheduledWorkoutForToday(){
+    const activeLabel=(document.querySelector('.liftova-home-shell .lh-day.active span')?.textContent||'').trim();
+    if(!activeLabel || /^rest$/i.test(activeLabel))return {rest:/^rest$/i.test(activeLabel),label:activeLabel};
+    try{
+      if(typeof suggestedWorkouts==='function' && typeof workoutGoals!=='undefined' && workoutGoals && !workoutGoals.skipped && !workoutGoals.basic){
+        const days=suggestedWorkouts(workoutGoals)||[];
+        let index=days.findIndex(day=>String(day?.title||'').toLowerCase().includes(activeLabel.toLowerCase()));
+        if(index<0){
+          const trainingSlots=['MON','TUE','THU','FRI'];
+          const activeDay=(document.querySelector('.liftova-home-shell .lh-day.active strong')?.textContent||'').trim().toUpperCase();
+          const slot=trainingSlots.indexOf(activeDay);
+          if(slot>=0 && slot<days.length)index=slot;
+        }
+        if(index>=0){const day=days[index];return {kind:'suggested',index,title:day.title,ids:day.exercises||[],label:activeLabel};}
+      }
+      if(typeof presetWorkouts!=='undefined' && presetWorkouts){
+        const entries=Object.entries(presetWorkouts);
+        let index=entries.findIndex(([,day])=>String(day?.title||'').toLowerCase().includes(activeLabel.toLowerCase()));
+        if(index>=0){const [key,day]=entries[index];return {kind:'preset',key,title:day.title,ids:day.exercises||[],label:activeLabel};}
+      }
+    }catch(err){console.warn('LIFTOVA scheduled-workout sync fallback',err);}
+    return null;
+  }
+
+  function syncHomeWorkoutCard(){
+    const card=document.querySelector('.liftova-home-shell .lh-workout');
+    if(!card)return;
+    const scheduled=scheduledWorkoutForToday();
+    if(!scheduled)return;
+    card.dataset.liftovaScheduleKind=scheduled.rest?'rest':scheduled.kind||'';
+    card.dataset.liftovaScheduleIndex=scheduled.index??'';
+    card.dataset.liftovaScheduleKey=scheduled.key??'';
+    if(scheduled.rest){
+      card.querySelector('h2')?.replaceChildren(document.createTextNode('REST DAY'));
+      card.querySelector('p')?.replaceChildren(document.createTextNode('Recovery · No workout scheduled'));
+      return;
+    }
+    const title=String(scheduled.title||scheduled.label||'Today’s Workout').toUpperCase();
+    card.querySelector('h2')?.replaceChildren(document.createTextNode(title));
+    const rows=(scheduled.ids||[]).map(id=>{try{return typeof getExercise==='function'?getExercise(id):typeof exerciseLibrary!=='undefined'?exerciseLibrary.find(x=>x.id===id):null}catch{return null}}).filter(Boolean);
+    const groups={};rows.forEach(ex=>{const muscle=String(ex.muscle||ex.muscleGroup||'').trim();if(muscle)groups[muscle]=(groups[muscle]||0)+1;});
+    const muscles=Object.keys(groups);
+    if(muscles.length)card.querySelector('p')?.replaceChildren(document.createTextNode(muscles.slice(0,4).join(' · ')));
+    const meta=card.querySelectorAll('.lh-meta span');
+    if(meta[0])meta[0].innerHTML=`<b>◴</b>${Math.max(30,(scheduled.ids||[]).length*6)} min<small>EST. TIME</small>`;
+    if(meta[1])meta[1].innerHTML=`<b>▥</b>${(scheduled.ids||[]).length} exercises<small>TOTAL</small>`;
+    const list=card.querySelector('.lh-overview ul');
+    if(list && muscles.length)list.innerHTML=Object.entries(groups).slice(0,5).map(([m,n])=>`<li>${m.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}: ${n} exercise${n===1?'':'s'}</li>`).join('');
+  }
+
   function applyBranding(root=document){
     root.querySelectorAll('.prism-avatar img[src*="app-icon"],.prism-avatar-option img[src*="app-icon"]').forEach(img=>{img.src='images/liftova-icon.svg';});
     const area=document.getElementById('prismLocalProfile');
@@ -11,9 +61,6 @@
       const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
       nodes.forEach(n=>{n.nodeValue=n.nodeValue.replace(/PRISM Account/g,'LIFTOVA Account').replace(/Your PRISM Profile/g,'Your LIFTOVA Profile').replace(/Your PRISM data/g,'Your LIFTOVA data');});
     }
-    /* The legacy stylesheet makes every header fixed. Only the app-level header
-       belongs in that layer; headers rendered inside Library/Pro/content screens
-       must remain in normal document flow or they cover the screen title/controls. */
     document.querySelectorAll('header').forEach(header=>{
       if(header.closest('.liftova-home-shell'))return;
       const appLevel=header.parentElement===document.body || header.matches('.app-header');
@@ -27,11 +74,21 @@
         header.style.setProperty('transform','none','important');
       }
     });
+    syncHomeWorkoutCard();
   }
 
   function openHomeWorkout(){
     const card=document.querySelector('.liftova-home-shell .lh-workout');
     if(!card)return false;
+    if(card.dataset.liftovaScheduleKind==='rest')return true;
+    try{
+      if(card.dataset.liftovaScheduleKind==='suggested' && card.dataset.liftovaScheduleIndex!=='' && typeof openSuggestedWorkout==='function'){
+        openSuggestedWorkout(Number(card.dataset.liftovaScheduleIndex));return true;
+      }
+      if(card.dataset.liftovaScheduleKind==='preset' && card.dataset.liftovaScheduleKey && typeof openPresetWorkout==='function'){
+        openPresetWorkout(card.dataset.liftovaScheduleKey);return true;
+      }
+    }catch(err){console.warn('LIFTOVA scheduled workout-card navigation fallback',err);}
     const wanted=(card.querySelector('h2')?.textContent||'').trim().toLowerCase();
     if(!wanted)return false;
     try{
