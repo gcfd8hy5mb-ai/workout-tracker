@@ -31,7 +31,11 @@ jobs:
         run: node tests/test_adaptive_feedback_explainability.js
       - name: Run LIFTOVA Coach decision audit tests
         run: node tests/test_adaptive_feedback_decision_audit.js
+      - name: Run LIFTOVA Athlete Learning Engine tests
+        run: node tests/test_athlete_learning_engine.js
       - name: Run LIFTOVA adaptive 6-week simulation
         run: node tests/test_adaptive_6_week_simulation.js
       - name: Run LIFTOVA adaptive 12-week adversarial simulation
         run: node tests/test_adaptive_12_week_adversarial.js
+      - name: Run LIFTOVA Athlete Learning 16/20-week simulations
+        run: node tests/test_athlete_learning_long_simulation.js
