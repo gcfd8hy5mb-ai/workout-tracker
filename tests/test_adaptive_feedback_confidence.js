@@ -5,37 +5,41 @@ const vm=require('vm');
 const source=fs.readFileSync('adaptive-feedback-loop.js','utf8');
 function session(date,volumeWeight,reps=10){return {date,exercises:[{id:'press',name:'Machine Chest Press',sets:[{weight:volumeWeight,reps},{weight:volumeWeight,reps},{weight:volumeWeight,reps}]}]};}
 function context(history){const window={workoutHistory:history};const ctx={window,workoutHistory:history,console,Date};vm.createContext(ctx);vm.runInContext(source,ctx);return window;}
+const now=Date.parse('2026-09-29T12:00:00Z');
 
-// One unusual workout is evidence, not authority.
 let history=[session('2026-09-29',70),session('2026-09-22',100)];
-let w=context(history),trend=w.liftovaFeedbackTrend('press',Date.parse('2026-09-29T12:00:00Z'));
+let w=context(history),trend=w.liftovaFeedbackTrend('press',now);
 assert.strictEqual(trend.trend,'declining');
 assert.strictEqual(trend.confidence.actionable,false,'two exposures must not automatically change a prescription');
 let p=w.liftovaFeedbackAdjust({exerciseId:'press',status:'increase',targetWeight:105,lastWeight:100});
-assert.strictEqual(p.status,'increase','low-confidence decline must not veto progression');
+assert.strictEqual(p.status,'increase');
 
-// Repeated fresh evidence may conservatively hold a future increase.
-history=[session('2026-09-29',70),session('2026-09-22',100),session('2026-09-15',100),session('2026-09-08',100)];
-w=context(history);trend=w.liftovaFeedbackTrend('press',Date.parse('2026-09-29T12:00:00Z'));
+history=[session('2026-09-29',70),session('2026-09-22',80),session('2026-09-15',90),session('2026-09-08',100),session('2026-09-01',100)];
+w=context(history);trend=w.liftovaFeedbackTrend('press',now);
+assert.ok(trend.confidence.agreement.support>=2);
+assert.strictEqual(trend.confidence.agreement.opposition,0);
 assert.strictEqual(trend.confidence.actionable,true);
 p=w.liftovaFeedbackAdjust({exerciseId:'press',status:'increase',targetWeight:105,lastWeight:100});
 assert.strictEqual(p.status,'feedback_hold');
 assert.strictEqual(p.targetWeight,100);
-assert.strictEqual(trend.confidence.freshness.stale,false);
 
-// Old evidence remains visible to Coach but cannot override Adaptive Programming.
-const stale=[session('2026-07-01',70),session('2026-06-24',100),session('2026-06-17',100),session('2026-06-10',100)];
-w=context(stale);trend=w.liftovaFeedbackTrend('press',Date.parse('2026-09-29T12:00:00Z'));
+// Any meaningful opposite directional evidence keeps Coach advisory.
+const mixed=[session('2026-09-29',70),session('2026-09-22',110),session('2026-09-15',80),session('2026-09-08',105),session('2026-09-01',100)];
+w=context(mixed);trend=w.liftovaFeedbackTrend('press',now);
 assert.strictEqual(trend.trend,'declining');
-assert.strictEqual(trend.confidence.freshness.stale,true);
-assert.strictEqual(trend.confidence.actionable,false,'stale history must not override a current prescription');
-assert.match(trend.reason,/too old to override/);
+assert.ok(trend.confidence.agreement.opposition>0,'mixed directions must record opposition');
+assert.strictEqual(trend.confidence.agreement.actionable,false);
+assert.strictEqual(trend.confidence.actionable,false,'conflicting evidence must not override Adaptive Programming');
+p=w.liftovaFeedbackAdjust({exerciseId:'press',status:'increase',targetWeight:105,lastWeight:100});
+assert.strictEqual(p.status,'increase');
+assert.match(trend.reason,/disagree/);
 
-// Completed history remains untouched and the decision is reversible on fresh evidence.
+const stale=[session('2026-07-01',70),session('2026-06-24',80),session('2026-06-17',90),session('2026-06-10',100)];
+w=context(stale);trend=w.liftovaFeedbackTrend('press',now);
+assert.strictEqual(trend.confidence.freshness.stale,true);
+assert.strictEqual(trend.confidence.actionable,false);
+
 const before=JSON.stringify(history);w=context(history);w.liftovaFeedbackAdjust({exerciseId:'press',status:'increase',targetWeight:105,lastWeight:100});
 assert.strictEqual(JSON.stringify(history),before,'feedback must never mutate completed workout history');
-const recovered=[session('2026-10-06',105),session('2026-09-29',100),session('2026-09-22',100),session('2026-09-15',100),session('2026-09-08',100)];
-w=context(recovered);p=w.liftovaFeedbackAdjust({exerciseId:'press',status:'increase',targetWeight:105,lastWeight:100});
-assert.strictEqual(p.status,'increase','a prior feedback hold must not become a permanent lock');
 
-console.log(JSON.stringify({suite:'LIFTOVA Adaptive Feedback Confidence',checks:{singleOutlierDoesNotOverride:true,repeatedFreshEvidenceCanHold:true,staleEvidenceCannotOverride:true,historyReadOnly:true,reversible:true}},null,2));
+console.log(JSON.stringify({suite:'LIFTOVA Adaptive Feedback Confidence',checks:{smallSampleAdvisory:true,repeatedAgreementCanHold:true,opposingEvidenceAdvisory:true,staleEvidenceCannotOverride:true,historyReadOnly:true}},null,2));
