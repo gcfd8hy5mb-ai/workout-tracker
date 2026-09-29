@@ -4,7 +4,7 @@ window.PRISM_SUPABASE_CONFIG = Object.freeze({
   url: "https://kirlpjflaoriiusfamsk.supabase.co",
   publishableKey: "sb_publishable_yYMnCM3k14zaEtpHo4-xkQ_Cd1Aty90"
 });
-(() => {const touchIcon=document.querySelector('link[rel="apple-touch-icon"]')||document.createElement('link');touchIcon.rel='apple-touch-icon';touchIcon.sizes='180x180';touchIcon.href='images/apple-touch-icon-180.png?v=8';if(!touchIcon.parentNode)document.head.appendChild(touchIcon);})();
+(() => {const touchIcon=document.querySelector('link[rel="apple-touch-icon"]')||document.createElement('link');touchIcon.rel='apple-touch-icon';touchIcon.href='images/liftova-icon.svg?v=8';if(!touchIcon.parentNode)document.head.appendChild(touchIcon);})();
 // Presentation modules load sequentially. The reference layer has a legacy 350ms Home repaint,
 // so canonical Home is deliberately mounted after that repaint and remains the final Home renderer.
 // Custom-workout Home sync loads last so a user's saved custom plan takes precedence over seed presets.
