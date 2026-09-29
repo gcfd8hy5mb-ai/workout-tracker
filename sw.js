@@ -2,39 +2,14 @@ const CACHE_NAME = "myliftcoach-home-v17-runtime-upgrade";
 const UPGRADE_VERSION = "17";
 
 const APP_FILES = [
-  "./",
-  "./index.html",
-  "./onboarding.js?v=10.3-beta5",
-  "./pro-experience.js",
-  "./manifest.json",
-  "./sw.js",
-  "./persistence/storage-model.js",
-  "./persistence/scoped-storage.js",
-  "./persistence/photo-scope.js",
-  "./persistence/reconcile.js",
-  "./persistence/account-sync.js",
-  "./persistence/account-controller.js",
-  "./persistence/photo-sync.js",
-  "./persistence/account-ui.js",
-  "./supabase-config.js",
-  "./liftova-home.js?v=12",
-  "./liftova-home.css?v=8",
-  "./liftova-onboarding.js?v=7",
-  "./liftova-workouts.js?v=7",
-  "./liftova-active-workout.js?v=7",
-  "./liftova-library.js?v=7",
-  "./liftova-progress.js?v=7",
-  "./liftova-profile.js?v=7",
-  "./liftova-pro.js?v=7",
-  "./liftova-polish.js?v=7",
-  "./liftova-reference-v3.js?v=1",
-  "./liftova-workout-tab-v3.js?v=1",
-  "./liftova-anatomy.js?v=1",
-  "./liftova-anatomy.css?v=1",
-  "./images/liftova-anatomy-atlas.webp",
-  "./images/liftova-icon.svg",
-  "./images/apple-touch-icon-180.png",
-  "./cloud-backup.js"
+  "./", "./index.html", "./onboarding.js?v=10.3-beta5", "./pro-experience.js", "./manifest.json", "./sw.js",
+  "./persistence/storage-model.js", "./persistence/scoped-storage.js", "./persistence/photo-scope.js", "./persistence/reconcile.js",
+  "./persistence/account-sync.js", "./persistence/account-controller.js", "./persistence/photo-sync.js", "./persistence/account-ui.js",
+  "./supabase-config.js", "./liftova-home.js?v=12", "./liftova-home.css?v=8", "./liftova-onboarding.js?v=7",
+  "./liftova-workouts.js?v=7", "./liftova-active-workout.js?v=7", "./liftova-library.js?v=7", "./liftova-progress.js?v=7",
+  "./liftova-profile.js?v=7", "./liftova-pro.js?v=7", "./liftova-polish.js?v=7", "./liftova-reference-v3.js?v=1",
+  "./liftova-workout-tab-v3.js?v=1", "./liftova-anatomy.js?v=1", "./liftova-anatomy.css?v=1",
+  "./images/liftova-anatomy-atlas.webp", "./images/liftova-icon.svg", "./images/apple-touch-icon-180.png", "./cloud-backup.js"
 ];
 
 const ANDROID_ONBOARDING_HOTFIX = `
@@ -69,10 +44,20 @@ self.addEventListener("install",event=>{
 self.addEventListener("activate",event=>{
   event.waitUntil((async()=>{
     const keys=await caches.keys();
+    const upgrading=keys.some(key=>key!==CACHE_NAME);
     await Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)));
     await self.clients.claim();
     const clients=await self.clients.matchAll({type:"window",includeUncontrolled:true});
-    for(const client of clients) client.postMessage({type:"MYLIFTCOACH_UPGRADE_READY",version:UPGRADE_VERSION});
+    for(const client of clients){
+      client.postMessage({type:"MYLIFTCOACH_UPGRADE_READY",version:UPGRADE_VERSION});
+      if(upgrading && typeof client.navigate==="function"){
+        try{
+          const target=new URL(client.url);
+          target.searchParams.set("myliftcoach_upgrade",UPGRADE_VERSION);
+          await client.navigate(target.href);
+        }catch(error){console.warn("MYLIFTCOACH client upgrade navigation failed",error);}
+      }
+    }
   })());
 });
 
