@@ -1,28 +1,29 @@
-/* LIFTOVA App Feel V1 — presentation only. No training/Coach/data logic. */
-:root{--liftova-tap-scale:.985;--liftova-sheet-radius:22px}
-html{height:100%;-webkit-text-size-adjust:100%;touch-action:manipulation}
-body{min-height:100%;min-height:100dvh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-user-select:none;user-select:none}
+/* LIFTOVA App Feel V2 — presentation only. No training/Coach/data logic. */
+:root{--liftova-tap-scale:.985;--liftova-sheet-radius:22px;--liftova-focus:#007aff;--liftova-vh:1vh;--liftova-keyboard-offset:0px}
+html{height:100%;-webkit-text-size-adjust:100%;touch-action:manipulation;scroll-behavior:smooth}
+body{min-height:100%;min-height:calc(var(--liftova-vh)*100);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-user-select:none;user-select:none;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
 input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;user-select:text}
 a,button,[role="button"],.card,.day-button,.action-button{-webkit-tap-highlight-color:transparent}
 button,a,[role="button"],input,select,textarea{touch-action:manipulation}
 button:not(:disabled),a,[role="button"]{cursor:pointer}
 button:disabled,[aria-disabled="true"]{opacity:.48;cursor:default}
-/* Keep controls comfortably tappable on phones without changing application semantics. */
 button,[role="button"],select,input[type="button"],input[type="submit"]{min-height:44px}
-/* Native-feeling press feedback; deliberately subtle and disabled for reduced motion. */
-@media (hover:none) and (pointer:coarse){
- button:not(:disabled):active,[role="button"]:not([aria-disabled="true"]):active,.day-button:active,.action-button:active{transform:scale(var(--liftova-tap-scale));transition:transform 55ms ease-out}
-}
-/* Prevent iOS input focus zoom while preserving readable controls. */
+button:focus-visible,a:focus-visible,[role="button"]:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid color-mix(in srgb,var(--liftova-focus) 35%,transparent);outline-offset:2px}
+/* Consistent tactile feedback across tappable app surfaces. */
+@media (hover:none) and (pointer:coarse){button:not(:disabled):active,[role="button"]:not([aria-disabled="true"]):active,.day-button:active,.action-button:active,.menu-link:active,.bottom-nav button:active{transform:scale(var(--liftova-tap-scale));transition:transform 55ms ease-out}}
 @supports (-webkit-touch-callout:none){input,select,textarea{font-size:max(16px,1em)}}
-/* Respect device safe areas globally. Existing component safe-area rules remain authoritative. */
-body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
-/* Smooth momentum scrolling inside app-owned scroll regions. */
-[style*="overflow"],.container{ -webkit-overflow-scrolling:touch }
-/* Make modal/dialog surfaces feel like app sheets where native dialog is used. */
-dialog{border:0;border-radius:var(--liftova-sheet-radius);max-width:min(92vw,560px);box-shadow:0 18px 60px rgba(0,0,0,.28)}
-dialog::backdrop{background:rgba(0,0,0,.42);backdrop-filter:blur(2px)}
-/* Accessibility: never require motion. */
+[style*="overflow"],.container,.side-menu{-webkit-overflow-scrolling:touch}
+/* Keyboard-aware overlays and sheets stay above the iOS keyboard. */
+dialog{border:0;border-radius:var(--liftova-sheet-radius);max-width:min(92vw,560px);max-height:calc(var(--liftova-vh)*88);overflow:auto;box-shadow:0 18px 60px rgba(0,0,0,.28);margin-bottom:max(1em,var(--liftova-keyboard-offset))}
+dialog::backdrop{background:rgba(0,0,0,.42);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+/* Existing overlays get safe bottom clearance without altering their logic. */
+[role="dialog"],.modal,.sheet,.prism-pro-overlay{padding-bottom:max(env(safe-area-inset-bottom),var(--liftova-keyboard-offset))}
+/* Native-like state feedback for existing semantic busy state. */
+.liftova-busy{pointer-events:none;position:relative;opacity:.72}
+.liftova-busy::after{content:"";position:absolute;width:16px;height:16px;right:12px;top:50%;margin-top:-8px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:liftova-spin .7s linear infinite}
+@keyframes liftova-spin{to{transform:rotate(360deg)}}
+/* Avoid content jumping underneath fixed app chrome when focused/navigated. */
+:target,[tabindex],input,select,textarea{scroll-margin-top:calc(var(--header-height,72px) + env(safe-area-inset-top) + 14px);scroll-margin-bottom:calc(80px + env(safe-area-inset-bottom))}
+/* Installed app behaves as a contained application surface. */
+@media (display-mode:standalone){html,body{overscroll-behavior:none}body{-webkit-touch-callout:none}.liftova-standalone-only{display:initial}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
-/* Standalone-installed app: remove browser-oriented selection/callout behavior. */
-@media (display-mode:standalone){body{-webkit-touch-callout:none}}

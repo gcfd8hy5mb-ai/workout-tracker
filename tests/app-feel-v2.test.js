@@ -1,0 +1,11 @@
+const fs=require('fs');
+const assert=require('assert');
+const js=fs.readFileSync('app-feel.js','utf8');
+const css=fs.readFileSync('app-feel.css','utf8');
+for(const forbidden of ['localStorage','sessionStorage','supabase','PRISMDeviceStore','AdaptiveFeedback','CoachDecision','fetch(']) assert(!js.includes(forbidden),`app-feel.js must not use ${forbidden}`);
+assert(js.includes('visualViewport'),'viewport handling missing');
+assert(js.includes('focusin'),'keyboard focus handling missing');
+assert(css.includes('prefers-reduced-motion'),'reduced motion support missing');
+assert(css.includes('safe-area-inset-bottom'),'safe-area handling missing');
+assert(css.includes('.liftova-busy'),'busy-state feedback missing');
+console.log('App Feel V2 interaction/isolation checks passed');
