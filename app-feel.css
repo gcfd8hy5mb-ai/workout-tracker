@@ -1,0 +1,28 @@
+/* LIFTOVA App Feel V1 — presentation only. No training/Coach/data logic. */
+:root{--liftova-tap-scale:.985;--liftova-sheet-radius:22px}
+html{height:100%;-webkit-text-size-adjust:100%;touch-action:manipulation}
+body{min-height:100%;min-height:100dvh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-user-select:none;user-select:none}
+input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;user-select:text}
+a,button,[role="button"],.card,.day-button,.action-button{-webkit-tap-highlight-color:transparent}
+button,a,[role="button"],input,select,textarea{touch-action:manipulation}
+button:not(:disabled),a,[role="button"]{cursor:pointer}
+button:disabled,[aria-disabled="true"]{opacity:.48;cursor:default}
+/* Keep controls comfortably tappable on phones without changing application semantics. */
+button,[role="button"],select,input[type="button"],input[type="submit"]{min-height:44px}
+/* Native-feeling press feedback; deliberately subtle and disabled for reduced motion. */
+@media (hover:none) and (pointer:coarse){
+ button:not(:disabled):active,[role="button"]:not([aria-disabled="true"]):active,.day-button:active,.action-button:active{transform:scale(var(--liftova-tap-scale));transition:transform 55ms ease-out}
+}
+/* Prevent iOS input focus zoom while preserving readable controls. */
+@supports (-webkit-touch-callout:none){input,select,textarea{font-size:max(16px,1em)}}
+/* Respect device safe areas globally. Existing component safe-area rules remain authoritative. */
+body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+/* Smooth momentum scrolling inside app-owned scroll regions. */
+[style*="overflow"],.container{ -webkit-overflow-scrolling:touch }
+/* Make modal/dialog surfaces feel like app sheets where native dialog is used. */
+dialog{border:0;border-radius:var(--liftova-sheet-radius);max-width:min(92vw,560px);box-shadow:0 18px 60px rgba(0,0,0,.28)}
+dialog::backdrop{background:rgba(0,0,0,.42);backdrop-filter:blur(2px)}
+/* Accessibility: never require motion. */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+/* Standalone-installed app: remove browser-oriented selection/callout behavior. */
+@media (display-mode:standalone){body{-webkit-touch-callout:none}}
