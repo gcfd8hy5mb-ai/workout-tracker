@@ -1,0 +1,13 @@
+const fs=require('fs'),assert=require('assert');
+const src=fs.readFileSync('liftova-home.js','utf8');
+const sw=fs.readFileSync('sw.js','utf8');
+assert(src.includes("safeJson('customWorkoutsV5',[])"),'Home must read saved custom workouts');
+assert(src.includes('return nextCustomWorkout()||nextPlanWorkout()'),'Custom workouts must take priority over preset/suggested plans');
+assert(src.includes("workoutKey:'custom-'"),'Custom workout rotation must use custom workout history keys');
+assert(src.includes('<strong>MYLIFTCOACH</strong>'),'Home hero must display MYLIFTCOACH');
+assert(src.includes('images/app-icon.png?v=11'),'Home hero must use current MYLIFTCOACH app icon');
+assert(!src.includes('<strong>LIFTOVA</strong>'),'Home hero must not render the retired LIFTOVA name');
+assert(src.includes("if(isRest)return{name:'Rest Day',exercises:0,minutes:0"),'Rest day must clear workout counts and duration');
+assert(src.includes("${isRest?'':`<div class=\"lh-meta\">"),'Rest day must hide workout metadata and overview');
+assert(sw.includes('myliftcoach-home-v20-custom-runtime'),'Installed PWA cache must advance for this Home fix');
+console.log('Home custom-workout, rest-state, and MYLIFTCOACH branding regression checks passed');
