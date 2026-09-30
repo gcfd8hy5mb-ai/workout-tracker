@@ -11,7 +11,7 @@ const APP_FILES = [
   "./liftova-workouts.js?v=7", "./liftova-active-workout.js?v=7", "./liftova-library.js?v=7", "./liftova-progress.js?v=7",
   "./liftova-profile.js?v=7", "./liftova-pro.js?v=7", "./liftova-polish.js?v=7",
   "./liftova-workout-tab-v3.js?v=1", "./liftova-anatomy.js?v=1", "./liftova-anatomy.css?v=1",
-  "./images/liftova-anatomy-atlas.webp", "./images/apple-touch-icon-180.png", "./cloud-backup.js"
+  "./images/liftova-anatomy-atlas.webp", "./images/liftova-icon.svg", "./images/apple-touch-icon-180.png", "./cloud-backup.js"
 ];
 
 const ANDROID_ONBOARDING_HOTFIX = `
