@@ -1,34 +1,39 @@
 /* MYLIFTCOACH canonical base chrome. Functional state selectors remain in index.html. */
-:root{--mlc-purple:#9d46ff;--bg:#050409;--card:#0d0a12;--text:#f9f7ff;--sub:#aaa3b4;--line:#2d2039;--blue:var(--mlc-purple);--orange:var(--mlc-purple);--green:#28a745;--red:#dc3545}
-html,body{background:#050409;color:var(--text)}
-header{background:#08060d;color:#f9f7ff;border-bottom:1px solid #352044;box-shadow:0 8px 28px rgba(0,0,0,.32)}
-.card,.exercise,.history-card,.stat-card,.progress-exercise,.workout-tabs{background:#0d0a12;color:#f9f7ff;border:1px solid #2d2039;box-shadow:none}
-.small,.history-date,.history-set,.stat-label,.progress-detail,.badge,.empty,.previous{color:#aaa3b4}
-.back{color:#b56cff}.back:active{color:#d4a4ff}
-button:focus-visible{outline:3px solid rgba(157,70,255,.42)}
-.day-button,.action-button{background:#0d0a12;color:#f9f7ff;border:1px solid #2d2039;box-shadow:none}
-.day-button:active,.action-button:not(.primary):active{background:#15101d}
-.primary,.add-small,.save-button,.timer-start{background:linear-gradient(135deg,#7023ef,var(--mlc-purple));color:#fff}
-.primary span{color:#d8c8e9}
-.progress-bar{background:#201828}.progress-fill{background:linear-gradient(90deg,#7023ef,#b65cff)}
-.muscle{background:#21162d;color:#cda6ff}
-.details{border-color:#2d2039}.details p,.details li{color:#c9c2d0}
-.exercise-image,.image-placeholder{background:#100d16}.image-placeholder{color:#918a9b}
-.tracking,.overload-guide,.builder-exercise{background:#100d16;color:#f9f7ff}
-.set-block{border-color:#2d2039}
-.picker-button,input,select{background:#111019;color:#fff;border-color:#352b42}
-.picker-button:active{background:#191320}
-.overload-guide p,.goal-preview{color:#c9c2d0}
-.remove-small,.timer-button,.timer-reset{background:#18121f;color:#eee7f5;border:1px solid #352b42}
-.delete-button{background:#100d16;color:#ff8ba0;border:1px solid #4b2732}
-.workout-tab{color:#aaa3b4}.workout-tab.active{background:#7023ef;color:#fff}.workout-tab:active{background:#18121f;color:#d8c8e9}
-.menu-toggle,.header-today{border-color:#3a2750;background:#100c17;color:#eee7f5}
-.menu-toggle:active,.header-today:active{background:#1a1224}
-.menu-scrim{background:rgba(0,0,0,.68)}
-.side-menu{background:#08060d;color:#f9f7ff;box-shadow:10px 0 34px rgba(0,0,0,.5);border-right:1px solid #352044}
-.menu-head{color:#fff}.menu-close{background:#15101d;color:#eee7f5;border:1px solid #352044}
-.menu-link{color:#d8d1e0}.menu-link.active{background:#21132f;color:#cf91ff}.menu-link:active{background:#181020}
-.menu-version{color:#837b8e}
+:root{--mlc-purple:#9d46ff;--bg:#050409!important;--card:#0d0a12!important;--text:#f9f7ff!important;--sub:#aaa3b4!important;--line:#2d2039!important;--blue:var(--mlc-purple)!important;--orange:var(--mlc-purple)!important;--prism-blue:var(--mlc-purple)!important;--prism-accent:var(--mlc-purple)!important;--accent:var(--mlc-purple)!important;--green:#28a745;--red:#dc3545}
+html,body{background:#050409!important;color:var(--text)!important}
+header{background:#08060d!important;color:#f9f7ff!important;border-bottom:1px solid #352044!important;box-shadow:0 8px 28px rgba(0,0,0,.32)!important}
+.card,.exercise,.history-card,.stat-card,.progress-exercise,.workout-tabs{background:#0d0a12!important;color:#f9f7ff!important;border:1px solid #2d2039!important;box-shadow:none!important}
+.small,.history-date,.history-set,.stat-label,.progress-detail,.badge,.empty,.previous{color:#aaa3b4!important}
+.back{color:#b56cff!important}.back:active{color:#d4a4ff!important}
+button:focus-visible{outline:3px solid rgba(157,70,255,.42)!important}
+.day-button,.action-button{background:#0d0a12!important;color:#f9f7ff!important;border:1px solid #2d2039!important;box-shadow:none!important}
+.day-button:active,.action-button:not(.primary):active{background:#15101d!important}
+.primary,.add-small,.save-button,.timer-start{background:linear-gradient(135deg,#7023ef,var(--mlc-purple))!important;color:#fff!important}
+.primary span{color:#d8c8e9!important}
+.progress-bar{background:#201828!important}.progress-fill{background:linear-gradient(90deg,#7023ef,#b65cff)!important}
+.muscle{background:#21162d!important;color:#cda6ff!important}
+.details{border-color:#2d2039!important}.details p,.details li{color:#c9c2d0!important}
+.exercise-image,.image-placeholder{background:#100d16!important}.image-placeholder{color:#918a9b!important}
+.tracking,.overload-guide,.builder-exercise{background:#100d16!important;color:#f9f7ff!important}
+.set-block{border-color:#2d2039!important}
+.picker-button,input,select,textarea{background:#111019!important;color:#fff!important;border-color:#352b42!important}
+.picker-button:active{background:#191320!important}
+.overload-guide p,.goal-preview{color:#c9c2d0!important}
+.remove-small,.timer-button,.timer-reset{background:#18121f!important;color:#eee7f5!important;border:1px solid #352b42!important}
+.delete-button{background:#100d16!important;color:#ff8ba0!important;border:1px solid #4b2732!important}
+.workout-tab{color:#aaa3b4!important}.workout-tab.active{background:#7023ef!important;color:#fff!important}.workout-tab:active{background:#18121f!important;color:#d8c8e9!important}
+.menu-toggle,.header-today{border-color:#3a2750!important;background:#100c17!important;color:#eee7f5!important}
+.menu-toggle:active,.header-today:active{background:#1a1224!important}
+.menu-scrim{background:rgba(0,0,0,.68)!important}
+.side-menu{background:#08060d!important;color:#f9f7ff!important;box-shadow:10px 0 34px rgba(0,0,0,.5)!important;border-right:1px solid #352044!important}
+.menu-head{color:#fff!important}.menu-close{background:#15101d!important;color:#eee7f5!important;border:1px solid #352044!important}
+.menu-link{color:#d8d1e0!important}.menu-link.active{background:#21132f!important;color:#cf91ff!important}.menu-link:active{background:#181020!important}
+.menu-version{color:#837b8e!important}
+
+/* Prevent the legacy inline PRISM-era blue palette from leaking into visible controls. */
+.container :is(a,.back){color:#b98aff!important}
+.container :is(.primary,.prism-primary,.prism-cta,.primary-btn,.btn-primary,.save-button,.add-small,.timer-start){background:linear-gradient(135deg,#7023ef,#9d46ff)!important;border-color:#9d46ff!important;color:#fff!important}
+.container :is(.workout-tab.active,.prism-segments button.active,[aria-pressed="true"]){background:#7023ef!important;color:#fff!important;border-color:#9d46ff!important}
 
 /* Persistent chrome branding is owned here so late legacy DOM cannot visibly win. */
 .prism-header-brand .prism-wordmark,.menu-brand-copy strong{font-size:0!important;line-height:1!important}
@@ -36,6 +41,5 @@ button:focus-visible{outline:3px solid rgba(157,70,255,.42)}
 .menu-brand-copy strong::after{font-size:17px}
 .menu-version{font-size:0!important}
 .menu-version::after{content:"MYLIFTCOACH · Beta";font-size:12px;color:#837b8e}
-.prism-header-logo,.menu-brand img{visibility:hidden!important;width:43px;height:43px;position:relative}
-.prism-header-brand::before,.menu-brand::before{content:"MC";display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;border-radius:12px;background:linear-gradient(145deg,#3a126b,#0a0710);border:1px solid #6f35a6;color:#d8a7ff;font-size:15px;font-weight:850;letter-spacing:-.04em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+.prism-header-logo,.menu-brand img{visibility:visible!important;width:43px;height:43px;object-fit:contain;background:transparent!important;border:0!important}
 .prism-header-brand,.menu-brand{display:flex;align-items:center;gap:10px}
