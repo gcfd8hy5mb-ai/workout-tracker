@@ -67,9 +67,10 @@ async function runPass(browser,url,pass){
  const asset=await page.evaluate(async()=>{const response=await fetch('images/liftova-anatomy-atlas.webp');return [response.status,response.headers.get('content-type'),(await response.blob()).size]});
  assert.equal(asset[0],200);assert.match(asset[1],/webp/);assert.ok(asset[2]>100000);
  assert.equal(await page.locator('svg image[href="images/liftova-anatomy-atlas.webp"]').count()>0,true);
- const visibleText=await page.evaluate(()=>[...document.querySelectorAll('section:not(.hidden),header,.prism-bottom-nav,#sideMenu.open')].filter(e=>e.getClientRects().length).map(e=>e.innerText||'').join(' '));
- assert.equal(/\bPRISM\b/i.test(visibleText),false,'no visible PRISM branding');
- assert.equal(/\bLIFTOVA\b/i.test(visibleText),false,'no visible LIFTOVA branding');
+ const branding=await page.evaluate(()=>{const roots=[...document.querySelectorAll('section:not(.hidden),header,.prism-bottom-nav,#sideMenu.open')].filter(e=>e.getClientRects().length);return {visibleText:roots.map(e=>e.innerText||'').join(' '),offenders:roots.flatMap(root=>[...root.querySelectorAll('*')].filter(el=>el.children.length===0&&/\b(?:PRISM|LIFTOVA)\b/i.test(el.innerText||'')&&el.getClientRects().length).map(el=>({root:root.id||root.tagName,tag:el.tagName,id:el.id,cls:el.className,text:(el.innerText||'').trim()})))};});
+ if(branding.offenders.length)console.error('Legacy branding offenders:',JSON.stringify(branding.offenders));
+ assert.equal(/\bPRISM\b/i.test(branding.visibleText),false,'no visible PRISM branding');
+ assert.equal(/\bLIFTOVA\b/i.test(branding.visibleText),false,'no visible LIFTOVA branding');
  assert.deepEqual(errors,[],'no uncaught page errors');
  await context.close();
  console.log(`MYLIFTCOACH browser smoke pass ${pass}: single-root home, canonical workout, library, progress, navigation, atlas and branding PASS`);
