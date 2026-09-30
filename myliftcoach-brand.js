@@ -60,18 +60,11 @@
   }
 
   ensureHead();
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>apply(),{once:true});
-  else apply();
+  const finalize=()=>{ensureHead();apply(document)};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',finalize,{once:true});
+  else finalize();
 
-  const observer=new MutationObserver(records=>{
-    for(const record of records){
-      for(const node of record.addedNodes){
-        if(node.nodeType===Node.ELEMENT_NODE||node.nodeType===Node.TEXT_NODE)apply(node);
-      }
-      if(record.type==='characterData')replaceLegacyText(record.target);
-    }
-  });
-  observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true});
-
+  // Deliberately no global MutationObserver here. MYLIFTCOACH branding is finalized once
+  // after the app shell loads so legacy implementation modules cannot enter a DOM rewrite loop.
   window.MYLIFTCOACHBrand=Object.freeze({name:BRAND,icon:ICON,apply,ensureHead});
 })();
