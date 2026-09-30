@@ -23,6 +23,7 @@ assert.match(accountUi, /cloud\.signUp/);
 const loader = read('supabase-config.js');
 for (const file of redesignFiles) assert.match(loader, new RegExp(file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${file} must be loaded`);
 assert.match(loader, /liftova-functional-fixes\.js\?v=2/);
+assert.match(loader, /myliftcoach-brand\.js\?v=21/, 'canonical brand guard must be loaded');
 
 const home = read('liftova-home.js');
 const homeCss = read('liftova-home.css');
@@ -36,7 +37,7 @@ const html = read('index.html');
 for (const screen of ['workoutsScreen','workoutScreen','libraryScreen','overallProgressScreen','profileScreen']) assert.match(html, new RegExp(`id=["']${screen}["']`));
 assert.match(html, /apple-mobile-web-app-title" content="MYLIFTCOACH"/, 'iOS install title must be MYLIFTCOACH at source');
 assert.match(html, /apple-touch-icon[^>]+apple-touch-icon-180\.png\?v=10/, 'HTML Apple icon must use current v10 asset');
-assert.match(html, /rel="icon"[^>]+liftova-icon\.svg\?v=10/, 'HTML favicon must use current v10 asset');
+assert.match(html, /rel="icon"[^>]+liftova-icon\.svg\?v=10/, 'HTML source favicon remains a compatibility fallback until canonical runtime loads');
 assert.match(html, /<title>MYLIFTCOACH · Train · Track · Progress<\/title>/);
 
 const manifest = JSON.parse(read('manifest.json'));
@@ -45,7 +46,7 @@ assert.equal(manifest.short_name, 'MYLIFTCOACH');
 assert.equal(manifest.id, './?app=myliftcoach');
 assert.equal(manifest.start_url, './?app=myliftcoach');
 assert.equal(manifest.display, 'standalone');
-assert.equal(manifest.icons.some(item => item.src === 'images/liftova-icon.svg?v=10' && item.type === 'image/svg+xml'), true);
+assert.equal(manifest.icons.some(item => item.src === 'images/myliftcoach-icon.svg?v=21' && item.type === 'image/svg+xml'), true);
 assert.equal(manifest.icons.some(item => item.src === 'images/apple-touch-icon-180.png?v=10' && item.type === 'image/png'), true);
 
 const sw = read('sw.js');
@@ -61,11 +62,15 @@ assert.match(functionalFixes, /undefined\|NaN/);
 
 const polish = read('liftova-polish.js');
 assert.match(polish, /MYLIFTCOACH · Train · Track · Progress/);
-assert.match(polish, /const ICON='images\/liftova-icon\.svg\?v=10'/, 'runtime brand asset must use v10');
+assert.match(polish, /const ICON='images\/liftova-icon\.svg\?v=10'/, 'legacy polish asset may remain internally; canonical brand guard owns visible icon');
 assert.match(polish, /apple-touch-icon-180\.png\?v=10/, 'runtime Apple touch icon must use v10 PNG');
 assert.match(polish, /function updateMenuBrand/);
 assert.match(polish, /#sideMenu\{[^}]*position:fixed!important;[^}]*left:0!important;[^}]*background:radial-gradient/);
 assert.match(polish, /\.prism-bottom-nav\{[^}]*background:rgba\(7,5,13/);
+
+const brand = read('myliftcoach-brand.js');
+assert.match(brand, /const BRAND='MYLIFTCOACH'/);
+assert.match(brand, /const ICON='images\/myliftcoach-icon\.svg\?v=21'/);
 
 const pro = read('liftova-pro.js');
 assert.match(pro, /MYLIFTCOACH · PRO/, 'Pro hero must use MYLIFTCOACH branding');
