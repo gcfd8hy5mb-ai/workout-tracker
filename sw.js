@@ -1,5 +1,5 @@
-const CACHE_NAME = "myliftcoach-home-v19-runtime-brand";
-const UPGRADE_VERSION = "19";
+const CACHE_NAME = "myliftcoach-home-v20-custom-runtime";
+const UPGRADE_VERSION = "20";
 
 // Keep the install shell deliberately small. Presentation modules are network-first below,
 // so an installed PWA cannot remain pinned to a stale pre-rebrand presentation bundle.
@@ -7,11 +7,11 @@ const APP_FILES = [
   "./", "./index.html", "./onboarding.js?v=10.3-beta5", "./pro-experience.js", "./manifest.json", "./sw.js",
   "./persistence/storage-model.js", "./persistence/scoped-storage.js", "./persistence/photo-scope.js", "./persistence/reconcile.js",
   "./persistence/account-sync.js", "./persistence/account-controller.js", "./persistence/photo-sync.js", "./persistence/account-ui.js",
-  "./supabase-config.js", "./liftova-home.js?v=12", "./liftova-home.css?v=8", "./liftova-onboarding.js?v=7",
+  "./supabase-config.js", "./liftova-home.js?v=12", "./liftova-home.css?v=12", "./liftova-onboarding.js?v=7",
   "./liftova-workouts.js?v=7", "./liftova-active-workout.js?v=7", "./liftova-library.js?v=7", "./liftova-progress.js?v=7",
   "./liftova-profile.js?v=7", "./liftova-pro.js?v=7", "./liftova-polish.js?v=8",
   "./liftova-workout-tab-v3.js?v=1", "./liftova-anatomy.js?v=1", "./liftova-anatomy.css?v=1",
-  "./images/liftova-anatomy-atlas.webp", "./images/liftova-icon.svg", "./images/apple-touch-icon-180.png", "./cloud-backup.js"
+  "./images/liftova-anatomy-atlas.webp", "./images/app-icon.png?v=11", "./images/apple-touch-icon-180.png", "./cloud-backup.js"
 ];
 
 const ANDROID_ONBOARDING_HOTFIX = `
