@@ -1,0 +1,19 @@
+name: MYLIFTCOACH Single Root
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  single-root:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify canonical presentation root
+        run: node tests/test_myliftcoach_single_presentation_root.js

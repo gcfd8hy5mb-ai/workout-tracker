@@ -9,8 +9,8 @@ assert.match(patch, /window\.showWorkouts\s*=\s*function/, 'Workout tab must ove
 assert.match(patch, /showPrismWorkoutDetail\(item\)/, 'Workout tab must open the canonical detail view');
 assert.match(patch, /kind:\s*'liftova-reference'/, 'canonical session marker must be present');
 assert.match(patch, /activeWorkoutKey\s*=\s*'liftova-reference-upper-body'/, 'starting the canonical session must use its own active-workout key');
-assert.match(patch, /openWorkout\(item\.title, item\.ids, false\)/, 'canonical eight-exercise session must remain loggable');
-assert.match(patch, /if \(start\) \{[\s\S]*?startCanonicalWorkout\(canonicalItem\(\)\)/, 'Home Start Workout must enter the live workout directly');
+assert.match(patch, /openWorkout\(\s*item\.title\s*,\s*item\.ids\s*,\s*false\s*\)/, 'canonical eight-exercise session must remain loggable');
+assert.match(patch, /if\s*\(\s*start\s*\)\s*\{[\s\S]*?startCanonicalWorkout\(canonicalItem\(\)\)/, 'Home Start Workout must enter the live workout directly');
 for (const id of [
   'machine-chest-press','incline-chest-press','pec-deck','lat-pulldown',
   'seated-row','shoulder-press','lateral-raise','triceps-pushdown'

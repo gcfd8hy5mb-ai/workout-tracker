@@ -1,0 +1,25 @@
+name: PR174 Required Validation
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  regression-suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run repository JavaScript tests
+        run: |
+          set -e
+          for test in tests/test_*.js; do
+            echo "Running $test"
+            node "$test"
+          done
