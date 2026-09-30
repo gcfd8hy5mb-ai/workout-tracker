@@ -40,6 +40,22 @@
   `;
   document.head.appendChild(style);
 
+  function replaceLegacyBrand(root){
+    if(!root)return;
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),nodes=[];
+    while(walker.nextNode())nodes.push(walker.currentNode);
+    for(const node of nodes){
+      if(/PRISM|LIFTOVA/.test(node.nodeValue||''))node.nodeValue=node.nodeValue.replaceAll('PRISM','MYLIFTCOACH').replaceAll('LIFTOVA','MYLIFTCOACH');
+    }
+  }
+
+  function enforceBranding(){
+    replaceLegacyBrand(document.querySelector('header .prism-header-label'));
+    replaceLegacyBrand(document.getElementById('profileScreen'));
+    replaceLegacyBrand(document.querySelector('#sideMenu .menu-brand-copy'));
+    replaceLegacyBrand(document.querySelector('#sideMenu .menu-version'));
+  }
+
   function buildHero(){
     const screen=document.getElementById('profileScreen');
     if(!screen || screen.querySelector('.myliftcoach-profile-hero')) return;
@@ -71,6 +87,7 @@
   function refreshHero(){
     buildHero();
     addSectionLabels();
+    enforceBranding();
     const screen=document.getElementById('profileScreen');
     if(!screen) return;
     const days=screen.querySelector('#prismEditDays')?.value || (window.workoutGoals?.days ?? '—');
@@ -90,9 +107,12 @@
   const boot=()=>{
     const screen=document.getElementById('profileScreen');
     if(!screen)return;
-    new MutationObserver(()=>{if(!screen.classList.contains('hidden'))requestAnimationFrame(refreshHero);}).observe(screen,{attributes:true,attributeFilter:['class']});
+    new MutationObserver(()=>{if(!screen.classList.contains('hidden'))requestAnimationFrame(refreshHero);}).observe(screen,{attributes:true,attributeFilter:['class'],childList:true,subtree:true});
+    const header=document.querySelector('header .prism-header-label');
+    if(header)new MutationObserver(enforceBranding).observe(header,{childList:true,subtree:true,characterData:true});
     screen.addEventListener('input',refreshHero);
     screen.addEventListener('change',refreshHero);
+    enforceBranding();
     refreshHero();
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
