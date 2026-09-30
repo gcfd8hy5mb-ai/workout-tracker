@@ -1,12 +1,12 @@
-/* LIFTOVA onboarding bridge: restyles and rebrands existing onboarding without changing stored data semantics. */
+/* MYLIFTCOACH onboarding bridge: restyles and rebrands existing onboarding without changing stored data semantics. */
 (() => {
   'use strict';
   function brandJourney(){
     for(const shell of [document.getElementById('welcomeScreen'),document.getElementById('onboardingScreen'),document.getElementById('goalReviewScreen')]){
       if(!shell)continue;
-      shell.querySelectorAll('.journey-brand strong').forEach(el=>{el.textContent='LIFTOVA'});
+      shell.querySelectorAll('.journey-brand strong').forEach(el=>{el.textContent='MYLIFTCOACH'});
       shell.querySelectorAll('.journey-brand small').forEach(el=>{el.textContent='Train · Track · Progress'});
-      shell.querySelectorAll('.journey-brand img').forEach(el=>{el.alt='LIFTOVA logo'});
+      shell.querySelectorAll('.journey-brand img').forEach(el=>{el.alt='MYLIFTCOACH logo'});
     }
     const area=document.getElementById('prismJourneyContent');
     if(area){
@@ -15,7 +15,8 @@
         const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
         nodes.forEach(node=>{if(node.nodeValue&&node.nodeValue.includes(from))node.nodeValue=node.nodeValue.split(from).join(to)});
       };
-      replaceText('PRISM','LIFTOVA');
+      replaceText('PRISM','MYLIFTCOACH');
+      replaceText('LIFTOVA','MYLIFTCOACH');
       const h2=area.querySelector('h2');
       if(h2){
         const t=h2.textContent.trim();
