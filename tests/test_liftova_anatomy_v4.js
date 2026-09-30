@@ -67,7 +67,7 @@ assert.match(anatomy.renderGroups({Chest:1}),/data-muscle="chest"/);
 for(const functionName of ['exerciseMuscleDiagram','libraryPreview','prismExerciseVisual','muscleVisual','renderMuscleRecovery'])assert.match(html,new RegExp(`function ${functionName}\\(`));
 assert.doesNotMatch(html,/function muscleFigure\(/);
 assert.doesNotMatch(html,/Exercise picture coming soon/);
-assert.match(html,/LIFTOVA PRO RECOMMENDS/);
+assert.match(html,/MYLIFTCOACH PRO RECOMMENDS/);
 assert.doesNotMatch(html, /<strong>PRISM<\/strong>|class="prism-wordmark">PRISM/);
 assert.ok(!fs.existsSync('liftova-anatomy-v4.js'));
 console.log('LIFTOVA shared anatomy atlas, catalog mapping and surface integration: OK');
