@@ -29,3 +29,13 @@ button:focus-visible{outline:3px solid rgba(157,70,255,.42)}
 .menu-head{color:#fff}.menu-close{background:#15101d;color:#eee7f5;border:1px solid #352044}
 .menu-link{color:#d8d1e0}.menu-link.active{background:#21132f;color:#cf91ff}.menu-link:active{background:#181020}
 .menu-version{color:#837b8e}
+
+/* Persistent chrome branding is owned here so late legacy DOM cannot visibly win. */
+.prism-header-brand .prism-wordmark,.menu-brand-copy strong{font-size:0!important;line-height:1!important}
+.prism-header-brand .prism-wordmark::after,.menu-brand-copy strong::after{content:"MYLIFTCOACH";font-size:19px;line-height:1.1;font-weight:750;letter-spacing:.02em;color:#f9f7ff}
+.menu-brand-copy strong::after{font-size:17px}
+.menu-version{font-size:0!important}
+.menu-version::after{content:"MYLIFTCOACH · Beta";font-size:12px;color:#837b8e}
+.prism-header-logo,.menu-brand img{visibility:hidden!important;width:43px;height:43px;position:relative}
+.prism-header-brand::before,.menu-brand::before{content:"MC";display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;border-radius:12px;background:linear-gradient(145deg,#3a126b,#0a0710);border:1px solid #6f35a6;color:#d8a7ff;font-size:15px;font-weight:850;letter-spacing:-.04em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+.prism-header-brand,.menu-brand{display:flex;align-items:center;gap:10px}
