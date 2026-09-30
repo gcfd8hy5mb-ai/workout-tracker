@@ -49,7 +49,7 @@ assert.equal(manifest.icons.some(item => item.src === 'images/liftova-icon.svg?v
 assert.equal(manifest.icons.some(item => item.src === 'images/apple-touch-icon-180.png?v=10' && item.type === 'image/png'), true);
 
 const sw = read('sw.js');
-assert.match(sw, /myliftcoach-home-v17-runtime-upgrade/, 'service worker must use current MYLIFTCOACH v17 cache identity');
+assert.match(sw, /myliftcoach-home-v18-rebrand-source/, 'service worker must use current MYLIFTCOACH v18 cache identity');
 assert.doesNotMatch(sw, /const CACHE_NAME = ["']liftova-/i, 'service worker cache must not retain old brand identity');
 assert.match(sw, /url\.pathname\.includes\("\/liftova-"\)/, 'legacy filenames remain network-first for compatibility');
 for (const asset of ['./images/apple-touch-icon-180.png','./images/liftova-icon.svg']) assert.match(sw, new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
