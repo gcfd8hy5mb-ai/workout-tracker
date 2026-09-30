@@ -7,76 +7,22 @@ const path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
 const mime={'.html':'text/html','.js':'application/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.json':'application/json'};
-const server=http.createServer((req,res)=>{
- const filename=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\//,'')||'index.html';
- const target=path.resolve(root,filename);
- if(!target.startsWith(root+path.sep)){res.writeHead(403).end();return;}
- fs.readFile(target,(error,content)=>{
-  if(error){res.writeHead(404).end();return;}
-  res.writeHead(200,{'content-type':mime[path.extname(target)]||'application/octet-stream'}).end(content);
- });
-});
+const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\//,'')||'index.html';const target=path.resolve(root,filename);if(!target.startsWith(root+path.sep)){res.writeHead(403).end();return;}fs.readFile(target,(error,content)=>{if(error){res.writeHead(404).end();return;}res.writeHead(200,{'content-type':mime[path.extname(target)]||'application/octet-stream'}).end(content);});});
 async function runPass(browser,url,pass){
- const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'});
- const page=await context.newPage();
- const errors=[];
- page.on('pageerror',error=>errors.push(error.message));
+ const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'});const page=await context.newPage();const errors=[];page.on('pageerror',error=>errors.push(error.message));
  await page.route('**/persistence/account-ui.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* UI-only guest fixture */'}));
  await page.goto(url,{waitUntil:'domcontentloaded'});
- await page.waitForFunction(()=>window.LiftovaAnatomy&&typeof window.showWorkouts==='function'&&typeof window.goHome==='function',{timeout:15000});
- await page.evaluate(()=>goHome());
- // Canonical compact Home intentionally has no legacy photo-card Start Workout button.
- await page.locator('#home:not(.hidden)').waitFor();
- await page.waitForTimeout(500);
- assert.equal(await page.locator('#lv3StartWorkout:visible').count(),0,'legacy Home Start button must not reappear');
- assert.equal(await page.locator('#home:not(.hidden)').count(),1,'canonical Home must remain visible');
- await page.locator('#home .lh-hero-menu').click();
- await page.locator('#sideMenu.open').waitFor();
- await page.locator('#sideMenu .menu-close').click();
- await page.locator('#home .lh-hero-profile').click();
- await page.locator('#profileScreen:not(.hidden)').waitFor();
- await page.evaluate(()=>showWorkouts());
- await page.locator('#workoutDetailScreen:not(.hidden) .lv3-exercise-row').first().waitFor();
- assert.equal(await page.locator('.lv3-exercise-row').count(),8,'full workout list must render');
- assert.equal(await page.locator('.lv3-exercise-row .liftova-anatomy').count(),8,'every workout row must show anatomy');
- await page.locator('.lv3-exercise-row').first().click();
- await page.locator('#exerciseInfoScreen:not(.hidden) .liftova-anatomy').first().waitFor();
- await page.locator('#prismExerciseInfo [data-ex-more]').click();
- await page.locator('#sideMenu.open').waitFor();
- await page.locator('#sideMenu .menu-close').click();
- await page.evaluate(()=>showLibrary());
- await page.locator('#libraryScreen:not(.hidden) .library-item').first().waitFor();
- assert.ok(await page.locator('#libraryList .library-item').count()>100,'full Exercise Library must render');
- assert.equal(await page.locator('#libraryList .liftova-anatomy').count(),await page.locator('#libraryList .library-item').count(),'every library row must show anatomy');
- await page.locator('#libraryList .library-item button').first().click();
- await page.locator('#exerciseInfoScreen:not(.hidden) .liftova-anatomy').first().waitFor();
- const selectedName=await page.locator('#prismExerciseInfo h2').textContent();
- await page.locator('#prismExerciseInfo .lv3-add-workout').click();
- await page.locator('#builderScreen:not(.hidden)').waitFor();
- const builderText=(await page.locator('#builderExercises').innerText()).toLowerCase();
- const selectedTokens=selectedName.toLowerCase().replace(/[()]/g,' ').split(/\s+/).filter(Boolean);
- assert.ok(selectedTokens.every(token=>builderText.includes(token)),'Add to Workout must preselect the same exercise even when its canonical display alias reorders “Machine”');
- await page.evaluate(()=>showOverallProgress());
- await page.locator('#overallProgressScreen [data-progress-target="strength"]').click();
- assert.equal(await page.locator('#overallProgressScreen [data-progress-target="strength"].active').count(),1,'Strength tab becomes active');
- await page.locator('#overallProgressScreen [data-progress-target="body"]').click();
- assert.equal(await page.locator('#overallProgressScreen [data-progress-target="body"].active').count(),1,'Body Stats tab becomes active');
- for(const [screen,action] of [['home','goHome()'],['workoutDetailScreen','showWorkouts()'],['globalHistoryScreen','showGlobalHistory()'],['overallProgressScreen','showOverallProgress()'],['profileScreen','showProfile()']]){
-  await page.evaluate(action);
-  await page.locator(`#${screen}:not(.hidden)`).waitFor();
- }
- const asset=await page.evaluate(async()=>{const response=await fetch('images/liftova-anatomy-atlas.webp');return [response.status,response.headers.get('content-type'),(await response.blob()).size]});
- assert.equal(asset[0],200);assert.match(asset[1],/webp/);assert.ok(asset[2]>100000);
- assert.equal(await page.locator('svg image[href="images/liftova-anatomy-atlas.webp"]').count()>0,true);
- const visibleBrand=await page.evaluate(()=>[...document.querySelectorAll('section:not(.hidden),header,.prism-bottom-nav')].filter(e=>e.getClientRects().length).map(e=>e.innerText||'').join(' ').match(/\bPRISM\b/i)?.[0]||null);
- assert.equal(visibleBrand,null,'no visible Prism branding');
- assert.deepEqual(errors,[],'no uncaught page errors');
- await context.close();
- console.log(`LIFTOVA browser smoke pass ${pass}: canonical home, details, library, navigation, atlas and branding PASS`);
+ await page.waitForFunction(()=>window.LiftovaAnatomy&&typeof window.goHome==='function'&&window.showWorkouts?.__liftovaCanonicalWorkout===true,{timeout:15000});
+ await page.evaluate(()=>goHome());await page.locator('#home:not(.hidden)').waitFor();await page.waitForTimeout(500);
+ assert.equal(await page.locator('#lv3StartWorkout:visible').count(),0,'legacy Home Start button must not reappear');assert.equal(await page.locator('#home:not(.hidden)').count(),1,'canonical Home must remain visible');
+ await page.locator('#home .lh-hero-menu').click();await page.locator('#sideMenu.open').waitFor();await page.locator('#sideMenu .menu-close').click();await page.locator('#home .lh-hero-profile').click();await page.locator('#profileScreen:not(.hidden)').waitFor();
+ await page.evaluate(()=>showWorkouts());await page.locator('#workoutDetailScreen:not(.hidden) .lv3-exercise-row').first().waitFor();assert.equal(await page.locator('.lv3-exercise-row').count(),8,'full workout list must render');assert.equal(await page.locator('.lv3-exercise-row .liftova-anatomy').count(),8,'every workout row must show anatomy');
+ await page.locator('.lv3-exercise-row').first().click();await page.locator('#exerciseInfoScreen:not(.hidden) .liftova-anatomy').first().waitFor();await page.locator('#prismExerciseInfo [data-ex-more]').click();await page.locator('#sideMenu.open').waitFor();await page.locator('#sideMenu .menu-close').click();
+ await page.evaluate(()=>showLibrary());await page.locator('#libraryScreen:not(.hidden) .library-item').first().waitFor();assert.ok(await page.locator('#libraryList .library-item').count()>100,'full Exercise Library must render');assert.equal(await page.locator('#libraryList .liftova-anatomy').count(),await page.locator('#libraryList .library-item').count(),'every library row must show anatomy');
+ await page.locator('#libraryList .library-item button').first().click();await page.locator('#exerciseInfoScreen:not(.hidden) .liftova-anatomy').first().waitFor();const selectedName=await page.locator('#prismExerciseInfo h2').textContent();await page.locator('#prismExerciseInfo .lv3-add-workout').click();await page.locator('#builderScreen:not(.hidden)').waitFor();const builderText=(await page.locator('#builderExercises').innerText()).toLowerCase();const selectedTokens=selectedName.toLowerCase().replace(/[()]/g,' ').split(/\s+/).filter(Boolean);assert.ok(selectedTokens.every(token=>builderText.includes(token)),'Add to Workout must preselect the same exercise even when its canonical display alias reorders “Machine”');
+ await page.evaluate(()=>showOverallProgress());await page.locator('#overallProgressScreen [data-progress-target="strength"]').click();assert.equal(await page.locator('#overallProgressScreen [data-progress-target="strength"].active').count(),1,'Strength tab becomes active');await page.locator('#overallProgressScreen [data-progress-target="body"]').click();assert.equal(await page.locator('#overallProgressScreen [data-progress-target="body"].active').count(),1,'Body Stats tab becomes active');
+ for(const [screen,action] of [['home','goHome()'],['workoutDetailScreen','showWorkouts()'],['globalHistoryScreen','showGlobalHistory()'],['overallProgressScreen','showOverallProgress()'],['profileScreen','showProfile()']]){await page.evaluate(action);await page.locator(`#${screen}:not(.hidden)`).waitFor();}
+ const asset=await page.evaluate(async()=>{const response=await fetch('images/liftova-anatomy-atlas.webp');return [response.status,response.headers.get('content-type'),(await response.blob()).size]});assert.equal(asset[0],200);assert.match(asset[1],/webp/);assert.ok(asset[2]>100000);assert.equal(await page.locator('svg image[href="images/liftova-anatomy-atlas.webp"]').count()>0,true);
+ const visibleBrand=await page.evaluate(()=>[...document.querySelectorAll('section:not(.hidden),header,.prism-bottom-nav')].filter(e=>e.getClientRects().length).map(e=>e.innerText||'').join(' ').match(/\bPRISM\b/i)?.[0]||null);assert.equal(visibleBrand,null,'no visible Prism branding');assert.deepEqual(errors,[],'no uncaught page errors');await context.close();console.log(`LIFTOVA browser smoke pass ${pass}: canonical home, details, library, navigation, atlas and branding PASS`);
 }
-(async()=>{
- await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
- const url=`http://127.0.0.1:${server.address().port}/`;
- const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
- try{for(let pass=1;pass<=2;pass++)await runPass(browser,url,pass)}finally{await browser.close();server.close()}
-})().catch(error=>{server.close();console.error(error);process.exitCode=1});
+(async()=>{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const url=`http://127.0.0.1:${server.address().port}/`;const browser=await chromium.launch({headless:true,args:['--no-sandbox']});try{for(let pass=1;pass<=2;pass++)await runPass(browser,url,pass)}finally{await browser.close();server.close()}})().catch(error=>{server.close();console.error(error);process.exitCode=1});
