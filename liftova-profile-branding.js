@@ -1,7 +1,7 @@
-/* LIFTOVA compatibility layer: branding plus mobile navigation/chrome fixes. */
+/* MYLIFTCOACH compatibility layer: profile branding plus mobile navigation/chrome fixes. */
 (() => {
   'use strict';
-  const liftovaIcon = () => '<img src="images/liftova-icon.svg" alt="">';
+  const brandIcon = () => '<img src="images/liftova-icon.svg" alt="MYLIFTCOACH">';
 
   function scheduledWorkoutForToday(){
     const activeLabel=(document.querySelector('.liftova-home-shell .lh-day.active span')?.textContent||'').trim();
@@ -23,7 +23,7 @@
         let index=entries.findIndex(([,day])=>String(day?.title||'').toLowerCase().includes(activeLabel.toLowerCase()));
         if(index>=0){const [key,day]=entries[index];return {kind:'preset',key,title:day.title,ids:day.exercises||[],label:activeLabel};}
       }
-    }catch(err){console.warn('LIFTOVA scheduled-workout sync fallback',err);}
+    }catch(err){console.warn('MYLIFTCOACH scheduled-workout sync fallback',err);}
     return null;
   }
 
@@ -53,13 +53,17 @@
     if(list && muscles.length)list.innerHTML=Object.entries(groups).slice(0,5).map(([m,n])=>`<li>${m.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}: ${n} exercise${n===1?'':'s'}</li>`).join('');
   }
 
+  function replaceVisibleBrand(text){
+    return String(text||'').replace(/LIFTOVA/gi,'MYLIFTCOACH').replace(/\bPRISM\b/g,'MYLIFTCOACH');
+  }
+
   function applyBranding(root=document){
-    root.querySelectorAll('.prism-avatar img[src*="app-icon"],.prism-avatar-option img[src*="app-icon"]').forEach(img=>{img.src='images/liftova-icon.svg';});
+    root.querySelectorAll('.prism-avatar img[src*="app-icon"],.prism-avatar-option img[src*="app-icon"]').forEach(img=>{img.src='images/liftova-icon.svg';img.alt='MYLIFTCOACH';});
     const area=document.getElementById('prismLocalProfile');
     if(area){
       const walker=document.createTreeWalker(area,NodeFilter.SHOW_TEXT);
       const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
-      nodes.forEach(n=>{n.nodeValue=n.nodeValue.replace(/PRISM Account/g,'LIFTOVA Account').replace(/Your PRISM Profile/g,'Your LIFTOVA Profile').replace(/Your PRISM data/g,'Your LIFTOVA data');});
+      nodes.forEach(n=>{const next=replaceVisibleBrand(n.nodeValue);if(next!==n.nodeValue)n.nodeValue=next;});
     }
     document.querySelectorAll('header').forEach(header=>{
       if(header.closest('.liftova-home-shell'))return;
@@ -88,7 +92,7 @@
       if(card.dataset.liftovaScheduleKind==='preset' && card.dataset.liftovaScheduleKey && typeof openPresetWorkout==='function'){
         openPresetWorkout(card.dataset.liftovaScheduleKey);return true;
       }
-    }catch(err){console.warn('LIFTOVA scheduled workout-card navigation fallback',err);}
+    }catch(err){console.warn('MYLIFTCOACH scheduled workout-card navigation fallback',err);}
     const wanted=(card.querySelector('h2')?.textContent||'').trim().toLowerCase();
     if(!wanted)return false;
     try{
@@ -101,7 +105,7 @@
         const match=Object.entries(presetWorkouts).find(([,day])=>String(day?.title||'').trim().toLowerCase()===wanted);
         if(match && typeof openPresetWorkout==='function'){openPresetWorkout(match[0]);return true;}
       }
-    }catch(err){console.warn('LIFTOVA workout-card navigation fallback',err);}
+    }catch(err){console.warn('MYLIFTCOACH workout-card navigation fallback',err);}
     const workoutNav=document.querySelector('[data-prism-tab="Workout"],[data-prism-tab="Workouts"]');
     if(workoutNav){workoutNav.click();return true;}
     return false;
@@ -125,19 +129,19 @@
   }
 
   function install(){
-    if(typeof window.prismAvatarMarkup==='function'&&!window.prismAvatarMarkup.__liftova){
+    if(typeof window.prismAvatarMarkup==='function'&&!window.prismAvatarMarkup.__myliftcoach){
       const original=window.prismAvatarMarkup;
-      const branded=function(id){if((id??window.prismLocalProfile?.avatarId)==='prism')return liftovaIcon();return original(id)};
-      branded.__liftova=true;window.prismAvatarMarkup=branded;
+      const branded=function(id){if((id??window.prismLocalProfile?.avatarId)==='prism')return brandIcon();return original(id)};
+      branded.__myliftcoach=true;window.prismAvatarMarkup=branded;
     }
     applyBranding();
     wireInteractions();
     const host=document.body;
-    if(host&&!host.__liftovaBrandObserver){
+    if(host&&!host.__myliftcoachBrandObserver){
       let queued=false;
       const observer=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;applyBranding();});});
       observer.observe(host,{childList:true,subtree:true});
-      host.__liftovaBrandObserver=observer;
+      host.__myliftcoachBrandObserver=observer;
     }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
