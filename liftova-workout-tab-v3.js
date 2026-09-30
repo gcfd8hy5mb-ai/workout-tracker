@@ -9,7 +9,11 @@
   const anatomy=(e,size='compact')=>window.LiftovaAnatomy?.render?.(e,{size})||'';
   const scheme=e=>/fly|lateral|triceps/i.test(String(e?.name||''))?{sets:3,reps:12,rest:'45–60s'}:{sets:3,reps:10,rest:'60–90s'};
   const icon=n=>({back:'‹',more:'•••'}[n]||'');
-  function addStyles(){if(document.querySelector('link[data-myliftcoach-workout-detail]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href='liftova-reference-v3.css?v=5';l.dataset.myliftcoachWorkoutDetail='true';document.head.appendChild(l);}
+  function addStyles(){
+    if(typeof document.querySelector!=='function'||typeof document.createElement!=='function'||!document.head?.appendChild)return;
+    if(document.querySelector('link[data-myliftcoach-workout-detail]'))return;
+    const l=document.createElement('link');l.rel='stylesheet';l.href='liftova-reference-v3.css?v=5';l.dataset.myliftcoachWorkoutDetail='true';document.head.appendChild(l);
+  }
   function canonicalItem(){return{kind:'liftova-reference',key:'upper-body',title:'Upper Body',ids:CANONICAL_IDS.filter(id=>!!ex(id)),workoutKey:'liftova-reference-upper-body'};}
   function renderDetail(item){
     const area=document.getElementById('prismWorkoutDetail');if(!area||!item)return;const ids=(item.ids||[]).filter(id=>ex(id));
