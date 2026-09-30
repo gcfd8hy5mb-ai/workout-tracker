@@ -10,7 +10,12 @@ assert.match(source,/function renderSettings\(\)\{/);
 assert.match(source,/querySelectorAll\('\.lv3-settings-shell'\)\.forEach\(el=>el\.remove\(\)\)/);
 assert.match(source,/classList\.add\('myliftcoach-settings-owned'\)/);
 assert.doesNotMatch(source,/prepend\(shell\)/);
-assert.doesNotMatch(source,/createElement\('div'\).*lv3-settings-shell/s);
+
+// Reject actual creation/assignment of a duplicate Settings shell without
+// allowing an unrelated createElement elsewhere in the file to match across
+// arbitrary source text into the cleanup selector.
+assert.doesNotMatch(source,/createElement\(['"]div['"]\)[^;\n]{0,240}(?:className\s*=\s*['"][^'"]*lv3-settings-shell|classList\.add\([^\n;]*['"]lv3-settings-shell['"])/);
+assert.doesNotMatch(source,/\.innerHTML\s*=\s*`[^`]*class=["'][^"']*lv3-settings-shell/);
 
 // Existing functional Profile/Settings controls remain in index.html rather
 // than being recreated by the presentation layer.
