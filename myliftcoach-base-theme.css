@@ -1,0 +1,21 @@
+:root{
+  --bg:#050308;
+  --card:#100a17;
+  --text:#f8f5ff;
+  --sub:#aaa3b5;
+  --line:#2b1b3b;
+  --blue:#8b4ee8;
+  --orange:#8b4ee8;
+}
+html,body{background:var(--bg);color:var(--text)}
+header{background:#08050d;color:var(--text);border-bottom-color:#241632;box-shadow:0 8px 24px rgba(0,0,0,.28)}
+.card,.day-button,.action-button{background:linear-gradient(150deg,#130a1f,#09050f);color:var(--text);border:1px solid rgba(151,82,255,.20);box-shadow:0 8px 28px rgba(0,0,0,.28)}
+.small,.day-button span,.action-button span{color:var(--sub)}
+.back{color:#b98cff}
+.back:active{color:#d5baff}
+button:focus-visible{outline:3px solid rgba(151,82,255,.42);outline-offset:2px}
+.primary{background:#6d35c5;color:#fff;border-color:#9b63f0}
+.primary span{color:#ddd0f5}
+.day-button:active,.action-button:not(.primary):active{background:#1a1024}
+input,select,textarea{background:#0d0812;color:var(--text);border-color:#322044}
+::placeholder{color:#756d80}
