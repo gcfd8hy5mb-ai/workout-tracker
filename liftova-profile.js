@@ -1,22 +1,22 @@
-// LIFTOVA Profile / Settings presentation layer. Existing account and persistence logic stays intact.
+// MYLIFTCOACH Profile / Settings presentation layer. Existing account and persistence logic stays intact.
 (() => {
   'use strict';
   const style = document.createElement('style');
-  style.id = 'liftova-profile-styles';
+  style.id = 'myliftcoach-profile-styles';
   style.textContent = `
     #profileScreen{color:#f7f4ff;padding-bottom:110px}
     #profileScreen .prism-section-head{margin:2px 0 12px;padding:4px 2px 0}
     #profileScreen .prism-eyebrow{color:#a66cff;letter-spacing:.16em;font-size:9px;font-weight:850}
     #profileScreen .prism-section-head h2{font-size:28px;margin:4px 0 0;letter-spacing:-.04em;color:#fff}
-    #profileScreen .liftova-profile-hero{position:relative;overflow:hidden;margin:0 0 12px;padding:16px;border:1px solid rgba(151,83,255,.36);border-radius:19px;background:radial-gradient(circle at 90% 0,rgba(142,69,255,.22),transparent 42%),linear-gradient(145deg,#15101f,#0b0a10 66%);box-shadow:none}
-    #profileScreen .liftova-profile-brand{display:flex;align-items:center;gap:11px;position:relative;z-index:1}
-    #profileScreen .liftova-profile-mark{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#7325ef,#a958ff);font-size:18px;font-weight:900;color:#fff}
-    #profileScreen .liftova-profile-brand strong{display:block;font-size:16px;letter-spacing:.1em;color:#fff}
-    #profileScreen .liftova-profile-brand small{display:block;color:#9c95a7;margin-top:3px;font-size:10px}
-    #profileScreen .liftova-profile-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:13px;position:relative;z-index:1}
-    #profileScreen .liftova-profile-mini{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:11px;padding:9px 6px;text-align:center}
-    #profileScreen .liftova-profile-mini b{display:block;color:#fff;font-size:14px}
-    #profileScreen .liftova-profile-mini span{display:block;color:#817a8c;font-size:8px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em}
+    #profileScreen .myliftcoach-profile-hero{position:relative;overflow:hidden;margin:0 0 12px;padding:16px;border:1px solid rgba(151,83,255,.36);border-radius:19px;background:radial-gradient(circle at 90% 0,rgba(142,69,255,.22),transparent 42%),linear-gradient(145deg,#15101f,#0b0a10 66%);box-shadow:none}
+    #profileScreen .myliftcoach-profile-brand{display:flex;align-items:center;gap:11px;position:relative;z-index:1}
+    #profileScreen .myliftcoach-profile-mark{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#7325ef,#a958ff);font-size:15px;font-weight:900;color:#fff}
+    #profileScreen .myliftcoach-profile-brand strong{display:block;font-size:16px;letter-spacing:.08em;color:#fff}
+    #profileScreen .myliftcoach-profile-brand small{display:block;color:#9c95a7;margin-top:3px;font-size:10px}
+    #profileScreen .myliftcoach-profile-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:13px;position:relative;z-index:1}
+    #profileScreen .myliftcoach-profile-mini{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:11px;padding:9px 6px;text-align:center}
+    #profileScreen .myliftcoach-profile-mini b{display:block;color:#fff;font-size:14px}
+    #profileScreen .myliftcoach-profile-mini span{display:block;color:#817a8c;font-size:8px;margin-top:2px;text-transform:uppercase;letter-spacing:.07em}
     #profileScreen .card,#profileScreen .prism-local-section,#profileScreen #prismCloudAccount>.card{background:#0e0c13!important;color:#f7f4ff!important;border:1px solid #2d2337!important;border-radius:17px!important;box-shadow:none!important;padding:14px!important;margin-bottom:10px!important}
     #profileScreen .card h3,#profileScreen .prism-local-section h3{color:#fff!important;font-size:15px!important;margin:0 0 9px!important}
     #profileScreen .small,#profileScreen .journey-note,#profileScreen .prism-local-hero small{color:#918a9b!important;font-size:10px!important}
@@ -36,18 +36,25 @@
     #profileScreen .prism-tier-choices button[aria-pressed='true']{background:#6726cf!important;color:#fff!important;border-color:#a45ff0!important}
     #profileScreen #prismAccountSignOut{width:100%!important;margin-top:10px!important;background:#17121d!important;color:#ff8ba0!important;border:1px solid #4b2732!important;min-height:45px!important}
     #profileScreen #profileSettings{margin-bottom:18px}
-    #profileScreen .liftova-profile-section-label{margin:15px 2px 7px;color:#837b8e;font-size:9px;font-weight:850;letter-spacing:.12em;text-transform:uppercase}
+    #profileScreen .myliftcoach-profile-section-label{margin:15px 2px 7px;color:#837b8e;font-size:9px;font-weight:850;letter-spacing:.12em;text-transform:uppercase}
   `;
   document.head.appendChild(style);
 
+  function removeLegacyProfilePresentation(){
+    const screen=document.getElementById('profileScreen');
+    if(!screen) return;
+    screen.querySelectorAll('.liftova-profile-hero,.liftova-profile-section-label').forEach(el=>el.remove());
+    document.getElementById('liftova-profile-styles')?.remove();
+  }
+
   function buildHero(){
     const screen=document.getElementById('profileScreen');
-    if(!screen || screen.querySelector('.liftova-profile-hero')) return;
+    if(!screen || screen.querySelector('.myliftcoach-profile-hero')) return;
     const head=screen.querySelector('.prism-section-head');
     if(!head) return;
     const hero=document.createElement('section');
-    hero.className='liftova-profile-hero';
-    hero.innerHTML=`<div class="liftova-profile-brand"><div class="liftova-profile-mark">L</div><div><strong>LIFTOVA</strong><small>Training profile and account</small></div></div><div class="liftova-profile-mini-grid"><div class="liftova-profile-mini"><b id="liftovaProfileDays">—</b><span>Days / wk</span></div><div class="liftova-profile-mini"><b id="liftovaProfileLevel">—</b><span>Level</span></div><div class="liftova-profile-mini"><b id="liftovaProfileUnits">—</b><span>Units</span></div></div>`;
+    hero.className='myliftcoach-profile-hero';
+    hero.innerHTML=`<div class="myliftcoach-profile-brand"><div class="myliftcoach-profile-mark">MC</div><div><strong>MYLIFTCOACH</strong><small>Training profile and account</small></div></div><div class="myliftcoach-profile-mini-grid"><div class="myliftcoach-profile-mini"><b id="myliftcoachProfileDays">—</b><span>Days / wk</span></div><div class="myliftcoach-profile-mini"><b id="myliftcoachProfileLevel">—</b><span>Level</span></div><div class="myliftcoach-profile-mini"><b id="myliftcoachProfileUnits">—</b><span>Units</span></div></div>`;
     head.after(hero);
   }
 
@@ -55,9 +62,9 @@
     const screen=document.getElementById('profileScreen');
     if(!screen) return;
     const add=(target,text)=>{
-      if(!target || target.previousElementSibling?.classList.contains('liftova-profile-section-label')) return;
+      if(!target || target.previousElementSibling?.classList.contains('myliftcoach-profile-section-label')) return;
       const label=document.createElement('div');
-      label.className='liftova-profile-section-label';
+      label.className='myliftcoach-profile-section-label';
       label.textContent=text;
       target.before(label);
     };
@@ -67,6 +74,7 @@
   }
 
   function refreshHero(){
+    removeLegacyProfilePresentation();
     buildHero();
     addSectionLabels();
     const screen=document.getElementById('profileScreen');
@@ -75,9 +83,9 @@
     const level=screen.querySelector('#prismEditLevel')?.value || (window.tracking?.trainingLevel ?? '—');
     const units=screen.querySelector('#prismEditUnits')?.value || (window.tracking?.preferredWeightUnit ?? 'lb');
     const set=(id,val)=>{const el=document.getElementById(id);const next=String(val);if(el&&el.textContent!==next)el.textContent=next;};
-    set('liftovaProfileDays',days==='—'?'—':`${days}`);
-    set('liftovaProfileLevel',level);
-    set('liftovaProfileUnits',String(units).toUpperCase());
+    set('myliftcoachProfileDays',days==='—'?'—':`${days}`);
+    set('myliftcoachProfileLevel',level);
+    set('myliftcoachProfileUnits',String(units).toUpperCase());
   }
 
   const originalShowProfile=window.showProfile;
