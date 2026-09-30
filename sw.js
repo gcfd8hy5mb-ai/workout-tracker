@@ -46,12 +46,13 @@ self.addEventListener("install",event=>{
 self.addEventListener("activate",event=>{
   event.waitUntil((async()=>{
     const keys=await caches.keys();
+    const upgrading=keys.some(key=>key!==CACHE_NAME);
     await Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)));
     await self.clients.claim();
     const clients=await self.clients.matchAll({type:"window",includeUncontrolled:true});
     for(const client of clients){
       client.postMessage({type:"MYLIFTCOACH_UPGRADE_READY",version:UPGRADE_VERSION});
-      if(typeof client.navigate==="function"){
+      if(upgrading && typeof client.navigate==="function"){
         try{
           const target=new URL(client.url);
           target.searchParams.set("myliftcoach_upgrade",UPGRADE_VERSION);
