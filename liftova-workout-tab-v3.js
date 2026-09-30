@@ -24,12 +24,18 @@
   }
   function startCanonicalWorkout(item){try{activeWorkoutKey='liftova-reference-upper-body';activeWorkoutTitle='Upper Body';activeWorkoutExerciseIds=[...item.ids];activeCustomIndex=null;lastWorkoutContext={type:'liftova-reference',title:item.title,ids:[...item.ids]};openWorkout(item.title,item.ids,false);return true}catch(error){console.error('MYLIFTCOACH canonical workout could not start',error);return false}}
   let installed=false;
-  function install(){if(installed)return;if(typeof showPrismWorkoutDetail!=='function'||typeof showWorkouts!=='function'||typeof showExerciseInfo!=='function'){setTimeout(install,60);return}installed=true;addStyles();
-    const baseDetail=window.showPrismWorkoutDetail,baseExercise=window.showExerciseInfo,baseWorkouts=window.showWorkouts,baseStart=window.startPrismWorkout;
-    window.showPrismWorkoutDetail=function(item){const result=baseDetail.apply(this,arguments);requestAnimationFrame(()=>renderDetail(item));return result};
-    window.showExerciseInfo=function(id,returnTo){const result=baseExercise.apply(this,arguments);requestAnimationFrame(()=>renderExercise(id,returnTo));return result};
-    window.showWorkouts=function(){const item=canonicalItem();if(item.ids.length){showPrismWorkoutDetail(item);return}return baseWorkouts.apply(this,arguments)};window.showWorkouts.__liftovaCanonicalWorkout=true;window.showWorkouts.__legacyShowWorkouts=baseWorkouts;
+  function install(){
+    if(installed)return;
+    if(typeof showWorkouts!=='function')return;
+    installed=true;addStyles();
+    const baseDetail=typeof window.showPrismWorkoutDetail==='function'?window.showPrismWorkoutDetail:null;
+    const baseExercise=typeof window.showExerciseInfo==='function'?window.showExerciseInfo:null;
+    const baseWorkouts=window.showWorkouts,baseStart=window.startPrismWorkout;
+    window.showPrismWorkoutDetail=function(item){const result=baseDetail?.apply(this,arguments);requestAnimationFrame(()=>renderDetail(item));return result};
+    if(baseExercise)window.showExerciseInfo=function(id,returnTo){const result=baseExercise.apply(this,arguments);requestAnimationFrame(()=>renderExercise(id,returnTo));return result};
+    window.showWorkouts=function(){const item=canonicalItem();if(item.ids.length){window.showPrismWorkoutDetail(item);return}return baseWorkouts.apply(this,arguments)};window.showWorkouts.__liftovaCanonicalWorkout=true;window.showWorkouts.__legacyShowWorkouts=baseWorkouts;
     window.startPrismWorkout=function(item){if(item?.kind==='liftova-reference'&&startCanonicalWorkout(item))return;return baseStart?.apply(this,arguments)};
+    document.addEventListener('click',event=>{const start=event.target.closest?.('#lv3StartWorkout');if(start){event.preventDefault();event.stopImmediatePropagation();startCanonicalWorkout(canonicalItem());}},true);
     requestAnimationFrame(()=>{const browser=document.getElementById('workoutsScreen');if(browser&&!browser.classList.contains('hidden'))window.showWorkouts()});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
