@@ -49,10 +49,11 @@ assert.equal(manifest.icons.some(item => item.src === 'images/liftova-icon.svg?v
 assert.equal(manifest.icons.some(item => item.src === 'images/apple-touch-icon-180.png?v=10' && item.type === 'image/png'), true);
 
 const sw = read('sw.js');
-assert.match(sw, /myliftcoach-home-v18-rebrand-source/, 'service worker must use current MYLIFTCOACH v18 cache identity');
+assert.match(sw, /myliftcoach-home-v19-runtime-brand/, 'service worker must use current MYLIFTCOACH v19 runtime cache identity');
 assert.doesNotMatch(sw, /const CACHE_NAME = ["']liftova-/i, 'service worker cache must not retain old brand identity');
 assert.match(sw, /url\.pathname\.includes\("\/liftova-"\)/, 'legacy filenames remain network-first for compatibility');
 for (const asset of ['./images/apple-touch-icon-180.png','./images/liftova-icon.svg']) assert.match(sw, new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+assert.match(sw, /liftova-polish\.js\?v=8/, 'installed shell must cache the same current polish version loaded by runtime');
 
 const functionalFixes = read('liftova-functional-fixes.js');
 assert.match(functionalFixes, /showWorkoutSummary/);

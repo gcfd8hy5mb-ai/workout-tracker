@@ -1,5 +1,5 @@
-const CACHE_NAME = "myliftcoach-home-v18-rebrand-source";
-const UPGRADE_VERSION = "18";
+const CACHE_NAME = "myliftcoach-home-v19-runtime-brand";
+const UPGRADE_VERSION = "19";
 
 // Keep the install shell deliberately small. Presentation modules are network-first below,
 // so an installed PWA cannot remain pinned to a stale pre-rebrand presentation bundle.
@@ -9,7 +9,7 @@ const APP_FILES = [
   "./persistence/account-sync.js", "./persistence/account-controller.js", "./persistence/photo-sync.js", "./persistence/account-ui.js",
   "./supabase-config.js", "./liftova-home.js?v=12", "./liftova-home.css?v=8", "./liftova-onboarding.js?v=7",
   "./liftova-workouts.js?v=7", "./liftova-active-workout.js?v=7", "./liftova-library.js?v=7", "./liftova-progress.js?v=7",
-  "./liftova-profile.js?v=7", "./liftova-pro.js?v=7", "./liftova-polish.js?v=7",
+  "./liftova-profile.js?v=7", "./liftova-pro.js?v=7", "./liftova-polish.js?v=8",
   "./liftova-workout-tab-v3.js?v=1", "./liftova-anatomy.js?v=1", "./liftova-anatomy.css?v=1",
   "./images/liftova-anatomy-atlas.webp", "./images/liftova-icon.svg", "./images/apple-touch-icon-180.png", "./cloud-backup.js"
 ];
