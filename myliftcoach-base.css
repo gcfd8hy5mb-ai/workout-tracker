@@ -1,5 +1,5 @@
 /* MYLIFTCOACH canonical base chrome. Functional state selectors remain in index.html. */
-:root{--bg:#050409;--card:#0d0a12;--text:#f9f7ff;--sub:#aaa3b4;--line:#2d2039;--blue:#9d46ff;--orange:#9d46ff;--green:#28a745;--red:#dc3545}
+:root{--mlc-purple:#9d46ff;--bg:#050409;--card:#0d0a12;--text:#f9f7ff;--sub:#aaa3b4;--line:#2d2039;--blue:var(--mlc-purple);--orange:var(--mlc-purple);--green:#28a745;--red:#dc3545}
 html,body{background:#050409;color:var(--text)}
 header{background:#08060d;color:#f9f7ff;border-bottom:1px solid #352044;box-shadow:0 8px 28px rgba(0,0,0,.32)}
 .card,.exercise,.history-card,.stat-card,.progress-exercise,.workout-tabs{background:#0d0a12;color:#f9f7ff;border:1px solid #2d2039;box-shadow:none}
@@ -8,7 +8,7 @@ header{background:#08060d;color:#f9f7ff;border-bottom:1px solid #352044;box-shad
 button:focus-visible{outline:3px solid rgba(157,70,255,.42)}
 .day-button,.action-button{background:#0d0a12;color:#f9f7ff;border:1px solid #2d2039;box-shadow:none}
 .day-button:active,.action-button:not(.primary):active{background:#15101d}
-.primary,.add-small,.save-button,.timer-start{background:linear-gradient(135deg,#7023ef,#9d46ff);color:#fff}
+.primary,.add-small,.save-button,.timer-start{background:linear-gradient(135deg,#7023ef,var(--mlc-purple));color:#fff}
 .primary span{color:#d8c8e9}
 .progress-bar{background:#201828}.progress-fill{background:linear-gradient(90deg,#7023ef,#b65cff)}
 .muscle{background:#21162d;color:#cda6ff}
