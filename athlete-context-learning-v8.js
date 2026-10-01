@@ -1,0 +1,79 @@
+/* MYLIFTCOACH Athlete Context Learning V8.0
+   Learns when an athlete responds well, not only what previously worked.
+   Advisory/read-only only. Adaptive Programming remains final decision authority. */
+(()=>{
+ const VERSION='8.0';
+ const HALF_LIFE_DAYS=42;
+ const RECENT_DAYS=45;
+ const STALE_DAYS=120;
+ const safe=(fn,f=null)=>{try{const v=fn();return v==null?f:v}catch{return f}};
+ const clamp=(n,min=0,max=1)=>Math.max(min,Math.min(max,Number(n)||0));
+ const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
+ const ageDays=row=>{const t=Date.parse(row?.completedAt||row?.date||'');return Number.isFinite(t)?Math.max(0,(Date.now()-t)/86400000):0};
+ const freshness=row=>Number(Math.pow(.5,ageDays(row)/HALF_LIFE_DAYS).toFixed(4));
+ function recoveryContext(row={}){
+  const explicit=String(row.recoveryState||row.recovery||row.readiness||'').toLowerCase();
+  if(['poor','low','strained','fatigued','recovery'].some(x=>explicit.includes(x)))return 'strained';
+  if(['good','high','ready','normal','fresh'].some(x=>explicit.includes(x)))return 'ready';
+  const pain=Number(row.pain),rpe=Number(row.rpe);
+  if(Number.isFinite(pain)&&pain>=4)return 'strained';
+  if(Number.isFinite(rpe)&&rpe>=9)return 'strained';
+  if((Number.isFinite(pain)&&pain<=2)||(Number.isFinite(rpe)&&rpe<=8))return 'ready';
+  return 'unknown';
+ }
+ function adherenceContext(row={}){return row.followedRecommendation===false?'not_followed':'followed'}
+ function phaseContext(row={}){const p=String(row.phase||row.trainingPhase||row.goalPhase||'').toLowerCase();return p||'general'}
+ function contextKey(row={}){return `${recoveryContext(row)}|${adherenceContext(row)}|${phaseContext(row)}`}
+ function normalize(events=[]){const base=typeof window.liftovaLearnRecommendationOutcomes==='function'?window.liftovaLearnRecommendationOutcomes(events):events;return (base||[]).filter(x=>x&&x.exerciseId&&x.recommendationId).map(x=>({...x,context:{recovery:recoveryContext(x),adherence:adherenceContext(x),phase:phaseContext(x)},contextKey:contextKey(x),ageDays:Number(ageDays(x).toFixed(1)),freshnessWeight:freshness(x),recent:ageDays(x)<=RECENT_DAYS,stale:ageDays(x)>STALE_DAYS}));}
+ function summarize(rows=[]){
+  const usable=rows.filter(x=>!x.stale),recent=usable.filter(x=>x.recent),w=usable.reduce((s,x)=>s+x.freshnessWeight,0),score=w?usable.reduce((s,x)=>s+(Number(x.outcomeScore)||0)*x.freshnessWeight,0)/w:0;
+  const adherence=usable.length?usable.filter(x=>x.followedRecommendation!==false).length/usable.length:0;
+  const variance=usable.length?usable.reduce((s,x)=>s+Math.pow((Number(x.outcomeScore)||0)-score,2),0)/usable.length:1;
+  const consistency=clamp(1-Math.sqrt(variance));
+  const recentScore=recent.length?mean(recent.map(x=>Number(x.outcomeScore)||0)):null;
+  const older=usable.filter(x=>!x.recent),olderScore=older.length?mean(older.map(x=>Number(x.outcomeScore)||0)):null;
+  const contradiction=recentScore!=null&&olderScore!=null&&Math.abs(recentScore-olderScore)>=.18;
+  const confidence=clamp((Math.min(usable.length,8)/8)*.3+adherence*.2+consistency*.25+Math.min(w,5)/5*.25);
+  let state='learning';
+  if(rows.length&&!usable.length)state='stale';
+  else if(!recent.length&&usable.length)state='stale';
+  else if(contradiction&&recent.length>=2)state='contradictory';
+  else if(usable.length>=4&&recent.length>=2&&adherence>=.65&&consistency>=.7&&confidence>=.58)state='usable';
+  else if(usable.length>=3)state='uncertain';
+  return {evidence:rows.length,usableEvidence:usable.length,recentEvidence:recent.length,effectiveEvidence:Number(w.toFixed(3)),responseScore:Number(score.toFixed(3)),recentResponseScore:recentScore==null?null:Number(recentScore.toFixed(3)),olderResponseScore:olderScore==null?null:Number(olderScore.toFixed(3)),adherence:Number(adherence.toFixed(3)),consistency:Number(consistency.toFixed(3)),confidence:Number(confidence.toFixed(3)),contradiction,state};
+ }
+ function exerciseContexts(events=[],exerciseId){
+  const rows=normalize(events).filter(x=>String(x.exerciseId)===String(exerciseId)),groups={};
+  for(const row of rows)(groups[row.contextKey]||(groups[row.contextKey]=[])).push(row);
+  const contexts=Object.fromEntries(Object.entries(groups).map(([key,list])=>{const summary=summarize(list),sample=list[0];return [key,{version:VERSION,key,exerciseId:String(exerciseId),context:sample.context,...summary,mayInformProgramming:summary.state==='usable',mayOverrideAdaptive:false,reversible:true,explanation:summary.state==='usable'?`This athlete has a repeatable response pattern for ${sample.context.recovery} recovery, ${sample.context.adherence.replace('_',' ')} recommendations, and ${sample.context.phase} phase.`:summary.state==='contradictory'?'Recent outcomes conflict with older outcomes in this context, so confidence is reduced.':summary.state==='stale'?'This context pattern is too old to influence current programming.':'This context does not yet have enough consistent recent evidence.'}];}));
+  const usable=Object.values(contexts).filter(x=>x.state==='usable').sort((a,b)=>b.confidence-a.confidence||b.responseScore-a.responseScore);
+  return {version:VERSION,exerciseId:String(exerciseId),contexts,bestContext:usable[0]||null,usableContexts:usable.length,mayInformProgramming:usable.length>0,mayOverrideAdaptive:false,reversible:true};
+ }
+ function recommendationContexts(events=[],exerciseId){
+  const rows=normalize(events).filter(x=>String(x.exerciseId)===String(exerciseId)),byType={};
+  for(const row of rows){const type=String(row.recommendationType||row.recommendationAction||'unspecified');(byType[type]||(byType[type]=[])).push(row)}
+  const recommendations=Object.fromEntries(Object.entries(byType).map(([type,list])=>{const byContext={};for(const row of list)(byContext[row.contextKey]||(byContext[row.contextKey]=[])).push(row);const contexts=Object.fromEntries(Object.entries(byContext).map(([key,rows])=>[key,{key,...summarize(rows),context:rows[0].context}]));const usable=Object.values(contexts).filter(x=>x.state==='usable').sort((a,b)=>b.confidence-a.confidence||b.responseScore-a.responseScore);return [type,{recommendationType:type,evidence:list.length,contexts,bestContext:usable[0]||null,usableContexts:usable.length,mayInformProgramming:usable.length>0,mayOverrideAdaptive:false}] }));
+  return {version:VERSION,exerciseId:String(exerciseId),recommendations,mayInformProgramming:Object.values(recommendations).some(x=>x.mayInformProgramming),mayOverrideAdaptive:false,reversible:true};
+ }
+ function athleteSnapshot(events=[],exerciseMuscles={}){
+  const ids=[...new Set((events||[]).map(x=>x?.exerciseId).filter(Boolean).map(String))],exercises=ids.map(id=>({exerciseId:id,response:exerciseContexts(events,id),recommendations:recommendationContexts(events,id)}));
+  const useful=exercises.filter(x=>x.response.mayInformProgramming||x.recommendations.mayInformProgramming),contradictory=exercises.filter(x=>Object.values(x.response.contexts).some(c=>c.state==='contradictory'));
+  const muscleContexts={};
+  for(const ex of exercises){for(const muscle of exerciseMuscles[ex.exerciseId]||[]){const bucket=muscleContexts[muscle]||(muscleContexts[muscle]={muscle,exerciseIds:[],usableContexts:0,contradictoryContexts:0});bucket.exerciseIds.push(ex.exerciseId);bucket.usableContexts+=ex.response.usableContexts;bucket.contradictoryContexts+=Object.values(ex.response.contexts).filter(c=>c.state==='contradictory').length}}
+  const programReady=useful.length>=3&&Object.values(muscleContexts).filter(x=>x.usableContexts>0).length>=2&&contradictory.length<=Math.max(1,Math.floor(useful.length/3));
+  return {version:VERSION,authority:'adaptive_programming',consumer:'coach',readOnly:true,reversible:true,exercises,muscleContexts,usableExercises:useful.length,contradictoryExercises:contradictory.length,programContextReadiness:{ready:programReady,usableExercises:useful.length,usableMuscles:Object.values(muscleContexts).filter(x=>x.usableContexts>0).length,contradictoryExercises:contradictory.length,action:'supporting_evidence_only'},guardrails:{contextRequiresRecentEvidence:true,sparseContextsBlocked:true,contradictionsReduceTrust:true,staleContextsIgnored:true,noAutomaticProgramChange:true,mayOverrideAdaptive:false}};
+ }
+ function install(attempt=0){
+  if(typeof window.liftovaLearnProgramFoundation!=='function'){if(attempt<80)setTimeout(()=>install(attempt+1),100);return false}
+  if(window.liftovaLearnProgramFoundation.__myliftcoachContextV8)return true;
+  const base=window.liftovaLearnProgramFoundation;
+  const wrapped=function(events=[],exerciseMuscles={}){const foundation=base(events,exerciseMuscles),contextLearning=athleteSnapshot(events,exerciseMuscles);return {...foundation,contextLearning,programReadiness:{...foundation.programReadiness,contextReady:contextLearning.programContextReadiness.ready,contextUsableExercises:contextLearning.usableExercises,contextUsableMuscles:contextLearning.programContextReadiness.usableMuscles},explanation:`${foundation.explanation} V8 context learning adds recovery/adherence/phase-specific response evidence as supporting context only.`}};
+  wrapped.__myliftcoachContextV8=true;wrapped.__myliftcoachContextV8Base=base;window.liftovaLearnProgramFoundation=wrapped;return true;
+ }
+ window.myliftcoachAthleteContextNormalize=normalize;
+ window.myliftcoachAthleteExerciseContexts=exerciseContexts;
+ window.myliftcoachAthleteRecommendationContexts=recommendationContexts;
+ window.myliftcoachAthleteContextSnapshot=athleteSnapshot;
+ window.MYLIFTCOACH_ATHLETE_CONTEXT_LEARNING_VERSION=VERSION;
+ install();
+})();
