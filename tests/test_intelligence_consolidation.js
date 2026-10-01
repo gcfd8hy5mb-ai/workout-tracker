@@ -2,7 +2,8 @@ const assert=require('assert');
 const fs=require('fs');
 const vm=require('vm');
 
-const code=fs.readFileSync('myliftcoach-intelligence-contract-v1.js','utf8');
+const coreCode=fs.readFileSync('myliftcoach-intelligence-core.js','utf8');
+const contractCode=fs.readFileSync('myliftcoach-intelligence-contract-v1.js','utf8');
 const window={
  myliftcoachAthleteExerciseContexts:()=>({state:'usable'}),
  myliftcoachAthleteDoseProfile:()=>({preferenceState:'differentiated'}),
@@ -23,9 +24,14 @@ const window={
  myliftcoachAdaptiveDoseV82Audit:()=>({guardrails:{adaptiveProgrammingFinalAuthority:true,neverIncreaseLoadFromDoseEvidence:true,noProgramReplacement:true}}),
  myliftcoachAdaptiveRecoveryV83Audit:()=>({guardrails:{adaptiveProgrammingFinalAuthority:true,learnedRecoveryCannotIncreaseLoad:true,learnedRecoveryCannotReschedule:true,noProgramReplacement:true}})
 };
-vm.runInNewContext(code,{window,Object,JSON,Number,String,Boolean,Math,Date,Array,RegExp});
+const sandbox={window,Object,JSON,Number,String,Boolean,Math,Date,Array,RegExp};
+vm.runInNewContext(coreCode,sandbox);
+vm.runInNewContext(contractCode,sandbox);
+assert(window.myliftcoachIntelligenceCore,'shared intelligence core should install');
+assert.equal(window.myliftcoachIntelligenceCore.version,'1.0');
 assert(window.myliftcoachIntelligence,'contract should install');
-assert.equal(window.myliftcoachIntelligence.version,'1.1');
+assert.equal(window.myliftcoachIntelligence.version,'1.2');
+assert.equal(window.myliftcoachIntelligence.coreVersion,'1.0');
 const snap=window.myliftcoachIntelligence.snapshot({exerciseId:'bench',plannedRecoveryHours:72,events:[]});
 assert.equal(snap.athlete.context.state,'usable');
 assert.equal(snap.coach.recovery.timing,'on_time');
@@ -38,8 +44,14 @@ assert.equal(proposal.context.state,'supported');
 assert.equal(proposal.dose.state,'supported');
 assert.equal(proposal.recovery.state,'supported');
 const config=fs.readFileSync('supabase-config.js','utf8');
-assert(config.includes("myliftcoach-intelligence-contract-v1.js?v=1.1"),'contract 1.1 must load in runtime');
-assert(config.includes("myliftcoach-intelligence-account-boundary.js?v=1"),'account boundary must load in runtime');
-assert(config.indexOf('myliftcoach-intelligence-contract-v1.js?v=1.1')>config.indexOf('myliftcoach-adaptive-recovery-v8_3.js?v=8.3'),'contract must load after implementation layers');
-assert(config.indexOf('myliftcoach-intelligence-account-boundary.js?v=1')>config.indexOf('myliftcoach-intelligence-contract-v1.js?v=1.1'),'account boundary must load after the consolidated contract and wrapped implementations');
+assert(config.includes("myliftcoach-intelligence-core.js?v=1"),'shared intelligence core must load in runtime');
+assert(config.includes("myliftcoach-intelligence-contract-v1.js?v=1.2"),'contract 1.2 must load in runtime');
+assert(config.includes("myliftcoach-intelligence-account-boundary.js?v=1.1"),'account boundary 1.1 must load in runtime');
+const impl=config.indexOf('myliftcoach-adaptive-recovery-v8_3.js?v=8.3');
+const core=config.indexOf('myliftcoach-intelligence-core.js?v=1');
+const contract=config.indexOf('myliftcoach-intelligence-contract-v1.js?v=1.2');
+const boundary=config.indexOf('myliftcoach-intelligence-account-boundary.js?v=1.1');
+assert(core>impl,'shared core must load after implementation layers');
+assert(contract>core,'contract must load after shared core');
+assert(boundary>contract,'account boundary must load after the consolidated contract and wrapped implementations');
 console.log('intelligence consolidation contract regression passed');
