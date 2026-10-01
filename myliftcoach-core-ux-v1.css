@@ -1,0 +1,62 @@
+/* MYLIFTCOACH core UX pass 1 — hierarchy, touch targets, and app-like flow only. */
+:root{--mlc-purple:#8f3cf0;--mlc-purple-hi:#b15cff;--mlc-surface:#0b0910;--mlc-line:#2f243a;--mlc-muted:#9d94a7}
+
+/* HOME — make Today’s Workout the clear primary destination and quiet secondary data. */
+#home.liftova-home .liftova-home-shell{gap:11px}
+#home.liftova-home .lh-week{margin:1px 0 2px}
+#home.liftova-home .lh-day{min-height:76px;border-radius:13px}
+#home.liftova-home .lh-day:not(.active){opacity:.82}
+#home.liftova-home .lh-day.active{transform:none;box-shadow:0 0 0 1px rgba(222,128,255,.28),0 8px 24px rgba(117,31,220,.32)}
+#home.liftova-home .lh-workout{position:relative;padding:20px 20px 17px;border-width:1px;border-color:#8f3cf0;background:linear-gradient(150deg,#100a17 0%,#09070d 58%,#0b0810 100%);box-shadow:0 12px 34px rgba(0,0,0,.38),0 0 0 1px rgba(177,92,255,.1)}
+#home.liftova-home .lh-workout:before{content:'';position:absolute;left:0;top:18px;bottom:18px;width:3px;border-radius:0 8px 8px 0;background:linear-gradient(#c760ff,#7a24e7)}
+#home.liftova-home .lh-label{font-size:10px;letter-spacing:.14em;color:#d7a2ff}
+#home.liftova-home .lh-workout h2{font-size:29px;margin-top:10px}
+#home.liftova-home .lh-workout>p{font-size:13px;line-height:1.35;color:#cfc8d5}
+#home.liftova-home .lh-meta{margin-top:17px;padding-bottom:14px}
+#home.liftova-home .lh-meta span{font-size:10px;line-height:1.2}
+#home.liftova-home .lh-meta small{font-size:7.5px;letter-spacing:.03em}
+#home.liftova-home .lh-overview{padding-top:1px}
+#home.liftova-home .lh-overview>strong{font-size:8.5px;letter-spacing:.07em}
+#home.liftova-home .lh-overview ul{font-size:10.5px;line-height:1.55}
+#home.liftova-home .lh-insights,#home.liftova-home .lh-lower-grid{gap:9px}
+#home.liftova-home .lh-progress,#home.liftova-home .lh-streak,#home.liftova-home .lh-lower-card{background:#08070c;border-color:#291f31;box-shadow:none}
+#home.liftova-home .lh-shortcuts button{min-height:62px!important;border-color:#3f2850!important;background:#0a0810!important;box-shadow:none!important}
+#home.liftova-home .lh-shortcuts button:active{background:#15101c!important}
+
+/* WORKOUT BROWSER — stronger information hierarchy, calmer cards, larger tap targets. */
+#workoutsScreen{padding-bottom:126px!important}
+#workoutsScreen .liftova-workouts-hero{padding:16px 17px;margin-bottom:16px;border-radius:20px;background:linear-gradient(140deg,#17101f,#0b0910);box-shadow:none}
+#workoutsScreen .liftova-workouts-hero h3{font-size:21px;line-height:1.14}
+#workoutsScreen .liftova-workouts-hero p{max-width:92%;font-size:12px;color:#aaa1b4}
+#workoutsScreen .prism-segments{position:sticky;top:6px;z-index:6;backdrop-filter:blur(16px);background:rgba(10,8,14,.94);box-shadow:0 8px 22px rgba(0,0,0,.22)}
+#workoutsScreen .prism-segments button{min-height:44px!important}
+#workoutsScreen .prism-browser-group{margin:23px 2px 10px!important;font-size:12px!important;letter-spacing:.12em;text-transform:uppercase;color:#a99cb7!important}
+#workoutsScreen .prism-browser-row{min-height:82px!important;padding:12px 13px!important;margin-bottom:10px!important;border-radius:17px!important;background:#0d0b12!important;border:1px solid #2f2638!important;box-shadow:none!important}
+#workoutsScreen .prism-browser-row:active{background:#15101c!important;border-color:#5b3674!important}
+#workoutsScreen .prism-browser-row strong{font-size:16px!important;letter-spacing:-.01em}
+#workoutsScreen .prism-browser-row small{font-size:11px!important;color:#988fa2!important}
+#workoutsScreen .prism-browser-thumb{width:52px!important;height:58px!important;border-radius:12px!important;background:#15101b!important}
+#workoutsScreen .prism-browser-row .chevron{color:#8e829a!important;font-size:26px!important}
+#workoutsScreen .prism-primary.prism-wide{min-height:54px!important;border-radius:15px!important;font-weight:800!important;box-shadow:0 10px 24px rgba(100,34,194,.2)!important}
+
+/* ACTIVE WORKOUT — keep attention on the current logging action and reduce visual competition. */
+#workoutScreen.liftova-live-session{padding-bottom:calc(100px + env(safe-area-inset-bottom))!important}
+#workoutScreen .workout-progress{position:sticky;top:6px;z-index:9;background:rgba(13,11,18,.94)!important;backdrop-filter:blur(16px)}
+#workoutScreen .workout-readiness{margin-top:7px!important}
+#workoutScreen .rest-strip{top:64px!important;border-color:#3b2850!important;background:rgba(12,9,17,.96)!important}
+#workoutScreen .exercise{margin-bottom:16px!important;border-color:#2a2133!important}
+#workoutScreen .exercise-header{padding:15px 15px 12px!important}
+#workoutScreen .exercise-title{font-size:20px!important}
+#workoutScreen .tracking{padding:14px!important;margin-top:13px!important}
+#workoutScreen .set-row{gap:10px!important}
+#workoutScreen .picker-button{min-height:54px!important;border-color:#40324f!important;background:#121018!important}
+#workoutScreen .set-done{min-height:52px!important;font-weight:800!important}
+#workoutScreen .exercise-tools button{min-height:44px!important;padding:9px 11px!important}
+#workoutScreen .finish-workout{min-height:60px!important;border-radius:16px!important;background:linear-gradient(135deg,#7526df,#9e46f3)!important;box-shadow:0 14px 34px rgba(0,0,0,.48),0 0 0 1px rgba(190,111,255,.14)!important}
+#workoutScreen .finish-workout:active{background:linear-gradient(135deg,#6421c3,#8737d8)!important}
+
+/* Consistent touch/accessibility behavior across the core flow. */
+#home.liftova-home button,#workoutsScreen button,#workoutScreen button{touch-action:manipulation}
+#home.liftova-home button:focus-visible,#workoutsScreen button:focus-visible,#workoutScreen button:focus-visible{outline:2px solid #b15cff!important;outline-offset:2px}
+@media(max-width:390px){#home.liftova-home .lh-workout{padding:18px 17px 15px}#home.liftova-home .lh-workout h2{font-size:25px}#workoutsScreen .liftova-workouts-hero{padding:14px 15px}#workoutScreen .rest-strip{top:60px!important}}
+@media(prefers-reduced-motion:reduce){#home.liftova-home *,#workoutsScreen *,#workoutScreen *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
