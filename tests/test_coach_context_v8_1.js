@@ -1,0 +1,22 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+class MemoryStorage{constructor(){this.m=new Map()}getItem(k){return this.m.has(k)?this.m.get(k):null}setItem(k,v){this.m.set(k,String(v))}}
+const localStorage=new MemoryStorage(),window={};
+window.prismCheckinCurrent=()=>({week:'2026-09-28',recovery:'poor',energy:'low',difficulty:'hard',days:3});
+window.prismCheckinLatest=window.prismCheckinCurrent;window.prismCheckinCoachSignal=()=>({load:'conservative',days:3});
+window.prismRememberIntervention=data=>{const rows=JSON.parse(localStorage.getItem('prismCoachInterventionsV1')||'[]'),row={id:`x-${rows.length}`,at:new Date().toISOString(),...data,response:null,outcome:null};rows.unshift(row);localStorage.setItem('prismCoachInterventionsV1',JSON.stringify(rows));return row};
+window.prismCoachProgramReview=()=>({proposal:{type:'exercise_adjustment',changes:[{exerciseId:'press'}],requiresApproval:true},coachDecision:{state:'advisory',mayOverrideAdaptive:false}});
+const ctx={window,localStorage,console,setTimeout};vm.createContext(ctx);vm.runInContext(fs.readFileSync('athlete-learning-engine.js','utf8'),ctx);vm.runInContext(fs.readFileSync('athlete-context-learning-v8.js','utf8'),ctx);
+const iso=d=>new Date(Date.now()-d*86400000).toISOString();
+const row=(id,exerciseId,days,recovery,outcome,details={})=>({id,exerciseId,kind:'load_hold',at:iso(days+1),athleteContext:{recovery,phase:'general'},response:{value:'followed',at:iso(days)},outcome:{value:outcome,at:iso(days),details}});
+const rows=[];for(let i=0;i<6;i++)rows.push(row(`ready-${i}`,'press',[35,28,21,14,7,2][i],'ready','better'));
+for(let i=0;i<6;i++)rows.push(row(`strain-${i}`,'press',[34,27,20,13,6,1][i],'strained','worse',{rpe:9.5,pain:5}));
+localStorage.setItem('prismCoachInterventionsV1',JSON.stringify(rows));
+vm.runInContext(fs.readFileSync('myliftcoach-coach-context-v8_1.js','utf8'),ctx);
+let evidence=window.myliftcoachCoachExerciseContextEvidence('press');assert.strictEqual(evidence.currentContext.recovery,'strained');assert.strictEqual(evidence.state,'caution');assert.strictEqual(evidence.mayOverrideAdaptive,false);
+window.prismCheckinCurrent=()=>({week:'2026-09-28',recovery:'great',energy:'high',difficulty:'easy',days:4});window.prismCheckinLatest=window.prismCheckinCurrent;window.prismCheckinCoachSignal=()=>({load:'progressive',days:4});
+evidence=window.myliftcoachCoachExerciseContextEvidence('press');assert.strictEqual(evidence.currentContext.recovery,'ready');assert.strictEqual(evidence.state,'supported');
+const captured=window.prismRememberIntervention({kind:'adaptive_prescription',exerciseId:'row',reason:'test'});assert.ok(captured.athleteContext);assert.strictEqual(captured.athleteContext.recovery,'ready');
+window.prismCheckinCurrent=()=>({week:'2026-09-28',recovery:'poor',energy:'low',difficulty:'hard',days:3});window.prismCheckinLatest=window.prismCheckinCurrent;window.prismCheckinCoachSignal=()=>({load:'conservative',days:3});
+const review=window.prismCoachProgramReview();assert.strictEqual(review.coachContextEvidence.state,'caution');assert.strictEqual(review.coachDecision.contextState,'caution');assert.strictEqual(review.proposal.requiresApproval,true);assert.strictEqual(review.proposal.authority,'adaptive_programming');
+const audit=window.myliftcoachCoachContextAudit();assert.strictEqual(audit.guardrails.adaptiveProgrammingFinalAuthority,true);assert.strictEqual(audit.guardrails.noAutomaticAcceptance,true);
+console.log(JSON.stringify({suite:'MYLIFTCOACH Coach Context V8.1',checks:{capturesRecommendationContext:true,currentRecoveryMatched:true,positiveContextSupport:true,poorContextCaution:true,approvalPreserved:true,adaptiveAuthority:true}},null,2));
