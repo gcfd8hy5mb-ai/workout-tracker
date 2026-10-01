@@ -1,11 +1,12 @@
-/* MYLIFTCOACH Intelligence Account Boundary v1
+/* MYLIFTCOACH Intelligence Account Boundary v1.1
    Personalized learning/Coach/Adaptive reads fail closed unless the verified Supabase user
    matches the selected account-scoped device store. */
 (()=>{
  'use strict';
- const VERSION='1.0';
+ const VERSION='1.1';
+ const core=window.myliftcoachIntelligenceCore;
  let epoch=0,verifyRun=0;
- const unavailable=(kind='account_unverified')=>({version:VERSION,state:'unavailable',reason:kind,accountBound:true,mayOverrideAdaptive:false});
+ const unavailable=(kind='account_unverified')=>core?.unavailable?.(kind)||({version:VERSION,state:'unavailable',reason:kind,accountBound:true,mayOverrideAdaptive:false});
  function current(){
   const manager=window.PRISMDeviceStore||null,owner=manager?.owner||null,verified=window.MYLIFTCOACH_VERIFIED_ACCOUNT_ID||null;
   const valid=Boolean(owner&&verified&&owner===verified&&!manager?.stale);
@@ -46,9 +47,9 @@
   for(const name of ['prismRememberIntervention','prismInterventionRespond','prismInterventionOutcome'])wrap(name,()=>null);
   for(const name of ['myliftcoachCoachExerciseContextEvidence','myliftcoachCoachProposalContextEvidence','myliftcoachCoachDoseExplain','myliftcoachCoachDoseProposalSummary','myliftcoachCoachRecoveryExplain','myliftcoachCoachRecoveryProposalEvidence'])wrap(name,()=>unavailable());
   wrap('prismCoachProgramReview',()=>unavailable());
-  wrap('prismAdaptivePrescription',()=>({status:'account_hold',targetWeight:null,workingSets:null,reason:'Personalized programming is paused until this account is verified.',authority:'adaptive_programming',accountBoundary:unavailable()}));
+  wrap('prismAdaptivePrescription',()=>core?.accountHold?.()||({status:'account_hold',targetWeight:null,workingSets:null,reason:'Personalized programming is paused until this account is verified.',authority:'adaptive_programming',accountBoundary:unavailable()}));
  }
- const api=Object.freeze({version:VERSION,current,verify,invalidate,refreshVerification,token,isTokenCurrent,install,unavailable});
+ const api=Object.freeze({version:VERSION,coreVersion:core?.version||null,current,verify,invalidate,refreshVerification,token,isTokenCurrent,install,unavailable});
  window.myliftcoachIntelligenceAccountBoundary=api;
  window.MYLIFTCOACH_INTELLIGENCE_ACCOUNT_BOUNDARY_VERSION=VERSION;
  install();
