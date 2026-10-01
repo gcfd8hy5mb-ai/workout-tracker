@@ -1,0 +1,49 @@
+/* MYLIFTCOACH core UX pass 7 — history, calendar, records, and photos. */
+#globalHistoryScreen,#calendarScreen,#recordsScreen,#photosScreen{padding-bottom:124px!important}
+#globalHistoryScreen>h2,#calendarScreen>h2,#recordsScreen>h2,#photosScreen>h2{font-size:28px!important;letter-spacing:-.035em!important;margin:4px 0 14px!important;color:#fff!important}
+
+/* History — chronological cards with clearer exercise separation. */
+#globalHistoryList .history-card{padding:15px!important;margin-bottom:10px!important;border:1px solid #2d2336!important;border-radius:18px!important;background:#0b0910!important;box-shadow:none!important}
+#globalHistoryList .history-title{font-size:16px!important;color:#f7f2ff!important;letter-spacing:-.015em!important}
+#globalHistoryList .history-date{font-size:11px!important;color:#93899d!important}
+#globalHistoryList .history-exercise{padding:11px 0!important;margin-top:10px!important;border-top-color:#261e2d!important}
+#globalHistoryList .history-set{font-size:12px!important;line-height:1.45!important;color:#aaa1b3!important}
+#globalHistoryScreen .empty{padding:28px 18px!important;border:1px dashed #3a2b46!important;border-radius:17px!important;background:#0b0910!important;color:#9b91a5!important}
+
+/* Calendar — month control stays readable and selected/today states are obvious. */
+#calendarScreen .calendar-toolbar{min-height:52px!important;margin:6px 0 12px!important;padding:5px!important;border:1px solid #2d2336!important;border-radius:15px!important;background:#0b0910!important}
+#calendarScreen .calendar-toolbar strong{font-size:15px!important;color:#f6f1fb!important}
+#calendarScreen .calendar-toolbar button{width:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;border:0!important;border-radius:11px!important;background:#15111b!important;color:#d7c7e5!important}
+#calendarScreen .calendar-toolbar button:active{background:#21152d!important}
+#calendarScreen .calendar-grid{gap:5px!important}
+#calendarScreen .calendar-weekday{font-size:9px!important;letter-spacing:.05em!important;color:#8e8498!important;padding:6px 0!important}
+#calendarScreen .calendar-day{min-height:58px!important;padding:6px 3px!important;border:1px solid #2b2233!important;border-radius:11px!important;background:#0b0910!important;color:#e9e4ef!important;font-size:12px!important}
+#calendarScreen .calendar-day:active{background:#15101c!important}
+#calendarScreen .calendar-day.selected{background:#21132e!important;border-color:#8c49cf!important;box-shadow:inset 0 0 0 1px rgba(185,104,255,.16)!important}
+#calendarScreen .calendar-day span{font-size:8.5px!important;color:#998fa3!important;line-height:1.2!important}
+#calendarScreen .calendar-detail{margin-top:13px!important;padding:15px!important;border:1px solid #2d2336!important;border-radius:17px!important;background:#0b0910!important}
+#calendarScreen .calendar-detail button{min-height:44px!important;margin:8px 6px 0 0!important;border:1px solid #392b47!important;border-radius:11px!important;background:#141019!important;color:#d8cce1!important}
+#calendarScreen .small{font-size:11px!important;line-height:1.45!important;color:#91879b!important}
+
+/* Records — make each PR feel like an achievement without becoming flashy. */
+#recordsScreen>.small{font-size:11px!important;line-height:1.45!important;color:#958b9f!important;margin-bottom:14px!important}
+#recordsScreen .records-list{gap:9px!important}
+#recordsScreen .record-row{position:relative;padding:15px 15px 15px 18px!important;border:1px solid #30243a!important;border-radius:17px!important;background:#0b0910!important;overflow:hidden}
+#recordsScreen .record-row:before{content:'';position:absolute;left:0;top:13px;bottom:13px;width:3px;border-radius:0 6px 6px 0;background:linear-gradient(#bd67ff,#7428df)}
+#recordsScreen .record-row strong{color:#f8f3ff!important;font-size:15px!important}
+#recordsScreen .record-row .small,#recordsScreen .record-row span{color:#a298ac!important;font-size:11px!important;line-height:1.4!important}
+
+/* Photos — clearer add/compare flow and quieter image cards. */
+#photosScreen>.card{padding:15px!important;border:1px solid #2d2336!important;border-radius:18px!important;background:#0b0910!important;box-shadow:none!important}
+#photosScreen>.card .small{font-size:11px!important;line-height:1.5!important;color:#9b91a5!important}
+#photosScreen input[type='file']{min-height:50px!important;padding:9px!important;border:1px solid #392c46!important;border-radius:13px!important;background:#100d15!important;color:#d6ccdf!important}
+#photosScreen .photo-list{gap:9px!important}
+#photosScreen .photo-card{padding:10px!important;border:1px solid #2d2336!important;border-radius:16px!important;background:#0b0910!important}
+#photosScreen .photo-card img{border-radius:12px!important;background:#100d15!important;max-height:310px!important}
+#photosScreen .photo-card button{min-height:44px!important;border:1px solid #392c46!important;border-radius:11px!important;background:#15111b!important;color:#d7ccdf!important}
+#photosScreen .photo-card button:active{background:#21152d!important}
+#photosScreen #photoComparison{padding:13px!important;border-color:#4a3060!important;background:#100c17!important}
+#photosScreen .photo-compare{gap:9px!important}
+
+@media(max-width:390px){#calendarScreen .calendar-grid{gap:3px!important}#calendarScreen .calendar-day{min-height:54px!important;font-size:11px!important}#photosScreen .photo-list{grid-template-columns:1fr!important}}
+@media(prefers-reduced-motion:reduce){#globalHistoryScreen *,#calendarScreen *,#recordsScreen *,#photosScreen *{transition:none!important;animation:none!important}}
