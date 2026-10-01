@@ -1,0 +1,27 @@
+/* MYLIFTCOACH daily tracking UX — presentation only for Water, Food, Weight, and Goals. */
+#waterScreen,#foodScreen,#weightScreen,#goalsScreen{max-width:720px;margin:0 auto;padding-bottom:calc(105px + env(safe-area-inset-bottom));color:#f8f5ff}
+#waterScreen>h2,#foodScreen>h2,#weightScreen>h2,#goalsScreen>h2{margin:2px 0 6px;font-size:28px;letter-spacing:-.045em;color:#fff}
+#waterScreen>h2:after,#foodScreen>h2:after,#weightScreen>h2:after,#goalsScreen>h2:after{display:block;margin-top:6px;color:#91899c;font-size:11px;font-weight:520;letter-spacing:0;line-height:1.4}
+#waterScreen>h2:after{content:'Keep today’s hydration visible without slowing down your workout.'}
+#foodScreen>h2:after{content:'Log meals quickly and keep today’s intake easy to scan.'}
+#weightScreen>h2:after{content:'Track the trend, not just a single weigh-in.'}
+#goalsScreen>h2:after{content:'Keep your training, calorie, and hydration targets in one place.'}
+#waterScreen .card,#foodScreen .card,#weightScreen .card,#goalsScreen .card{background:#0e0b15!important;border:1px solid #30213f!important;border-radius:18px!important;box-shadow:none!important;padding:15px!important}
+#waterScreen h3,#foodScreen h3,#weightScreen h3,#goalsScreen h3{color:#f7f3ff;font-size:15px;letter-spacing:-.015em}
+#waterScreen label,#foodScreen label,#weightScreen label,#goalsScreen label{color:#c9c1d4;font-size:11px;letter-spacing:.045em}
+#waterScreen input,#waterScreen select,#foodScreen input,#foodScreen select,#weightScreen input,#weightScreen select,#goalsScreen input,#goalsScreen select{min-height:48px!important;border:1px solid #3a294c!important;border-radius:13px!important;background:#100c17!important;color:#fff!important;font-size:16px!important;box-shadow:none!important}
+#waterScreen input:focus-visible,#waterScreen select:focus-visible,#foodScreen input:focus-visible,#foodScreen select:focus-visible,#weightScreen input:focus-visible,#weightScreen select:focus-visible,#goalsScreen input:focus-visible,#goalsScreen select:focus-visible{outline:0!important;border-color:#9550ff!important;box-shadow:0 0 0 3px rgba(149,80,255,.13)!important}
+#waterScreen button,#foodScreen button,#weightScreen button,#goalsScreen button{min-height:46px;touch-action:manipulation}
+#waterScreen form button[type=submit],#foodScreen form button[type=submit],#weightScreen form button[type=submit],#goalsScreen form button[type=submit],#goalsScreen .save-button{min-height:52px!important;border-radius:14px!important;background:linear-gradient(135deg,#6b1fe5,#a44cff)!important;color:#fff!important;font-weight:800!important;box-shadow:none!important}
+#waterScreen .tracker-shortcuts,#foodScreen .tracker-shortcuts,#weightScreen .tracker-shortcuts,#goalsScreen .tracker-shortcuts{display:flex;gap:8px;overflow-x:auto;padding:2px 1px 6px;scrollbar-width:none;overscroll-behavior-x:contain;scroll-snap-type:x proximity}
+#waterScreen .tracker-shortcuts::-webkit-scrollbar,#foodScreen .tracker-shortcuts::-webkit-scrollbar,#weightScreen .tracker-shortcuts::-webkit-scrollbar,#goalsScreen .tracker-shortcuts::-webkit-scrollbar{display:none}
+#waterScreen .tracker-shortcuts>* ,#foodScreen .tracker-shortcuts>* ,#weightScreen .tracker-shortcuts>* ,#goalsScreen .tracker-shortcuts>*{scroll-snap-align:start;flex:0 0 auto}
+#waterScreen .history-card,#foodScreen .history-card,#weightScreen .history-card,#goalsScreen .history-card,#waterScreen .tracker-row,#foodScreen .tracker-row,#weightScreen .tracker-row,#goalsScreen .tracker-row{background:#0e0b15!important;border:1px solid #2e213c!important;border-radius:15px!important;box-shadow:none!important}
+#waterScreen .small,#foodScreen .small,#weightScreen .small,#goalsScreen .small{color:#9a92a5!important;line-height:1.45}
+.mlc-tracking-toolbar{position:sticky;top:0;z-index:5;margin:8px -3px 12px;padding:7px 3px 10px;background:linear-gradient(180deg,#07050d 76%,rgba(7,5,13,0));backdrop-filter:blur(12px)}
+.mlc-tracking-toolbar .mlc-tracking-today{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #342344;border-radius:13px;background:#100c17;color:#aaa1b6;font-size:11px}
+.mlc-tracking-toolbar .mlc-tracking-today strong{color:#fff;font-size:12px}
+.mlc-tracking-empty{padding:20px 16px!important;border:1px dashed #3c2a4e!important;border-radius:16px!important;background:#0c0a11!important;color:#948b9f!important;text-align:center!important}
+.mlc-tracking-empty strong{display:block;margin-bottom:5px;color:#eee8f7;font-size:14px}
+@media(max-width:390px){#waterScreen,#foodScreen,#weightScreen,#goalsScreen{padding-bottom:calc(92px + env(safe-area-inset-bottom))}#waterScreen>h2,#foodScreen>h2,#weightScreen>h2,#goalsScreen>h2{font-size:25px}#waterScreen .card,#foodScreen .card,#weightScreen .card,#goalsScreen .card{padding:13px!important}}
+@media(prefers-reduced-motion:reduce){#waterScreen *,#foodScreen *,#weightScreen *,#goalsScreen *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
