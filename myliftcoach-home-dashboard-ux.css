@@ -1,0 +1,38 @@
+/* MYLIFTCOACH Home dashboard interaction polish. Presentation only. */
+#home.liftova-home .liftova-home-shell{scroll-margin-top:env(safe-area-inset-top)}
+#home.liftova-home .lh-day,#home.liftova-home .lh-workout,#home.liftova-home .lh-progress,#home.liftova-home .lh-streak,#home.liftova-home .lh-lower-card,#home.liftova-home .lh-shortcuts button,#home.liftova-home .lh-hero-menu,#home.liftova-home .lh-hero-profile{touch-action:manipulation;-webkit-user-select:none;user-select:none}
+#home.liftova-home .lh-day,#home.liftova-home .lh-workout,#home.liftova-home .lh-progress,#home.liftova-home .lh-streak,#home.liftova-home .lh-lower-card,#home.liftova-home .lh-shortcuts button{transition:transform .12s ease,border-color .15s ease,background .15s ease,box-shadow .15s ease,opacity .15s ease}
+#home.liftova-home .lh-day{position:relative;min-height:86px;cursor:pointer}
+#home.liftova-home .lh-day::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 0 rgba(255,255,255,.1);transition:box-shadow .12s ease}
+#home.liftova-home .lh-day:active{transform:scale(.96)}
+#home.liftova-home .lh-day:active::after{box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+#home.liftova-home .lh-day.active{transform:translateY(-1px)}
+#home.liftova-home .lh-day.active::before{content:'TODAY';position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:5.5px;font-weight:900;letter-spacing:.11em;color:rgba(255,255,255,.8)}
+#home.liftova-home .lh-day.active strong{margin-top:7px}
+#home.liftova-home .lh-workout{position:relative;isolation:isolate}
+#home.liftova-home .lh-workout::after{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 88% 10%,rgba(185,54,255,.12),transparent 34%);pointer-events:none}
+#home.liftova-home .lh-workout:active{transform:scale(.992);border-color:#ca5cff}
+#home.liftova-home .lh-workout h2{max-width:92%;text-wrap:balance}
+#home.liftova-home .lh-meta span{min-height:32px;display:flex;flex-direction:column;justify-content:center}
+#home.liftova-home .lh-progress[role=button],#home.liftova-home .lh-streak[role=button],#home.liftova-home .lh-lower-card[role=button]{cursor:pointer}
+#home.liftova-home .lh-progress[role=button]:active,#home.liftova-home .lh-streak[role=button]:active,#home.liftova-home .lh-lower-card[role=button]:active{transform:scale(.985);border-color:#684080;background:#0d0913}
+#home.liftova-home .lh-shortcuts button{min-height:72px;cursor:pointer;position:relative;overflow:hidden}
+#home.liftova-home .lh-shortcuts button::after{content:'';position:absolute;inset:0;background:rgba(180,73,255,.08);opacity:0;transition:opacity .12s ease;pointer-events:none}
+#home.liftova-home .lh-shortcuts button:active{transform:scale(.97)!important;border-color:#9653c1!important}
+#home.liftova-home .lh-shortcuts button:active::after{opacity:1}
+#home.liftova-home .lh-shortcuts button span{letter-spacing:.025em}
+#home.liftova-home .lh-hero-menu,#home.liftova-home .lh-hero-profile{transition:transform .12s ease,background .15s ease,border-color .15s ease}
+#home.liftova-home :is(button,[role=button],.lh-day):focus-visible{outline:2px solid #d786ff!important;outline-offset:3px!important}
+#home.liftova-home .lh-week-stat i{height:6px}
+#home.liftova-home .lh-week-stat u{transition:width .28s ease}
+#home.liftova-home .lh-recent-row{min-height:45px}
+#home.liftova-home .lh-recent-row p b{font-size:9px}
+#home.liftova-home .lh-recent-row p small{font-size:7.5px}
+#home.liftova-home .lh-lower-card header strong,#home.liftova-home .lh-insights header strong{line-height:1.2}
+#home.liftova-home .lh-lower-card[role=button] header span{transition:transform .12s ease}
+#home.liftova-home .lh-lower-card[role=button]:active header span{transform:translateX(2px)}
+#home.liftova-home .lh-chart i{min-width:0}
+#home.liftova-home .lh-ring{box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+@media (hover:hover){#home.liftova-home .lh-day:hover:not(.active),#home.liftova-home .lh-lower-card[role=button]:hover,#home.liftova-home .lh-shortcuts button:hover{border-color:#5d3c70}#home.liftova-home .lh-shortcuts button:hover{transform:translateY(-1px)}}
+@media(max-width:390px){#home.liftova-home .lh-day{min-height:78px}#home.liftova-home .lh-shortcuts button{min-height:64px}#home.liftova-home .lh-workout h2{max-width:100%}}
+@media(prefers-reduced-motion:reduce){#home.liftova-home .lh-day,#home.liftova-home .lh-workout,#home.liftova-home .lh-progress,#home.liftova-home .lh-streak,#home.liftova-home .lh-lower-card,#home.liftova-home .lh-shortcuts button,#home.liftova-home .lh-hero-menu,#home.liftova-home .lh-hero-profile,#home.liftova-home .lh-week-stat u,#home.liftova-home .lh-lower-card header span{transition:none!important}#home.liftova-home .lh-day.active{transform:none}}
