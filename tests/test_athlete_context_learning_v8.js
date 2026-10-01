@@ -1,7 +1,9 @@
 const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const intelligence=fs.readFileSync('myliftcoach-intelligence-core.js','utf8');
+const evidence=fs.readFileSync('myliftcoach-athlete-evidence-core.js','utf8');
 const core=fs.readFileSync('athlete-learning-engine.js','utf8');
 const overlay=fs.readFileSync('athlete-context-learning-v8.js','utf8');
-const window={};const ctx={window,console,setTimeout};vm.createContext(ctx);vm.runInContext(core,ctx);vm.runInContext(overlay,ctx);
+const window={};const ctx={window,console,setTimeout};vm.createContext(ctx);vm.runInContext(intelligence,ctx);vm.runInContext(evidence,ctx);vm.runInContext(core,ctx);vm.runInContext(overlay,ctx);
 const iso=d=>new Date(Date.now()-d*86400000).toISOString();
 const ev=(id,exerciseId,days,opts={})=>({recommendationId:id,exerciseId,recommendationType:opts.type||'load_hold',completedAt:iso(days),followedRecommendation:opts.followed!==false,performanceDelta:opts.delta??.08,rpe:opts.rpe??7,pain:opts.pain??1,recoveryState:opts.recovery||'ready',phase:opts.phase||'hypertrophy'});
 const events=[];
@@ -25,4 +27,4 @@ const snap=window.myliftcoachAthleteContextSnapshot(multi,map);
 assert.strictEqual(snap.programContextReadiness.ready,true);assert.strictEqual(snap.guardrails.mayOverrideAdaptive,false);
 const foundation=window.liftovaLearnProgramFoundation(multi,map);
 assert.ok(foundation.contextLearning);assert.strictEqual(foundation.programReadiness.contextReady,true);
-console.log(JSON.stringify({suite:'MYLIFTCOACH Athlete Context Learning V8',checks:{contextSegmentation:true,readyVsStrained:true,staleExpiry:true,contradictionHandling:true,programContextReadiness:true,adaptiveAuthority:true}},null,2));
+console.log(JSON.stringify({suite:'MYLIFTCOACH Athlete Context Learning V8',checks:{productionCorePath:true,contextSegmentation:true,readyVsStrained:true,staleExpiry:true,contradictionHandling:true,programContextReadiness:true,adaptiveAuthority:true}},null,2));
