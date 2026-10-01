@@ -30,7 +30,7 @@ window.PRISM_SUPABASE_CONFIG = MYLIFTCOACH_SUPABASE_CONFIG;
 // Transitional implementation modules still use historical filenames internally.
 // They are loaded only for functionality; visible presentation is owned by MYLIFTCOACH.
 (() => {
-  const sources=['myliftcoach-startup-smooth.js?v=1','myliftcoach-anatomy-v2.js?v=1','liftova-onboarding.js?v=7','liftova-workouts.js?v=7','liftova-active-workout.js?v=7','liftova-library.js?v=7','liftova-progress.js?v=7','myliftcoach-swipe-ux.js?v=1','liftova-profile.js?v=7','liftova-pro.js?v=7','liftova-native-navigation.js?v=1','liftova-native-forms.js?v=1','liftova-native-states.js?v=1','liftova-native-device.js?v=1','liftova-native-interactions.js?v=1','liftova-workout-tab-v3.js?v=1','liftova-quick-log.js?v=1','liftova-functional-fixes.js?v=2','liftova-home.js?v=12','liftova-custom-home.js?v=1','liftova-polish.js?v=8','myliftcoach-profile-brand-lock.js?v=3','myliftcoach-visual-cleanup.js?v=1','myliftcoach-home-sequence-fix.js?v=3','myliftcoach-custom-workout-fix.js?v=1'];
+  const sources=['myliftcoach-startup-smooth.js?v=1','myliftcoach-anatomy-v2.js?v=1','liftova-onboarding.js?v=7','liftova-workouts.js?v=7','liftova-active-workout.js?v=7','liftova-library.js?v=7','myliftcoach-library-ux.js?v=1','liftova-progress.js?v=7','myliftcoach-swipe-ux.js?v=1','liftova-profile.js?v=7','liftova-pro.js?v=7','liftova-native-navigation.js?v=1','liftova-native-forms.js?v=1','liftova-native-states.js?v=1','liftova-native-device.js?v=1','liftova-native-interactions.js?v=1','liftova-workout-tab-v3.js?v=1','liftova-quick-log.js?v=1','liftova-functional-fixes.js?v=2','liftova-home.js?v=12','liftova-custom-home.js?v=1','liftova-polish.js?v=8','myliftcoach-profile-brand-lock.js?v=3','myliftcoach-visual-cleanup.js?v=1','myliftcoach-home-sequence-fix.js?v=3','myliftcoach-custom-workout-fix.js?v=1'];
   const load=index=>{
     if(index>=sources.length)return;
     const script=document.createElement('script');
@@ -50,7 +50,8 @@ window.PRISM_SUPABASE_CONFIG = MYLIFTCOACH_SUPABASE_CONFIG;
     ['myliftcoach-core-ux-v3.css?v=1','myliftcoach-core-ux-v3'],
     ['myliftcoach-core-ux-v4.css?v=1','myliftcoach-core-ux-v4'],
     ['myliftcoach-anatomy-polish.css?v=2','myliftcoach-anatomy-polish'],
-    ['myliftcoach-home-dashboard-ux.css?v=1','myliftcoach-home-dashboard-ux']
+    ['myliftcoach-home-dashboard-ux.css?v=1','myliftcoach-home-dashboard-ux'],
+    ['myliftcoach-library-ux.css?v=1','myliftcoach-library-ux']
   ];
   styles.forEach(([href,key])=>{
     if(document.querySelector(`link[data-${key}]`))return;
