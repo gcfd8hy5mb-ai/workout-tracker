@@ -1,0 +1,16 @@
+const assert=require('assert');
+global.window=global;let owner='A',valid=true;const mem=new Map();global.localStorage={getItem:k=>mem.has(k)?mem.get(k):null,setItem:(k,v)=>mem.set(k,String(v)),removeItem:k=>mem.delete(k)};global.PRISMDeviceStore={storage:global.localStorage};global.myliftcoachIntelligenceCore={account:()=>valid?{valid:true,owner}:{valid:false,owner}};global.myliftcoachProgramPlanOutcomeReviewV101=()=>({});global.myliftcoachMultiHorizonProgramReviewV102=()=>({});global.myliftcoachPhaseAwareProgramReviewV103=()=>({});global.myliftcoachProgramAdaptationOutcomeProfile=()=>({state:'helpful'});
+require('../myliftcoach-pre-v10_4-readiness.js');
+let a=myliftcoachPreV104ArchitectureAudit();assert.equal(a.state,'ready');assert.equal(a.duplicateAuthorityDetected,false);
+let beta=myliftcoachPreV104BetaDataPath();assert.equal(beta.state,'path_valid');assert.equal(beta.realUserOutcomeClaimed,false);
+let d=myliftcoachDecisionQualityLog({exerciseId:'press',known:{fatigue:'low'},predicted:{action:'hold'},coach:{state:'supported'},adaptive:{status:'hold'},userAction:'followed',outcome:'better'});assert.ok(d);assert.equal(myliftcoachDecisionQualityRows().length,1);
+const safe={type:'temporary_volume_reduction',confidence:.84,horizonExposures:2,changes:{setDelta:-1,durationExposures:2,noScheduleChange:true,noTrainingDayChange:true,noSplitChange:true,noLoadIncrease:true}};
+let e=myliftcoachAutonomyEligibility(safe,{samples:8,reliability:.82,confidence:.84,fresh:true,drift:false,hardConflict:false});assert.equal(e.eligible,true);let s=myliftcoachV104ShadowDecision(safe,{samples:8,reliability:.82,confidence:.84});assert.equal(s.wouldApply,true);assert.equal(s.actualMutation,false);
+const unsafe={type:'temporary_volume_reduction',confidence:.9,changes:{setDelta:1,durationExposures:2}};let us=myliftcoachV104ShadowDecision(unsafe,{samples:9,reliability:.9,confidence:.9});assert.equal(us.wouldApply,false);assert.equal(us.bounded,false);
+let unknown=myliftcoachAutonomyEligibility({type:'split_change',confidence:.9},{samples:10,reliability:.9,confidence:.9});assert.equal(unknown.eligible,false);assert.ok(unknown.reasonCodes.includes('not_whitelisted'));
+myliftcoachAutonomyOverride({blockedTypes:['temporary_volume_reduction']});e=myliftcoachAutonomyEligibility(safe,{samples:8,reliability:.82,confidence:.84});assert.equal(e.eligible,false);assert.ok(e.reasonCodes.includes('user_override'));
+let rb=myliftcoachShadowRollback(s.id);assert.equal(rb.ok,true);assert.equal(rb.actualTrainingMutationReversed,false);
+owner='B';assert.equal(myliftcoachDecisionQualityRows().length,0);assert.equal(myliftcoachV104ShadowRows().length,0);owner='A';assert.equal(myliftcoachDecisionQualityRows().length,1);assert.ok(myliftcoachV104ShadowRows().length>=2);
+valid=false;assert.equal(myliftcoachAutonomyEligibility(safe,{samples:99,reliability:1,confidence:1}).eligible,false);assert.equal(myliftcoachPreV104BetaDataPath().state,'blocked');
+const audit=myliftcoachPreV104Audit();assert.equal(audit.guardrails.noAutonomousTrainingMutation,true);assert.equal(audit.guardrails.userOverrideWins,true);assert.equal(audit.guardrails.adaptiveProgrammingFinalAuthority,true);
+console.log('Pre-V10.4 steps 1-7: consolidation, beta path, decision log, eligibility, shadow mode, whitelist, override/rollback and account isolation pass.');
