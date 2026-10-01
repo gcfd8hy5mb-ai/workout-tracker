@@ -5,7 +5,7 @@
     if(document.querySelector('link[data-liftova-progress]'))return;
     const link=document.createElement('link');
     link.rel='stylesheet';
-    link.href='liftova-progress.css?v=6';
+    link.href='liftova-progress.css?v=7';
     link.dataset.liftovaProgress='true';
     document.head.appendChild(link);
   }
@@ -28,14 +28,49 @@
   function ensureProgressTargets(screen){
     const segment=screen.querySelector('.prism-segments');
     if(!segment)return;
+    segment.setAttribute('role','tablist');
+    segment.setAttribute('aria-label','Progress views');
     const buttons=[...segment.querySelectorAll('button')];
     const targets=['strength','body','activity'];
-    buttons.forEach((button,index)=>{if(!button.dataset.progressTarget)button.dataset.progressTarget=targets[index]||`progress-${index}`;});
+    buttons.forEach((button,index)=>{
+      if(!button.dataset.progressTarget)button.dataset.progressTarget=targets[index]||`progress-${index}`;
+      button.setAttribute('role','tab');
+      const active=button.getAttribute('aria-pressed')==='true'||button.classList.contains('active');
+      button.setAttribute('aria-selected',String(active));
+      button.tabIndex=active?0:-1;
+    });
     if(!segment.__myliftcoachProgressTargets){
       segment.__myliftcoachProgressTargets=true;
+      const activate=button=>{
+        if(!button)return;
+        button.click();
+        buttons.forEach(item=>{
+          const active=item===button;
+          item.classList.toggle('active',active);
+          item.setAttribute('aria-pressed',String(active));
+          item.setAttribute('aria-selected',String(active));
+          item.tabIndex=active?0:-1;
+        });
+      };
       segment.addEventListener('click',event=>{
         const button=event.target.closest?.('[data-progress-target]');if(!button)return;
-        buttons.forEach(item=>item.classList.toggle('active',item===button));
+        buttons.forEach(item=>{
+          const active=item===button;
+          item.classList.toggle('active',active);
+          item.setAttribute('aria-selected',String(active));
+          item.tabIndex=active?0:-1;
+        });
+      });
+      segment.addEventListener('keydown',event=>{
+        if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+        const current=buttons.indexOf(document.activeElement);if(current<0)return;
+        event.preventDefault();
+        let next=current;
+        if(event.key==='ArrowRight')next=(current+1)%buttons.length;
+        if(event.key==='ArrowLeft')next=(current-1+buttons.length)%buttons.length;
+        if(event.key==='Home')next=0;
+        if(event.key==='End')next=buttons.length-1;
+        buttons[next]?.focus();activate(buttons[next]);
       });
     }
   }
@@ -43,6 +78,7 @@
     const screen=document.getElementById('overallProgressScreen');
     if(!screen)return;
     ensureStyles();ensureProgressTargets(screen);
+    screen.classList.add('mlc-progress-ready');
     if(!screen.querySelector('.liftova-progress-hero')){
       const hero=document.createElement('div');
       hero.className='liftova-progress-hero';
@@ -55,6 +91,9 @@
       const label=h.textContent.trim();
       if(label==='All-time insights')h.textContent='All-Time Performance';
       if(label==='Recent activity')h.textContent='Recent Workouts';
+    });
+    screen.querySelectorAll('.progress-links button,button.dashboard-link').forEach(button=>{
+      if(!button.getAttribute('aria-label'))button.setAttribute('aria-label',(button.textContent||'Open progress detail').trim());
     });
     improveEmptyStates(screen);
   }
