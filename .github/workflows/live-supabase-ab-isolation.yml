@@ -17,8 +17,8 @@ jobs:
           node-version: 20
       - name: Validate live authenticated A/B isolation
         env:
-          MYLIFTCOACH_TEST_A_EMAIL: ${{ secrets.MYLIFTCOACH_TEST_A_EMAIL }}
-          MYLIFTCOACH_TEST_A_PASSWORD: ${{ secrets.MYLIFTCOACH_TEST_A_PASSWORD }}
-          MYLIFTCOACH_TEST_B_EMAIL: ${{ secrets.MYLIFTCOACH_TEST_B_EMAIL }}
-          MYLIFTCOACH_TEST_B_PASSWORD: ${{ secrets.MYLIFTCOACH_TEST_B_PASSWORD }}
+          MYLIFTCOACH_TEST_A_EMAIL: ${{ secrets.A_EMAIL }}
+          MYLIFTCOACH_TEST_A_PASSWORD: ${{ secrets.A_PASSWORD }}
+          MYLIFTCOACH_TEST_B_EMAIL: ${{ secrets.B_EMAIL }}
+          MYLIFTCOACH_TEST_B_PASSWORD: ${{ secrets.B_PASSWORD }}
         run: node tests/live-supabase-ab-isolation.cjs
