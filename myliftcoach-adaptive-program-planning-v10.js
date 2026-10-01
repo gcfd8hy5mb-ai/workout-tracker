@@ -1,0 +1,29 @@
+/* MYLIFTCOACH V10.0 — adaptive program-level planning.
+   Orchestrates existing bounded program-adaptation evidence, Adaptive review, outcome history, whole-session and whole-week context into a multi-exposure strategy.
+   Review only: never auto-applies, rewrites the program, or overrides Adaptive Programming. */
+(()=>{
+'use strict';
+const VERSION='10.0';
+function safe(fn,f=null){try{const v=fn();return v==null?f:v}catch{return f}}
+function account(){const state=safe(()=>window.myliftcoachIntelligenceCore?.account?.(),null);if(state&&!state.valid&&!state.testUnbound)return null;return {owner:String(state?.owner||state?.verified||'test-unbound')};}
+function boundedHorizon(p){const c=p?.changes||{};return Math.max(1,Math.min(2,Number(c.durationExposures)||Number(c.extraSuccessfulExposures)||2));}
+function priority(p){const type=String(p?.type||'');if(type==='reduced_pressure_block')return 100;if(type==='temporary_volume_reduction')return 90;if(type==='progression_cadence_hold')return 80;return 50;}
+function currentContext(){const week=safe(()=>window.myliftcoachWeekState?.(),null),session=safe(()=>window.prismAdaptiveNextSession?.(),null),legacy=safe(()=>window.prismCoachProgramReview?.(),null);return {week,weeklyCoordination:session?.weeklyCoordination||null,workoutCoordination:session?.workoutCoordination||null,legacyProgramEvidence:legacy?.evidence||null};}
+function blocked(reason){return {version:VERSION,state:'unavailable',reason,owner:null,requiresApproval:true,autoApply:false,authority:'adaptive_programming',proposals:[],strategy:[],guardrails:audit().guardrails};}
+function plan({exerciseIds=[]}={}){
+ const scope=account();if(!scope)return blocked('account_unverified');
+ const raw=safe(()=>window.myliftcoachProgramAdaptationPlan?.({exerciseIds}),null);
+ if(!raw)return {...blocked('program_adaptation_planner_unavailable'),owner:scope.owner,state:'learning'};
+ const reviewed=safe(()=>window.myliftcoachAdaptiveProgramPlanReview?.(raw),null);
+ if(!reviewed)return {...blocked('adaptive_program_review_unavailable'),owner:scope.owner,state:'learning'};
+ const ctx=currentContext(),approved=Array.isArray(reviewed.approved)?reviewed.approved:[],rejected=Array.isArray(reviewed.rejected)?reviewed.rejected:[],weekApplied=Number(ctx.week?.applied?.length)||0,weeklyStrain=Boolean(ctx.weeklyCoordination?.weeklyStrain),sessionStrain=Boolean(ctx.workoutCoordination?.systemicStrain),legacyRecovery=ctx.legacyProgramEvidence?.signal==='recovery',programPressure=weekApplied>=3||weeklyStrain||sessionStrain||legacyRecovery;
+ const proposals=approved.slice().sort((a,b)=>priority(b)-priority(a)).map(p=>({id:p.id,type:p.type,exerciseIds:Array.isArray(p.exerciseIds)?p.exerciseIds.map(String):[],reason:p.reason,confidence:Number(p.confidence)||0,horizonExposures:boundedHorizon(p),changes:{...(p.changes||{})},requiresApproval:true,autoApply:false,reversible:p.reversible!==false,authority:'adaptive_programming',programOutcomeHistory:p.programOutcomeHistory||null,adaptiveReview:p.adaptiveReview||null,adaptiveOutcomeReview:p.adaptiveOutcomeReview||null}));
+ const strategy=[];
+ for(const p of proposals){let action='review_bounded_adjustment',reasonCode='bounded_program_adjustment_review';if(p.type==='reduced_pressure_block'){action='review_recovery_block';reasonCode=programPressure?'multi_week_recovery_pressure_confirmed':'reduced_pressure_block_review';}else if(p.type==='temporary_volume_reduction'){action='review_temporary_volume_reduction';reasonCode='exercise_dose_pressure_review';}else if(p.type==='progression_cadence_hold'){action='review_progression_cadence';reasonCode='progression_cadence_review';}strategy.push({proposalId:p.id,type:p.type,action,reasonCode,horizonExposures:p.horizonExposures,exerciseIds:p.exerciseIds,requiresApproval:true,autoApply:false});}
+ const state=strategy.length?(programPressure?'program_review_priority':'program_review_ready'):rejected.length?'blocked_by_adaptive_review':raw.state==='history_blocked'?'blocked_by_outcome_history':'observe';
+ const primary=strategy[0]||null;
+ return {version:VERSION,state,owner:scope.owner,generatedAt:new Date().toISOString(),authority:'adaptive_programming',requiresApproval:true,autoApply:false,mayOverrideAdaptive:false,context:{appliedProgressions7d:weekApplied,weeklyStrain,sessionStrain,legacyProgramSignal:ctx.legacyProgramEvidence?.signal||null,programPressure},sourcePlannerVersion:raw.version||null,sourceReviewVersion:reviewed.version||null,proposals,strategy,primary,rejectedCount:rejected.length,suppressedByOutcomeHistory:Array.isArray(raw.suppressedByOutcomeHistory)?raw.suppressedByOutcomeHistory:[],reason:primary?(programPressure?'Existing bounded program evidence agrees with elevated session/week pressure; prioritize the highest-value reviewed adaptation without expanding its limits.':'Existing bounded program evidence is review-ready; preserve current limits and require approval before any program-level change.'):'No reviewed program-level change is currently justified.',guardrails:audit().guardrails};
+}
+function audit(){return {version:VERSION,guardrails:{usesExistingEvidenceGatedPlanner:true,usesAdaptiveFinalReview:true,usesOutcomeHistoryWithoutEscalation:true,usesWholeWorkoutContext:true,usesWholeWeekContext:true,requiresApproval:true,autoApply:false,noAutomaticProgramReplacement:true,noAutomaticExerciseSubstitution:true,noAutomaticScheduleChange:true,noAutomaticTrainingDayChange:true,noAutomaticSplitChange:true,noLoadIncreaseFromProgramPlanner:true,noSetIncreaseFromProgramPlanner:true,maxProgramHorizonExposures:2,helpfulHistoryCannotIncreaseMagnitude:true,harmfulHistoryMaySuppressRepeat:true,accountScopedEvidenceRequired:true,adaptiveProgrammingFinalAuthority:true,mayOverrideAdaptive:false}};}
+window.myliftcoachAdaptiveProgramPlanV10=plan;window.myliftcoachAdaptiveProgramPlanV10Audit=audit;window.MYLIFTCOACH_ADAPTIVE_PROGRAM_PLANNING_VERSION=VERSION;
+})();
