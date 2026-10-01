@@ -1,0 +1,17 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const src=fs.readFileSync('athlete-recovery-lag-v8_3.js','utf8'),window={},ctx={window,console};vm.createContext(ctx);vm.runInContext(src,ctx);
+const iso=d=>new Date(Date.now()-d*86400000).toISOString();
+const e=(id,h,d,delta)=>({exerciseId:'press',recommendationId:id,recoveryHours:h,completedAt:iso(d),performanceDelta:delta});
+const events=[];
+for(let i=0;i<6;i++)events.push(e('m'+i,52,[35,28,21,14,7,2][i],.09));
+for(let i=0;i<6;i++)events.push(e('s'+i,24,[34,27,20,13,6,1][i],-.04));
+const p=window.myliftcoachAthleteRecoveryProfile(events,'press');
+assert.strictEqual(p.bestWindow.bucket,'medium');
+assert.ok(p.separation>=.12);
+assert.strictEqual(p.mayInformProgramming,true);
+assert.strictEqual(p.mayOverrideAdaptive,false);
+const stale=[];for(let i=0;i<5;i++)stale.push(e('old'+i,52,170+i*4,.1));
+assert.strictEqual(window.myliftcoachAthleteRecoveryProfile(stale,'press').buckets.medium.state,'stale');
+const sparse=[e('a',80,5,.1),e('b',80,2,.1)];
+assert.strictEqual(window.myliftcoachAthleteRecoveryProfile(sparse,'press').mayInformProgramming,false);
+console.log(JSON.stringify({suite:'MYLIFTCOACH Athlete Recovery Lag V8.3',checks:{recoveryBuckets:true,bestWindowLearned:true,tooSoonUnderperformance:true,staleExpiry:true,sparseBlocked:true,adaptiveAuthority:true}},null,2));
