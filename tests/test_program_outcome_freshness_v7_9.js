@@ -1,0 +1,21 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const source=fs.readFileSync('myliftcoach-program-outcome-validation.js','utf8');
+class MemoryStorage{constructor(){this.m=new Map()}getItem(k){return this.m.has(k)?this.m.get(k):null}setItem(k,v){this.m.set(k,String(v))}}
+const localStorage=new MemoryStorage();
+const window={myliftcoachProgramOverlayPolicy:type=>({version:'7.6',proposalType:type,evidence:8,state:'working',confidence:1,successRate:.9,mayInformProgramming:true,mayOverrideAdaptive:false})};
+const ctx={window,localStorage,console,Date};vm.createContext(ctx);vm.runInContext(source,ctx);
+const seq=(base,delta)=>Array.from({length:6},(_,i)=>Math.max(0,Math.min(1,base+delta+(i%3-1)*.004)));
+const isoDaysAgo=d=>new Date(Date.now()-d*86400000).toISOString();
+const trial=(id,days,delta,type='program_recovery')=>({id,proposalType:type,completedAt:isoDaysAgo(days),pre:{performance:seq(.55,0),completion:seq(.80,0),recovery:seq(.68,0)},post:{performance:seq(.55,delta),completion:seq(.80,delta*.7),recovery:seq(.68,delta*.5)}});
+localStorage.setItem('myliftcoachProgramOutcomeTrialsV1',JSON.stringify([trial('old1',170,.10),trial('old2',150,.09),trial('old3',130,.08)]));
+let policy=window.myliftcoachProgramOutcomeValidationPolicy('program_recovery');
+assert.strictEqual(policy.state,'stale');assert.strictEqual(policy.maySupportProposal,false);assert.strictEqual(policy.mayInformProgramming,false);
+localStorage.setItem('myliftcoachProgramOutcomeTrialsV1',JSON.stringify([trial('old1',170,.10),trial('old2',150,.09),trial('recent1',20,.08),trial('recent2',10,.07),trial('recent3',3,.06)]));
+policy=window.myliftcoachProgramOutcomeValidationPolicy('program_recovery');
+assert.strictEqual(policy.state,'validated_helpful');assert.strictEqual(policy.maySupportProposal,true);assert.ok(policy.freshness>=.45);
+localStorage.setItem('myliftcoachProgramOutcomeTrialsV1',JSON.stringify([trial('old1',150,.10),trial('old2',140,.09),trial('old3',130,.08),trial('bad1',14,-.10),trial('bad2',4,-.12)]));
+policy=window.myliftcoachProgramOutcomeValidationPolicy('program_recovery');
+assert.strictEqual(policy.state,'rethink','recent contradictory harm must outweigh old success');assert.strictEqual(policy.mayBlockProposal,true);assert.strictEqual(policy.recentHurt,2);
+const audit=window.myliftcoachProgramOutcomeValidationAudit();
+assert.strictEqual(audit.guardrails.oldEvidenceDecays,true);assert.strictEqual(audit.guardrails.recentEvidenceRequired,true);assert.strictEqual(audit.guardrails.contradictoryRecentEvidenceWins,true);assert.strictEqual(audit.guardrails.adaptiveProgrammingFinalAuthority,true);
+console.log(JSON.stringify({suite:'MYLIFTCOACH Athlete Learning V7.9 Freshness',checks:{staleSuccessExpires:true,recentSuccessCanValidate:true,recentContradictionWins:true,timeWeightedConfidence:true,adaptiveAuthority:true}},null,2));
