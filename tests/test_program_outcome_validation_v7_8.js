@@ -1,0 +1,27 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const source=fs.readFileSync('coach-program-outcome-validation.js','utf8');
+class MemoryStorage{constructor(){this.m=new Map()}getItem(k){return this.m.has(k)?this.m.get(k):null}setItem(k,v){this.m.set(k,String(v))}removeItem(k){this.m.delete(k)}}
+const localStorage=new MemoryStorage();
+const basePolicy=type=>({version:'7.6',proposalType:type,evidence:6,state:'working',confidence:1,successRate:.9,mayInformProgramming:true,mayOverrideAdaptive:false});
+const window={myliftcoachProgramOverlayPolicy:basePolicy};
+const ctx={window,localStorage,console};vm.createContext(ctx);vm.runInContext(source,ctx);
+const helpful=(id,type='program_recovery')=>({id,proposalType:type,pre:{performance:[.50,.51,.49,.50,.50,.51],completion:[.78,.80,.79,.81,.80,.79],recovery:[.62,.63,.61,.62,.64,.62]},post:{performance:[.58,.59,.57,.60,.59,.58],completion:[.84,.85,.83,.86,.84,.85],recovery:[.66,.67,.65,.66,.68,.67]}});
+const harmful=(id,type='exercise_adjustment')=>({id,proposalType:type,pre:{performance:[.62,.63,.61,.62,.64,.63],completion:[.88,.87,.89,.88,.87,.88],recovery:[.70,.71,.69,.70,.72,.71]},post:{performance:[.54,.55,.53,.54,.55,.52],completion:[.80,.81,.79,.80,.78,.79],recovery:[.47,.49,.46,.48,.47,.46]}});
+let trial=window.myliftcoachProgramOutcomeEvaluateTrial(helpful('h1'));
+assert.strictEqual(trial.validated,true);assert.strictEqual(trial.state,'helped');assert.ok(trial.improvement>=.05);assert.ok(trial.confidence>=.5);
+trial=window.myliftcoachProgramOutcomeEvaluateTrial({id:'thin',proposalType:'program_recovery',pre:{performance:[.5,.5]},post:{performance:[.6,.6]}});
+assert.strictEqual(trial.validated,false);assert.strictEqual(trial.state,'insufficient');
+localStorage.setItem('myliftcoachProgramOutcomeTrialsV1',JSON.stringify([helpful('h1'),helpful('h2'),helpful('h3')]));
+let policy=window.myliftcoachProgramOutcomeValidationPolicy('program_recovery');
+assert.strictEqual(policy.state,'validated_helpful');assert.strictEqual(policy.maySupportProposal,true);assert.strictEqual(policy.mayOverrideAdaptive,false);
+let wrapped=window.myliftcoachProgramOverlayPolicy('program_recovery');
+assert.strictEqual(wrapped.validatedSupport,true);assert.strictEqual(wrapped.mayOverrideAdaptive,false);
+localStorage.setItem('myliftcoachProgramOutcomeTrialsV1',JSON.stringify([harmful('x1'),harmful('x2'),harmful('x3')]));
+policy=window.myliftcoachProgramOutcomeValidationPolicy('exercise_adjustment');
+assert.strictEqual(policy.state,'rethink');assert.strictEqual(policy.mayBlockProposal,true);assert.strictEqual(policy.maySupportProposal,false);
+localStorage.setItem('myliftcoachProgramOutcomeTrialsV1',JSON.stringify([helpful('only-one')]));
+policy=window.myliftcoachProgramOutcomeValidationPolicy('program_recovery');
+assert.strictEqual(policy.state,'learning');assert.strictEqual(policy.maySupportProposal,false,'one positive trial must never establish proposal support');
+const audit=window.myliftcoachProgramOutcomeValidationAudit();
+assert.strictEqual(audit.guardrails.baselineRequired,true);assert.strictEqual(audit.guardrails.multipleMetricsRequired,true);assert.strictEqual(audit.guardrails.noAutomaticAcceptance,true);assert.strictEqual(audit.guardrails.noAutomaticActivation,true);assert.strictEqual(audit.guardrails.noProgramMutation,true);assert.strictEqual(audit.guardrails.noPresetFallback,true);assert.strictEqual(audit.guardrails.adaptiveProgrammingFinalAuthority,true);assert.strictEqual(audit.guardrails.mayOverrideAdaptive,false);
+console.log(JSON.stringify({suite:'MYLIFTCOACH Program Outcome Validation V7.8',checks:{baselineComparison:true,multiMetricEvidence:true,minimumObservationGate:true,repeatedHelpfulSupport:true,repeatedHarmfulRethink:true,smallSampleBlocked:true,noAutoAcceptance:true,noProgramMutation:true,adaptiveAuthority:true}},null,2));
