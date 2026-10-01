@@ -43,6 +43,8 @@ jobs:
         run: node tests/test_program_overlays_v7_5.js
       - name: Run MYLIFTCOACH Program Overlay Learning V7.6 tests
         run: node tests/test_program_overlay_learning_v7_6.js
+      - name: Run MYLIFTCOACH Program Overlay Policy V7.7 tests
+        run: node tests/test_program_overlay_policy_v7_7.js
       - name: Run LIFTOVA adaptive 6-week simulation
         run: node tests/test_adaptive_6_week_simulation.js
       - name: Run LIFTOVA adaptive 12-week adversarial simulation
