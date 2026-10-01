@@ -17,13 +17,13 @@
   const features={
    performanceTrend:{value:perf.value,confidence:perf.confidence,source:'intervention_outcomes'},
    adherence:{value:perf.adherence,confidence:perf.confidence,source:'intervention_follow_through'},
-   fatiguePressure:{value:num(fatigueProfile.recentStrain,null),confidence:num(fatigueProfile.confidence,0),source:'athlete_fatigue_v8_5'},
-   fatigueTrend:{value:num(fatigueProfile.strainTrend,null)==null?null:clamp(.5+num(fatigueProfile.strainTrend,0)*2),confidence:num(fatigueProfile.confidence,0),source:'athlete_fatigue_v8_5'},
-   recoveryReadiness:{value:stateMap(recovery?.timing,{early:.35,on_time:.7,late:.45,ready:.8},.5),confidence:num(recoveryProfile.confidence,recovery?.state==='supported'?.7:0),source:'athlete_recovery_v8_3'},
-   doseTolerance:{value:stateMap(dose?.bestDose?.dose?.volume,{low:.35,moderate:.65,high:.85},.5),confidence:num(doseProfile.confidence,dose?.state==='supported'?.7:0),source:'athlete_dose_v8_2'},
-   progressionTolerance:{value:stateMap(progression?.tempo,{patient:.3,standard:.6,responsive:.82},.5),confidence:num(progressionProfile.confidence,progression?.state==='supported'?.7:progression?.state==='caution'?.65:0),source:'athlete_progression_v8_4'},
-   contextReadiness:{value:stateMap(context?.state,{supported:.75,emerging:.6,caution:.35,stale:.5,learning:.5},.5),confidence:num(context?.confidence,context?.state==='supported'?.7:context?.state==='caution'?.65:0),source:'athlete_context_v8_1'},
-   priorAdaptationResponse:{value:num(programOutcome?.profile?.weightedScore,programOutcome?.weightedScore??null),confidence:num(programOutcome?.profile?.confidence,programOutcome?.confidence??0),source:'program_outcome_v8_7'}
+   fatiguePressure:{value:fatigue?num(fatigueProfile.recentStrain,null):null,confidence:fatigue?num(fatigueProfile.confidence,0):0,source:'athlete_fatigue_v8_5'},
+   fatigueTrend:{value:!fatigue||num(fatigueProfile.strainTrend,null)==null?null:clamp(.5+num(fatigueProfile.strainTrend,0)*2),confidence:fatigue?num(fatigueProfile.confidence,0):0,source:'athlete_fatigue_v8_5'},
+   recoveryReadiness:{value:recovery?stateMap(recovery.timing,{early:.35,on_time:.7,late:.45,ready:.8},.5):null,confidence:recovery?num(recoveryProfile.confidence,recovery?.state==='supported'?.7:0):0,source:'athlete_recovery_v8_3'},
+   doseTolerance:{value:dose?stateMap(dose?.bestDose?.dose?.volume,{low:.35,moderate:.65,high:.85},.5):null,confidence:dose?num(doseProfile.confidence,dose?.state==='supported'?.7:0):0,source:'athlete_dose_v8_2'},
+   progressionTolerance:{value:progression?stateMap(progression.tempo,{patient:.3,standard:.6,responsive:.82},.5):null,confidence:progression?num(progressionProfile.confidence,progression?.state==='supported'?.7:progression?.state==='caution'?.65:0):0,source:'athlete_progression_v8_4'},
+   contextReadiness:{value:context?stateMap(context.state,{supported:.75,emerging:.6,caution:.35,stale:.5,learning:.5},.5):null,confidence:context?num(context.confidence,context?.state==='supported'?.7:context?.state==='caution'?.65:0):0,source:'athlete_context_v8_1'},
+   priorAdaptationResponse:{value:programOutcome?num(programOutcome?.profile?.weightedScore,programOutcome?.weightedScore??null):null,confidence:programOutcome?num(programOutcome?.profile?.confidence,programOutcome?.confidence??0):0,source:'program_outcome_v8_7'}
   };
   const names=Object.keys(features),present=names.filter(k=>features[k].value!=null),weighted=present.map(k=>features[k].confidence),confidence=mean(weighted)??0,coverage=present.length/names.length,uncertainty=clamp(1-(confidence*.65+coverage*.35));
   const state=coverage>=.78&&confidence>=.58?'ready':coverage>=.5?'emerging':'insufficient';
