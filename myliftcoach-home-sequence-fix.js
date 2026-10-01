@@ -1,11 +1,16 @@
-// MYLIFTCOACH Home schedule correction.
+// MYLIFTCOACH Home schedule correction + weekday editor.
 // The week strip and Today's Workout are driven by the active plan + local weekday.
-// Custom workouts are only used when there is no active preset/suggested plan.
 (() => {
   'use strict';
 
+  const OVERRIDES_KEY='myliftcoachWeeklyDayOverridesV1';
+  const dayNames=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  let editingWeekday=null;
+
   const readJson=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
   const customWorkouts=()=>{const v=readJson('customWorkoutsV5',[]);return Array.isArray(v)?v.filter(w=>w&&w.name&&Array.isArray(w.exercises)&&w.exercises.length):[]};
+  const dayOverrides=()=>{const v=readJson(OVERRIDES_KEY,{});return v&&typeof v==='object'?v:{}};
+  const saveOverrides=value=>localStorage.setItem(OVERRIDES_KEY,JSON.stringify(value));
 
   const rowsForIds=ids=>{
     try{
@@ -50,12 +55,11 @@
 
   const compactName=name=>String(name||'Workout').replace(/^day\s*\d+\s*[—–:\-]\s*/i,'').trim()||'Workout';
 
-  function weeklySchedule(){
+  function baseWeeklySchedule(){
     const plans=activePlan();
     const customs=customWorkouts();
     const source=plans.length?plans:customs.map(w=>({workoutKey:'custom-'+w.id,name:w.name,ids:w.exercises,kind:'custom'}));
     if(!source.length)return Array(7).fill(null);
-
     let requested=source.length;
     try{
       if(typeof workoutGoals!=='undefined'&&workoutGoals&&!workoutGoals.skipped){
@@ -73,6 +77,18 @@
     return week;
   }
 
+  function weeklySchedule(){
+    const week=baseWeeklySchedule();
+    const overrides=dayOverrides();
+    for(let i=0;i<7;i++){
+      const override=overrides[i];
+      if(!override)continue;
+      if(override.rest){week[i]=null;continue}
+      if(Array.isArray(override.ids))week[i]={workoutKey:`weekday-${i}`,name:override.name||`${dayNames[i]} Workout`,ids:[...override.ids],rows:rowsForIds(override.ids),kind:'override'};
+    }
+    return week;
+  }
+
   function ensureWorkoutDetails(card,workout){
     const rows=workout?.rows||[];
     const summary=muscleSummary(rows);
@@ -80,61 +96,105 @@
     const desc=card.querySelector(':scope > p');
     if(title)title.textContent=String(workout?.name||'Today’s Workout').toUpperCase();
     if(desc)desc.textContent=summary.text||'Training day';
-
     let meta=card.querySelector('.lh-meta');
-    if(!meta){
-      meta=document.createElement('div');
-      meta.className='lh-meta';
-      const overview=card.querySelector('.lh-overview');
-      if(overview)overview.before(meta);else card.appendChild(meta);
-    }
-    const count=rows.length;
-    const minutes=Math.max(30,count*6);
+    if(!meta){meta=document.createElement('div');meta.className='lh-meta';const overview=card.querySelector('.lh-overview');if(overview)overview.before(meta);else card.appendChild(meta)}
+    const count=rows.length,minutes=Math.max(30,count*6);
     meta.innerHTML=`<span><b>◴</b>${minutes} min<small>EST. TIME</small></span><span><b>▥</b>${count||'—'} exercises<small>TOTAL</small></span><span><b>◎</b>Hypertrophy<small>FOCUS</small></span>`;
-    meta.removeAttribute('hidden');
-    meta.style.display='';
-
+    meta.removeAttribute('hidden');meta.style.display='';
     let overview=card.querySelector('.lh-overview');
-    if(!overview){
-      overview=document.createElement('div');
-      overview.className='lh-overview';
-      overview.innerHTML='<strong>WORKOUT OVERVIEW</strong><ul></ul>';
-      card.appendChild(overview);
-    }
+    if(!overview){overview=document.createElement('div');overview.className='lh-overview';overview.innerHTML='<strong>WORKOUT OVERVIEW</strong><ul></ul>';card.appendChild(overview)}
     const ul=overview.querySelector('ul');
     if(ul)ul.innerHTML=summary.entries.length?summary.entries.map(([m,n])=>`<li>${m}: ${n} exercise${n===1?'':'s'}</li>`).join(''):'<li>Workout scheduled</li>';
-    overview.removeAttribute('hidden');
-    overview.style.display='';
+    overview.removeAttribute('hidden');overview.style.display='';
   }
 
   function showRestDay(card){
-    const title=card.querySelector('h2');
-    const desc=card.querySelector(':scope > p');
+    const title=card.querySelector('h2'),desc=card.querySelector(':scope > p');
     if(title)title.textContent='REST DAY';
     if(desc)desc.textContent='Recovery · No workout scheduled';
-    const meta=card.querySelector('.lh-meta');
-    if(meta){meta.setAttribute('hidden','');meta.style.display='none'}
-    const overview=card.querySelector('.lh-overview');
-    if(overview){overview.setAttribute('hidden','');overview.style.display='none'}
+    const meta=card.querySelector('.lh-meta');if(meta){meta.setAttribute('hidden','');meta.style.display='none'}
+    const overview=card.querySelector('.lh-overview');if(overview){overview.setAttribute('hidden','');overview.style.display='none'}
+  }
+
+  function ensureEditorActions(){
+    const screen=document.getElementById('builderScreen');
+    const save=screen?.querySelector('.save-button');
+    if(!screen||!save)return;
+    let actions=screen.querySelector('.myliftcoach-day-editor-actions');
+    if(!actions){
+      actions=document.createElement('div');actions.className='myliftcoach-day-editor-actions';
+      actions.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px';
+      const rest=document.createElement('button');rest.type='button';rest.textContent='Make Rest Day';rest.style.cssText='min-height:46px;border:1px solid #4b345f;border-radius:12px;background:#15101d;color:#d5c4e6;font-weight:750';
+      rest.onclick=()=>{
+        if(editingWeekday===null)return;
+        const overrides=dayOverrides();overrides[editingWeekday]={rest:true};saveOverrides(overrides);editingWeekday=null;
+        if(typeof goHome==='function')goHome();else if(typeof showScreen==='function')showScreen('home');
+        queue();
+      };
+      const reset=document.createElement('button');reset.type='button';reset.textContent='Reset to Plan';reset.style.cssText='min-height:46px;border:1px solid #4b345f;border-radius:12px;background:#0d0b11;color:#bca6d0;font-weight:750';
+      reset.onclick=()=>{
+        if(editingWeekday===null)return;
+        const overrides=dayOverrides();delete overrides[editingWeekday];saveOverrides(overrides);editingWeekday=null;
+        if(typeof goHome==='function')goHome();else if(typeof showScreen==='function')showScreen('home');
+        queue();
+      };
+      actions.append(rest,reset);save.after(actions);
+    }
+    actions.hidden=editingWeekday===null;
+  }
+
+  function openDayEditor(index){
+    const schedule=weeklySchedule();
+    const workout=schedule[index];
+    editingWeekday=index;
+    try{builderSelected=workout?.ids?[...workout.ids]:[]}catch{}
+    const name=document.getElementById('customWorkoutName');
+    const search=document.getElementById('builderSearch');
+    if(name)name.value=workout?.name||`${dayNames[index]} Workout`;
+    if(search)search.value='';
+    if(typeof showScreen==='function')showScreen('builderScreen');
+    if(typeof setBottomNav==='function')setBottomNav('Workouts');
+    if(typeof renderBuilderSelected==='function')renderBuilderSelected();
+    if(typeof renderBuilderLibrary==='function')renderBuilderLibrary();
+    const save=document.querySelector('#builderScreen .save-button');if(save)save.textContent=`Save ${dayNames[index]}`;
+    ensureEditorActions();
+  }
+
+  const originalSaveCustomWorkout=window.saveCustomWorkout;
+  if(typeof originalSaveCustomWorkout==='function'){
+    window.saveCustomWorkout=function(...args){
+      if(editingWeekday===null)return originalSaveCustomWorkout.apply(this,args);
+      const name=document.getElementById('customWorkoutName')?.value.trim()||`${dayNames[editingWeekday]} Workout`;
+      let ids=[];try{ids=[...(builderSelected||[])]}catch{}
+      if(!ids.length){alert('Add at least one exercise, or choose Make Rest Day.');return}
+      const overrides=dayOverrides();overrides[editingWeekday]={name,ids};saveOverrides(overrides);editingWeekday=null;
+      const save=document.querySelector('#builderScreen .save-button');if(save)save.textContent='Save Workout';
+      ensureEditorActions();
+      if(typeof goHome==='function')goHome();else if(typeof showScreen==='function')showScreen('home');
+      queue();
+    };
+  }
+
+  function bindDay(day,index){
+    if(day.dataset.myliftcoachDayEditor==='1')return;
+    day.dataset.myliftcoachDayEditor='1';day.setAttribute('role','button');day.setAttribute('tabindex','0');day.setAttribute('aria-label',`View or edit ${dayNames[index]} workout`);
+    day.style.cursor='pointer';
+    day.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openDayEditor(index)});
+    day.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openDayEditor(index)}});
   }
 
   function apply(){
     const shell=document.querySelector('.liftova-home-shell');
     const card=shell?.querySelector('.lh-workout');
     if(!shell||!card)return;
-
     const schedule=weeklySchedule();
-    const todayIndex=(new Date().getDay()+6)%7; // Monday=0 … Sunday=6, local time.
+    const todayIndex=(new Date().getDay()+6)%7;
     const days=[...shell.querySelectorAll('.lh-day')];
     days.forEach((day,index)=>{
-      const label=day.querySelector('span');
-      if(label)label.textContent=schedule[index]?compactName(schedule[index].name):'Rest';
-      day.classList.toggle('active',index===todayIndex);
+      const label=day.querySelector('span');if(label)label.textContent=schedule[index]?compactName(schedule[index].name):'Rest';
+      day.classList.toggle('active',index===todayIndex);bindDay(day,index);
     });
-
-    const todayWorkout=schedule[todayIndex];
-    if(todayWorkout)ensureWorkoutDetails(card,todayWorkout);
-    else showRestDay(card);
+    const todayWorkout=schedule[todayIndex];if(todayWorkout)ensureWorkoutDetails(card,todayWorkout);else showRestDay(card);
   }
 
   let queued=false;
