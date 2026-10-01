@@ -25,6 +25,8 @@ const B='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
   myliftcoachCoachDoseProposalSummary(){reads++;return {state:'supported',athlete:active}},
   myliftcoachCoachRecoveryExplain(){reads++;return {state:'supported',athlete:active}},
   myliftcoachCoachRecoveryProposalEvidence(){reads++;return {state:'supported',athlete:active}},
+  myliftcoachCoachProgressionExplain(){reads++;return {state:'supported',tempo:'standard',athlete:active}},
+  myliftcoachCoachProgressionProposalSummary(){reads++;return {state:'supported',athlete:active}},
   prismCoachProgramReview(){reads++;return {state:'supported',athlete:active}},
   prismAdaptivePrescription(){adaptiveCalls++;return {status:'increase',targetWeight:110,athlete:active}},
   addEventListener(type,fn){(listeners[type]||(listeners[type]=[])).push(fn)},
@@ -36,13 +38,14 @@ const B='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
  vm.runInNewContext(boundarySrc,context,{filename:'myliftcoach-intelligence-account-boundary.js'});
  vm.runInNewContext(contractSrc,context,{filename:'myliftcoach-intelligence-contract-v1.js'});
  const boundary=window.myliftcoachIntelligenceAccountBoundary,intel=window.myliftcoachIntelligence;
- assert.equal(window.myliftcoachIntelligenceCore.version,'1.2');
- assert.equal(intel.version,'1.4');
+ assert.equal(window.myliftcoachIntelligenceCore.version,'1.3');
+ assert.equal(intel.version,'1.5');
+ assert.equal(boundary.version,'1.2');
 
- // Startup is fail-closed until the Supabase user is independently verified.
  assert.equal(boundary.current().valid,false);
  assert.deepEqual(Array.from(window.prismInterventionRows()),[]);
  assert.equal(window.prismRememberIntervention({exerciseId:'press'}),null);
+ assert.equal(window.myliftcoachCoachProgressionExplain('press').reason,'account_unverified');
  assert.equal(window.prismAdaptivePrescription({exerciseId:'press'}).status,'account_hold');
  assert.equal(reads,0);assert.equal(writes,0);assert.equal(adaptiveCalls,0);
 
@@ -52,45 +55,42 @@ const B='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
  assert.equal(window.prismInterventionRows()[0].athlete,A);
  assert.equal(window.prismRememberIntervention({exerciseId:'press'}).athlete,A);
  assert.equal(intel.coach('press').dose.athlete,A);
+ assert.equal(intel.coach('press').progression.athlete,A);
  assert.equal(intel.prescribe({exerciseId:'press'}).athlete,A);
 
- // A -> B owner switch must invalidate A instantly, before B verification completes.
  window.PRISMDeviceStore.owner=B;active=B;
  const readsBefore=reads,writesBefore=writes,adaptiveBefore=adaptiveCalls;
  assert.equal(boundary.current().valid,false);
  assert.equal(boundary.isTokenCurrent(tokenA),false);
  assert.deepEqual(Array.from(window.prismInterventionRows()),[]);
  assert.equal(window.prismRememberIntervention({exerciseId:'press'}),null);
- assert.equal(intel.coach('press').dose.reason,'account_unverified');
+ assert.equal(intel.coach('press').progression.reason,'account_unverified');
  assert.equal(intel.prescribe({exerciseId:'press'}).status,'account_hold');
  assert.equal(reads,readsBefore);assert.equal(writes,writesBefore);assert.equal(adaptiveCalls,adaptiveBefore);
 
- // Only B's independently verified session can reactivate personalized intelligence.
  await boundary.refreshVerification();
  assert.equal(boundary.current().valid,true);assert.equal(boundary.current().owner,B);
  assert.equal(window.prismInterventionRows()[0].athlete,B);
- assert.equal(intel.coach('press').dose.athlete,B);
+ assert.equal(intel.coach('press').progression.athlete,B);
  assert.equal(intel.prescribe({exerciseId:'press'}).athlete,B);
 
- // A stale tab is denied even when its selected owner and last verified id match.
  window.PRISMDeviceStore.stale=true;
  assert.equal(boundary.current().valid,false);
  assert.deepEqual(Array.from(window.prismInterventionRows()),[]);
  assert.equal(intel.prescribe({exerciseId:'press'}).status,'account_hold');
 
- // B -> A -> verified A restores A only; B's token cannot survive the switch.
  window.PRISMDeviceStore.stale=false;const tokenB=boundary.token();
  window.PRISMDeviceStore.owner=A;active=A;
  assert.equal(boundary.isTokenCurrent(tokenB),false);
  await boundary.refreshVerification();
  assert.equal(boundary.current().owner,A);assert.equal(boundary.current().verified,A);
  assert.equal(window.prismInterventionRows()[0].athlete,A);
- assert.equal(intel.coach('press').recovery.athlete,A);
+ assert.equal(intel.coach('press').progression.athlete,A);
 
  boundary.invalidate('sign_out');
  assert.equal(boundary.current().valid,false);
  assert.deepEqual(Array.from(window.prismInterventionRows()),[]);
  assert.equal(intel.prescribe({exerciseId:'press'}).status,'account_hold');
 
- console.log('Production intelligence account boundary: shared-core runtime order, A/B/A verification, fail-closed reads/writes, stale-tab denial, token invalidation, and sign-out hold pass.');
+ console.log('Production intelligence account boundary: V8.4 progression, A/B/A verification, fail-closed reads/writes, stale-tab denial, token invalidation, and sign-out hold pass.');
 })().catch(error=>{console.error(error);process.exitCode=1});
