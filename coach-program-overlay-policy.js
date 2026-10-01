@@ -1,0 +1,16 @@
+/* MYLIFTCOACH Program Overlay Policy V7.7 — outcome-informed proposal gating.
+   Uses V7.6 outcome memory to prevent repeating strategies with credible harmful history.
+   Advisory only: never auto-accepts, auto-activates, or rewrites the user's program. */
+(()=>{
+ const VERSION='7.7';
+ const safe=(fn,f=null)=>{try{const v=fn();return v==null?f:v}catch{return f}};
+ function policyFor(type){return safe(()=>window.myliftcoachProgramOverlayPolicy?.(type),null)}
+ function evaluateProposal(proposal){if(!proposal)return {version:VERSION,allowed:false,proposal:null,policy:null,reason:'No program proposal is available.'};const policy=policyFor(proposal.type),informative=Boolean(policy?.mayInformProgramming),blocked=informative&&policy?.state==='rethink';if(blocked)return {version:VERSION,allowed:false,proposal:null,policy,blockedProposal:{type:proposal.type,title:proposal.title||null,reason:proposal.reason||null},reason:'Completed outcomes show this program-level strategy has repeatedly underperformed, so MYLIFTCOACH will not repeat it without new evidence.',authority:'adaptive_programming',mayOverrideAdaptive:false,preserveProgramSource:true};const support=informative&&policy?.state==='working'?'Past accepted overlays of this type generally helped and support reconsidering the strategy.':informative?'Past overlay outcomes are mixed and remain supporting context only.':'There is not enough overlay-outcome history to influence this proposal.';return {version:VERSION,allowed:true,proposal:{...proposal,outcomePolicy:{version:VERSION,state:policy?.state||'learning',confidence:Number(policy?.confidence||0),successRate:policy?.successRate??null,evidence:Number(policy?.evidence||0),mayInformProgramming:informative,mayOverrideAdaptive:false,support}},policy,reason:support,authority:'adaptive_programming',mayOverrideAdaptive:false,preserveProgramSource:true}}
+ function review(){const base=safe(()=>window.prismCoachProgramReview?.__myliftcoachPolicyBase?.(),null);if(!base)return null;const decision=evaluateProposal(base.proposal);return {...base,proposal:decision.allowed?decision.proposal:null,outcomePolicyDecision:decision}}
+ function install(attempt=0){if(typeof window.prismCoachProgramReview!=='function'){if(attempt<40)setTimeout(()=>install(attempt+1),100);return false}if(window.prismCoachProgramReview.__myliftcoachOverlayPolicy)return true;const base=window.prismCoachProgramReview;const wrapped=function(){const r=base();const decision=evaluateProposal(r?.proposal);return r?{...r,proposal:decision.allowed?decision.proposal:null,outcomePolicyDecision:decision}:r};wrapped.__myliftcoachOverlayPolicy=true;wrapped.__myliftcoachPolicyBase=base;window.prismCoachProgramReview=wrapped;return true}
+ function audit(){const types=['program_recovery','exercise_adjustment'],policies=Object.fromEntries(types.map(t=>[t,policyFor(t)]));return {version:VERSION,policies,guardrails:{outcomeMemoryAdvisoryOnly:true,noAutomaticAcceptance:true,noAutomaticActivation:true,noProgramMutation:true,noPresetFallback:true,preserveProgramSource:true,adaptiveProgrammingFinalAuthority:true}}}
+ window.myliftcoachProgramOutcomePolicyEvaluate=evaluateProposal;
+ window.myliftcoachProgramOutcomePolicyAudit=audit;
+ window.MYLIFTCOACH_PROGRAM_OUTCOME_POLICY_VERSION=VERSION;
+ install();
+})();
