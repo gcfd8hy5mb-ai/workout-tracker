@@ -57,3 +57,7 @@ jobs:
         run: node tests/test_pre_v10_4_readiness.js
       - name: Run pre-V10.4 adversarial long simulation
         run: node tests/test_pre_v10_4_readiness_long_simulation.js
+      - name: Run V10.3.6 autonomy calibration regression
+        run: node tests/test_autonomy_calibration_v10_3_6.js
+      - name: Run V10.3.6 autonomy calibration long simulation
+        run: node tests/test_autonomy_calibration_long_simulation_v10_3_6.js
