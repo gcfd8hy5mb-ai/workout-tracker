@@ -1,8 +1,8 @@
 /* MYLIFTCOACH Adaptive Recovery Timing V8.3
    Final-authority arbitration over Athlete/Coach recovery timing evidence. */
 (()=>{
- const VERSION='8.3';
- const safe=(fn,f=null)=>{try{const v=fn();return v==null?f:v}catch{return f}};
+ const VERSION='8.3',core=window.myliftcoachIntelligenceCore;
+ const safe=core?.safe||((fn,f=null)=>{try{const v=fn();return v==null?f:v}catch{return f}});
  function plannedHours(base){for(const v of [base?.recoveryHours,base?.hoursSincePrior,base?.restHours,base?.intervalHours]){const n=Number(v);if(Number.isFinite(n)&&n>=0)return n}return null;}
  function arbitrate(base){
   if(!base)return base;
@@ -17,7 +17,8 @@
   else if(coach?.state==='supported'&&coach?.timing==='on_time')decision='recovery_timing_support_considered';
   return {...base,status,targetWeight,reason,adaptiveRecoveryV83:{version:VERSION,decision,plannedRecoveryHours:h,coachState:coach?.state||'unavailable',coachTiming:coach?.timing||'unknown',authority:'adaptive_programming',mayReschedule:false,mayAddRestDay:false,mayIncreaseLoad:false,mayOverrideAdaptive:false}};
  }
- function install(attempt=0){if(typeof window.prismAdaptivePrescription!=='function'){if(attempt<100)setTimeout(()=>install(attempt+1),100);return false}if(window.prismAdaptivePrescription.__myliftcoachRecoveryV83)return true;const base=window.prismAdaptivePrescription,wrapped=function(){return arbitrate(base.apply(this,arguments))};wrapped.__myliftcoachRecoveryV83=true;wrapped.__myliftcoachRecoveryV83Base=base;window.prismAdaptivePrescription=wrapped;return true;}
+ function legacyInstall(name,marker,factory,attempt=0){const base=window[name];if(typeof base!=='function'){if(attempt<100&&typeof setTimeout==='function')setTimeout(()=>legacyInstall(name,marker,factory,attempt+1),100);return false}if(base[marker])return true;const wrapped=factory(base);wrapped[marker]=true;wrapped[`${marker}Base`]=base;window[name]=wrapped;return true}
+ function install(){const wrap=core?.installWrapper?((name,marker,factory,options={})=>core.installWrapper(name,marker,factory,options)):((name,marker,factory)=>legacyInstall(name,marker,factory));return wrap('prismAdaptivePrescription','__myliftcoachRecoveryV83',base=>function(){return arbitrate(base.apply(this,arguments))},{maxAttempts:100,delayMs:100});}
  function audit(){return {version:VERSION,authority:'adaptive_programming',guardrails:{learnedRecoveryCanHoldIncrease:true,learnedRecoveryCannotIncreaseLoad:true,learnedRecoveryCannotReschedule:true,learnedRecoveryCannotAddRestDays:true,staleEvidenceIgnored:true,existingHardHoldsRemainUpstream:true,noProgramReplacement:true,preserveCustomProgramAuthority:true,adaptiveProgrammingFinalAuthority:true}}}
  window.myliftcoachAdaptiveRecoveryArbitrate=arbitrate;
  window.myliftcoachAdaptiveRecoveryV83Audit=audit;
