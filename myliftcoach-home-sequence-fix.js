@@ -1,5 +1,5 @@
 // MYLIFTCOACH Home schedule correction + weekday editor.
-// The week strip and Today's Workout are driven by the active plan + local weekday.
+// Single authority for the week strip and Today's Workout: custom workouts override presets.
 (() => {
   'use strict';
 
@@ -42,6 +42,16 @@
     }catch{return []}
   }
 
+  function customPlan(){
+    return customWorkouts().map((workout,index)=>({
+      workoutKey:'custom-'+workout.id,
+      name:workout.name,
+      ids:[...workout.exercises],
+      kind:'custom',
+      customIndex:index
+    }));
+  }
+
   function trainingSlots(count){
     if(count>=7)return [0,1,2,3,4,5,6];
     if(count===6)return [0,1,2,3,4,5];
@@ -55,19 +65,25 @@
 
   const compactName=name=>String(name||'Workout').replace(/^day\s*\d+\s*[—–:\-]\s*/i,'').trim()||'Workout';
 
-  function baseWeeklySchedule(){
-    const plans=activePlan();
-    const customs=customWorkouts();
-    const source=plans.length?plans:customs.map(w=>({workoutKey:'custom-'+w.id,name:w.name,ids:w.exercises,kind:'custom'}));
-    if(!source.length)return Array(7).fill(null);
-    let requested=source.length;
+  function requestedTrainingDays(sourceLength){
+    let requested=sourceLength;
     try{
       if(typeof workoutGoals!=='undefined'&&workoutGoals&&!workoutGoals.skipped){
         const days=Number(workoutGoals.days||workoutGoals.trainingDays);
-        if(Number.isFinite(days)&&days>0)requested=Math.min(days,source.length);
+        if(Number.isFinite(days)&&days>0)requested=days;
       }
     }catch{}
-    requested=Math.max(1,Math.min(7,requested));
+    return Math.max(1,Math.min(7,requested||1));
+  }
+
+  function baseWeeklySchedule(){
+    // Once the user creates at least one custom workout, custom workouts become
+    // the active program source. Preset/suggested plans are fallback only.
+    const customs=customPlan();
+    const plans=activePlan();
+    const source=customs.length?customs:plans;
+    if(!source.length)return Array(7).fill(null);
+    const requested=requestedTrainingDays(source.length);
     const slots=trainingSlots(requested);
     const week=Array(7).fill(null);
     slots.forEach((weekday,index)=>{
@@ -89,6 +105,15 @@
     return week;
   }
 
+  function clearCardAction(card){
+    delete card.dataset.customWorkoutIndex;
+    delete card.dataset.scheduledWorkoutKey;
+    delete card.dataset.scheduledWorkoutKind;
+    card.removeAttribute('role');
+    card.removeAttribute('tabindex');
+    card.removeAttribute('aria-label');
+  }
+
   function ensureWorkoutDetails(card,workout){
     const rows=workout?.rows||[];
     const summary=muscleSummary(rows);
@@ -106,6 +131,15 @@
     const ul=overview.querySelector('ul');
     if(ul)ul.innerHTML=summary.entries.length?summary.entries.map(([m,n])=>`<li>${m}: ${n} exercise${n===1?'':'s'}</li>`).join(''):'<li>Workout scheduled</li>';
     overview.removeAttribute('hidden');overview.style.display='';
+    clearCardAction(card);
+    card.dataset.scheduledWorkoutKey=workout.workoutKey||'';
+    card.dataset.scheduledWorkoutKind=workout.kind||'';
+    if(workout.kind==='custom'&&Number.isInteger(workout.customIndex)){
+      card.dataset.customWorkoutIndex=String(workout.customIndex);
+      card.setAttribute('role','button');
+      card.setAttribute('tabindex','0');
+      card.setAttribute('aria-label',`Open ${workout.name}`);
+    }
   }
 
   function showRestDay(card){
@@ -114,6 +148,17 @@
     if(desc)desc.textContent='Recovery · No workout scheduled';
     const meta=card.querySelector('.lh-meta');if(meta){meta.setAttribute('hidden','');meta.style.display='none'}
     const overview=card.querySelector('.lh-overview');if(overview){overview.setAttribute('hidden','');overview.style.display='none'}
+    clearCardAction(card);
+  }
+
+  function openDisplayedCustom(event){
+    const card=event.target.closest?.('.liftova-home-shell .lh-workout[data-custom-workout-index]');
+    if(!card)return;
+    if(event.type==='keydown'&&event.key!=='Enter'&&event.key!==' ')return;
+    if(event.type==='keydown')event.preventDefault();
+    const index=Number(card.dataset.customWorkoutIndex);
+    if(!Number.isInteger(index))return;
+    try{if(typeof openCustomWorkout==='function')openCustomWorkout(index)}catch(error){console.error('MYLIFTCOACH could not open scheduled custom workout',error)}
   }
 
   function ensureEditorActions(){
@@ -199,6 +244,10 @@
 
   let queued=false;
   const queue=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;apply()})};
+  window.myliftcoachWeeklySchedule=weeklySchedule;
+  window.myliftcoachRefreshHomeSchedule=queue;
+  document.addEventListener('click',openDisplayedCustom);
+  document.addEventListener('keydown',openDisplayedCustom);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',queue,{once:true});else queue();
   document.addEventListener('click',()=>setTimeout(queue,0),true);
   window.addEventListener('storage',queue);

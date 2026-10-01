@@ -8,13 +8,16 @@ const home = fs.readFileSync('liftova-home.js','utf8');
 
 const homeMatch = config.match(/'liftova-home\.js\?v=\d+'/);
 const homePos = homeMatch ? config.indexOf(homeMatch[0]) : -1;
-const customHomePos = config.indexOf("'liftova-custom-home.js?v=1'");
 const polishMatch = config.match(/'liftova-polish\.js\?v=\d+'/);
 const polishPos = polishMatch ? config.indexOf(polishMatch[0]) : -1;
+const scheduleMatch = config.match(/'myliftcoach-home-sequence-fix\.js\?v=\d+'/);
+const schedulePos = scheduleMatch ? config.indexOf(scheduleMatch[0]) : -1;
 assert(!config.includes('liftova-reference-v3.js'), 'retired duplicate reference renderer must not be loaded');
 assert(homePos >= 0, 'canonical Home must remain loaded');
-assert(customHomePos > homePos, 'custom Home sync must load after canonical Home');
-assert(polishPos > customHomePos, 'final presentation polish must load after every Home module');
+assert(!config.includes("'liftova-custom-home.js"), 'retired history-cycling custom Home layer must not be loaded');
+assert(polishPos > homePos, 'presentation polish must load after canonical Home');
+assert(schedulePos > polishPos, 'single weekday schedule authority must load after Home presentation is established');
+assert(scheduleMatch && scheduleMatch[0].includes('v=4'), 'weekday schedule authority must use the cache-bumped runtime');
 assert(polishMatch && polishMatch[0].includes('v=8'), 'presentation polish must use the cache-bumped runtime');
 assert(config.includes('window.MYLIFTCOACH_SUPABASE_CONFIG'), 'canonical MYLIFTCOACH config namespace must be present');
 assert(!config.includes('setTimeout(mount,500)'), 'canonical Home must not be delayed behind later presentation modules');
@@ -25,4 +28,4 @@ assert(manifest.includes('images/myliftcoach-icon.svg?v=21'), 'manifest must use
 assert(manifest.includes('"name": "MYLIFTCOACH"'), 'installed app name must be MYLIFTCOACH');
 assert(manifest.includes('"short_name": "MYLIFTCOACH"'), 'installed app short name must be MYLIFTCOACH');
 assert(!home.includes('lv3-today-photo'), 'canonical Home must not contain the retired legacy workout photo renderer');
-console.log('MYLIFTCOACH single-root Home order, branding, and icon regression checks passed');
+console.log('MYLIFTCOACH single-root Home order, schedule authority, branding, and icon regression checks passed');

@@ -1,5 +1,5 @@
-// MYLIFTCOACH workout management fixes.
-// Keeps the week strip tied to the active plan and allows existing custom workouts to be edited.
+// MYLIFTCOACH custom workout management fixes.
+// Editing stays here; Home/week scheduling is owned exclusively by myliftcoach-home-sequence-fix.js.
 (() => {
   'use strict';
 
@@ -14,45 +14,6 @@
     #customButtons .myliftcoach-edit-workout:active{background:#2d1640}
   `;
   document.head.appendChild(style);
-
-  function planTitles(){
-    try{
-      if(typeof workoutGoals!=='undefined' && workoutGoals && !workoutGoals.skipped){
-        if(workoutGoals.basic && typeof presetWorkouts!=='undefined'){
-          return Object.values(presetWorkouts).map(day=>day?.title).filter(Boolean);
-        }
-        if(typeof suggestedWorkouts==='function'){
-          return suggestedWorkouts(workoutGoals).map(day=>day?.title).filter(Boolean);
-        }
-      }
-    }catch{}
-    return [];
-  }
-
-  function scheduleSlots(count){
-    if(count<=0)return [];
-    if(count===1)return [0];
-    if(count===2)return [0,3];
-    if(count===3)return [0,2,4];
-    if(count===4)return [0,1,3,4];
-    if(count===5)return [0,1,2,3,4];
-    if(count===6)return [0,1,2,3,4,5];
-    return [0,1,2,3,4,5,6];
-  }
-
-  function syncWeekStrip(){
-    const days=[...document.querySelectorAll('.lh-week .lh-day')];
-    if(days.length!==7)return;
-    const titles=planTitles();
-    if(!titles.length)return;
-    const labels=Array(7).fill('Rest');
-    const slots=scheduleSlots(titles.length);
-    titles.slice(0,slots.length).forEach((title,i)=>{labels[slots[i]]=title});
-    days.forEach((day,i)=>{
-      const label=day.querySelector('span');
-      if(label)label.textContent=labels[i]||'Rest';
-    });
-  }
 
   function builderSaveButton(){
     return document.querySelector('#builderScreen .save-button');
@@ -102,6 +63,7 @@
       const button=builderSaveButton();
       if(button)button.textContent='Save Workout';
       if(typeof showManageWorkouts==='function')showManageWorkouts();
+      window.myliftcoachRefreshHomeSchedule?.();
     };
   }
 
@@ -143,13 +105,13 @@
     };
   }
 
-  function sync(){syncWeekStrip();addEditButtons()}
+  function sync(){addEditButtons()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});
   else sync();
 
   const observer=new MutationObserver(records=>{
-    if(records.some(record=>[...record.addedNodes].some(node=>node.nodeType===1 && (node.matches?.('.liftova-home-shell,.lh-week,#customButtons,.day-button') || node.querySelector?.('.lh-week,#customButtons,.day-button'))))){
-      requestAnimationFrame(sync);
+    if(records.some(record=>[...record.addedNodes].some(node=>node.nodeType===1 && (node.matches?.('#customButtons,.day-button') || node.querySelector?.('#customButtons,.day-button'))))){
+      requestAnimationFrame(addEditButtons);
     }
   });
   if(document.body)observer.observe(document.body,{subtree:true,childList:true});
