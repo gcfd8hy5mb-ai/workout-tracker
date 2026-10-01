@@ -29,5 +29,28 @@
 #waterScreen .history-title,#foodScreen .history-title,#weightScreen .history-title,#measurementsScreen .history-title{font-size:15px!important;color:#f7f2ff!important}
 #waterScreen .history-date,#foodScreen .history-date,#weightScreen .history-date,#measurementsScreen .history-date{font-size:11px!important;color:#948a9f!important}
 
-@media(max-width:390px){#profileScreen .myliftcoach-profile-mini-grid{gap:6px!important}#profileScreen .prism-profile-links button{min-height:50px!important}}
-@media(prefers-reduced-motion:reduce){#profileScreen *,#waterScreen *,#foodScreen *,#weightScreen *,#goalsScreen *,#measurementsScreen *{transition:none!important;animation:none!important}}
+/* PASS 4 — onboarding should feel guided instead of visually busy. */
+body.prism-onboarding-active{background-image:radial-gradient(circle at 50% 10%,rgba(122,40,255,.20),transparent 30%),linear-gradient(rgba(5,5,10,.86),rgba(5,5,10,.97)),url('images/leg-press.png')!important}
+body.prism-onboarding-active .container{max-width:520px!important;padding-top:calc(20px + env(safe-area-inset-top))!important}
+body.prism-onboarding-active .journey-brand{margin-bottom:17px!important}
+body.prism-onboarding-active .journey-brand:before{width:58px!important;height:54px!important;font-size:44px!important;margin-bottom:5px!important}
+body.prism-onboarding-active .journey-brand strong{font-size:25px!important;letter-spacing:.16em!important}
+body.prism-onboarding-active .journey-brand small{letter-spacing:.22em!important}
+body.prism-onboarding-active .journey-progress{gap:4px!important;margin-bottom:10px!important}
+body.prism-onboarding-active .journey-progress span{height:4px!important;background:#24202c!important}
+body.prism-onboarding-active .journey-eyebrow{margin-bottom:13px!important;font-size:9px!important;color:#9c93a6!important}
+body.prism-onboarding-active #prismJourneyContent>h2,body.prism-onboarding-active #prismGoalReviewContent>h2{font-size:27px!important;line-height:1.08!important;margin-bottom:9px!important}
+body.prism-onboarding-active #prismJourneyContent>p,body.prism-onboarding-active #prismGoalReviewContent>p{font-size:12.5px!important;margin-bottom:16px!important}
+body.prism-onboarding-active .journey-card{padding:15px!important;margin:10px 0!important;border-radius:18px!important;background:rgba(11,9,16,.94)!important;border-color:#382849!important;box-shadow:0 12px 34px rgba(0,0,0,.3)!important}
+body.prism-onboarding-active .journey-option{min-height:64px!important;margin:7px 0!important;padding:12px 14px!important;border-radius:14px!important;background:#0f0d14!important;border-color:#302638!important}
+body.prism-onboarding-active .journey-option[aria-pressed='true']{background:#1c1128!important;border-color:#8f47df!important;box-shadow:inset 3px 0 #9b4cf1!important}
+body.prism-onboarding-active .journey-option strong{font-size:14px!important}
+body.prism-onboarding-active .journey-option small{font-size:10.5px!important}
+body.prism-onboarding-active .journey-form input,body.prism-onboarding-active .journey-form select{min-height:50px!important;background:#0f0d14!important;border-color:#3a2d46!important}
+body.prism-onboarding-active .journey-actions{gap:9px!important;margin-top:16px!important}
+body.prism-onboarding-active .journey-primary{min-height:56px!important;border-radius:14px!important;background:linear-gradient(135deg,#7428df,#9f47f3)!important;box-shadow:0 10px 24px rgba(100,34,194,.24)!important}
+body.prism-onboarding-active .journey-secondary,body.prism-onboarding-active .journey-actions button:not(.journey-primary){min-height:48px!important;background:#0d0b11!important;border-color:#302638!important}
+body.prism-onboarding-active .journey-summary{padding:11px 0!important;font-size:12px!important}
+
+@media(max-width:390px){#profileScreen .myliftcoach-profile-mini-grid{gap:6px!important}#profileScreen .prism-profile-links button{min-height:50px!important}body.prism-onboarding-active #prismJourneyContent>h2,body.prism-onboarding-active #prismGoalReviewContent>h2{font-size:24px!important}}
+@media(prefers-reduced-motion:reduce){#profileScreen *,#waterScreen *,#foodScreen *,#weightScreen *,#goalsScreen *,#measurementsScreen *,body.prism-onboarding-active *{transition:none!important;animation:none!important}}
