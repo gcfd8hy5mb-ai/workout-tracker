@@ -30,3 +30,13 @@ window.PRISM_SUPABASE_CONFIG = MYLIFTCOACH_SUPABASE_CONFIG;
   };
   load(0);
 })();
+
+// Core UX polish is intentionally presentation-only and loaded after the existing app layers.
+(() => {
+  if(document.querySelector('link[data-myliftcoach-core-ux]'))return;
+  const link=document.createElement('link');
+  link.rel='stylesheet';
+  link.href='myliftcoach-core-ux-v1.css?v=1';
+  link.dataset.myliftcoachCoreUx='true';
+  document.head.appendChild(link);
+})();
