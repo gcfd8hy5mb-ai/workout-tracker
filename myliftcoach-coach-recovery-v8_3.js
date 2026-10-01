@@ -1,8 +1,8 @@
 /* MYLIFTCOACH Coach Recovery Timing V8.3
    Interprets Athlete V8.3 recovery-lag evidence. Advisory only. */
 (()=>{
- const VERSION='8.3';
- const safe=(fn,f=null)=>{try{const v=fn();return v==null?f:v}catch{return f}};
+ const VERSION='8.3',core=window.myliftcoachIntelligenceCore;
+ const safe=core?.safe||((fn,f=null)=>{try{const v=fn();return v==null?f:v}catch{return f}});
  function rowsToRecoveryEvents(rows=[]){
   const byExercise={};
   for(const row of (rows||[]).filter(r=>r&&r.exerciseId)){(byExercise[row.exerciseId]||(byExercise[row.exerciseId]=[])).push(row)}
