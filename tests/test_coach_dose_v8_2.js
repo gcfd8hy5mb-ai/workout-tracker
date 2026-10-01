@@ -1,0 +1,7 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const core=fs.readFileSync('athlete-learning-engine.js','utf8'),dose=fs.readFileSync('athlete-dose-response-v8_2.js','utf8'),coach=fs.readFileSync('myliftcoach-coach-dose-v8_2.js','utf8');
+const iso=d=>new Date(Date.now()-d*86400000).toISOString();
+const rows=[];for(let i=0;i<6;i++){rows.push({id:`good-${i}`,exerciseId:'press',at:iso(35-i*5),kind:'coach',target:{sets:3,status:'hold'},response:{value:'followed'},outcome:{value:'better',at:iso(35-i*5)}});rows.push({id:`bad-${i}`,exerciseId:'press',at:iso(34-i*5),kind:'coach',target:{sets:5,status:'increase'},response:{value:'followed'},outcome:{value:'worse',at:iso(34-i*5)}})}
+const window={prismInterventionRows:()=>rows};const ctx={window,console,setTimeout};vm.createContext(ctx);vm.runInContext(core,ctx);vm.runInContext(dose,ctx);vm.runInContext(coach,ctx);
+const x=window.myliftcoachCoachDoseExplain('press');assert.strictEqual(x.state,'supported');assert.strictEqual(x.bestDose.dose.volume,'moderate');assert.strictEqual(x.bestDose.dose.pressure,'conservative');assert.strictEqual(x.mayOverrideAdaptive,false);assert.strictEqual(window.myliftcoachCoachDoseAudit().guardrails.noAutomaticSetChange,true);
+console.log(JSON.stringify({suite:'MYLIFTCOACH Coach Dose V8.2',checks:{interventionAdapter:true,doseInterpretation:true,advisoryOnly:true,adaptiveAuthority:true}},null,2));
