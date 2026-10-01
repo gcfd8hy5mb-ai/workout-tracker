@@ -2,9 +2,8 @@
    Captures recommendation context and interprets Athlete V8 patterns against current conditions.
    Advisory only. Adaptive Programming remains final decision authority. */
 (()=>{
- const VERSION='8.1';
- const KEY='prismCoachInterventionsV1';
- const safe=(fn,f=null)=>{try{const v=fn();return v==null?f:v}catch{return f}};
+ const VERSION='8.1',KEY='prismCoachInterventionsV1',core=window.myliftcoachIntelligenceCore;
+ const safe=core?.safe||((fn,f=null)=>{try{const v=fn();return v==null?f:v}catch{return f}});
  function rows(){const v=safe(()=>JSON.parse(localStorage.getItem(KEY)||'[]'),[]);return Array.isArray(v)?v:[]}
  function save(v){try{localStorage.setItem(KEY,JSON.stringify((v||[]).slice(0,180)))}catch{}}
  function currentPhase(){return String(safe(()=>window.prismCurrentGoalPhase?.()?.type,null)||safe(()=>JSON.parse(localStorage.getItem('prismGoalPhaseV1')||'null')?.type,null)||'general').toLowerCase()}
@@ -43,18 +42,9 @@
   return {version:VERSION,state,summary,items,supported:supported.length,caution:caution.length,stale:stale.length,total:items.length,requiresApproval:true,mayOverrideAdaptive:false,authority:'adaptive_programming'};
  }
  function enrich(review){if(!review)return review;const contextEvidence=proposalEvidence(review.proposal||review.outcomePolicyDecision?.blockedProposal||null),decision=review.coachDecision?{...review.coachDecision}:null;if(decision){decision.contextState=contextEvidence.state;decision.contextReason=contextEvidence.summary;decision.mayOverrideAdaptive=false;if(contextEvidence.state==='caution'&&decision.state!=='blocked')decision.state='caution'}const proposal=review.proposal?{...review.proposal,coachContextEvidence:contextEvidence,requiresApproval:true,authority:'adaptive_programming',preserveProgramSource:true}:null;return {...review,proposal,coachContextEvidence:contextEvidence,coachDecision:decision}}
- function installCapture(attempt=0){
-  const base=window.prismRememberIntervention;
-  if(typeof base!=='function'){if(attempt<80)setTimeout(()=>installCapture(attempt+1),100);return false}
-  if(base.__myliftcoachContextV81)return true;
-  const wrapped=function(data){const result=base.apply(this,arguments);if(result?.id&&!result.athleteContext){const all=rows(),row=all.find(x=>x.id===result.id);if(row){row.athleteContext=currentContext();save(all);result.athleteContext=row.athleteContext}}return result};wrapped.__myliftcoachContextV81=true;wrapped.__myliftcoachContextV81Base=base;window.prismRememberIntervention=wrapped;return true;
- }
- function installReview(attempt=0){
-  const base=window.prismCoachProgramReview;
-  if(typeof base!=='function'||typeof window.myliftcoachAthleteExerciseContexts!=='function'){if(attempt<80)setTimeout(()=>installReview(attempt+1),100);return false}
-  if(base.__myliftcoachCoachContextV81)return true;
-  const wrapped=function(){return enrich(base.apply(this,arguments))};wrapped.__myliftcoachCoachContextV81=true;wrapped.__myliftcoachCoachContextV81Base=base;window.prismCoachProgramReview=wrapped;return true;
- }
+ function legacyInstall(name,marker,factory,attempt=0,ready=null){const base=window[name],isReady=typeof ready==='function'?safe(()=>Boolean(ready()),false):true;if(typeof base!=='function'||!isReady){if(attempt<80&&typeof setTimeout==='function')setTimeout(()=>legacyInstall(name,marker,factory,attempt+1,ready),100);return false}if(base[marker])return true;const wrapped=factory(base);wrapped[marker]=true;wrapped[`${marker}Base`]=base;window[name]=wrapped;return true}
+ function installCapture(){const wrap=core?.installWrapper?((name,marker,factory,options={})=>core.installWrapper(name,marker,factory,options)):((name,marker,factory)=>legacyInstall(name,marker,factory));return wrap('prismRememberIntervention','__myliftcoachContextV81',base=>function(data){const result=base.apply(this,arguments);if(result?.id&&!result.athleteContext){const all=rows(),row=all.find(x=>x.id===result.id);if(row){row.athleteContext=currentContext();save(all);result.athleteContext=row.athleteContext}}return result},{maxAttempts:80,delayMs:100});}
+ function installReview(){const ready=()=>typeof window.myliftcoachAthleteExerciseContexts==='function',wrap=core?.installWrapper?((name,marker,factory,options={})=>core.installWrapper(name,marker,factory,options)):((name,marker,factory)=>legacyInstall(name,marker,factory,0,ready));return wrap('prismCoachProgramReview','__myliftcoachCoachContextV81',base=>function(){return enrich(base.apply(this,arguments))},{maxAttempts:80,delayMs:100,ready});}
  function audit(){return {version:VERSION,currentContext:currentContext(),eventCount:interventionEvents().length,guardrails:{capturesContextProspectively:true,usesCurrentRecoveryContext:true,phaseSpecificWhenAvailable:true,staleContextCannotStrengthen:true,conflictReducesTrust:true,noAutomaticAcceptance:true,noProgramMutation:true,preserveProgramSource:true,adaptiveProgrammingFinalAuthority:true,mayOverrideAdaptive:false}}}
  window.myliftcoachCoachCurrentContext=currentContext;
  window.myliftcoachCoachContextEvents=interventionEvents;
