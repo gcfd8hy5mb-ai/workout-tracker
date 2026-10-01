@@ -1,12 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const files=['myliftcoach-intelligence-core.js','myliftcoach-intelligence-contract-v1.js','myliftcoach-intelligence-account-boundary.js'];
 const listeners={};
-const window={
- PRISMDeviceStore:null,
- addEventListener:(name,fn)=>{(listeners[name]??=[]).push(fn)},
- dispatchEvent:()=>{},
- localStorage:{},
-};
+const window={PRISMDeviceStore:null,addEventListener:(name,fn)=>{(listeners[name]??=[]).push(fn)},dispatchEvent:()=>{},localStorage:{}};
 const context=vm.createContext({window,console,setTimeout,CustomEvent:function(type,init){this.type=type;this.detail=init?.detail},BroadcastChannel:function(){this.onmessage=null}});
 for(const file of files)vm.runInContext(fs.readFileSync(file,'utf8'),context,{filename:file});
 assert.equal(window.myliftcoachIntelligenceCore.version,'1.2');
@@ -14,7 +9,7 @@ assert.equal(typeof window.myliftcoachIntelligenceCore.installWrapper,'function'
 assert.equal(typeof window.myliftcoachIntelligenceCore.collectAudits,'function');
 assert.equal(typeof window.myliftcoachIntelligenceCore.guardrailChecks,'function');
 assert.equal(typeof window.myliftcoachIntelligenceCore.auditSummary,'function');
-assert.equal(window.myliftcoachIntelligence.version,'1.3');
+assert.equal(window.myliftcoachIntelligence.version,'1.4');
 assert.equal(window.myliftcoachIntelligence.coreVersion,'1.2');
 assert.equal(window.myliftcoachIntelligenceAccountBoundary.coreVersion,'1.2');
 assert.equal(window.myliftcoachIntelligence.authority,'adaptive_programming');
@@ -37,7 +32,7 @@ assert.equal(window.myliftcoachIntelligence.account().valid,false);
 assert.equal(window.myliftcoachIntelligence.prescribe('press').status,'account_hold');
 const config=fs.readFileSync('supabase-config.js','utf8');
 const corePos=config.indexOf("myliftcoach-intelligence-core.js?v=1.2");
-const contractPos=config.indexOf("myliftcoach-intelligence-contract-v1.js?v=1.3");
+const contractPos=config.indexOf("myliftcoach-intelligence-contract-v1.js?v=1.4");
 const boundaryPos=config.indexOf("myliftcoach-intelligence-account-boundary.js?v=1.1");
 assert(corePos>0&&contractPos>corePos&&boundaryPos>contractPos,'core -> contract -> boundary loader order must be preserved');
-console.log('Intelligence core v1.2 audit consolidation, shared wrapper installer, fail-closed account behavior, Adaptive authority, and loader order pass.');
+console.log('Intelligence core v1.2 audit consolidation, contract v1.4 fail-closed dependency, shared wrapper installer, account behavior, Adaptive authority, and loader order pass.');
