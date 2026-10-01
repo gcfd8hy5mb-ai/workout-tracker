@@ -30,7 +30,7 @@ vm.runInNewContext(swSource,{self,caches,Promise,URL,Request:class{constructor(u
 async function dispatch(name){let task;handlers[name]({waitUntil(promise){task=promise}});await task}
 (async()=>{
 await dispatch("install");
-assert.equal(entries.has("./images/apple-touch-icon-180.png"),true,"current MYLIFTCOACH install icon remains available when an optional asset fails");
+assert.equal(entries.has("./images/apple-touch-icon-180.png?v=10"),true,"current MYLIFTCOACH install icon remains available when an optional asset fails");
 assert.equal(entries.has("./images/app-icon.png?v=11"),true,"current MYLIFTCOACH brand icon remains available when an optional asset fails");
 await dispatch("activate");
 let intercepted=false;
