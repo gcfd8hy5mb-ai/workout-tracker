@@ -35,7 +35,8 @@
   const contradiction=recentScore!=null&&olderScore!=null&&Math.abs(recentScore-olderScore)>=.18;
   const confidence=clamp((Math.min(usable.length,8)/8)*.3+adherence*.2+consistency*.25+Math.min(w,5)/5*.25);
   let state='learning';
-  if(!recent.length&&usable.length)state='stale';
+  if(rows.length&&!usable.length)state='stale';
+  else if(!recent.length&&usable.length)state='stale';
   else if(contradiction&&recent.length>=2)state='contradictory';
   else if(usable.length>=4&&recent.length>=2&&adherence>=.65&&consistency>=.7&&confidence>=.58)state='usable';
   else if(usable.length>=3)state='uncertain';
