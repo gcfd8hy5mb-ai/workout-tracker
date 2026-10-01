@@ -1,35 +1,42 @@
-/* LIFTOVA progress — compact, useful from the first workout. Calculations/actions remain intact. */
-#overallProgressScreen{position:relative;color:#f8f5ff!important;padding:2px 0 32px!important;background:#07050d!important}
+/* MYLIFTCOACH Progress — compact, touch-friendly training trends. */
+#overallProgressScreen{position:relative;color:#f8f5ff!important;padding:2px 0 104px!important;background:#07050d!important;overflow-x:hidden}
 #overallProgressScreen:before{content:"";position:absolute;inset:-20px -16px auto;height:220px;z-index:-1;background:radial-gradient(circle at 18% 0,rgba(142,67,255,.25),transparent 48%)}
 #overallProgressScreen>h2{font-size:27px!important;margin:4px 0 5px!important;letter-spacing:-.035em!important;color:#fff!important;text-align:left}
-#overallProgressScreen>h2:before{content:"LIFTOVA";display:block;margin-bottom:5px;color:#9d56ef;font-size:9px;font-weight:850;letter-spacing:.18em}
+#overallProgressScreen>h2:before{content:"MYLIFTCOACH";display:block;margin-bottom:5px;color:#9d56ef;font-size:9px;font-weight:850;letter-spacing:.18em}
 #overallProgressScreen>h3{font-size:16px;margin:18px 2px 9px;color:#f5f0ff!important}
-#overallProgressScreen .prism-segments{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:4px!important;padding:4px!important;margin:12px 0!important;background:#0e0b15!important;border:1px solid #30213f!important;border-radius:14px!important;box-shadow:none!important}
-#overallProgressScreen .prism-segments button{min-height:39px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#91899c!important;font-size:11px!important;font-weight:760!important}
-#overallProgressScreen .prism-segments button[aria-pressed=true]{background:#6424d0!important;color:#fff!important;box-shadow:none!important}
+#overallProgressScreen .prism-segments{position:sticky;top:calc(6px + env(safe-area-inset-top));z-index:18;display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:4px!important;padding:4px!important;margin:12px 0 14px!important;background:rgba(14,11,21,.94)!important;border:1px solid #30213f!important;border-radius:14px!important;box-shadow:0 8px 24px rgba(0,0,0,.24)!important;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+#overallProgressScreen .prism-segments button{min-height:44px!important;border:0!important;border-radius:10px!important;background:transparent!important;color:#91899c!important;font-size:11px!important;font-weight:760!important;transition:background .14s ease,color .14s ease,transform .1s ease}
+#overallProgressScreen .prism-segments button[aria-pressed=true],#overallProgressScreen .prism-segments button.active{background:#6424d0!important;color:#fff!important;box-shadow:none!important}
+#overallProgressScreen .prism-segments button:active{transform:scale(.98)}
+#overallProgressScreen .prism-segments button:focus-visible,#overallProgressScreen .progress-links button:focus-visible,#overallProgressScreen button.dashboard-link:focus-visible{outline:2px solid #b968ff!important;outline-offset:2px!important}
 #overallProgressScreen .stat-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin:0 0 11px!important}
-#overallProgressScreen .stat-card{min-height:88px!important;padding:13px!important;border:1px solid #30213f!important;border-radius:16px!important;background:#0e0b15!important;box-shadow:none!important}
-#overallProgressScreen .stat-number{font-size:25px!important;font-weight:850!important;color:#fff!important;letter-spacing:-.045em!important}
+#overallProgressScreen .stat-card{min-height:92px!important;padding:13px!important;border:1px solid #30213f!important;border-radius:16px!important;background:#0e0b15!important;box-shadow:none!important;display:flex;flex-direction:column;justify-content:center}
+#overallProgressScreen .stat-number{font-size:25px!important;font-weight:850!important;color:#fff!important;letter-spacing:-.045em!important;font-variant-numeric:tabular-nums}
 #overallProgressScreen .stat-label{margin-top:4px!important;color:#91899d!important;font-size:9px!important;font-weight:720!important;letter-spacing:.055em!important;text-transform:uppercase!important}
 #overallProgressScreen .card,#overallProgressScreen .progress-exercise{border:1px solid #30213f!important;border-radius:17px!important;background:#0e0b15!important;color:#fff!important;box-shadow:none!important;padding:14px!important}
 #overallProgressScreen .card h3{margin:0 0 11px!important;color:#fff!important;font-size:15px!important}
 #overallProgressScreen .small,#overallProgressScreen .progress-detail{color:#948c9f!important;font-size:11px!important}
 #overallProgressScreen .progress-name{color:#f7f3ff!important;font-weight:760!important}
-#overallProgressScreen .progress-bar{height:5px!important;background:#21172e!important;border-radius:999px!important;overflow:hidden!important}
-#overallProgressScreen .progress-fill{background:linear-gradient(90deg,#6d22eb,#a65cff)!important;box-shadow:none!important}
-#overallProgressScreen .prism-volume-row{display:grid!important;grid-template-columns:1fr auto!important;gap:5px 10px!important;align-items:center!important;padding:9px 0!important;border-bottom:1px solid rgba(255,255,255,.05)!important}
+#overallProgressScreen .progress-bar{height:6px!important;background:#21172e!important;border-radius:999px!important;overflow:hidden!important}
+#overallProgressScreen .progress-fill{background:linear-gradient(90deg,#6d22eb,#a65cff)!important;box-shadow:none!important;transition:width .22s ease}
+#overallProgressScreen .prism-volume-row{display:grid!important;grid-template-columns:1fr auto!important;gap:5px 10px!important;align-items:center!important;padding:11px 0!important;border-bottom:1px solid rgba(255,255,255,.05)!important;min-height:54px}
 #overallProgressScreen .prism-volume-row:last-child{border-bottom:0!important}
 #overallProgressScreen .prism-volume-row>span:first-child{font-weight:680!important;color:#e9e4f1!important;font-size:12px!important}
-#overallProgressScreen .prism-volume-row>span:nth-child(2){font-size:10px!important;color:#928a9d!important}
+#overallProgressScreen .prism-volume-row>span:nth-child(2){font-size:10px!important;color:#928a9d!important;font-variant-numeric:tabular-nums}
 #overallProgressScreen .prism-volume-row .progress-bar{grid-column:1/-1!important;margin:0!important}
-#overallProgressScreen .progress-links{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;margin-top:10px!important}
-#overallProgressScreen .progress-links button,#overallProgressScreen button.dashboard-link{min-height:44px!important;border:1px solid #38264c!important;border-radius:12px!important;background:#15101d!important;color:#d5c1f8!important;font-size:11px!important;font-weight:720!important;box-shadow:none!important}
+#overallProgressScreen .progress-links{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:12px!important}
+#overallProgressScreen .progress-links button,#overallProgressScreen button.dashboard-link{min-height:48px!important;border:1px solid #38264c!important;border-radius:12px!important;background:#15101d!important;color:#d5c1f8!important;font-size:11px!important;font-weight:720!important;box-shadow:none!important;transition:transform .1s ease,background .14s ease,border-color .14s ease}
+#overallProgressScreen .progress-links button:active,#overallProgressScreen button.dashboard-link:active{transform:scale(.985);background:#1c1426!important;border-color:#5e3d79!important}
 #overallProgressScreen input,#overallProgressScreen select{background:#100c17!important;color:#fff!important;border-color:#3b2850!important}
 .liftova-progress-hero{margin:0 0 11px!important;padding:15px!important;border:1px solid #3a2550!important;border-radius:18px!important;background:radial-gradient(circle at 92% 0,rgba(159,78,255,.19),transparent 45%),#100c17!important;box-shadow:none!important}
 .liftova-progress-hero .eyebrow{color:#a65cff!important;font-size:9px!important;font-weight:850!important;letter-spacing:.14em!important}
 .liftova-progress-hero strong{display:block!important;margin-top:5px!important;font-size:20px!important;letter-spacing:-.035em!important;color:#fff!important}
 .liftova-progress-hero p{margin:5px 0 0!important;color:#9c94a8!important;font-size:11px!important;line-height:1.4!important}
-.liftova-progress-empty{margin:10px 0!important;padding:18px 15px!important;border:1px dashed #3c2a4e!important;border-radius:16px!important;background:#0c0a11!important;text-align:center!important;color:#948b9f!important}
+.liftova-progress-empty{margin:10px 0!important;padding:22px 15px!important;border:1px dashed #3c2a4e!important;border-radius:16px!important;background:#0c0a11!important;text-align:center!important;color:#948b9f!important}
+.liftova-progress-empty:before{content:"↗";display:grid;place-items:center;width:38px;height:38px;margin:0 auto 9px;border-radius:12px;background:#171020;color:#b566ff;font-size:20px}
 .liftova-progress-empty strong{display:block;color:#eee8f7;font-size:14px;margin-bottom:5px}
-.liftova-progress-empty span{font-size:11px;line-height:1.4}
+.liftova-progress-empty span{font-size:11px;line-height:1.45}
+#overallProgressScreen.mlc-progress-ready .card,#overallProgressScreen.mlc-progress-ready .progress-exercise{content-visibility:auto;contain-intrinsic-size:120px}
 @media(min-width:620px){#overallProgressScreen .stat-grid{grid-template-columns:repeat(4,1fr)!important}}
+@media(max-width:390px){#overallProgressScreen .stat-card{min-height:86px!important;padding:11px!important}#overallProgressScreen .stat-number{font-size:23px!important}#overallProgressScreen .progress-links{grid-template-columns:1fr!important}}
+@media(prefers-reduced-motion:reduce){#overallProgressScreen *{scroll-behavior:auto!important;transition:none!important}}

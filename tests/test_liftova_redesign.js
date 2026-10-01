@@ -79,7 +79,7 @@ assert.doesNotMatch(pro, />\s*(?:PRISM|LIFTOVA)(?:\s|<)/, 'Pro visible markup mu
 
 const progressJs = read('liftova-progress.js');
 const progressCss = read('liftova-progress.css');
-assert.match(progressJs, /liftova-progress\.css\?v=6/);
+assert.match(progressJs, /liftova-progress\.css\?v=7/);
 assert.match(progressCss, /#overallProgressScreen\{position:relative;color:#f8f5ff!important/);
 assert.match(progressCss, /background:#6424d0!important/);
 
