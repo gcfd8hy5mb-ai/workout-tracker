@@ -47,7 +47,8 @@ vm.runInContext(source,context);
 const schedule=context.myliftcoachWeeklySchedule;
 assert.equal(typeof schedule,'function','canonical weekly schedule must be exported for integration consumers');
 
-function signature(week){return week.map(day=>day?day.name:'Rest')}
+const plain=value=>JSON.parse(JSON.stringify(value));
+function signature(week){return plain(week.map(day=>day?day.name:'Rest'))}
 const expected=['Custom Upper','Custom Lower','Rest','Custom Upper','Custom Lower','Rest','Rest'];
 
 // Simulate three successive weeks with changing workout history. History must not
@@ -68,7 +69,7 @@ setCustoms([
   {id:'beta',name:'Custom Lower',exercises:['b1','b2']}
 ]);
 assert.deepEqual(signature(schedule()),['Custom Upper Edited','Custom Lower','Rest','Custom Upper Edited','Custom Lower','Rest','Rest']);
-assert.deepEqual(schedule()[0].ids,['a1','c1'],'edited exercise list must reach the scheduled workout');
+assert.deepEqual(plain(schedule()[0].ids),['a1','c1'],'edited exercise list must reach the scheduled workout');
 
 // Deleting one custom workout must never fall back to presets while another custom
 // workout still exists; the remaining custom repeats across selected training days.
