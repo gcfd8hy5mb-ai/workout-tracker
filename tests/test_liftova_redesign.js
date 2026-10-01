@@ -23,6 +23,8 @@ assert.match(accountUi, /cloud\.signUp/);
 const loader = read('supabase-config.js');
 for (const file of redesignFiles) assert.match(loader, new RegExp(file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${file} must be loaded`);
 assert.match(loader, /liftova-functional-fixes\.js\?v=2/);
+assert.match(loader, /window\.MYLIFTCOACH_SUPABASE_CONFIG/, 'MYLIFTCOACH must own the canonical config namespace');
+assert.doesNotMatch(loader, /myliftcoach-brand\.js\?v=21/, 'runtime must not depend on a branding rewrite guard');
 
 const home = read('liftova-home.js');
 const homeCss = read('liftova-home.css');
@@ -36,7 +38,7 @@ const html = read('index.html');
 for (const screen of ['workoutsScreen','workoutScreen','libraryScreen','overallProgressScreen','profileScreen']) assert.match(html, new RegExp(`id=["']${screen}["']`));
 assert.match(html, /apple-mobile-web-app-title" content="MYLIFTCOACH"/, 'iOS install title must be MYLIFTCOACH at source');
 assert.match(html, /apple-touch-icon[^>]+apple-touch-icon-180\.png\?v=10/, 'HTML Apple icon must use current v10 asset');
-assert.match(html, /rel="icon"[^>]+liftova-icon\.svg\?v=10/, 'HTML favicon must use current v10 asset');
+assert.match(html, /rel="icon"[^>]+liftova-icon\.svg\?v=10/, 'HTML source favicon remains a compatibility fallback until source asset migration');
 assert.match(html, /<title>MYLIFTCOACH · Train · Track · Progress<\/title>/);
 
 const manifest = JSON.parse(read('manifest.json'));
@@ -45,13 +47,13 @@ assert.equal(manifest.short_name, 'MYLIFTCOACH');
 assert.equal(manifest.id, './?app=myliftcoach');
 assert.equal(manifest.start_url, './?app=myliftcoach');
 assert.equal(manifest.display, 'standalone');
-assert.equal(manifest.icons.some(item => item.src === 'images/liftova-icon.svg?v=10' && item.type === 'image/svg+xml'), true);
+assert.equal(manifest.icons.some(item => item.src === 'images/myliftcoach-icon.svg?v=21' && item.type === 'image/svg+xml'), true);
 assert.equal(manifest.icons.some(item => item.src === 'images/apple-touch-icon-180.png?v=10' && item.type === 'image/png'), true);
 
 const sw = read('sw.js');
-assert.match(sw, /myliftcoach-home-v20-custom-runtime/, 'service worker must use current MYLIFTCOACH v20 custom-workout runtime cache identity');
+assert.match(sw, /myliftcoach-home-v20-custom-runtime/, 'service worker must use current MYLIFTCOACH runtime cache identity');
 assert.doesNotMatch(sw, /const CACHE_NAME = ["']liftova-/i, 'service worker cache must not retain old brand identity');
-assert.match(sw, /url\.pathname\.includes\("\/liftova-"\)/, 'legacy filenames remain network-first for compatibility');
+assert.match(sw, /url\.pathname\.includes\("\/liftova-"\)/, 'historical filenames remain network-first only for compatibility');
 for (const asset of ['./images/apple-touch-icon-180.png','./images/app-icon.png?v=11']) assert.match(sw, new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 assert.match(sw, /liftova-polish\.js\?v=8/, 'installed shell must cache the same current polish version loaded by runtime');
 
@@ -61,11 +63,15 @@ assert.match(functionalFixes, /undefined\|NaN/);
 
 const polish = read('liftova-polish.js');
 assert.match(polish, /MYLIFTCOACH · Train · Track · Progress/);
-assert.match(polish, /const ICON='images\/liftova-icon\.svg\?v=10'/, 'runtime brand asset must use v10');
 assert.match(polish, /apple-touch-icon-180\.png\?v=10/, 'runtime Apple touch icon must use v10 PNG');
 assert.match(polish, /function updateMenuBrand/);
 assert.match(polish, /#sideMenu\{[^}]*position:fixed!important;[^}]*left:0!important;[^}]*background:radial-gradient/);
 assert.match(polish, /\.prism-bottom-nav\{[^}]*background:rgba\(7,5,13/);
+
+const brand = read('myliftcoach-brand.js');
+assert.match(brand, /const BRAND='MYLIFTCOACH'/);
+assert.match(brand, /const ICON='images\/myliftcoach-icon\.svg\?v=21'/);
+assert.doesNotMatch(brand, /MutationObserver|TreeWalker|replaceLegacy/i, 'brand module must not rewrite the live DOM');
 
 const pro = read('liftova-pro.js');
 assert.match(pro, /MYLIFTCOACH · PRO/, 'Pro hero must use MYLIFTCOACH branding');
