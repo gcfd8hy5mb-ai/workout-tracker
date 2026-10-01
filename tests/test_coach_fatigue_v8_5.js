@@ -1,0 +1,7 @@
+const assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm');
+const window={prismInterventionRows:()=>[],myliftcoachAthleteFatigueProfile:()=>({fatigueState:'accumulating',deloadResponse:'responsive'})};
+const ctx={window,console,setTimeout:()=>0,Object,JSON,Number,String,Boolean,Math,Date,Array,RegExp};vm.createContext(ctx);for(const f of ['myliftcoach-intelligence-core.js','myliftcoach-coach-fatigue-v8_5.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
+let x=window.myliftcoachCoachFatigueExplain('press');assert.equal(x.state,'caution');assert.equal(x.deloadResponse,'responsive');assert.equal(x.mayReducePressure,true);assert.equal(x.mayAutoDeload,false);assert.equal(x.authority,'adaptive_programming');
+window.myliftcoachAthleteFatigueProfile=()=>({fatigueState:'stable',deloadResponse:'neutral'});x=window.myliftcoachCoachFatigueExplain('press');assert.equal(x.state,'supported');
+window.myliftcoachAthleteFatigueProfile=()=>({fatigueState:'stale',deloadResponse:'learning'});x=window.myliftcoachCoachFatigueExplain('press');assert.equal(x.state,'stale');
+console.log(JSON.stringify({suite:'MYLIFTCOACH Coach Fatigue V8.5',checks:{accumulationCaution:true,stableSupport:true,staleIgnored:true,noAutoDeload:true,advisoryOnly:true,adaptiveAuthority:true}},null,2));
