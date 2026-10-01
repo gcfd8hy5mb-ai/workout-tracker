@@ -18,10 +18,15 @@
  function consume(exerciseId){const id=String(exerciseId),items=overlays(),overlay=items.find(o=>o.status==='active'&&Number(o.remainingExposures)>0&&(o.changes||[]).some(c=>String(c.exerciseId)===id));if(!overlay)return null;overlay.remainingExposures=Math.max(0,Number(overlay.remainingExposures)-1);overlay.lastConsumedAt=now();if(overlay.remainingExposures===0){overlay.status='completed';overlay.completedAt=now()}save(items);return overlay}
  function undo(id){const items=overlays(),overlay=items.find(o=>o.id===id||o.proposalId===id);if(!overlay)return null;overlay.status='undone';overlay.undoneAt=now();overlay.remainingExposures=0;save(items);return overlay}
  function audit(){const items=overlays();return {version:VERSION,active:items.filter(x=>x.status==='active').length,completed:items.filter(x=>x.status==='completed').length,undone:items.filter(x=>x.status==='undone').length,guardrails:{acceptedProposalRequired:true,temporary:true,reversible:true,noExerciseRemoval:true,noLoadIncrease:true,noVolumeIncrease:true,noPresetFallback:true,preserveProgramSource:true,adaptiveProgrammingFinalAuthority:true}}}
+ function installProgramResponseBridge(){if(typeof window.prismCoachProgramRespond!=='function'||window.prismCoachProgramRespond.__myliftcoachOverlay)return false;const base=window.prismCoachProgramRespond;const wrapped=function(id,status){const result=base(id,status);if(result&&status==='accepted')activate(id,1);if(result&&status==='undone')undo(id);return result};wrapped.__myliftcoachOverlay=true;window.prismCoachProgramRespond=wrapped;return true}
+ function installPrescriptionBridge(){if(typeof window.prismAdaptivePrescription!=='function'||window.prismAdaptivePrescription.__myliftcoachOverlay)return false;const base=window.prismAdaptivePrescription;const wrapped=function(exerciseId){return apply(base(exerciseId))};wrapped.__myliftcoachOverlay=true;window.prismAdaptivePrescription=wrapped;return true}
+ function installOutcomeBridge(){if(typeof window.prismInterventionOutcome!=='function'||window.prismInterventionOutcome.__myliftcoachOverlay)return false;const base=window.prismInterventionOutcome;const wrapped=function(exerciseId,outcome,details){const result=base(exerciseId,outcome,details);if(result)consume(exerciseId);return result};wrapped.__myliftcoachOverlay=true;window.prismInterventionOutcome=wrapped;return true}
+ function install(attempt=0){const a=installProgramResponseBridge(),b=installPrescriptionBridge(),c=installOutcomeBridge();if((!a||!b||!c)&&attempt<40)setTimeout(()=>install(attempt+1),100)}
  window.myliftcoachProgramOverlayActivate=activate;
  window.myliftcoachProgramOverlayApply=apply;
  window.myliftcoachProgramOverlayConsume=consume;
  window.myliftcoachProgramOverlayUndo=undo;
  window.myliftcoachProgramOverlayAudit=audit;
  window.MYLIFTCOACH_PROGRAM_OVERLAY_VERSION=VERSION;
+ install();
 })();
