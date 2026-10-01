@@ -1,8 +1,8 @@
 /* MYLIFTCOACH Adaptive Context Arbitration V8.1
    Final authority layer consuming Coach V8.1 current-context evidence without granting Coach/Athlete direct prescription control. */
 (()=>{
- const VERSION='8.1';
- const safe=(fn,f=null)=>{try{const v=fn();return v==null?f:v}catch{return f}};
+ const VERSION='8.1',core=window.myliftcoachIntelligenceCore;
+ const safe=core?.safe||((fn,f=null)=>{try{const v=fn();return v==null?f:v}catch{return f}});
  function contextEvidence(exerciseId){return safe(()=>window.myliftcoachCoachExerciseContextEvidence?.(String(exerciseId)),null)}
  function hardStatus(base){return ['recovery_hold','plateau_hold'].includes(base?.status)||String(base?.adaptiveV8?.decision||'').startsWith('hard_')}
  function arbitratePrescription(base){
@@ -32,12 +32,11 @@
   if(ctx.state==='supported')return {...proposal,adaptiveContextV81:{version:VERSION,decision:'context_support_considered',authority:'adaptive_programming',requiresApproval:true,blocked:false,summary:ctx.summary}};
   return {...proposal,adaptiveContextV81:{version:VERSION,decision:'context_learning_only',authority:'adaptive_programming',requiresApproval:true,blocked:false,summary:ctx.summary}};
  }
- function install(attempt=0){
-  if(typeof window.prismAdaptivePrescription!=='function'){if(attempt<100)setTimeout(()=>install(attempt+1),100);return false}
-  if(window.prismAdaptivePrescription.__myliftcoachAdaptiveContextV81)return true;
-  const base=window.prismAdaptivePrescription;
-  const wrapped=function(){return arbitratePrescription(base.apply(this,arguments))};wrapped.__myliftcoachAdaptiveContextV81=true;wrapped.__myliftcoachAdaptiveContextV81Base=base;window.prismAdaptivePrescription=wrapped;
-  if(typeof window.prismAdaptiveAnalyze==='function'&&!window.prismAdaptiveAnalyze.__myliftcoachAdaptiveContextV81){const analyzeBase=window.prismAdaptiveAnalyze;const analyzeWrapped=function(){const r=analyzeBase.apply(this,arguments),proposals=(r?.proposals||[]).map(arbitrateProposal).filter(x=>!x?.adaptiveContextV81?.blocked);return r?{...r,proposals,adaptiveContextV81:{version:VERSION,authority:'adaptive_programming',coachContextAdvisoryOnly:true,athleteContextAdvisoryOnly:true}}:r};analyzeWrapped.__myliftcoachAdaptiveContextV81=true;analyzeWrapped.__myliftcoachAdaptiveContextV81Base=analyzeBase;window.prismAdaptiveAnalyze=analyzeWrapped;}
+ function legacyInstall(name,marker,factory,attempt=0){const base=window[name];if(typeof base!=='function'){if(attempt<100&&typeof setTimeout==='function')setTimeout(()=>legacyInstall(name,marker,factory,attempt+1),100);return false}if(base[marker])return true;const wrapped=factory(base);wrapped[marker]=true;wrapped[`${marker}Base`]=base;window[name]=wrapped;return true}
+ function install(){
+  const wrap=core?.installWrapper?((name,marker,factory,options={})=>core.installWrapper(name,marker,factory,options)):legacyInstall;
+  wrap('prismAdaptivePrescription','__myliftcoachAdaptiveContextV81',base=>function(){return arbitratePrescription(base.apply(this,arguments))},{maxAttempts:100,delayMs:100});
+  wrap('prismAdaptiveAnalyze','__myliftcoachAdaptiveContextV81',base=>function(){const r=base.apply(this,arguments),proposals=(r?.proposals||[]).map(arbitrateProposal).filter(x=>!x?.adaptiveContextV81?.blocked);return r?{...r,proposals,adaptiveContextV81:{version:VERSION,authority:'adaptive_programming',coachContextAdvisoryOnly:true,athleteContextAdvisoryOnly:true}}:r},{maxAttempts:100,delayMs:100});
   return true;
  }
  function audit(){return {version:VERSION,authority:'adaptive_programming',guardrails:{currentContextConsidered:true,contextCautionCannotIncreaseLoad:true,contextConflictCannotIncreaseLoad:true,mixedContextCannotIncreaseLoad:true,staleContextIgnored:true,hardRecoveryFatiguePlateauHoldsPreserved:true,positiveContextNeverForcesProgression:true,coachContextAdvisoryOnly:true,athleteContextAdvisoryOnly:true,noUnsafeJump:true,noAutomaticProgramReplacement:true,noPresetFallback:true,preserveCustomProgramAuthority:true,adaptiveProgrammingFinalAuthority:true}}}
