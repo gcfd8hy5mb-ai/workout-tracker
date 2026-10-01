@@ -26,6 +26,17 @@
     .prism-pro-benefit .pro-symbol{border-color:#6f3c93!important;color:#d08cff!important}
     .prism-pro-benefit p{color:#c3b8cb!important}
 
+    /* Match Pro CTA buttons to the app's existing purple controls instead of bright blue. */
+    .prism-pro-page button:not(.pro-back):not(.prism-pro-close),
+    .prism-pro-overlay button:not(.prism-pro-close){
+      background:linear-gradient(135deg,#7023ef,#9d46ff)!important;
+      border:1px solid #a867ff!important;
+      color:#fff!important;
+      box-shadow:none!important;
+    }
+    .prism-pro-page button:not(.pro-back):not(.prism-pro-close):active,
+    .prism-pro-overlay button:not(.prism-pro-close):active{background:#6320ad!important}
+
     /* Home hero uses the canonical MYLIFTCOACH icon instead of the old PRISM artwork. */
     .lh-hero-mark{background-image:url('${ICON}')!important;background-repeat:no-repeat!important;background-position:center!important;background-size:66px 66px!important}
     .lh-hero-mark img{opacity:0!important}
