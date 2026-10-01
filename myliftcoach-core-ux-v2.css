@@ -1,0 +1,33 @@
+/* MYLIFTCOACH core UX pass 3 — profile and daily tracking clarity. */
+#profileScreen{padding-bottom:122px!important}
+#profileScreen .prism-section-head{margin-bottom:14px!important}
+#profileScreen .myliftcoach-profile-hero{padding:17px!important;border-radius:20px!important;background:linear-gradient(145deg,#130d1b,#0b0910)!important;border-color:#39284a!important}
+#profileScreen .myliftcoach-profile-mini-grid{gap:8px!important;margin-top:14px!important}
+#profileScreen .myliftcoach-profile-mini{padding:10px 6px!important;background:#0c0a10!important;border-color:#2b2134!important}
+#profileScreen .myliftcoach-profile-mini b{font-size:16px!important}
+#profileScreen .myliftcoach-profile-section-label{margin:18px 2px 8px!important;color:#95899f!important}
+#profileScreen .prism-profile-links{gap:7px!important}
+#profileScreen .prism-profile-links button{min-height:52px!important;padding:0 14px!important;background:#0d0b11!important;border-color:#2d2435!important;font-size:12px!important}
+#profileScreen .prism-profile-links button:active{background:#17101f!important;border-color:#4e3561!important}
+#profileScreen .card,#profileScreen .prism-local-section,#profileScreen #prismCloudAccount>.card{padding:15px!important;margin-bottom:11px!important;background:#0b0910!important;border-color:#2d2336!important}
+#profileScreen input,#profileScreen select{min-height:50px!important;background:#100d15!important;border-color:#3a2d47!important}
+#profileScreen label{font-size:11px!important;margin-top:12px!important}
+#profileScreen .journey-primary,#profileScreen .prism-primary,#profileScreen form button[type='submit']{min-height:52px!important;border-radius:13px!important}
+
+/* Daily tracking screens share one calm input-first pattern. */
+#waterScreen,#foodScreen,#weightScreen,#goalsScreen,#measurementsScreen{padding-bottom:122px!important}
+#waterScreen>h2,#foodScreen>h2,#weightScreen>h2,#goalsScreen>h2,#measurementsScreen>h2{font-size:28px!important;letter-spacing:-.035em!important;margin:4px 0 14px!important;color:#fff!important}
+#waterScreen .card,#foodScreen .card,#weightScreen .card,#goalsScreen .card,#measurementsScreen .card{background:#0b0910!important;border:1px solid #2d2336!important;border-radius:18px!important;box-shadow:none!important;padding:15px!important;margin-bottom:11px!important}
+#waterScreen input,#waterScreen select,#foodScreen input,#foodScreen select,#weightScreen input,#weightScreen select,#goalsScreen input,#goalsScreen select,#measurementsScreen input,#measurementsScreen select{min-height:50px!important;background:#100d15!important;color:#fff!important;border:1px solid #3a2d47!important;border-radius:13px!important}
+#waterScreen label,#foodScreen label,#weightScreen label,#goalsScreen label,#measurementsScreen label{color:#aaa1b3!important;font-size:11px!important;line-height:1.35!important}
+#waterScreen .small,#foodScreen .small,#weightScreen .small,#goalsScreen .small,#measurementsScreen .small{color:#998fa3!important;font-size:11px!important;line-height:1.45!important}
+#waterScreen button,#foodScreen button,#weightScreen button,#goalsScreen button,#measurementsScreen button{min-height:48px!important;border-radius:12px!important}
+#waterScreen .primary,#foodScreen .primary,#weightScreen .primary,#goalsScreen .primary,#measurementsScreen .primary,#waterScreen .save-button,#foodScreen .save-button,#weightScreen .save-button,#goalsScreen .save-button,#measurementsScreen .save-button{min-height:52px!important;background:linear-gradient(135deg,#7428df,#9a45f0)!important;color:#fff!important;font-weight:800!important;border:1px solid #a860f2!important}
+
+/* Make history/list rows easier to scan without increasing visual noise. */
+#waterScreen .history-card,#foodScreen .history-card,#weightScreen .history-card,#measurementsScreen .history-card{background:#0b0910!important;border:1px solid #2b2233!important;border-radius:16px!important;padding:14px!important;box-shadow:none!important}
+#waterScreen .history-title,#foodScreen .history-title,#weightScreen .history-title,#measurementsScreen .history-title{font-size:15px!important;color:#f7f2ff!important}
+#waterScreen .history-date,#foodScreen .history-date,#weightScreen .history-date,#measurementsScreen .history-date{font-size:11px!important;color:#948a9f!important}
+
+@media(max-width:390px){#profileScreen .myliftcoach-profile-mini-grid{gap:6px!important}#profileScreen .prism-profile-links button{min-height:50px!important}}
+@media(prefers-reduced-motion:reduce){#profileScreen *,#waterScreen *,#foodScreen *,#weightScreen *,#goalsScreen *,#measurementsScreen *{transition:none!important;animation:none!important}}
