@@ -1,0 +1,18 @@
+const assert=require('assert');
+global.window=global;let owner='A',valid=true;
+const mem=new Map();global.localStorage={getItem:k=>mem.has(k)?mem.get(k):null,setItem:(k,v)=>mem.set(k,String(v)),removeItem:k=>mem.delete(k)};
+global.myliftcoachIntelligenceCore={account:()=>valid?{valid:true,owner}:{valid:false,owner}};
+global.myliftcoachAutonomyEligibility=(strategy,opts={})=>({version:'10.3.5',eligible:true,type:strategy.type,reasonCodes:[],observed:{samples:opts.samples||10,reliability:opts.reliability||.9,confidence:opts.confidence||.9},shadowOnly:true,mayChangeTraining:false});
+require('../myliftcoach-autonomy-calibration-v10_3_6.js');
+const good={type:'progression_cadence_hold'},bad={type:'temporary_volume_reduction'};
+for(let i=0;i<10;i++)myliftcoachAutonomyCalibrationRecord({id:`g${i}`,type:good.type,context:'normal_recovery',confidence:.86,reliability:.88,outcome:i<8?'better':'same'});
+let gp=myliftcoachAutonomyCalibrationProfile(good.type,'normal_recovery');assert.equal(gp.qualified,true);assert(gp.weightedError<=.38);assert(gp.successRate>=.58);
+let q=myliftcoachAutonomyEvidenceQualification(good,{context:'normal_recovery',samples:10,reliability:.88,confidence:.86});assert.equal(q.eligible,true);assert.equal(q.qualified,true);assert.equal(q.mayChangeTraining,false);
+for(let i=0;i<10;i++)myliftcoachAutonomyCalibrationRecord({id:`b${i}`,type:bad.type,context:'high_fatigue',confidence:.9,reliability:.9,outcome:i<7?'worse':'same'});
+let bp=myliftcoachAutonomyCalibrationProfile(bad.type,'high_fatigue');assert.equal(bp.qualified,false);assert(bp.reasonCodes.includes('consequence_weighted_error_too_high'));
+q=myliftcoachAutonomyEvidenceQualification(bad,{context:'high_fatigue',samples:10,reliability:.9,confidence:.9});assert.equal(q.eligible,true);assert.equal(q.qualified,false);assert(q.reasonCodes.some(x=>x.includes('consequence_weighted_error_too_high')));
+const tr=myliftcoachAutonomyThresholdRecommendation(bad.type,'high_fatigue');assert.equal(tr.state,'tighten');assert(tr.recommended.confidence>=.72);assert(tr.recommended.reliability>=.75);assert.equal(tr.mayLoosenBelowFloors,false);
+owner='B';assert.equal(myliftcoachAutonomyCalibrationRows().length,0);for(let i=0;i<8;i++)myliftcoachAutonomyCalibrationRecord({id:`B${i}`,type:good.type,context:'normal_recovery',confidence:.9,reliability:.9,outcome:'better'});assert.equal(myliftcoachAutonomyCalibrationRows().length,8);owner='A';assert.equal(myliftcoachAutonomyCalibrationRows().length,20);
+valid=false;assert.equal(myliftcoachAutonomyCalibrationRecord({type:good.type,outcome:'better'}),null);assert.equal(myliftcoachAutonomyCalibrationRows().length,0);
+const audit=myliftcoachAutonomyCalibrationAudit();assert.equal(audit.guardrails.noAutonomousTrainingMutation,true);assert.equal(audit.guardrails.thresholdsMayOnlyStaySameOrTighten,true);assert.equal(audit.guardrails.accountScoped,true);
+console.log('V10.3.6 autonomy calibration: category/context qualification, consequence-weighted errors, strict threshold tuning, fail-closed account scope, and A→B→A isolation pass.');
