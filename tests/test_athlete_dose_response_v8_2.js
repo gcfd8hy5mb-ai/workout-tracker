@@ -1,6 +1,6 @@
 const assert=require('assert'),fs=require('fs'),vm=require('vm');
-const core=fs.readFileSync('athlete-learning-engine.js','utf8'),dose=fs.readFileSync('athlete-dose-response-v8_2.js','utf8');
-const window={};const ctx={window,console,setTimeout};vm.createContext(ctx);vm.runInContext(core,ctx);vm.runInContext(dose,ctx);
+const intelligence=fs.readFileSync('myliftcoach-intelligence-core.js','utf8'),evidence=fs.readFileSync('myliftcoach-athlete-evidence-core.js','utf8'),core=fs.readFileSync('athlete-learning-engine.js','utf8'),dose=fs.readFileSync('athlete-dose-response-v8_2.js','utf8');
+const window={};const ctx={window,console,setTimeout};vm.createContext(ctx);vm.runInContext(intelligence,ctx);vm.runInContext(evidence,ctx);vm.runInContext(core,ctx);vm.runInContext(dose,ctx);
 const iso=d=>new Date(Date.now()-d*86400000).toISOString();
 const ev=(id,exerciseId,days,sets,status,delta)=>({recommendationId:id,exerciseId,recommendationType:status,completedAt:iso(days),followedRecommendation:true,performanceDelta:delta,rpe:7,pain:1,target:{sets,status}});
 const events=[];
@@ -15,4 +15,4 @@ const stale=[150,155,160,165].map((d,i)=>ev(`s${i}`,'row',d,3,'hold',.1));
 assert.strictEqual(window.myliftcoachAthleteDoseProfile(stale,'row').doses['moderate|conservative'].state,'stale');
 const foundation=window.liftovaLearnProgramFoundation(events,{press:['chest']});assert.ok(foundation.doseResponse);assert.strictEqual(foundation.programReadiness.doseUsableExercises,1);
 assert.strictEqual(window.myliftcoachAthleteDoseSnapshot(events).guardrails.mayOverrideAdaptive,false);
-console.log(JSON.stringify({suite:'MYLIFTCOACH Athlete Dose Response V8.2',checks:{doseBuckets:true,volumePressureDifferentiation:true,staleExpiry:true,foundationIntegration:true,adaptiveAuthority:true}},null,2));
+console.log(JSON.stringify({suite:'MYLIFTCOACH Athlete Dose Response V8.2',checks:{productionCorePath:true,doseBuckets:true,volumePressureDifferentiation:true,staleExpiry:true,foundationIntegration:true,adaptiveAuthority:true}},null,2));
