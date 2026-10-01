@@ -1,0 +1,8 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const athlete=fs.readFileSync('athlete-recovery-lag-v8_3.js','utf8'),coach=fs.readFileSync('myliftcoach-coach-recovery-v8_3.js','utf8'),window={},ctx={window,console};vm.createContext(ctx);vm.runInContext(athlete,ctx);vm.runInContext(coach,ctx);
+const iso=d=>new Date(Date.now()-d*86400000).toISOString();
+const events=[];for(let i=0;i<6;i++){events.push({exerciseId:'press',recommendationId:'m'+i,recoveryHours:54,completedAt:iso([35,28,21,14,7,2][i]),performanceDelta:.09});events.push({exerciseId:'press',recommendationId:'s'+i,recoveryHours:24,completedAt:iso([34,27,20,13,6,1][i]),performanceDelta:-.04});}
+const early=window.myliftcoachCoachRecoveryExplain('press',24,events),onTime=window.myliftcoachCoachRecoveryExplain('press',54,events);
+assert.strictEqual(early.state,'supported');assert.strictEqual(early.timing,'early');assert.strictEqual(onTime.timing,'on_time');assert.strictEqual(early.mayOverrideAdaptive,false);assert.strictEqual(early.requiresApproval,true);
+const summary=window.myliftcoachCoachRecoveryProposalSummary([{exerciseId:'press',plannedRecoveryHours:24}],events);assert.strictEqual(summary.state,'caution');assert.strictEqual(summary.early,1);
+console.log(JSON.stringify({suite:'MYLIFTCOACH Coach Recovery V8.3',checks:{athleteRecoveryConsumed:true,earlyRepeatDetected:true,onTimeRecognized:true,proposalCaution:true,coachAdvisoryOnly:true,adaptiveAuthority:true}},null,2));
