@@ -13,7 +13,7 @@ for(const weeksCount of weeks){
  const snap=window.myliftcoachAthleteContextSnapshot(events,{press:['chest'],row:['back'],leg:['quads']});
  assert.strictEqual(snap.programContextReadiness.ready,true);
  const press=window.myliftcoachAthleteExerciseContexts(events,'press');assert.strictEqual(press.bestContext.context.recovery,'ready');
- const reversed=events.concat(make('press',`${weeksCount}-bad-a`,12,'ready',-.15),make('press',`${weeksCount}-bad-b`,4,'ready',-.15));
+ const reversed=[make('press',`${weeksCount}-old-a`,80,'ready',.12),make('press',`${weeksCount}-old-b`,70,'ready',.12),make('press',`${weeksCount}-old-c`,60,'ready',.12),make('press',`${weeksCount}-bad-a`,12,'ready',-.15),make('press',`${weeksCount}-bad-b`,4,'ready',-.15)];
  const reversedPress=window.myliftcoachAthleteExerciseContexts(reversed,'press');assert.strictEqual(reversedPress.contexts['ready|followed|hypertrophy'].state,'contradictory');
  const stale=[];for(let i=0;i<6;i++)stale.push(make('press',`stale-${weeksCount}-${i}`,150+i*5,'ready',.1));
  assert.strictEqual(window.myliftcoachAthleteExerciseContexts(stale,'press').contexts['ready|followed|hypertrophy'].state,'stale');
