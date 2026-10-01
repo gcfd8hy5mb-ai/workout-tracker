@@ -1,0 +1,18 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const core=fs.readFileSync('athlete-learning-engine.js','utf8'),dose=fs.readFileSync('athlete-dose-response-v8_2.js','utf8');
+const window={};const ctx={window,console,setTimeout};vm.createContext(ctx);vm.runInContext(core,ctx);vm.runInContext(dose,ctx);
+const iso=d=>new Date(Date.now()-d*86400000).toISOString();
+const ev=(id,exerciseId,days,sets,status,delta)=>({recommendationId:id,exerciseId,recommendationType:status,completedAt:iso(days),followedRecommendation:true,performanceDelta:delta,rpe:7,pain:1,target:{sets,status}});
+const events=[];
+[35,28,21,14,7,2].forEach((d,i)=>events.push(ev(`m${i}`,'press',d,3,'hold',.09)));
+[34,27,20,13,6,1].forEach((d,i)=>events.push(ev(`h${i}`,'press',d,5,'increase',-.07)));
+const p=window.myliftcoachAthleteDoseProfile(events,'press');
+assert.strictEqual(p.doses['moderate|conservative'].state,'usable');
+assert.strictEqual(p.doses['high|progressive'].state,'usable');
+assert.ok(p.doses['moderate|conservative'].responseScore>p.doses['high|progressive'].responseScore+.15);
+assert.strictEqual(p.preferenceState,'differentiated');
+const stale=[150,155,160,165].map((d,i)=>ev(`s${i}`,'row',d,3,'hold',.1));
+assert.strictEqual(window.myliftcoachAthleteDoseProfile(stale,'row').doses['moderate|conservative'].state,'stale');
+const foundation=window.liftovaLearnProgramFoundation(events,{press:['chest']});assert.ok(foundation.doseResponse);assert.strictEqual(foundation.programReadiness.doseUsableExercises,1);
+assert.strictEqual(window.myliftcoachAthleteDoseSnapshot(events).guardrails.mayOverrideAdaptive,false);
+console.log(JSON.stringify({suite:'MYLIFTCOACH Athlete Dose Response V8.2',checks:{doseBuckets:true,volumePressureDifferentiation:true,staleExpiry:true,foundationIntegration:true,adaptiveAuthority:true}},null,2));
