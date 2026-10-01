@@ -20,17 +20,26 @@
     }
   }
 
-  function canonicalizeProfile(){
-    const screen=document.getElementById('profileScreen');
-    if(screen)replaceText(screen);
-    const overlay=document.getElementById('prismProOverlay');
-    if(overlay)replaceText(overlay);
-    const proScreen=document.getElementById('prismProScreen');
-    if(proScreen)replaceText(proScreen);
+  function targets(){
+    return [
+      document.getElementById('profileScreen'),
+      document.getElementById('prismProOverlay'),
+      document.getElementById('prismProScreen')
+    ].filter(Boolean);
   }
 
-  function afterRender(){
-    requestAnimationFrame(()=>requestAnimationFrame(canonicalizeProfile));
+  function canonicalizeProfile(){
+    for(const root of targets())replaceText(root);
+  }
+
+  let queued=false;
+  function queueCanonicalize(){
+    if(queued)return;
+    queued=true;
+    requestAnimationFrame(()=>{
+      queued=false;
+      canonicalizeProfile();
+    });
   }
 
   const wrap=name=>{
@@ -38,23 +47,41 @@
     if(typeof original!=='function'||original.__myliftcoachBrandLock)return;
     const wrapped=function(...args){
       const result=original.apply(this,args);
-      afterRender();
+      queueCanonicalize();
       return result;
     };
     wrapped.__myliftcoachBrandLock=true;
     window[name]=wrapped;
   };
 
+  function observeTarget(root){
+    if(!root||root.__myliftcoachBrandObserver)return;
+    const observer=new MutationObserver(records=>{
+      let needsCleanup=false;
+      for(const record of records){
+        if(record.type==='characterData'){
+          const value=record.target.nodeValue||'';
+          if(/\b(?:LIFTOVA|PRISM)\b/i.test(value)){needsCleanup=true;break;}
+        }
+        if(record.type==='childList'){
+          for(const node of record.addedNodes){
+            const text=node.nodeType===Node.TEXT_NODE?(node.nodeValue||''):(node.textContent||'');
+            if(/\b(?:LIFTOVA|PRISM)\b/i.test(text)){needsCleanup=true;break;}
+          }
+        }
+        if(needsCleanup)break;
+      }
+      if(needsCleanup)queueCanonicalize();
+    });
+    observer.observe(root,{subtree:true,childList:true,characterData:true});
+    root.__myliftcoachBrandObserver=observer;
+  }
+
   function install(){
     ['showProfile','renderPrismAccessState','showProPreview','showPrismPro','renderPrismPro'].forEach(wrap);
-    const screen=document.getElementById('profileScreen');
-    if(screen&&!screen.__myliftcoachBrandLock){
-      new MutationObserver(()=>{
-        if(!screen.classList.contains('hidden'))afterRender();
-      }).observe(screen,{attributes:true,attributeFilter:['class']});
-      screen.__myliftcoachBrandLock=true;
-    }
+    for(const root of targets())observeTarget(root);
     canonicalizeProfile();
+    window.MYLIFTCOACHProfileBrandLock={apply:canonicalizeProfile};
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
