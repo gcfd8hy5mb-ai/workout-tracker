@@ -1,0 +1,16 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const source=fs.readFileSync('myliftcoach-coach-evidence-v8.js','utf8');
+let policy={state:'validated_helpful',confidence:.72,freshness:.8,effectiveEvidence:3.5,recentTrials:3,recentHurt:0,maySupportProposal:true,mayBlockProposal:false};
+const baseReview={proposal:{type:'program_recovery',title:'Program recovery adjustment',requiresApproval:true,preserveProgramSource:true,authority:'adaptive_programming'},authority:'adaptive_programming',mode:'advisory'};
+const window={myliftcoachProgramOutcomeValidationPolicy:()=>policy,prismCoachProgramReview:()=>JSON.parse(JSON.stringify(baseReview))};
+const ctx={window,console,setTimeout};vm.createContext(ctx);vm.runInContext(source,ctx);
+let review=window.prismCoachProgramReview();
+assert.ok(review.proposal);assert.strictEqual(review.coachEvidence.classification.state,'supported');assert.strictEqual(review.proposal.coachEvidence.strength,'moderate');assert.strictEqual(review.proposal.requiresApproval,true);assert.strictEqual(review.coachDecision.authority,'adaptive_programming');assert.strictEqual(review.coachDecision.mayOverrideAdaptive,false);
+policy={state:'stale',confidence:.05,freshness:0,effectiveEvidence:.4,recentTrials:0,recentHurt:0,maySupportProposal:false,mayBlockProposal:false};
+review=window.prismCoachProgramReview();assert.ok(review.proposal,'stale evidence should not independently block a base proposal');assert.strictEqual(review.coachEvidence.classification.state,'stale');assert.strictEqual(review.proposal.coachEvidence.strength,'none');
+policy={state:'mixed',confidence:.5,freshness:.65,effectiveEvidence:2.4,recentTrials:3,recentHurt:1,maySupportProposal:false,mayBlockProposal:false};
+review=window.prismCoachProgramReview();assert.ok(review.proposal);assert.strictEqual(review.coachEvidence.classification.state,'mixed');assert.strictEqual(review.coachEvidence.classification.conflict,true);
+policy={state:'rethink',confidence:.8,freshness:.85,effectiveEvidence:3,recentTrials:3,recentHurt:2,maySupportProposal:false,mayBlockProposal:true};
+review=window.prismCoachProgramReview();assert.strictEqual(review.proposal,null);assert.strictEqual(review.coachDecision.state,'blocked');assert.strictEqual(review.coachDecision.mayOverrideAdaptive,false);
+const audit=window.myliftcoachCoachEvidenceAudit();assert.strictEqual(audit.guardrails.staleEvidenceCannotSupport,true);assert.strictEqual(audit.guardrails.conflictsExplicit,true);assert.strictEqual(audit.guardrails.noProgramMutation,true);assert.strictEqual(audit.guardrails.adaptiveProgrammingFinalAuthority,true);
+console.log(JSON.stringify({suite:'MYLIFTCOACH Coach Evidence V8',checks:{freshSupportExplained:true,staleEvidenceNeutralized:true,mixedConflictExplicit:true,harmfulEvidenceBlocksRepeat:true,approvalPreserved:true,adaptiveAuthority:true}},null,2));
