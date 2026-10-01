@@ -23,6 +23,8 @@ jobs:
           node-version: '20'
       - name: Run PRISM regression tests
         run: node tests/prism-regression.test.js
+      - name: Run MYLIFTCOACH intelligence core consolidation test
+        run: node tests/test_intelligence_core_consolidation.js
       - name: Run LIFTOVA adaptive feedback confidence tests
         run: node tests/test_adaptive_feedback_confidence.js
       - name: Run LIFTOVA adaptive feedback quality tests
