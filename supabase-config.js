@@ -35,7 +35,8 @@ window.PRISM_SUPABASE_CONFIG = MYLIFTCOACH_SUPABASE_CONFIG;
 (() => {
   const styles=[
     ['myliftcoach-core-ux-v1.css?v=1','myliftcoach-core-ux'],
-    ['myliftcoach-core-ux-v2.css?v=1','myliftcoach-core-ux-v2']
+    ['myliftcoach-core-ux-v2.css?v=1','myliftcoach-core-ux-v2'],
+    ['myliftcoach-core-ux-v3.css?v=1','myliftcoach-core-ux-v3']
   ];
   styles.forEach(([href,key])=>{
     if(document.querySelector(`link[data-${key}]`))return;
