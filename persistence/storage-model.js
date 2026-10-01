@@ -1,4 +1,4 @@
-/* Staged legacy adapter plus LIFTOVA visible-brand cleanup. */
+/* Staged legacy data adapter. Internal prism* storage keys intentionally remain for compatibility. */
 (function(root,factory){const api=factory();if(typeof module==='object')module.exports=api;else root.PRISMStorageModel=api;})(globalThis,function(){
 'use strict';
 const RULES=Object.freeze({
@@ -35,22 +35,3 @@ async function normalize(snapshot){const rows=[],seen=new Set();async function a
 function restoreSnapshot(rows){const result=Object.create(null),byTable=t=>rows.filter(r=>r.table===t&&!(r.payload&&Object.keys(r.payload).length===1&&r.payload.__prismDeletedV1===true));const ordered=list=>list.slice().sort((a,b)=>(a.position??0)-(b.position??0)||a.id.localeCompare(b.id));const children=(table,parent)=>ordered(byTable(table).filter(r=>r.parent_id===parent));for(const marker of byTable('sources')){const source=marker.source_key;if(!own(RULES,source))throw Error('Unknown cloud source');const [table,kind]=RULES[source],items=ordered(byTable(table).filter(r=>r.source_key===source));let value;if(marker.payload.shape==='null')value=null;else if(kind==='raw')value=items[0]?.payload;else if(kind==='fields')value=Object.fromEntries(items.map(r=>[r.slot,r.payload]));else if(kind==='adaptive'){value=Object.fromEntries(items.filter(r=>!r.parent_id).map(r=>[r.slot,{}]));for(const r of items.filter(r=>r.parent_id)){const n=r.slot.indexOf('/');value[r.slot.slice(0,n)][r.slot.slice(n+1)]=r.payload;}}else if(kind==='tracking')value=Object.fromEntries(items.map(r=>[r.slot,r.payload.shape==='array'?children('tracking_entries',r.id).map(x=>x.payload):r.payload.shape==='map'?Object.fromEntries(children('tracking_maps',r.id).map(x=>[x.slot,x.payload])):r.payload.value]));else value=items.map(r=>{if(kind==='sessions')return {...r.payload,exercises:children('session_exercises',r.id).map(e=>({...e.payload,sets:children('sets',e.id).map(s=>s.payload)}))};if(kind==='workouts')return {...r.payload,exercises:children('workout_exercises',r.id).map(e=>e.payload)};if(kind==='interventions'){const item={...r.payload};for(const [field,t]of [['response','responses'],['outcome','outcomes']]){const child=children(t,r.id)[0];if(child)item[field]=child.payload;}return item;}return r.payload;});validate(value);result[source]=kind==='raw'?value:JSON.stringify(value);}return result;}
 return Object.freeze({RULES,TABLES,LOCAL_ONLY,capture,normalize,restoreSnapshot,canonical,identity});
 });
-
-/* Visible-brand compatibility layer. Internal prism* storage keys intentionally stay unchanged. */
-if(typeof document!=='undefined'){
-  const rebrand=s=>typeof s==='string'?s.replace(/MYLIFTCOACH/gi,'LIFTOVA').replace(/\bPRISM\b/g,'LIFTOVA').replace(/\bPrism\b/g,'LIFTOVA'):s;
-  const fixNode=node=>{
-    if(node.nodeType===3){const next=rebrand(node.nodeValue);if(next!==node.nodeValue)node.nodeValue=next;return;}
-    if(node.nodeType!==1)return;
-    for(const attr of ['title','aria-label','placeholder','alt'])if(node.hasAttribute?.(attr)){const old=node.getAttribute(attr),next=rebrand(old);if(next!==old)node.setAttribute(attr,next);}
-    for(const child of node.childNodes)fixNode(child);
-  };
-  const fixMeta=()=>{
-    document.title=rebrand(document.title);
-    document.querySelectorAll('meta[content]').forEach(el=>{const old=el.content,next=rebrand(old);if(next!==old)el.content=next;});
-  };
-  const run=()=>{fixMeta();fixNode(document.body);};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
-  const observer=new MutationObserver(records=>{for(const record of records){if(record.type==='characterData')fixNode(record.target);for(const node of record.addedNodes)fixNode(node);}fixMeta();});
-  document.addEventListener('DOMContentLoaded',()=>observer.observe(document.body,{subtree:true,childList:true,characterData:true}),{once:true});
-}
