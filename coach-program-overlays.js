@@ -22,6 +22,7 @@
  function installPrescriptionBridge(){if(typeof window.prismAdaptivePrescription!=='function'||window.prismAdaptivePrescription.__myliftcoachOverlay)return false;const base=window.prismAdaptivePrescription;const wrapped=function(exerciseId){return apply(base(exerciseId))};wrapped.__myliftcoachOverlay=true;window.prismAdaptivePrescription=wrapped;return true}
  function installOutcomeBridge(){if(typeof window.prismInterventionOutcome!=='function'||window.prismInterventionOutcome.__myliftcoachOverlay)return false;const base=window.prismInterventionOutcome;const wrapped=function(exerciseId,outcome,details){const result=base(exerciseId,outcome,details);if(result)consume(exerciseId);return result};wrapped.__myliftcoachOverlay=true;window.prismInterventionOutcome=wrapped;return true}
  function install(attempt=0){const a=installProgramResponseBridge(),b=installPrescriptionBridge(),c=installOutcomeBridge();if((!a||!b||!c)&&attempt<40)setTimeout(()=>install(attempt+1),100)}
+ function loadOverlayLearning(){if(typeof document==='undefined'||!document.body||document.querySelector?.('script[data-myliftcoach-overlay-learning]'))return;const s=document.createElement('script');s.src='coach-program-overlay-learning.js?v=7.6';s.async=false;s.dataset.myliftcoachOverlayLearning='1';document.body.appendChild(s)}
  window.myliftcoachProgramOverlayActivate=activate;
  window.myliftcoachProgramOverlayApply=apply;
  window.myliftcoachProgramOverlayConsume=consume;
@@ -29,4 +30,5 @@
  window.myliftcoachProgramOverlayAudit=audit;
  window.MYLIFTCOACH_PROGRAM_OVERLAY_VERSION=VERSION;
  install();
+ loadOverlayLearning();
 })();
