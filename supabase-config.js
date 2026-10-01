@@ -33,10 +33,16 @@ window.PRISM_SUPABASE_CONFIG = MYLIFTCOACH_SUPABASE_CONFIG;
 
 // Core UX polish is intentionally presentation-only and loaded after the existing app layers.
 (() => {
-  if(document.querySelector('link[data-myliftcoach-core-ux]'))return;
-  const link=document.createElement('link');
-  link.rel='stylesheet';
-  link.href='myliftcoach-core-ux-v1.css?v=1';
-  link.dataset.myliftcoachCoreUx='true';
-  document.head.appendChild(link);
+  const styles=[
+    ['myliftcoach-core-ux-v1.css?v=1','myliftcoach-core-ux'],
+    ['myliftcoach-core-ux-v2.css?v=1','myliftcoach-core-ux-v2']
+  ];
+  styles.forEach(([href,key])=>{
+    if(document.querySelector(`link[data-${key}]`))return;
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href=href;
+    link.setAttribute(`data-${key}`,'true');
+    document.head.appendChild(link);
+  });
 })();
