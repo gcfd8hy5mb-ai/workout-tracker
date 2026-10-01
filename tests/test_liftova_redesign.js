@@ -51,10 +51,11 @@ assert.equal(manifest.icons.some(item => item.src === 'images/myliftcoach-icon.s
 assert.equal(manifest.icons.some(item => item.src === 'images/apple-touch-icon-180.png?v=10' && item.type === 'image/png'), true);
 
 const sw = read('sw.js');
-assert.match(sw, /myliftcoach-home-v20-custom-runtime/, 'service worker must use current MYLIFTCOACH runtime cache identity');
+assert.match(sw, /myliftcoach-home-v21-beta-readiness/, 'service worker must use current MYLIFTCOACH beta-readiness cache identity');
 assert.doesNotMatch(sw, /const CACHE_NAME = ["']liftova-/i, 'service worker cache must not retain old brand identity');
 assert.match(sw, /url\.pathname\.includes\("\/liftova-"\)/, 'historical filenames remain network-first only for compatibility');
-for (const asset of ['./images/apple-touch-icon-180.png','./images/app-icon.png?v=11']) assert.match(sw, new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+assert.match(sw, /url\.pathname\.includes\("\/myliftcoach-"\)/, 'current MYLIFTCOACH runtime files must be network-first for installed-app freshness');
+for (const asset of ['./images/apple-touch-icon-180.png?v=10','./images/app-icon.png?v=11']) assert.match(sw, new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 assert.match(sw, /liftova-polish\.js\?v=8/, 'installed shell must cache the same current polish version loaded by runtime');
 
 const functionalFixes = read('liftova-functional-fixes.js');

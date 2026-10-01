@@ -1,8 +1,8 @@
-const CACHE_NAME = "myliftcoach-home-v20-custom-runtime";
-const UPGRADE_VERSION = "20";
+const CACHE_NAME = "myliftcoach-home-v21-beta-readiness";
+const UPGRADE_VERSION = "21";
 
-// Keep the install shell deliberately small. Presentation modules are network-first below,
-// so an installed PWA cannot remain pinned to a stale pre-rebrand presentation bundle.
+// Keep the install shell deliberately small. Runtime/presentation modules are network-first below,
+// so an installed PWA cannot remain pinned to a stale presentation or scheduling bundle.
 const APP_FILES = [
   "./", "./index.html", "./onboarding.js?v=10.3-beta5", "./pro-experience.js", "./manifest.json", "./sw.js",
   "./persistence/storage-model.js", "./persistence/scoped-storage.js", "./persistence/photo-scope.js", "./persistence/reconcile.js",
@@ -11,7 +11,14 @@ const APP_FILES = [
   "./liftova-workouts.js?v=7", "./liftova-active-workout.js?v=7", "./liftova-library.js?v=7", "./liftova-progress.js?v=7",
   "./liftova-profile.js?v=7", "./liftova-pro.js?v=7", "./liftova-polish.js?v=8",
   "./liftova-workout-tab-v3.js?v=1", "./liftova-anatomy.js?v=1", "./liftova-anatomy.css?v=1",
-  "./images/liftova-anatomy-atlas.webp", "./images/app-icon.png?v=11", "./images/apple-touch-icon-180.png", "./cloud-backup.js"
+  "./myliftcoach-startup-smooth.js?v=1", "./myliftcoach-startup-smooth.css?v=1", "./myliftcoach-anatomy-v2.js?v=1",
+  "./myliftcoach-library-ux.js?v=1", "./myliftcoach-swipe-ux.js?v=1", "./myliftcoach-daily-tracking-ux.js?v=1",
+  "./myliftcoach-profile-brand-lock.js?v=3", "./myliftcoach-visual-cleanup.js?v=1", "./myliftcoach-home-sequence-fix.js?v=4",
+  "./myliftcoach-custom-workout-fix.js?v=2", "./myliftcoach-core-ux-v1.css?v=1", "./myliftcoach-core-ux-v2.css?v=1",
+  "./myliftcoach-core-ux-v3.css?v=1", "./myliftcoach-core-ux-v4.css?v=1", "./myliftcoach-anatomy-polish.css?v=2",
+  "./myliftcoach-home-dashboard-ux.css?v=1", "./myliftcoach-library-ux.css?v=1", "./myliftcoach-daily-tracking-ux.css?v=1",
+  "./myliftcoach-history-records-ux.css?v=1", "./images/liftova-anatomy-atlas.webp", "./images/app-icon.png?v=11",
+  "./images/apple-touch-icon-180.png?v=10", "./cloud-backup.js"
 ];
 
 const ANDROID_ONBOARDING_HOTFIX = `
@@ -86,7 +93,7 @@ self.addEventListener("fetch",event=>{
       return new Response(source+ANDROID_ONBOARDING_HOTFIX,{status:cached.status,statusText:cached.statusText,headers});
     }));return;
   }
-  const presentation=url.pathname.endsWith("/")||url.pathname.endsWith("/index.html")||url.pathname.endsWith("/myliftcoach-base.css")||url.pathname.endsWith("/pro-experience.js")||url.pathname.endsWith("/ask-prism.js")||url.pathname.endsWith("/coach-today.js")||url.pathname.endsWith("/in-workout-coach.js")||url.pathname.endsWith("/adaptive-set-coach.js")||url.pathname.endsWith("/adaptive-programming.js")||url.pathname.endsWith("/post-workout-coach.js")||url.pathname.endsWith("/coach-learning.js")||url.pathname.endsWith("/coach-intervention-memory.js")||url.pathname.endsWith("/next-session-coach.js")||url.pathname.endsWith("/preworkout-plan.js")||url.pathname.endsWith("/plateau-detection.js")||url.pathname.endsWith("/exercise-library-expansion.js")||url.pathname.endsWith("/exercise-library-expansion-v1.js")||url.pathname.endsWith("/exercise-library-expansion-2.js")||url.pathname.endsWith("/exercise-library-expansion-3.js")||url.pathname.endsWith("/exercise-library-expansion-4.js")||url.pathname.endsWith("/exercise-library-expansion-5.js")||url.pathname.includes("/persistence/")||url.pathname.endsWith("/supabase-config.js")||url.pathname.endsWith("/cloud-backup.js")||url.pathname.includes("/liftova-");
+  const presentation=url.pathname.endsWith("/")||url.pathname.endsWith("/index.html")||url.pathname.endsWith("/myliftcoach-base.css")||url.pathname.endsWith("/pro-experience.js")||url.pathname.endsWith("/ask-prism.js")||url.pathname.endsWith("/coach-today.js")||url.pathname.endsWith("/in-workout-coach.js")||url.pathname.endsWith("/adaptive-set-coach.js")||url.pathname.endsWith("/adaptive-programming.js")||url.pathname.endsWith("/post-workout-coach.js")||url.pathname.endsWith("/coach-learning.js")||url.pathname.endsWith("/coach-intervention-memory.js")||url.pathname.endsWith("/next-session-coach.js")||url.pathname.endsWith("/preworkout-plan.js")||url.pathname.endsWith("/plateau-detection.js")||url.pathname.endsWith("/exercise-library-expansion.js")||url.pathname.endsWith("/exercise-library-expansion-v1.js")||url.pathname.endsWith("/exercise-library-expansion-2.js")||url.pathname.endsWith("/exercise-library-expansion-3.js")||url.pathname.endsWith("/exercise-library-expansion-4.js")||url.pathname.endsWith("/exercise-library-expansion-5.js")||url.pathname.includes("/persistence/")||url.pathname.endsWith("/supabase-config.js")||url.pathname.endsWith("/cloud-backup.js")||url.pathname.includes("/liftova-")||url.pathname.includes("/myliftcoach-");
   if(presentation){
     event.respondWith(fetch(event.request,{cache:"no-store"}).then(response=>{
       const copy=response.clone();
