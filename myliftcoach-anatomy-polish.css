@@ -1,0 +1,104 @@
+/* MYLIFTCOACH anatomy polish — premium single-card muscle presentation. */
+#exerciseInfoScreen{padding-bottom:124px!important}
+
+/* The exercise PNG and anatomy map currently repeat the same front/back anatomy artwork.
+   Keep one authoritative anatomy visual on the detail screen and remove the duplicate panel. */
+#exerciseInfoScreen .prism-info-photo{display:none!important}
+
+#exerciseInfoScreen>h2{
+  margin:4px 0 6px!important;
+  font-size:28px!important;
+  line-height:1.08!important;
+  letter-spacing:-.035em!important;
+  color:#fff!important;
+}
+#exerciseInfoScreen>p.small{
+  display:inline-flex!important;
+  align-items:center!important;
+  width:auto!important;
+  margin:0 0 14px!important;
+  padding:7px 10px!important;
+  border:1px solid #33273d!important;
+  border-radius:999px!important;
+  background:#0e0b13!important;
+  color:#bcb2c6!important;
+  font-size:11px!important;
+  line-height:1.25!important;
+}
+
+#exerciseInfoScreen .prism-info-map{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:0!important;
+  margin:0 0 16px!important;
+  padding:42px 18px 18px!important;
+  overflow:hidden!important;
+  border:1px solid #30263a!important;
+  border-radius:22px!important;
+  background:
+    radial-gradient(circle at 50% 36%,rgba(126,54,177,.10),transparent 46%),
+    linear-gradient(180deg,#0d0a12 0%,#08070b 100%)!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.32)!important;
+}
+#exerciseInfoScreen .prism-info-map::before{
+  content:'MUSCLES WORKED';
+  position:absolute!important;
+  top:16px!important;
+  left:18px!important;
+  color:#9f94aa!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  letter-spacing:.13em!important;
+}
+#exerciseInfoScreen .prism-info-map::after{
+  content:'';
+  position:absolute!important;
+  top:37px!important;
+  left:18px!important;
+  right:18px!important;
+  height:1px!important;
+  background:#211a28!important;
+}
+#exerciseInfoScreen .prism-info-map svg{
+  display:block!important;
+  width:min(100%,430px)!important;
+  height:auto!important;
+  max-height:300px!important;
+  margin:auto!important;
+  filter:drop-shadow(0 14px 22px rgba(0,0,0,.28))!important;
+}
+#exerciseInfoScreen .prism-info-map .exercise-mini-map{
+  width:100%!important;
+  height:auto!important;
+  display:flex!important;
+  justify-content:center!important;
+}
+
+/* Keep the rest of the exercise detail hierarchy quiet so the anatomy becomes the focal point. */
+#exerciseInfoScreen .card{
+  margin-top:12px!important;
+  padding:16px!important;
+  border:1px solid #2d2336!important;
+  border-radius:18px!important;
+  background:#0b0910!important;
+  box-shadow:none!important;
+}
+#exerciseInfoScreen .card h3{
+  margin:2px 0 8px!important;
+  color:#f6f1fa!important;
+  font-size:14px!important;
+}
+#exerciseInfoScreen .card p,#exerciseInfoScreen .card li{
+  color:#b7adbf!important;
+  line-height:1.55!important;
+}
+
+@media(max-width:390px){
+  #exerciseInfoScreen .prism-info-map{padding:40px 12px 14px!important;border-radius:19px!important}
+  #exerciseInfoScreen .prism-info-map svg{max-height:260px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #exerciseInfoScreen *{transition:none!important;animation:none!important}
+}
