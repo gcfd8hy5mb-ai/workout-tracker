@@ -1,0 +1,22 @@
+/* MYLIFTCOACH library/detail UX polish. */
+#libraryScreen.mlc-library-ready .liftova-library-tools{top:calc(env(safe-area-inset-top) + 2px)!important;padding-top:9px!important}
+#libraryScreen .mlc-library-search-wrap{position:relative;display:block}
+#libraryScreen .mlc-library-search-wrap .search{padding-right:46px!important;margin-bottom:7px!important}
+#libraryScreen .mlc-library-clear{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:34px;height:34px;min-width:34px;min-height:34px;border:0!important;border-radius:50%!important;background:#1a1322!important;color:#bdb3c8!important;font-size:22px!important;line-height:1!important;padding:0!important;box-shadow:none!important}
+#libraryScreen .mlc-library-clear:active{transform:translateY(-50%) scale(.94)!important;background:#24172f!important}
+#libraryScreen .library-item{min-height:78px!important;transition:transform .12s ease,border-color .12s ease,background .12s ease!important;touch-action:manipulation}
+#libraryScreen .library-item:active{transform:scale(.988)!important}
+#libraryScreen .library-item:focus-visible{outline:2px solid #b45cff!important;outline-offset:2px!important;border-color:#8d45e8!important}
+#libraryScreen .add-small{min-height:44px!important}
+#libraryScreen .add-small:focus-visible,#libraryScreen .mlc-library-clear:focus-visible,#libraryScreen .search:focus-visible,#libraryScreen select:focus-visible{outline:2px solid #b45cff!important;outline-offset:2px!important}
+#libraryScreen .liftova-library-count{min-height:15px}
+#exerciseInfoScreen>.back{position:sticky;top:calc(env(safe-area-inset-top) + 4px);z-index:8;display:inline-flex!important;align-items:center;min-height:44px;padding:0 10px!important;margin-left:-10px!important;border-radius:11px;background:rgba(7,5,13,.86);backdrop-filter:blur(12px)}
+#exerciseInfoScreen #prismExerciseInfo>h2{scroll-margin-top:72px}
+#exerciseInfoScreen .exercise-instructions ol,#exerciseInfoScreen .exercise-instructions ul{padding-left:0!important;list-style:none!important;counter-reset:mlc-step}
+#exerciseInfoScreen .exercise-instructions li{position:relative;padding:10px 0 10px 36px!important;margin:0!important;border-bottom:1px solid rgba(255,255,255,.055);counter-increment:mlc-step}
+#exerciseInfoScreen .exercise-instructions li:last-child{border-bottom:0}
+#exerciseInfoScreen .exercise-instructions li:before{content:counter(mlc-step);position:absolute;left:0;top:8px;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#241535;color:#d6b7ff;font-size:10px;font-weight:850;border:1px solid #4d2d67}
+#exerciseInfoScreen .card,#exerciseInfoScreen .exercise-instructions,#exerciseInfoScreen .prism-info-map{transition:border-color .12s ease,transform .12s ease}
+#exerciseInfoScreen .card:active,#exerciseInfoScreen .prism-info-map:active{transform:scale(.995)}
+@media(max-width:390px){#libraryScreen .library-item{min-height:70px!important}#libraryScreen .mlc-library-clear{width:32px;height:32px;min-width:32px;min-height:32px}}
+@media(prefers-reduced-motion:reduce){#libraryScreen .library-item,#exerciseInfoScreen .card,#exerciseInfoScreen .exercise-instructions,#exerciseInfoScreen .prism-info-map{transition:none!important}}
