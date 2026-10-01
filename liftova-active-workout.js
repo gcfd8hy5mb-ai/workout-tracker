@@ -1,10 +1,10 @@
-// LIFTOVA presentation layer for active workouts and exercise detail screens.
+// MYLIFTCOACH presentation layer for active workouts and exercise detail screens.
 (() => {
   'use strict';
   if (!document.querySelector('link[data-liftova-active-workout]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'liftova-active-workout.css?v=4';
+    link.href = 'liftova-active-workout.css?v=5';
     link.dataset.liftovaActiveWorkout = 'true';
     document.head.appendChild(link);
   }
@@ -15,8 +15,14 @@
     if (!heading) return;
     const kicker = document.createElement('div');
     kicker.className = 'liftova-exercise-kicker';
-    kicker.textContent = 'LIFTOVA EXERCISE GUIDE';
+    kicker.textContent = 'MYLIFTCOACH EXERCISE GUIDE';
     heading.before(kicker);
+  };
+
+  const cardState = card => {
+    const done = card?.querySelectorAll('.set-done[aria-pressed="true"]').length || 0;
+    const total = card?.querySelectorAll('.set-done').length || 0;
+    return {done,total,complete:total>0&&done===total,started:done>0&&done<total};
   };
 
   const markExerciseState = card => {
@@ -24,16 +30,46 @@
     card.classList.add('liftova-premium-exercise');
     const image = card.querySelector('.exercise-image');
     if (image) image.loading = 'lazy';
-    const done = card.querySelectorAll('.set-done[aria-pressed="true"]').length;
-    const total = card.querySelectorAll('.set-done').length;
-    card.classList.toggle('liftova-exercise-complete', total > 0 && done === total);
-    card.classList.toggle('liftova-exercise-started', done > 0 && done < total);
+    const state=cardState(card);
+    card.classList.toggle('liftova-exercise-complete', state.complete);
+    card.classList.toggle('liftova-exercise-started', state.started);
     card.querySelectorAll('input').forEach(input => {
       if (/weight|rep|load/i.test(`${input.name} ${input.id} ${input.placeholder} ${input.getAttribute('aria-label')||''}`)) {
         input.inputMode = 'decimal';
         input.autocomplete = 'off';
+        input.enterKeyHint = 'next';
       }
     });
+  };
+
+  const ensureSessionHud=workout=>{
+    if(!workout)return null;
+    let hud=workout.querySelector('.myliftcoach-session-hud');
+    if(hud)return hud;
+    hud=document.createElement('section');
+    hud.className='myliftcoach-session-hud';
+    hud.setAttribute('aria-live','polite');
+    hud.innerHTML='<div class="msh-copy"><span>LIVE WORKOUT</span><strong>Ready to train</strong></div><div class="msh-progress"><b>0%</b><small>SESSION</small></div>';
+    const heading=workout.querySelector(':scope > h2');
+    if(heading?.nextSibling)workout.insertBefore(hud,heading.nextSibling); else workout.prepend(hud);
+    return hud;
+  };
+
+  const updateSessionHud=workout=>{
+    if(!workout)return;
+    const hud=ensureSessionHud(workout);
+    const cards=[...workout.querySelectorAll('.exercise')];
+    const totalSets=cards.reduce((n,c)=>n+cardState(c).total,0);
+    const doneSets=cards.reduce((n,c)=>n+cardState(c).done,0);
+    const completeExercises=cards.filter(c=>cardState(c).complete).length;
+    const next=cards.find(c=>!cardState(c).complete);
+    const pct=totalSets?Math.round(doneSets/totalSets*100):0;
+    const copy=hud.querySelector('.msh-copy strong');
+    const percent=hud.querySelector('.msh-progress b');
+    if(copy)copy.textContent=next ? `${completeExercises}/${cards.length} exercises · Up next: ${next.querySelector('.exercise-title')?.textContent?.trim()||'Exercise'}` : (cards.length?'Workout complete — finish when ready':'Ready to train');
+    if(percent)percent.textContent=`${pct}%`;
+    hud.style.setProperty('--session-progress',`${pct}%`);
+    cards.forEach(card=>card.classList.toggle('myliftcoach-current-exercise',card===next));
   };
 
   const polish = () => {
@@ -45,6 +81,7 @@
     if (workout && !workout.classList.contains('hidden')) {
       workout.classList.add('liftova-live-session');
       workout.querySelectorAll('.exercise').forEach(markExerciseState);
+      updateSessionHud(workout);
     }
   };
 
@@ -60,8 +97,8 @@
     const cards=[...workout.querySelectorAll('.exercise')];
     const current=from.closest('.exercise');
     const start=Math.max(0,cards.indexOf(current));
-    const next=cards.slice(start).find(card=>card.querySelector('.set-done:not([aria-pressed="true"])'));
-    if(next && next!==current) next.scrollIntoView({behavior:'smooth',block:'center'});
+    const next=cards.slice(start+1).find(card=>card.querySelector('.set-done:not([aria-pressed="true"])')) || cards.find(card=>card.querySelector('.set-done:not([aria-pressed="true"])'));
+    if(next && next!==current) next.scrollIntoView({behavior:'smooth',block:'start'});
   };
 
   const installWorkoutInteractions = () => {
@@ -75,6 +112,7 @@
         requestAnimationFrame(()=>{
           const card=done.closest('.exercise');
           markExerciseState(card);
+          updateSessionHud(workout);
           if(done.getAttribute('aria-pressed')==='true'){
             haptic(card?.classList.contains('liftova-exercise-complete')?'success':'tap');
             const remaining=card?.querySelector('.set-done:not([aria-pressed="true"])');
