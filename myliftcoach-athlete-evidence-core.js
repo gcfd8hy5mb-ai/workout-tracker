@@ -6,9 +6,10 @@
  const VERSION='1.0';
  const clamp=(n,min=0,max=1)=>Math.max(min,Math.min(max,Number(n)||0));
  const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
+ const readPath=(row,key)=>String(key).split('.').reduce((v,k)=>v?.[k],row);
  function parseAgeDays(row={},fields=['completedAt','date']){
   let raw='';
-  for(const key of fields){const v=row?.[key];if(v){raw=v;break}}
+  for(const key of fields){const v=readPath(row,key);if(v){raw=v;break}}
   const t=Date.parse(raw||'');
   return Number.isFinite(t)?Math.max(0,(Date.now()-t)/86400000):0;
  }
