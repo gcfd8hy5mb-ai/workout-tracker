@@ -1,9 +1,9 @@
-/* MYLIFTCOACH Intelligence Core v1
+/* MYLIFTCOACH Intelligence Core v1.1
    Shared primitives for the Athlete -> Coach -> Adaptive intelligence pipeline.
-   This module owns fail-closed account state, safe invocation, and authority metadata. */
+   Owns fail-closed account state, safe invocation, wrapper installation, and authority metadata. */
 (()=>{
  'use strict';
- const VERSION='1.0';
+ const VERSION='1.1';
  const AUTHORITY='adaptive_programming';
  const safe=(fn,fallback=null)=>{try{const value=fn();return value==null?fallback:value}catch{return fallback}};
  const call=(name,args=[],fallback=null)=>typeof window[name]==='function'?safe(()=>window[name](...args),fallback):fallback;
@@ -23,7 +23,22 @@
  function guardMetadata(extra={}){
   return Object.freeze({authority:AUTHORITY,mayOverrideAdaptive:false,preserveProgramSource:true,requiresApproval:true,...extra});
  }
- const api=Object.freeze({version:VERSION,authority:AUTHORITY,safe,call,account,unavailable,accountHold,guardMetadata});
+ function installWrapper(name,marker,factory,options={}){
+  const attempt=Number(options.attempt||0),maxAttempts=Number.isFinite(Number(options.maxAttempts))?Number(options.maxAttempts):100,delayMs=Number.isFinite(Number(options.delayMs))?Number(options.delayMs):100;
+  const base=window[name],ready=typeof options.ready==='function'?safe(()=>Boolean(options.ready()),false):true;
+  if(typeof base!=='function'||!ready){
+   if(attempt<maxAttempts&&typeof setTimeout==='function')setTimeout(()=>installWrapper(name,marker,factory,{...options,attempt:attempt+1}),delayMs);
+   return false;
+  }
+  if(base[marker])return true;
+  const wrapped=safe(()=>factory(base),null);
+  if(typeof wrapped!=='function')return false;
+  wrapped[marker]=true;
+  wrapped[`${marker}Base`]=base;
+  window[name]=wrapped;
+  return true;
+ }
+ const api=Object.freeze({version:VERSION,authority:AUTHORITY,safe,call,account,unavailable,accountHold,guardMetadata,installWrapper});
  window.myliftcoachIntelligenceCore=api;
  window.MYLIFTCOACH_INTELLIGENCE_CORE_VERSION=VERSION;
 })();
