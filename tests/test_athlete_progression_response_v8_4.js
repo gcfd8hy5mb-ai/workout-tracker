@@ -1,0 +1,11 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const intel=fs.readFileSync('myliftcoach-intelligence-core.js','utf8'),evidence=fs.readFileSync('myliftcoach-athlete-evidence-core.js','utf8'),foundation=fs.readFileSync('athlete-learning-engine.js','utf8'),progression=fs.readFileSync('athlete-progression-response-v8_4.js','utf8');
+const window={},ctx={window,console,setTimeout:()=>0,Date,Object,JSON,Number,String,Boolean,Math,Array,RegExp};vm.createContext(ctx);[intel,evidence,foundation,progression].forEach(x=>vm.runInContext(x,ctx));
+const iso=d=>new Date(Date.now()-d*86400000).toISOString();const ev=(id,exerciseId,days,type,delta)=>({recommendationId:id,exerciseId,completedAt:iso(days),recommendationType:type,performanceDelta:delta,followedRecommendation:true});
+const patient=[];[35,28,21,14,7,2].forEach((d,i)=>{patient.push(ev(`pi${i}`,'press',d,'increase',-.06));patient.push(ev(`ph${i}`,'press',Math.max(1,d-1),'hold',.08));});
+let p=window.myliftcoachAthleteProgressionProfile(patient,'press');assert.strictEqual(p.progressionTempo,'patient');assert.strictEqual(p.actions.increase.state,'usable');assert.ok(p.actions.hold.responseScore-p.actions.increase.responseScore>=.12);assert.strictEqual(p.mayOverrideAdaptive,false);
+const responsive=[];[35,28,21,14,7,2].forEach((d,i)=>{responsive.push(ev(`ri${i}`,'row',d,'increase',.09));responsive.push(ev(`rh${i}`,'row',Math.max(1,d-1),'hold',.02));});
+p=window.myliftcoachAthleteProgressionProfile(responsive,'row');assert.strictEqual(p.progressionTempo,'responsive');assert.strictEqual(p.mayInformProgramming,true);
+const stale=[170,165,160,155,150].map((d,i)=>ev(`s${i}`,'curl',d,'increase',.1));assert.strictEqual(window.myliftcoachAthleteProgressionProfile(stale,'curl').progressionTempo,'stale');
+assert.strictEqual(window.myliftcoachAthleteProgressionSnapshot([...patient,...responsive]).guardrails.noAccelerationFromLearning,true);
+console.log(JSON.stringify({suite:'MYLIFTCOACH Athlete Progression Response V8.4',checks:{patientPattern:true,responsivePattern:true,staleExpiry:true,noAcceleration:true,adaptiveAuthority:true}},null,2));

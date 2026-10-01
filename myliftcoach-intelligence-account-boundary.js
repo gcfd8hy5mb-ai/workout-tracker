@@ -1,9 +1,9 @@
-/* MYLIFTCOACH Intelligence Account Boundary v1.1
+/* MYLIFTCOACH Intelligence Account Boundary v1.2
    Personalized learning/Coach/Adaptive reads fail closed unless the verified Supabase user
    matches the selected account-scoped device store. */
 (()=>{
  'use strict';
- const VERSION='1.1';
+ const VERSION='1.2';
  const core=window.myliftcoachIntelligenceCore;
  let epoch=0,verifyRun=0;
  const unavailable=(kind='account_unverified')=>core?.unavailable?.(kind)||({version:VERSION,state:'unavailable',reason:kind,accountBound:true,mayOverrideAdaptive:false});
@@ -45,7 +45,7 @@
  function install(){
   wrap('prismInterventionRows',()=>[]);
   for(const name of ['prismRememberIntervention','prismInterventionRespond','prismInterventionOutcome'])wrap(name,()=>null);
-  for(const name of ['myliftcoachCoachExerciseContextEvidence','myliftcoachCoachProposalContextEvidence','myliftcoachCoachDoseExplain','myliftcoachCoachDoseProposalSummary','myliftcoachCoachRecoveryExplain','myliftcoachCoachRecoveryProposalEvidence'])wrap(name,()=>unavailable());
+  for(const name of ['myliftcoachCoachExerciseContextEvidence','myliftcoachCoachProposalContextEvidence','myliftcoachCoachDoseExplain','myliftcoachCoachDoseProposalSummary','myliftcoachCoachRecoveryExplain','myliftcoachCoachRecoveryProposalEvidence','myliftcoachCoachProgressionExplain','myliftcoachCoachProgressionProposalSummary'])wrap(name,()=>unavailable());
   wrap('prismCoachProgramReview',()=>unavailable());
   wrap('prismAdaptivePrescription',()=>core?.accountHold?.()||({status:'account_hold',targetWeight:null,workingSets:null,reason:'Personalized programming is paused until this account is verified.',authority:'adaptive_programming',accountBoundary:unavailable()}));
  }

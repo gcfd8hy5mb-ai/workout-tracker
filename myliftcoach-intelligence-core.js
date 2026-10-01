@@ -1,19 +1,21 @@
-/* MYLIFTCOACH Intelligence Core v1.2
+/* MYLIFTCOACH Intelligence Core v1.3
    Shared primitives for the Athlete -> Coach -> Adaptive intelligence pipeline.
    Owns fail-closed account state, safe invocation, wrapper installation, authority metadata,
    and consolidated intelligence audit/guardrail plumbing. */
 (()=>{
  'use strict';
- const VERSION='1.2';
+ const VERSION='1.3';
  const AUTHORITY='adaptive_programming';
  const AUDIT_SOURCES=Object.freeze({
   coachContext:'myliftcoachCoachContextAudit',
   coachDose:'myliftcoachCoachDoseAudit',
   coachRecovery:'myliftcoachCoachRecoveryAudit',
+  coachProgression:'myliftcoachCoachProgressionAudit',
   adaptive:'myliftcoachAdaptiveArbitrationV8Audit',
   adaptiveContext:'myliftcoachAdaptiveContextV81Audit',
   adaptiveDose:'myliftcoachAdaptiveDoseV82Audit',
-  adaptiveRecovery:'myliftcoachAdaptiveRecoveryV83Audit'
+  adaptiveRecovery:'myliftcoachAdaptiveRecoveryV83Audit',
+  adaptiveProgression:'myliftcoachAdaptiveProgressionAudit'
  });
  const safe=(fn,fallback=null)=>{try{const value=fn();return value==null?fallback:value}catch{return fallback}};
  const call=(name,args=[],fallback=null)=>typeof window[name]==='function'?safe(()=>window[name](...args),fallback):fallback;
@@ -57,6 +59,7 @@
    noAutomaticProgramReplacement:!/noProgramReplacement[^:]*:\s*false/.test(serialized),
    learnedEvidenceCannotIncreaseLoad:!/mayIncreaseLoad[^:]*:\s*true|learnedDoseCanIncreaseLoad[^:]*:\s*true|learnedRecoveryCannotIncreaseLoad[^:]*:\s*false/.test(serialized),
    learnedRecoveryCannotReschedule:!/mayReschedule[^:]*:\s*true|learnedRecoveryCannotReschedule[^:]*:\s*false/.test(serialized),
+   progressionLearningCannotAccelerate:!/responsiveEvidenceCannotAccelerate[^:]*:\s*false|neverExceedBaseTarget[^:]*:\s*false|noAccelerationFromLearning[^:]*:\s*false/.test(serialized),
    accountBound:accountState.valid||Boolean(accountState.testUnbound)
   };
  }
