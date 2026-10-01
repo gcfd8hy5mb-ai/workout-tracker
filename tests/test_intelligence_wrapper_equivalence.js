@@ -6,8 +6,9 @@ const run=file=>vm.runInContext(fs.readFileSync(file,'utf8'),sandbox);
 const same=(a,b,msg)=>assert.equal(JSON.stringify(a),JSON.stringify(b),msg);
 
 run('myliftcoach-intelligence-core.js');
-assert.equal(window.myliftcoachIntelligenceCore.version,'1.1');
+assert.equal(window.myliftcoachIntelligenceCore.version,'1.2');
 assert.equal(typeof window.myliftcoachIntelligenceCore.installWrapper,'function');
+assert.equal(typeof window.myliftcoachIntelligenceCore.auditSummary,'function');
 
 window.prismAdaptivePrescription=input=>({...input,reason:input.reason||'base'});
 window.prismAdaptiveAnalyze=()=>({proposals:[{id:'p1',type:'exercise_adjustment',changes:[{exerciseId:'press'}]}]});
