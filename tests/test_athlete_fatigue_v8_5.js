@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm');
+const window={};const ctx={window,console,setTimeout:()=>0,Date,Object,JSON,Number,String,Boolean,Math,Array,RegExp};vm.createContext(ctx);
+for(const f of ['myliftcoach-intelligence-core.js','myliftcoach-athlete-evidence-core.js','athlete-fatigue-deload-v8_5.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
+const now=Date.now(),d=n=>new Date(now-n*86400000).toISOString();
+const events=[];
+for(let i=0;i<4;i++)events.push({exerciseId:'press',completedAt:d(28-i*3),recommendationType:'hold',performanceDelta:.05,rpe:7,pain:0});
+for(let i=0;i<4;i++)events.push({exerciseId:'press',completedAt:d(12-i*3),recommendationType:'increase',performanceDelta:-.08,rpe:10,pain:3});
+for(let i=0;i<2;i++)events.push({exerciseId:'press',completedAt:d(3-i),recommendationType:'deload',performanceDelta:.08,rpe:7,pain:0});
+const p=window.myliftcoachAthleteFatigueProfile(events,'press');
+assert.equal(p.version,'8.5');assert.equal(p.fatigueState,'accumulating');assert.equal(p.deloadResponse,'responsive');assert(p.strainTrend>=.12);assert.equal(p.guardrails.noAutomaticDeload,true);assert.equal(p.guardrails.noAutomaticScheduleChange,true);assert.equal(p.guardrails.adaptiveProgrammingFinalAuthority,true);
+const stale=events.map(x=>({...x,completedAt:d(200)}));assert.equal(window.myliftcoachAthleteFatigueProfile(stale,'press').fatigueState,'stale');
+console.log(JSON.stringify({suite:'MYLIFTCOACH Athlete Fatigue V8.5',checks:{accumulation:true,deloadResponse:true,staleExpiry:true,noAutoDeload:true,noScheduleMutation:true,adaptiveAuthority:true}},null,2));
