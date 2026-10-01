@@ -52,7 +52,8 @@ window.PRISM_SUPABASE_CONFIG = MYLIFTCOACH_SUPABASE_CONFIG;
     ['myliftcoach-anatomy-polish.css?v=2','myliftcoach-anatomy-polish'],
     ['myliftcoach-home-dashboard-ux.css?v=1','myliftcoach-home-dashboard-ux'],
     ['myliftcoach-library-ux.css?v=1','myliftcoach-library-ux'],
-    ['myliftcoach-daily-tracking-ux.css?v=1','myliftcoach-daily-tracking-ux']
+    ['myliftcoach-daily-tracking-ux.css?v=1','myliftcoach-daily-tracking-ux'],
+    ['myliftcoach-history-records-ux.css?v=1','myliftcoach-history-records-ux']
   ];
   styles.forEach(([href,key])=>{
     if(document.querySelector(`link[data-${key}]`))return;
