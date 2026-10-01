@@ -10,7 +10,7 @@ const trial=(id,days,delta,type='program_recovery')=>({id,proposalType:type,comp
 localStorage.setItem('myliftcoachProgramOutcomeTrialsV1',JSON.stringify([trial('old1',170,.10),trial('old2',150,.09),trial('old3',130,.08)]));
 let policy=window.myliftcoachProgramOutcomeValidationPolicy('program_recovery');
 assert.strictEqual(policy.state,'stale');assert.strictEqual(policy.maySupportProposal,false);assert.strictEqual(policy.mayInformProgramming,false);
-localStorage.setItem('myliftcoachProgramOutcomeTrialsV1',JSON.stringify([trial('old1',170,.10),trial('old2',150,.09),trial('recent1',20,.08),trial('recent2',10,.07),trial('recent3',3,.06)]));
+localStorage.setItem('myliftcoachProgramOutcomeTrialsV1',JSON.stringify([trial('old1',170,.10),trial('old2',150,.09),trial('recent1',20,.08),trial('recent2',10,.075),trial('recent3',3,.07)]));
 policy=window.myliftcoachProgramOutcomeValidationPolicy('program_recovery');
 assert.strictEqual(policy.state,'validated_helpful');assert.strictEqual(policy.maySupportProposal,true);assert.ok(policy.freshness>=.45);
 localStorage.setItem('myliftcoachProgramOutcomeTrialsV1',JSON.stringify([trial('old1',150,.10),trial('old2',140,.09),trial('old3',130,.08),trial('bad1',14,-.10),trial('bad2',4,-.12)]));
