@@ -4,7 +4,7 @@ class MemoryStorage{constructor(){this.m=new Map()}getItem(k){return this.m.has(
 const storage=new MemoryStorage(),window={myliftcoachProgramOverlayPolicy:type=>({version:'7.6',proposalType:type,evidence:8,state:'working',confidence:1,successRate:.9,mayInformProgramming:true,mayOverrideAdaptive:false})};
 const ctx={window,localStorage:storage,console};vm.createContext(ctx);vm.runInContext(source,ctx);
 const seq=(base,delta,n=6)=>Array.from({length:n},(_,i)=>Math.max(0,Math.min(1,base+delta+(i%3-1)*.005)));
-function trial(id,type,mode){const helpful=mode==='helpful',harmful=mode==='harmful';const d=helpful?.08:harmful?-.09:(Number(id.replace(/\D/g,''))%2?.025:-.02);const rd=helpful?.04:harmful?-.22:0;return {id,proposalType:type,pre:{performance:seq(.55,0),completion:seq(.80,0),recovery:seq(.68,0)},post:{performance:seq(.55,d),completion:seq(.80,d*.6),recovery:seq(.68,rd)}}}
+function trial(id,type,mode){const helpful=mode==='helpful',harmful=mode==='harmful';const d=helpful ? .08 : harmful ? -.09 : (Number(id.replace(/\D/g,''))%2 ? .025 : -.02);const rd=helpful ? .04 : harmful ? -.22 : 0;return {id,proposalType:type,pre:{performance:seq(.55,0),completion:seq(.80,0),recovery:seq(.68,0)},post:{performance:seq(.55,d),completion:seq(.80,d*.6),recovery:seq(.68,rd)}}}
 function runWeeks(weeks,mode,type){const trials=[];for(let w=2;w<=weeks;w+=2)trials.push(trial(`${mode}-${w}`,type,mode));storage.setItem('myliftcoachProgramOutcomeTrialsV1',JSON.stringify(trials));return window.myliftcoachProgramOutcomeValidationPolicy(type)}
 const report={};
 for(const weeks of [6,12,16,20]){
