@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm');
+const window={};const ctx={window,console,setTimeout:()=>0,Date,Object,JSON,Number,String,Boolean,Math,Array,RegExp,Set};vm.createContext(ctx);const run=f=>vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
+run('myliftcoach-intelligence-core.js');
+window.prismInterventionRows=()=>Array.from({length:8},(_,i)=>({exerciseId:'press',response:{value:i===7?'modified':'followed'},outcome:{value:i<6?'better':'same'}}));
+window.myliftcoachCoachExerciseContextEvidence=id=>id==='press'?{state:'supported',confidence:.8}:null;
+window.myliftcoachCoachDoseExplain=id=>id==='press'?{state:'supported',bestDose:{dose:{volume:'moderate'}},profile:{confidence:.78}}:null;
+window.myliftcoachCoachRecoveryExplain=id=>id==='press'?{state:'supported',timing:'on_time',profile:{confidence:.8}}:null;
+window.myliftcoachCoachProgressionExplain=id=>id==='press'?{state:'supported',tempo:'standard',profile:{confidence:.76}}:null;
+window.myliftcoachCoachFatigueExplain=id=>id==='press'?{state:'supported',profile:{recentStrain:.42,strainTrend:.03,confidence:.8}}:null;
+window.myliftcoachCoachProgramOutcomeExplain=(t,id)=>id==='press'?{state:'helpful',profile:{weightedScore:.76,confidence:.72}}:null;
+run('myliftcoach-predictive-readiness-v8_8.js');
+const s=window.myliftcoachPredictiveAthleteState('press');assert.equal(s.version,'8.8');assert.equal(s.schema,'predictive-athlete-state-v1');assert.equal(s.featureOrder.length,9);assert.equal(s.vector.length,9);assert.equal(s.state,'ready');assert(s.confidence>=.58);assert(s.uncertainty<.5);assert.equal(s.mayPredict,false);assert.equal(s.mayChangeTraining,false);assert.equal(s.authority,'adaptive_programming');assert(s.vector.every(x=>Number.isFinite(x)&&x>=0&&x<=1));
+const sparse=window.myliftcoachPredictiveAthleteState('unknown');assert.equal(sparse.state,'insufficient');assert(sparse.missing.length>=7);assert.equal(sparse.mayPredict,false);
+const p=window.myliftcoachPredictiveProgramState(['press','unknown']);assert.equal(p.mayPredict,false);assert.equal(p.mayChangeTraining,false);assert.equal(p.rows.length,2);assert.deepEqual(Array.from(s.featureOrder),['performanceTrend','adherence','fatiguePressure','fatigueTrend','recoveryReadiness','doseTolerance','progressionTolerance','contextReadiness','priorAdaptationResponse']);
+console.log('V8.8 predictive readiness builds stable bounded input vectors without making predictions or training decisions.');
