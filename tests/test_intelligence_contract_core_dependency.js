@@ -1,0 +1,18 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const code=fs.readFileSync('myliftcoach-intelligence-contract-v1.js','utf8');
+assert(!code.includes("myliftcoachCoachContextAudit',[],null"),'contract must not retain legacy audit registry fallback');
+assert(!code.includes("core?.safe||"),'contract must not retain local safe fallback');
+assert(!code.includes("core?.call||"),'contract must not retain local call fallback');
+assert(!code.includes("core?.account||"),'contract must not retain local account fallback');
+const window={prismAdaptivePrescription:()=>({status:'increase',targetWeight:999})};
+vm.runInNewContext(code,{window,Object,JSON,Number,String,Boolean,Math,Date,Array,RegExp});
+const api=window.myliftcoachIntelligence;
+assert(api,'contract should install a fail-closed facade when core is missing');
+assert.equal(api.version,'1.4');
+assert.equal(api.coreVersion,null);
+assert.equal(api.account().valid,false);
+assert.equal(api.prescribe({exerciseId:'press'}).status,'account_hold');
+assert.equal(api.guardrails().healthy,false);
+assert.equal(api.snapshot({exerciseId:'press'}).authority,'adaptive_programming');
+assert.equal(api.athlete('press').context.reason,'intelligence_core_missing');
+console.log('Intelligence contract v1.4 removes legacy fallbacks and fails closed when shared core is unavailable.');

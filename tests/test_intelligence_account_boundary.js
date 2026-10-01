@@ -3,6 +3,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
 
+const coreSrc=fs.readFileSync(path.join(__dirname,'..','myliftcoach-intelligence-core.js'),'utf8');
 const boundarySrc=fs.readFileSync(path.join(__dirname,'..','myliftcoach-intelligence-account-boundary.js'),'utf8');
 const contractSrc=fs.readFileSync(path.join(__dirname,'..','myliftcoach-intelligence-contract-v1.js'),'utf8');
 const A='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
@@ -30,10 +31,13 @@ const B='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
   dispatchEvent(){},
   localStorage:{},
  };
- const context={window,globalThis:window,CustomEvent:function(type,init){this.type=type;this.detail=init?.detail},BroadcastChannel:function(){this.onmessage=null},console};
+ const context={window,globalThis:window,CustomEvent:function(type,init){this.type=type;this.detail=init?.detail},BroadcastChannel:function(){this.onmessage=null},console,setTimeout};
+ vm.runInNewContext(coreSrc,context,{filename:'myliftcoach-intelligence-core.js'});
  vm.runInNewContext(boundarySrc,context,{filename:'myliftcoach-intelligence-account-boundary.js'});
  vm.runInNewContext(contractSrc,context,{filename:'myliftcoach-intelligence-contract-v1.js'});
  const boundary=window.myliftcoachIntelligenceAccountBoundary,intel=window.myliftcoachIntelligence;
+ assert.equal(window.myliftcoachIntelligenceCore.version,'1.2');
+ assert.equal(intel.version,'1.4');
 
  // Startup is fail-closed until the Supabase user is independently verified.
  assert.equal(boundary.current().valid,false);
@@ -88,5 +92,5 @@ const B='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
  assert.deepEqual(Array.from(window.prismInterventionRows()),[]);
  assert.equal(intel.prescribe({exerciseId:'press'}).status,'account_hold');
 
- console.log('Production intelligence account boundary: A/B/A verification, fail-closed reads/writes, stale-tab denial, token invalidation, and sign-out hold pass.');
+ console.log('Production intelligence account boundary: shared-core runtime order, A/B/A verification, fail-closed reads/writes, stale-tab denial, token invalidation, and sign-out hold pass.');
 })().catch(error=>{console.error(error);process.exitCode=1});
