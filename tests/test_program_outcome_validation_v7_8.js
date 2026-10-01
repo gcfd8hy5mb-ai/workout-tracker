@@ -1,5 +1,5 @@
 const assert=require('assert'),fs=require('fs'),vm=require('vm');
-const source=fs.readFileSync('coach-program-outcome-validation.js','utf8');
+const source=fs.readFileSync('myliftcoach-program-outcome-validation.js','utf8');
 class MemoryStorage{constructor(){this.m=new Map()}getItem(k){return this.m.has(k)?this.m.get(k):null}setItem(k,v){this.m.set(k,String(v))}removeItem(k){this.m.delete(k)}}
 const localStorage=new MemoryStorage();
 const basePolicy=type=>({version:'7.6',proposalType:type,evidence:6,state:'working',confidence:1,successRate:.9,mayInformProgramming:true,mayOverrideAdaptive:false});
