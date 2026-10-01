@@ -4,7 +4,7 @@
 (()=>{
  'use strict';
  const VERSION='1.0';
- let epoch=0;
+ let epoch=0,verifyRun=0;
  const unavailable=(kind='account_unverified')=>({version:VERSION,state:'unavailable',reason:kind,accountBound:true,mayOverrideAdaptive:false});
  function current(){
   const manager=window.PRISMDeviceStore||null,owner=manager?.owner||null,verified=window.MYLIFTCOACH_VERIFIED_ACCOUNT_ID||null;
@@ -14,12 +14,24 @@
  function verify(userId){
   const manager=window.PRISMDeviceStore,id=String(userId||'');
   if(!manager?.owner||manager.owner!==id||manager.stale)throw Error('Verified account does not match the active MYLIFTCOACH account');
-  window.MYLIFTCOACH_VERIFIED_ACCOUNT_ID=id;epoch++;return current();
+  if(window.MYLIFTCOACH_VERIFIED_ACCOUNT_ID!==id)epoch++;
+  window.MYLIFTCOACH_VERIFIED_ACCOUNT_ID=id;return current();
  }
  function invalidate(reason='account_changed'){
-  window.MYLIFTCOACH_VERIFIED_ACCOUNT_ID=null;epoch++;
+  if(window.MYLIFTCOACH_VERIFIED_ACCOUNT_ID!==null)epoch++;
+  window.MYLIFTCOACH_VERIFIED_ACCOUNT_ID=null;
   try{window.dispatchEvent(new CustomEvent('myliftcoach-intelligence-account-invalidated',{detail:{reason,epoch}}))}catch{}
   return current();
+ }
+ async function refreshVerification(){
+  const run=++verifyRun,manager=window.PRISMDeviceStore,cloud=window.PRISMCloud,owner=manager?.owner||null;
+  if(!owner||manager?.stale||typeof cloud?.currentUser!=='function'){invalidate('account_not_ready');return current();}
+  try{
+   const user=await cloud.currentUser();
+   if(run!==verifyRun)return current();
+   if(!user?.id||manager.owner!==owner||manager.stale||user.id!==owner){invalidate('verification_mismatch');return current();}
+   return verify(user.id);
+  }catch{if(run===verifyRun)invalidate('verification_failed');return current();}
  }
  function token(){const s=current();return s.valid?Object.freeze({userId:s.owner,epoch:s.epoch}):null;}
  function isTokenCurrent(t){const s=current();return Boolean(t&&s.valid&&t.userId===s.owner&&t.epoch===s.epoch);}
@@ -36,10 +48,14 @@
   wrap('prismCoachProgramReview',()=>unavailable());
   wrap('prismAdaptivePrescription',()=>({status:'account_hold',targetWeight:null,workingSets:null,reason:'Personalized programming is paused until this account is verified.',authority:'adaptive_programming',accountBoundary:unavailable()}));
  }
- const api=Object.freeze({version:VERSION,current,verify,invalidate,token,isTokenCurrent,install,unavailable});
+ const api=Object.freeze({version:VERSION,current,verify,invalidate,refreshVerification,token,isTokenCurrent,install,unavailable});
  window.myliftcoachIntelligenceAccountBoundary=api;
  window.MYLIFTCOACH_INTELLIGENCE_ACCOUNT_BOUNDARY_VERSION=VERSION;
  install();
+ window.addEventListener?.('prism-cloud-ready',()=>refreshVerification());
  window.addEventListener?.('myliftcoach-account-verified',event=>{try{verify(event.detail?.userId);install()}catch{invalidate('verification_mismatch')}});
  window.addEventListener?.('myliftcoach-account-invalidated',event=>invalidate(event.detail?.reason||'account_changed'));
+ window.addEventListener?.('storage',event=>{if(event.storageArea===window.localStorage&&(event.key==='prismSupabaseSessionV1'||event.key?.startsWith('prismAccountLocalV1:'))){invalidate('cross_tab_account_change');}});
+ try{const channel=new BroadcastChannel('prism-account-session');channel.onmessage=event=>{if(event.data?.type==='auth-changed')invalidate('auth_changed')};}catch{}
+ if(window.PRISMCloud)refreshVerification();
 })();
