@@ -84,9 +84,10 @@
     },{passive:true});
     menu.addEventListener('touchcancel',()=>{menuStart=null;},{passive:true});
 
-    // Swipe right from the extreme left edge to reveal the drawer.
+    // Root screens use the left edge to reveal the drawer. Detail screens reserve it for native swipe-back.
     document.addEventListener('touchstart',event=>{
-      if(menu.classList.contains('open')||event.touches.length!==1||isInteractiveTarget(event.target)){edgeStart=null;return;}
+      const nav=window.MYLIFTCOACHNavigation||window.LiftovaNavigation;
+      if(nav?.canGoBack?.()||menu.classList.contains('open')||event.touches.length!==1||isInteractiveTarget(event.target)){edgeStart=null;return;}
       const touch=event.touches[0];
       if(touch.clientX>MENU_EDGE_PX){edgeStart=null;return;}
       edgeStart={x:touch.clientX,y:touch.clientY,time:Date.now()};
