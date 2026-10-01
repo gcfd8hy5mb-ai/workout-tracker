@@ -19,6 +19,7 @@ const document={
 class MutationObserver{constructor(){} observe(){}}
 const context={
   console,localStorage,document,MutationObserver,
+  addEventListener(){},
   requestAnimationFrame(){},setTimeout(){},alert(){},
   exerciseLibrary:[
     {id:'a1',name:'Chest Press',muscle:'Chest'},{id:'a2',name:'Triceps Press',muscle:'Triceps'},
