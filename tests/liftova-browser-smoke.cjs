@@ -10,6 +10,22 @@ const mime={'.html':'text/html','.js':'application/javascript','.css':'text/css'
 const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\//,'')||'index.html';const target=path.resolve(root,filename);if(!target.startsWith(root+path.sep)){res.writeHead(403).end();return;}fs.readFile(target,(error,content)=>{if(error){res.writeHead(404).end();return;}res.writeHead(200,{'content-type':mime[path.extname(target)]||'application/octet-stream'}).end(content);});});
 async function runPass(browser,url,pass){
  const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'});const page=await context.newPage();page.setDefaultTimeout(10000);const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ await page.addInitScript(()=>{
+   window.__liftovaWrites=[];
+   const hook=(proto,prop)=>{
+     const descriptor=Object.getOwnPropertyDescriptor(proto,prop);
+     if(!descriptor?.set||!descriptor?.get)return;
+     Object.defineProperty(proto,prop,{configurable:descriptor.configurable,enumerable:descriptor.enumerable,get:descriptor.get,set(value){
+       if(typeof value==='string'&&/\bLIFTOVA\b/i.test(value)){
+         window.__liftovaWrites.push({prop,value:value.replace(/\s+/g,' ').slice(0,260),stack:(new Error('LIFTOVA write')).stack});
+       }
+       return descriptor.set.call(this,value);
+     }});
+   };
+   hook(Element.prototype,'innerHTML');
+   hook(Node.prototype,'textContent');
+   hook(Node.prototype,'nodeValue');
+ });
  const stage=name=>console.log(`[browser-smoke pass ${pass}] ${name}`);
  await page.route('**/persistence/account-ui.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* UI-only guest fixture */'}));
  stage('load app');await page.goto(url,{waitUntil:'domcontentloaded',timeout:15000});
@@ -24,6 +40,6 @@ async function runPass(browser,url,pass){
  stage('progress tabs');await page.evaluate(()=>showOverallProgress());await page.locator('#overallProgressScreen [data-progress-target="strength"]').click();assert.equal(await page.locator('#overallProgressScreen [data-progress-target="strength"].active').count(),1,'Strength tab becomes active');await page.locator('#overallProgressScreen [data-progress-target="body"]').click();assert.equal(await page.locator('#overallProgressScreen [data-progress-target="body"].active').count(),1,'Body Stats tab becomes active');
  stage('screen routing');for(const [screen,action] of [['home','goHome()'],['workoutDetailScreen','showWorkouts()'],['globalHistoryScreen','showGlobalHistory()'],['overallProgressScreen','showOverallProgress()'],['profileScreen','showProfile()']]){await page.evaluate(action);await page.locator(`#${screen}:not(.hidden)`).waitFor();}
  stage('anatomy asset');const asset=await page.evaluate(async()=>{const response=await fetch('images/liftova-anatomy-atlas.webp');return [response.status,response.headers.get('content-type'),(await response.blob()).size]});assert.equal(asset[0],200);assert.match(asset[1],/webp/);assert.ok(asset[2]>100000);assert.equal(await page.locator('svg image[href="images/liftova-anatomy-atlas.webp"]').count()>0,true);
- stage('branding/errors');const retired=await page.evaluate(()=>[...document.querySelectorAll('*')].filter(e=>e.getClientRects().length&&/\b(?:PRISM|LIFTOVA)\b/i.test(e.innerText||'')).map(e=>({tag:e.tagName,id:e.id||'',className:typeof e.className==='string'?e.className:'',text:(e.innerText||'').replace(/\s+/g,' ').trim().slice(0,220)})).filter((item,index,all)=>!all.some((other,j)=>j!==index&&item.text===other.text&&item.id===other.id)).slice(-20));if(retired.length)console.log('[retired-brand-visible]',JSON.stringify(retired,null,2));assert.deepEqual(retired,[],'no visible retired PRISM/LIFTOVA branding');assert.deepEqual(errors,[],'no uncaught page errors');await context.close();console.log(`MYLIFTCOACH browser smoke pass ${pass}: canonical home, details, library, navigation, atlas and branding PASS`);
+ stage('branding/errors');const retired=await page.evaluate(()=>[...document.querySelectorAll('*')].filter(e=>e.getClientRects().length&&/\b(?:PRISM|LIFTOVA)\b/i.test(e.innerText||'')).map(e=>({tag:e.tagName,id:e.id||'',className:typeof e.className==='string'?e.className:'',text:(e.innerText||'').replace(/\s+/g,' ').trim().slice(0,220)})).filter((item,index,all)=>!all.some((other,j)=>j!==index&&item.text===other.text&&item.id===other.id)).slice(-20));if(retired.length){console.log('[retired-brand-visible]',JSON.stringify(retired,null,2));const writes=await page.evaluate(()=>window.__liftovaWrites||[]);console.log('[liftova-write-traces]',JSON.stringify(writes.slice(-30),null,2));}assert.deepEqual(retired,[],'no visible retired PRISM/LIFTOVA branding');assert.deepEqual(errors,[],'no uncaught page errors');await context.close();console.log(`MYLIFTCOACH browser smoke pass ${pass}: canonical home, details, library, navigation, atlas and branding PASS`);
 }
 (async()=>{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const url=`http://127.0.0.1:${server.address().port}/`;const browser=await chromium.launch({headless:true,args:['--no-sandbox']});try{for(let pass=1;pass<=2;pass++)await runPass(browser,url,pass)}finally{await browser.close();server.close()}})().catch(error=>{server.close();console.error(error);process.exitCode=1});
