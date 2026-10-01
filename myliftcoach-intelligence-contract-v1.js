@@ -1,8 +1,8 @@
-/* MYLIFTCOACH Intelligence Contract V1.2
+/* MYLIFTCOACH Intelligence Contract V1.3
    Stable facade over Athlete Learning, Coach interpretation, and Adaptive Programming.
    Production personalized intelligence is account-bound and fails closed on identity mismatch. */
 (()=>{
- const VERSION='1.2';
+ const VERSION='1.3';
  const core=window.myliftcoachIntelligenceCore;
  const safe=core?.safe||((fn,f=null)=>{try{const v=fn();return v==null?f:v}catch{return f}});
  const call=core?.call||((name,args=[],fallback=null)=>typeof window[name]==='function'?safe(()=>window[name](...args),fallback):fallback);
@@ -28,9 +28,9 @@
   return {context:call('myliftcoachCoachProposalContextEvidence',[proposal],null),dose:call('myliftcoachCoachDoseProposalSummary',[(proposal?.changes||[]).map(x=>x?.exerciseId).filter(Boolean)],null),recovery:call('myliftcoachCoachRecoveryProposalEvidence',[proposal],null),account:a};
  }
  function guardrails(){
+  if(core?.auditSummary){const summary=core.auditSummary();return {version:VERSION,coreVersion:core.version,...summary};}
   const audits={coachContext:call('myliftcoachCoachContextAudit',[],null),coachDose:call('myliftcoachCoachDoseAudit',[],null),coachRecovery:call('myliftcoachCoachRecoveryAudit',[],null),adaptive:call('myliftcoachAdaptiveArbitrationV8Audit',[],null),adaptiveContext:call('myliftcoachAdaptiveContextV81Audit',[],null),adaptiveDose:call('myliftcoachAdaptiveDoseV82Audit',[],null),adaptiveRecovery:call('myliftcoachAdaptiveRecoveryV83Audit',[],null)};
-  const serialized=JSON.stringify(audits),a=account();
-  const checks={coreLoaded:Boolean(core),adaptiveFinalAuthority:/adaptiveProgrammingFinalAuthority[^:]*:\s*true/.test(serialized),noAutomaticProgramReplacement:!/noProgramReplacement[^:]*:\s*false/.test(serialized),learnedEvidenceCannotIncreaseLoad:!/mayIncreaseLoad[^:]*:\s*true|learnedDoseCanIncreaseLoad[^:]*:\s*true|learnedRecoveryCannotIncreaseLoad[^:]*:\s*false/.test(serialized),learnedRecoveryCannotReschedule:!/mayReschedule[^:]*:\s*true|learnedRecoveryCannotReschedule[^:]*:\s*false/.test(serialized),accountBound:a.valid||Boolean(a.testUnbound)};
+  const serialized=JSON.stringify(audits),a=account(),checks={coreLoaded:Boolean(core),adaptiveFinalAuthority:/adaptiveProgrammingFinalAuthority[^:]*:\s*true/.test(serialized),noAutomaticProgramReplacement:!/noProgramReplacement[^:]*:\s*false/.test(serialized),learnedEvidenceCannotIncreaseLoad:!/mayIncreaseLoad[^:]*:\s*true|learnedDoseCanIncreaseLoad[^:]*:\s*true|learnedRecoveryCannotIncreaseLoad[^:]*:\s*false/.test(serialized),learnedRecoveryCannotReschedule:!/mayReschedule[^:]*:\s*true|learnedRecoveryCannotReschedule[^:]*:\s*false/.test(serialized),accountBound:a.valid||Boolean(a.testUnbound)};
   return {version:VERSION,coreVersion:core?.version||null,audits,account:a,checks,healthy:Object.values(checks).every(Boolean)};
  }
  function snapshot({exerciseId,plannedRecoveryHours=null,events=[],exerciseMuscles={}}={}){const a=account();return {version:VERSION,coreVersion:core?.version||null,exerciseId:String(exerciseId??''),account:a,athlete:athlete(exerciseId,events,exerciseMuscles),coach:coach(exerciseId,plannedRecoveryHours),guardrails:guardrails(),authority:core?.authority||'adaptive_programming'};}

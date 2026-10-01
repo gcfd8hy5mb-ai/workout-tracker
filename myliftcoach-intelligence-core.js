@@ -1,10 +1,20 @@
-/* MYLIFTCOACH Intelligence Core v1.1
+/* MYLIFTCOACH Intelligence Core v1.2
    Shared primitives for the Athlete -> Coach -> Adaptive intelligence pipeline.
-   Owns fail-closed account state, safe invocation, wrapper installation, and authority metadata. */
+   Owns fail-closed account state, safe invocation, wrapper installation, authority metadata,
+   and consolidated intelligence audit/guardrail plumbing. */
 (()=>{
  'use strict';
- const VERSION='1.1';
+ const VERSION='1.2';
  const AUTHORITY='adaptive_programming';
+ const AUDIT_SOURCES=Object.freeze({
+  coachContext:'myliftcoachCoachContextAudit',
+  coachDose:'myliftcoachCoachDoseAudit',
+  coachRecovery:'myliftcoachCoachRecoveryAudit',
+  adaptive:'myliftcoachAdaptiveArbitrationV8Audit',
+  adaptiveContext:'myliftcoachAdaptiveContextV81Audit',
+  adaptiveDose:'myliftcoachAdaptiveDoseV82Audit',
+  adaptiveRecovery:'myliftcoachAdaptiveRecoveryV83Audit'
+ });
  const safe=(fn,fallback=null)=>{try{const value=fn();return value==null?fallback:value}catch{return fallback}};
  const call=(name,args=[],fallback=null)=>typeof window[name]==='function'?safe(()=>window[name](...args),fallback):fallback;
  function account(){
@@ -38,7 +48,20 @@
   window[name]=wrapped;
   return true;
  }
- const api=Object.freeze({version:VERSION,authority:AUTHORITY,safe,call,account,unavailable,accountHold,guardMetadata,installWrapper});
+ function collectAudits(){return Object.fromEntries(Object.entries(AUDIT_SOURCES).map(([key,name])=>[key,call(name,[],null)]));}
+ function guardrailChecks(audits=collectAudits(),accountState=account()){
+  const serialized=JSON.stringify(audits);
+  return {
+   coreLoaded:true,
+   adaptiveFinalAuthority:/adaptiveProgrammingFinalAuthority[^:]*:\s*true/.test(serialized),
+   noAutomaticProgramReplacement:!/noProgramReplacement[^:]*:\s*false/.test(serialized),
+   learnedEvidenceCannotIncreaseLoad:!/mayIncreaseLoad[^:]*:\s*true|learnedDoseCanIncreaseLoad[^:]*:\s*true|learnedRecoveryCannotIncreaseLoad[^:]*:\s*false/.test(serialized),
+   learnedRecoveryCannotReschedule:!/mayReschedule[^:]*:\s*true|learnedRecoveryCannotReschedule[^:]*:\s*false/.test(serialized),
+   accountBound:accountState.valid||Boolean(accountState.testUnbound)
+  };
+ }
+ function auditSummary(){const audits=collectAudits(),accountState=account(),checks=guardrailChecks(audits,accountState);return {coreVersion:VERSION,auditSources:AUDIT_SOURCES,audits,account:accountState,checks,healthy:Object.values(checks).every(Boolean),authority:AUTHORITY};}
+ const api=Object.freeze({version:VERSION,authority:AUTHORITY,safe,call,account,unavailable,accountHold,guardMetadata,installWrapper,auditSources:AUDIT_SOURCES,collectAudits,guardrailChecks,auditSummary});
  window.myliftcoachIntelligenceCore=api;
  window.MYLIFTCOACH_INTELLIGENCE_CORE_VERSION=VERSION;
 })();
