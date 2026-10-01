@@ -14,7 +14,7 @@ assert.ok(response.contexts['ready|followed|hypertrophy'].responseScore>response
 assert.strictEqual(response.bestContext.context.recovery,'ready');
 const stale=[ev('s1','row',170),ev('s2','row',160),ev('s3','row',150),ev('s4','row',140)];
 assert.strictEqual(window.myliftcoachAthleteExerciseContexts(stale,'row').contexts['ready|followed|hypertrophy'].state,'stale');
-const contradictory=[ev('o1','leg',80,{delta:.1}),ev('o2','leg',70,{delta:.1}),ev('o3','leg',60,{delta:.1}),ev('n1','leg',14,{delta:-.12,rpe:9.5,pain:5}),ev('n2','leg',4,{delta:-.12,rpe:9.5,pain:5})];
+const contradictory=[ev('o1','leg',80,{delta:.1,recovery:'ready'}),ev('o2','leg',70,{delta:.1,recovery:'ready'}),ev('o3','leg',60,{delta:.1,recovery:'ready'}),ev('n1','leg',14,{delta:-.12,rpe:9.5,pain:5,recovery:'strained'}),ev('n2','leg',4,{delta:-.12,rpe:9.5,pain:5,recovery:'strained'})];
 const c=window.myliftcoachAthleteExerciseContexts(contradictory,'leg');
 assert.ok(Object.values(c.contexts).some(x=>x.state==='contradictory')===false,'different recovery contexts should not be falsely combined');
 const sameContext=[ev('o1','curl',80,{delta:.1}),ev('o2','curl',70,{delta:.1}),ev('o3','curl',60,{delta:.1}),ev('n1','curl',14,{delta:-.12}),ev('n2','curl',4,{delta:-.12})];
