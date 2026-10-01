@@ -1,115 +1,140 @@
-// MYLIFTCOACH home sequencing/rest-day correction.
-// Keeps the dashboard aligned with the most recently completed workout and suppresses workout details on rest days.
+// MYLIFTCOACH Home schedule correction.
+// The week strip and Today's Workout are driven by the active plan + local weekday.
+// Custom workouts are only used when there is no active preset/suggested plan.
 (() => {
   'use strict';
 
   const readJson=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
-  const workouts=()=>{const v=readJson('customWorkoutsV5',[]);return Array.isArray(v)?v.filter(w=>w&&w.name&&Array.isArray(w.exercises)):[]};
-  const history=()=>{for(const key of ['workoutHistoryV52','workoutHistory']){const v=readJson(key,null);if(Array.isArray(v))return v}return []};
-  const sessionTime=s=>{
-    const raw=s?.completedAt||s?.timestamp||s?.date||s?.day;
-    const t=raw?new Date(raw).getTime():NaN;
-    return Number.isFinite(t)?t:0;
-  };
-  const latestMatching=(sessions,predicate)=>{
-    let best=null,bestTime=-1,bestIndex=-1;
-    sessions.forEach((session,index)=>{
-      if(!predicate(session))return;
-      const t=sessionTime(session);
-      if(t>bestTime||(t===bestTime&&index>bestIndex)){best=session;bestTime=t;bestIndex=index}
-    });
-    return best;
-  };
+  const customWorkouts=()=>{const v=readJson('customWorkoutsV5',[]);return Array.isArray(v)?v.filter(w=>w&&w.name&&Array.isArray(w.exercises)&&w.exercises.length):[]};
+
   const rowsForIds=ids=>{
-    if(!Array.isArray(window.exerciseLibrary))return [];
-    return (ids||[]).map(id=>window.exerciseLibrary.find(ex=>String(ex.id)===String(id))).filter(Boolean);
+    try{
+      if(typeof exerciseLibrary==='undefined'||!Array.isArray(exerciseLibrary))return [];
+      return (ids||[]).map(id=>exerciseLibrary.find(ex=>String(ex.id)===String(id))).filter(Boolean);
+    }catch{return []}
   };
+
   const muscleSummary=rows=>{
     const counts={};
     rows.forEach(ex=>String(ex?.muscle||'').split(/[·,\/]/).map(x=>x.trim()).filter(Boolean).forEach(m=>counts[m]=(counts[m]||0)+1));
     return {text:Object.keys(counts).slice(0,4).join(' · '),entries:Object.entries(counts).slice(0,5)};
   };
 
-  function resolveNextWorkout(){
-    const sessions=history();
-    const customs=workouts();
-    const customKeys=new Set(customs.map(w=>'custom-'+w.id));
-    const latestCustom=latestMatching(sessions,s=>customKeys.has(s?.workoutKey));
-
-    let plans=[];
+  function activePlan(){
     try{
-      if(window.workoutGoals&&!window.workoutGoals.skipped){
-        if(window.workoutGoals.basic&&window.presetWorkouts){
-          plans=Object.entries(window.presetWorkouts).map(([key,day])=>({workoutKey:'preset-'+key,name:day.title,ids:day.exercises,kind:'plan'}));
-        }else if(typeof window.suggestedWorkouts==='function'){
-          plans=window.suggestedWorkouts(window.workoutGoals).map((day,index)=>({workoutKey:typeof window.suggestedWorkoutKey==='function'?window.suggestedWorkoutKey(index):'suggested-'+index,name:day.title,ids:day.exercises,kind:'plan'}));
+      let plans=[];
+      if(typeof workoutGoals!=='undefined'&&workoutGoals&&!workoutGoals.skipped){
+        if(workoutGoals.basic&&typeof presetWorkouts!=='undefined'){
+          plans=Object.entries(presetWorkouts).map(([key,day])=>({workoutKey:'preset-'+key,name:day.title,ids:day.exercises,kind:'plan'}));
+        }else if(typeof suggestedWorkouts==='function'){
+          plans=suggestedWorkouts(workoutGoals).map((day,index)=>({workoutKey:typeof suggestedWorkoutKey==='function'?suggestedWorkoutKey(index):'suggested-'+index,name:day.title,ids:day.exercises,kind:'plan'}));
         }
       }
-      if(!plans.length&&window.presetWorkouts){
-        plans=Object.entries(window.presetWorkouts).map(([key,day])=>({workoutKey:'preset-'+key,name:day.title,ids:day.exercises,kind:'plan'}));
+      if(!plans.length&&typeof presetWorkouts!=='undefined'){
+        plans=Object.entries(presetWorkouts).map(([key,day])=>({workoutKey:'preset-'+key,name:day.title,ids:day.exercises,kind:'plan'}));
+      }
+      return plans;
+    }catch{return []}
+  }
+
+  function trainingSlots(count){
+    if(count>=7)return [0,1,2,3,4,5,6];
+    if(count===6)return [0,1,2,3,4,5];
+    if(count===5)return [0,1,2,3,4];
+    if(count===4)return [0,1,3,4];
+    if(count===3)return [0,2,4];
+    if(count===2)return [0,3];
+    if(count===1)return [0];
+    return [];
+  }
+
+  const compactName=name=>String(name||'Workout').replace(/^day\s*\d+\s*[—–:\-]\s*/i,'').trim()||'Workout';
+
+  function weeklySchedule(){
+    const plans=activePlan();
+    const customs=customWorkouts();
+    const source=plans.length?plans:customs.map(w=>({workoutKey:'custom-'+w.id,name:w.name,ids:w.exercises,kind:'custom'}));
+    if(!source.length)return Array(7).fill(null);
+
+    let requested=source.length;
+    try{
+      if(typeof workoutGoals!=='undefined'&&workoutGoals&&!workoutGoals.skipped){
+        const days=Number(workoutGoals.days||workoutGoals.trainingDays);
+        if(Number.isFinite(days)&&days>0)requested=Math.min(days,source.length);
       }
     }catch{}
+    requested=Math.max(1,Math.min(7,requested));
+    const slots=trainingSlots(requested);
+    const week=Array(7).fill(null);
+    slots.forEach((weekday,index)=>{
+      const workout=source[index%source.length];
+      if(workout)week[weekday]={...workout,rows:rowsForIds(workout.ids)};
+    });
+    return week;
+  }
 
-    const planKeys=new Set(plans.map(p=>p.workoutKey));
-    const latestPlan=latestMatching(sessions,s=>planKeys.has(s?.workoutKey));
-    const customTime=latestCustom?sessionTime(latestCustom):-1;
-    const planTime=latestPlan?sessionTime(latestPlan):-1;
+  function ensureWorkoutDetails(card,workout){
+    const rows=workout?.rows||[];
+    const summary=muscleSummary(rows);
+    const title=card.querySelector('h2');
+    const desc=card.querySelector(':scope > p');
+    if(title)title.textContent=String(workout?.name||'Today’s Workout').toUpperCase();
+    if(desc)desc.textContent=summary.text||'Training day';
 
-    // Follow whichever workout family the user actually logged most recently.
-    if(latestCustom&&customTime>=planTime&&customs.length){
-      const i=customs.findIndex(w=>'custom-'+w.id===latestCustom.workoutKey);
-      const next=customs[(i+1)%customs.length]||customs[0];
-      const rows=rowsForIds(next.exercises);
-      return rows.length?{name:next.name,rows,kind:'custom'}:null;
+    let meta=card.querySelector('.lh-meta');
+    if(!meta){
+      meta=document.createElement('div');
+      meta.className='lh-meta';
+      const overview=card.querySelector('.lh-overview');
+      if(overview)overview.before(meta);else card.appendChild(meta);
     }
-    if(plans.length){
-      const i=latestPlan?plans.findIndex(p=>p.workoutKey===latestPlan.workoutKey):-1;
-      const next=plans[(i+1)%plans.length]||plans[0];
-      const rows=rowsForIds(next.ids);
-      return rows.length?{name:next.name,rows,kind:'plan'}:null;
+    const count=rows.length;
+    const minutes=Math.max(30,count*6);
+    meta.innerHTML=`<span><b>◴</b>${minutes} min<small>EST. TIME</small></span><span><b>▥</b>${count||'—'} exercises<small>TOTAL</small></span><span><b>◎</b>Hypertrophy<small>FOCUS</small></span>`;
+    meta.removeAttribute('hidden');
+    meta.style.display='';
+
+    let overview=card.querySelector('.lh-overview');
+    if(!overview){
+      overview=document.createElement('div');
+      overview.className='lh-overview';
+      overview.innerHTML='<strong>WORKOUT OVERVIEW</strong><ul></ul>';
+      card.appendChild(overview);
     }
-    if(customs.length){
-      const next=customs[0],rows=rowsForIds(next.exercises);
-      return rows.length?{name:next.name,rows,kind:'custom'}:null;
-    }
-    return null;
+    const ul=overview.querySelector('ul');
+    if(ul)ul.innerHTML=summary.entries.length?summary.entries.map(([m,n])=>`<li>${m}: ${n} exercise${n===1?'':'s'}</li>`).join(''):'<li>Workout scheduled</li>';
+    overview.removeAttribute('hidden');
+    overview.style.display='';
+  }
+
+  function showRestDay(card){
+    const title=card.querySelector('h2');
+    const desc=card.querySelector(':scope > p');
+    if(title)title.textContent='REST DAY';
+    if(desc)desc.textContent='Recovery · No workout scheduled';
+    const meta=card.querySelector('.lh-meta');
+    if(meta){meta.setAttribute('hidden','');meta.style.display='none'}
+    const overview=card.querySelector('.lh-overview');
+    if(overview){overview.setAttribute('hidden','');overview.style.display='none'}
   }
 
   function apply(){
     const shell=document.querySelector('.liftova-home-shell');
     const card=shell?.querySelector('.lh-workout');
-    const title=card?.querySelector('h2');
-    if(!card||!title)return;
+    if(!shell||!card)return;
 
-    const resolved=resolveNextWorkout();
-    if(resolved){
-      title.textContent=String(resolved.name||'Today’s Workout').toUpperCase();
-      const summary=muscleSummary(resolved.rows);
-      const desc=card.querySelector(':scope > p');
-      if(desc&&summary.text)desc.textContent=summary.text;
-      const overview=card.querySelector('.lh-overview');
-      if(overview){
-        overview.style.display='';
-        const ul=overview.querySelector('ul');
-        if(ul)ul.innerHTML=summary.entries.map(([m,n])=>`<li>${m}: ${n} exercise${n===1?'':'s'}</li>`).join('');
-      }
-      const activeDay=shell.querySelector('.lh-day.active span');
-      if(activeDay)activeDay.textContent=resolved.name||'Workout';
-    }
+    const schedule=weeklySchedule();
+    const todayIndex=(new Date().getDay()+6)%7; // Monday=0 … Sunday=6, local time.
+    const days=[...shell.querySelectorAll('.lh-day')];
+    days.forEach((day,index)=>{
+      const label=day.querySelector('span');
+      if(label)label.textContent=schedule[index]?compactName(schedule[index].name):'Rest';
+      day.classList.toggle('active',index===todayIndex);
+    });
 
-    // A visible Rest Day must never show stale exercise/muscle overview content.
-    const isRest=/\brest\s*day\b/i.test(title.textContent||'');
-    if(isRest){
-      const desc=card.querySelector(':scope > p');
-      if(desc)desc.textContent='Recovery · No workout scheduled';
-      card.querySelector('.lh-meta')?.setAttribute('hidden','');
-      const overview=card.querySelector('.lh-overview');
-      if(overview){overview.setAttribute('hidden','');overview.style.display='none'}
-    }else{
-      card.querySelector('.lh-meta')?.removeAttribute('hidden');
-      const overview=card.querySelector('.lh-overview');
-      if(overview){overview.removeAttribute('hidden');overview.style.display=''}
-    }
+    const todayWorkout=schedule[todayIndex];
+    if(todayWorkout)ensureWorkoutDetails(card,todayWorkout);
+    else showRestDay(card);
   }
 
   let queued=false;
