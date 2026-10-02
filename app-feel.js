@@ -6,7 +6,8 @@ let lastTap=0;document.addEventListener('touchend',e=>{const c=e.target.closest?
    position into a shorter screen: on iPhone that can make History look blank or
    land Progress halfway down in Coach content. Let the existing onclick route
    finish first, then pin the new root surface to its top. */
-document.addEventListener('click',e=>{const tab=e.target.closest?.('#prismBottomNav [data-prism-tab]');if(!tab)return;requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'})))},true);
+const resetRootScroll=()=>{const scroller=document.scrollingElement||document.documentElement;if(scroller)scroller.scrollTop=0;document.documentElement.scrollTop=0;document.body.scrollTop=0;window.scrollTo({top:0,left:0,behavior:'auto'})};
+document.addEventListener('click',e=>{const tab=e.target.closest?.('#prismBottomNav [data-prism-tab]');if(!tab)return;requestAnimationFrame(()=>requestAnimationFrame(resetRootScroll))},true);
 document.addEventListener('focusin',e=>{const el=e.target;if(!el?.matches?.('input,textarea,select,[contenteditable="true"]'))return;setTimeout(()=>el.scrollIntoView?.({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}),120)});document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const d=document.querySelector('dialog[open]');if(d?.close)d.close()});
 const syncBusy=el=>el instanceof HTMLElement&&el.classList.toggle('liftova-busy',el.getAttribute('aria-busy')==='true');document.querySelectorAll('[aria-busy]').forEach(syncBusy);new MutationObserver(rs=>rs.forEach(r=>syncBusy(r.target))).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['aria-busy']});
 document.querySelectorAll('a[href]').forEach(a=>{try{const u=new URL(a.href,location.href);if(u.origin!==location.origin)a.dataset.liftovaExternal='true'}catch{}});
