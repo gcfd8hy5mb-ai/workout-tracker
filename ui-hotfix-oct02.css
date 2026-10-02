@@ -1,11 +1,8 @@
-/* MYLIFTCOACH iPhone viewport hotfix — 2026-10-02.
-   Global layout only: keep all app surfaces below iOS status/Dynamic Island area. */
+/* MYLIFTCOACH iPhone viewport hotfix — 2026-10-02. */
 :root{
   --mlc-ios-safe-top:max(env(safe-area-inset-top), 20px);
   --mlc-header-content-height:72px;
 }
-
-/* The legacy fixed header is the shared shell for most screens. */
 body:not(.prism-onboarding-active){
   padding-top:calc(var(--mlc-header-content-height) + var(--mlc-ios-safe-top) + 8px)!important;
 }
@@ -13,22 +10,14 @@ body:not(.prism-onboarding-active) > header{
   height:calc(var(--mlc-header-content-height) + var(--mlc-ios-safe-top))!important;
   padding-top:var(--mlc-ios-safe-top)!important;
 }
+.app-header,[data-app-header]{padding-top:var(--mlc-ios-safe-top)!important}
+.side-menu{padding-top:calc(var(--mlc-ios-safe-top) + 12px)!important}
+.page,.screen,[data-screen],section[id]{scroll-margin-top:calc(var(--mlc-header-content-height) + var(--mlc-ios-safe-top) + 12px)}
+.prism-coach-shell,.coach-shell,[data-coach-screen]{padding-top:max(var(--mlc-ios-safe-top), 20px)}
 
-/* Modern/embedded app headers and menu surfaces must respect the same safe boundary. */
-.app-header,[data-app-header]{
-  padding-top:var(--mlc-ios-safe-top)!important;
-}
-.side-menu{
+/* Progress is the one remaining root whose Coach strip can render above the
+   normal content boundary in standalone iOS. Keep this local to Progress so
+   the already-verified screens do not move again. */
+#overallProgressScreen:not(.hidden){
   padding-top:calc(var(--mlc-ios-safe-top) + 12px)!important;
-}
-
-/* Anchor/navigation destinations should not land underneath fixed chrome. */
-.page,.screen,[data-screen],section[id]{
-  scroll-margin-top:calc(var(--mlc-header-content-height) + var(--mlc-ios-safe-top) + 12px);
-}
-
-/* Standalone full-screen Coach/overlay surfaces need their own safe top when they
-   are not flowing beneath the legacy document header. */
-.prism-coach-shell,.coach-shell,[data-coach-screen]{
-  padding-top:max(var(--mlc-ios-safe-top), 20px);
 }
