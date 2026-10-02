@@ -26,6 +26,10 @@ if (typeof document !== 'undefined') {
   entryCss.rel = 'stylesheet';
   entryCss.href = 'myliftcoach-entry-flow.css?v=1';
   document.head.appendChild(entryCss);
+  const homeCss = document.createElement('link');
+  homeCss.rel = 'stylesheet';
+  homeCss.href = 'myliftcoach-home-refine-v2.css?v=1';
+  document.head.appendChild(homeCss);
   const script = document.createElement('script');
   script.src = 'app-feel.js?v=1';
   script.defer = true;
