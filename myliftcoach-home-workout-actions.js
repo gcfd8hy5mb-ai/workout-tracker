@@ -4,7 +4,7 @@
 (()=>{
 'use strict';
 const ACTIVE_KEY='prismActiveWorkoutV1';
-const safeActive=()=>{try{const value=JSON.parse(localStorage.getItem(ACTIVE_KEY)||'null');return value&&typeof value.key==='string'&&Array.isArray(value.ids)?value:null}catch{return null}};
+const safeActive=()=>{try{const value=JSON.parse(localStorage.getItem(ACTIVE_KEY)||'null');return value&&typeof value.key==='string'&&value.key&&Array.isArray(value.ids)&&value.ids.length>0&&Number.isFinite(Number(value.startedAt))&&Number(value.startedAt)>0?value:null}catch{return null}};
 const home=()=>document.getElementById('home');
 const shell=()=>home()?.querySelector('.liftova-home-shell');
 const hiddenWorkoutAction=()=>[...(home()?.querySelectorAll('button')||[])].find(button=>!button.closest('.liftova-home-shell')&&/^(?:Start Workout|Explore Workouts|Resume Workout)$/i.test((button.textContent||'').trim()));
@@ -36,6 +36,6 @@ function sync(){
   const state=actionMode();if(button.textContent!==state.label)button.textContent=state.label;if(button.dataset.mode!==state.mode)button.dataset.mode=state.mode;if(button.getAttribute('aria-label')!==state.label)button.setAttribute('aria-label',state.label);
  });
 }
-function boot(){sync();const target=home();if(target)new MutationObserver(sync).observe(target,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});window.addEventListener('pageshow',sync,{passive:true});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sync()});}
+function boot(){sync();const target=home();if(target)new MutationObserver(sync).observe(target,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});window.addEventListener('pageshow',sync,{passive:true});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sync()});window.addEventListener('storage',event=>{if(event.key===ACTIVE_KEY)sync()});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
