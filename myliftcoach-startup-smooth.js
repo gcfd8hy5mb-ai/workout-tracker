@@ -35,7 +35,6 @@
          continues afterward in account-ui without blocking first paint. */
       if(user?.id===manager.owner){
         root.classList.remove('prism-account-booting');
-        recoverCanonicalHome();
         check();
         return;
       }
@@ -45,16 +44,6 @@
       identityCheckStarted=false;
       if(manager?.owner&&!revealed&&root.classList.contains('prism-account-booting')) retryIdentitySoon(timedOut?250:500);
     }
-  }
-
-  function recoverCanonicalHome(){
-    if(root.classList.contains('prism-account-booting')) return;
-    const home=document.getElementById('home');
-    if(!home||home.classList.contains('hidden')||home.querySelector('.liftova-home-shell')) return;
-    try{
-      if(typeof window.MYLIFTCOACHRenderHome==='function') window.MYLIFTCOACHRenderHome();
-      else if(typeof window.goHome==='function') window.goHome();
-    }catch{}
   }
 
   function canonicalSurfaceReady(){
@@ -93,7 +82,7 @@
     return true;
   }
 
-  function check(){mount();verifyScopedOwnerEarly();recoverCanonicalHome();reveal();}
+  function check(){mount();verifyScopedOwnerEarly();reveal();}
   if(document.body) mount();
   else document.addEventListener('DOMContentLoaded',mount,{once:true});
 
@@ -108,11 +97,5 @@
 
   document.addEventListener('myliftcoach:home-ready',check);
   document.addEventListener('DOMContentLoaded',check,{once:true});
-  /* Watchdog is intentionally non-bypassing: it retries the verified handoff
-     and canonical render, but never exposes account data while auth is booting. */
-  let watchdogCount=0;
-  const watchdog=setInterval(()=>{
-    if(revealed||watchdogCount++>30){clearInterval(watchdog);return;}
-    check();
-  },250);
+  setTimeout(check,2500);
 })();
