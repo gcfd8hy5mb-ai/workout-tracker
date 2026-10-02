@@ -5,7 +5,11 @@ on:
       - 'app-feel.css'
       - 'app-feel.js'
       - 'persistence/photo-scope.js'
+      - 'myliftcoach-startup-smooth.css'
+      - 'myliftcoach-startup-smooth.js'
+      - 'supabase-config.js'
       - 'tests/app-feel-shell.test.js'
+      - 'tests/prebeta-startup.test.js'
       - '.github/workflows/app-feel-v1.yml'
   push:
     branches: [main]
@@ -13,7 +17,11 @@ on:
       - 'app-feel.css'
       - 'app-feel.js'
       - 'persistence/photo-scope.js'
+      - 'myliftcoach-startup-smooth.css'
+      - 'myliftcoach-startup-smooth.js'
+      - 'supabase-config.js'
       - 'tests/app-feel-shell.test.js'
+      - 'tests/prebeta-startup.test.js'
 jobs:
   isolation:
     runs-on: ubuntu-latest
@@ -23,3 +31,4 @@ jobs:
         with:
           node-version: '22'
       - run: node tests/app-feel-shell.test.js
+      - run: node tests/prebeta-startup.test.js
