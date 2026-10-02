@@ -1,0 +1,22 @@
+/* MYLIFTCOACH onboarding step-by-step polish. Presentation only. */
+body.prism-onboarding-active{scroll-padding-top:calc(18px + env(safe-area-inset-top));scroll-padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+body.prism-onboarding-active #prismJourneyContent{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+body.prism-onboarding-active #prismJourneyContent>.journey-eyebrow{display:block;margin-top:1px!important}
+body.prism-onboarding-active #prismJourneyContent>.journey-card:first-of-type{margin-top:16px!important}
+body.prism-onboarding-active .journey-option{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;text-align:left!important}
+body.prism-onboarding-active .journey-option>span:first-child{min-width:0;flex:1}
+body.prism-onboarding-active .journey-option>span:last-child{flex:0 0 28px;text-align:center;font-size:15px}
+body.prism-onboarding-active .journey-inline{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+body.prism-onboarding-active .journey-form input,body.prism-onboarding-active .journey-form select{font-size:16px!important}
+body.prism-onboarding-active .journey-error:not(:empty){display:block;margin:4px 0 10px!important;padding:10px 12px!important;border:1px solid rgba(255,132,147,.28)!important;border-radius:12px!important;background:rgba(255,132,147,.08)!important;line-height:1.4!important}
+body.prism-onboarding-active .journey-profile-actions{z-index:20!important}
+body.prism-onboarding-active .journey-profile-actions .journey-actions{padding-bottom:calc(6px + env(safe-area-inset-bottom))!important}
+body.prism-onboarding-active .journey-primary:disabled{opacity:.45!important;box-shadow:none!important}
+body.prism-onboarding-active[data-mlc-onboarding-step='1'] #prismJourneyContent>h2{max-width:12ch}
+body.prism-onboarding-active[data-mlc-onboarding-step='4'] #journey-date-preview{margin:12px 0 0!important;padding:11px 12px!important;border-radius:12px!important;background:#15101d!important;color:#c9c3d1!important}
+body.prism-onboarding-active[data-mlc-onboarding-step='5'] #journey-calorie-preview{margin-top:14px!important}
+body.prism-onboarding-active[data-mlc-onboarding-step='5'] #journey-calorie-preview .journey-summary{padding:10px 0!important}
+body.prism-onboarding-active[data-mlc-onboarding-step='7'] .journey-card{background:linear-gradient(180deg,#15101d,#0d0a12)!important;border-color:rgba(157,70,255,.24)!important}
+body.prism-onboarding-active[data-mlc-onboarding-step='7'] .journey-primary{min-height:58px!important}
+@media(max-width:390px){body.prism-onboarding-active .journey-inline{grid-template-columns:1fr!important;gap:0!important}body.prism-onboarding-active .journey-option{min-height:66px!important}body.prism-onboarding-active #prismJourneyContent{padding-bottom:8px}}
+@media(prefers-reduced-motion:reduce){body.prism-onboarding-active .journey-error{scroll-behavior:auto!important}}
