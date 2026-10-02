@@ -2,7 +2,7 @@
 (() => {
 'use strict';
 
-const addStyles=()=>{if(document.querySelector('link[data-liftova-home]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href='liftova-home.css?v=13';l.dataset.liftovaHome='true';document.head.appendChild(l)};
+const addStyles=()=>{if(document.querySelector('link[data-liftova-home]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href='liftova-home.css?v=14';l.dataset.liftovaHome='true';document.head.appendChild(l)};
 const safeJson=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>new Date();
@@ -16,12 +16,11 @@ const planDays=()=>{for(const k of['workoutGoalsV1','prismWorkoutGoalsV1']){cons
 
 function rowsFromIds(ids){
   if(typeof exerciseLibrary==='undefined')return [];
-  return (ids||[]).map(id=>{const ex=exerciseLibrary.find(item=>String(item.id)===String(id));return ex?{title:ex.name||id,muscle:ex.muscle||''}:{title:String(id),muscle:''}});
+  return (ids||[]).map(id=>{const item=exerciseLibrary.find(ex=>String(ex.id)===String(id));return item?{title:item.name||id,muscle:item.muscle||''}:{title:String(id),muscle:''}});
 }
 
 function nextCustomWorkout(){
-  const customs=customWorkouts();
-  if(!customs.length)return null;
+  const customs=customWorkouts();if(!customs.length)return null;
   const appHistory=typeof workoutHistory!=='undefined'&&Array.isArray(workoutHistory)?workoutHistory:history();
   const keys=new Set(customs.map(w=>'custom-'+w.id));
   const last=appHistory.find(session=>keys.has(session?.workoutKey));
@@ -52,33 +51,22 @@ function nextPlanWorkout(){
   }catch{return null}
 }
 
-function scheduledToday(){
-  // User-created workouts are authoritative. Presets/suggested plans are only a fallback.
-  return nextCustomWorkout()||nextPlanWorkout();
-}
+function scheduledToday(){return nextCustomWorkout()||nextPlanWorkout()}
 
 function legacySnapshot(home){
   const text=(home?.innerText||'').replace(/\s+/g,' ').trim();
-  const workoutHeading=[...(home?.querySelectorAll('h2,h3,strong')||[])]
-    .filter(e=>!e.closest('.liftova-home-shell'))
-    .map(e=>(e.textContent||'').trim())
-    .find(v=>/day\s*\d|upper body|lower body|push|pull|legs|full body|rest day/i.test(v))||'Today’s Workout';
+  const workoutHeading=[...(home?.querySelectorAll('h2,h3,strong')||[])].filter(e=>!e.closest('.liftova-home-shell')).map(e=>(e.textContent||'').trim()).find(v=>/day\s*\d|upper body|lower body|push|pull|legs|full body|rest day/i.test(v))||'Today’s Workout';
   const detail=text.match(/\d+\s+exercises?\s*[·•-]\s*(?:about\s*)?\d+\s*min/i)?.[0]||'';
   return{workoutHeading,detail};
 }
 
 function actualToday(home){
-  const scheduled=scheduledToday();
-  if(scheduled)return scheduled;
+  const scheduled=scheduledToday();if(scheduled)return scheduled;
   const candidates=[];
   const add=(name,root)=>{
     if(!root||root.closest?.('.liftova-home-shell'))return;
-    const exercises=[...root.querySelectorAll?.('.exercise,.builder-exercise,[data-exercise-id],.workout-exercise')||[]];
-    if(!exercises.length)return;
-    const rows=exercises.map(el=>({
-      title:(el.querySelector('.exercise-title,.library-name,strong,h3,h4')?.textContent||el.dataset?.exerciseName||'').trim(),
-      muscle:(el.querySelector('.muscle,.badge,[data-muscle]')?.textContent||el.dataset?.muscle||'').trim()
-    })).filter(x=>x.title);
+    const exercises=[...root.querySelectorAll?.('.exercise,.builder-exercise,[data-exercise-id],.workout-exercise')||[]];if(!exercises.length)return;
+    const rows=exercises.map(el=>({title:(el.querySelector('.exercise-title,.library-name,strong,h3,h4')?.textContent||el.dataset?.exerciseName||'').trim(),muscle:(el.querySelector('.muscle,.badge,[data-muscle]')?.textContent||el.dataset?.muscle||'').trim()})).filter(x=>x.title);
     if(rows.length)candidates.push({name,rows,kind:'legacy'});
   };
   [...home.children].forEach(el=>{if(el.classList?.contains('liftova-home-shell'))return;const name=(el.querySelector?.('h2,h3,.workout-title,.day-title')?.textContent||'').trim();add(name,el)});
@@ -88,8 +76,7 @@ function actualToday(home){
 function workoutSnapshot(home){
   const actual=actualToday(home),legacy=legacySnapshot(home);
   if(actual){
-    const groups={};
-    actual.rows.forEach(row=>String(row.muscle||'').split(/[·,\/]/).map(s=>s.trim()).filter(Boolean).forEach(s=>groups[s]=(groups[s]||0)+1));
+    const groups={};actual.rows.forEach(row=>String(row.muscle||'').split(/[·,\/]/).map(s=>s.trim()).filter(Boolean).forEach(s=>groups[s]=(groups[s]||0)+1));
     return{name:actual.name||legacy.workoutHeading,exercises:actual.rows.length,muscles:Object.keys(groups).slice(0,4).join(' · '),overview:Object.entries(groups).slice(0,5),kind:actual.kind||'workout'};
   }
   const isRest=/\brest\s*day\b/i.test(legacy.workoutHeading);
@@ -102,15 +89,7 @@ const defaultWeekLabels=['Upper','Lower','Rest','Upper','Lower','Rest','Rest'];
 const weekIcons=['⌁','♙','⌁','◎','♙','⌁','◎'];
 function weekMarkup(){
   const n=today(),customs=customWorkouts();
-  return ['MON','TUE','WED','THU','FRI','SAT','SUN'].map((label,i)=>{
-    const active=i===(n.getDay()+6)%7;
-    let dayLabel=defaultWeekLabels[i];
-    if(customs.length){
-      if(active){const next=nextCustomWorkout();dayLabel=next?.name||'Custom'}
-      else dayLabel='Custom';
-    }
-    return `<div class="lh-day ${active?'active':''}"><strong>${label}</strong><b>${weekIcons[i]}</b><span>${esc(dayLabel)}</span></div>`;
-  }).join('');
+  return ['MON','TUE','WED','THU','FRI','SAT','SUN'].map((label,i)=>{const active=i===(n.getDay()+6)%7;let dayLabel=defaultWeekLabels[i];if(customs.length)dayLabel=active?(nextCustomWorkout()?.name||'Custom'):'Custom';return `<div class="lh-day ${active?'active':''}"><strong>${label}</strong><b>${weekIcons[i]}</b><span>${esc(dayLabel)}</span></div>`}).join('');
 }
 
 const workoutMuscles=name=>/lower|leg/i.test(name)?'Quads · Hamstrings · Glutes · Calves':/push/i.test(name)?'Chest · Shoulders · Triceps':/pull/i.test(name)?'Back · Biceps · Rear Delts':'Chest · Back · Shoulders · Arms';
@@ -130,8 +109,16 @@ function openLegacyMenu(){if(typeof window.openMenu==='function'){window.openMen
 function openAnalytics(){if(typeof window.showOverallProgress==='function'){window.showOverallProgress();return}const progress=document.querySelector('[data-prism-tab="Progress"]');if(progress){progress.click();return}if(typeof window.showScreen==='function')window.showScreen('overallProgressScreen')}
 function bindActions(shell){shell.querySelector('[data-lh-action="menu"]')?.addEventListener('click',openLegacyMenu);shell.querySelector('[data-lh-action="profile"]')?.addEventListener('click',()=>{if(typeof window.showProfile==='function')window.showProfile();else document.querySelector('[data-prism-tab="Settings"]')?.click()});shell.querySelector('[data-lh-action="library"]')?.addEventListener('click',()=>{if(typeof window.showExerciseLibrary==='function')window.showExerciseLibrary();else if(typeof window.showLibrary==='function')window.showLibrary()});shell.querySelector('[data-lh-action="plan"]')?.addEventListener('click',()=>document.querySelector('[data-prism-tab="Workout"],[data-prism-tab="Workouts"]')?.click());shell.querySelector('[data-lh-action="progress"]')?.addEventListener('click',openAnalytics);shell.querySelectorAll('[data-lh-action="analytics"]').forEach(card=>{card.addEventListener('click',openAnalytics);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openAnalytics()}})})}
 
+let homeReadySent=false;
+let lastSignature='';
+
+function dataReady(){
+  if(document.documentElement.classList.contains('prism-account-booting'))return false;
+  return typeof exerciseLibrary!=='undefined'&&Array.isArray(exerciseLibrary)&&exerciseLibrary.length>0;
+}
+
 function render(){
-  const home=document.getElementById('home');if(!home)return;
+  const home=document.getElementById('home');if(!home||!dataReady())return false;
   addStyles();
   const data=workoutSnapshot(home),days=planDays(),workouts=workoutCountThisWeek();
   const isRest=data.kind==='rest';
@@ -140,17 +127,34 @@ function render(){
   const muscles=isRest?'Recovery · No workout scheduled':(data.muscles||workoutMuscles(name));
   const minutes=isRest?0:(data.minutes||Math.max(30,count*6));
   const overview=isRest?'':(data.overview.length?data.overview.map(([m,n])=>`<li>${esc(m)}: ${n} exercise${n===1?'':'s'}</li>`).join(''):muscles.split(' · ').filter(Boolean).map(m=>`<li>${esc(m)}</li>`).join(''));
-  const current=home.querySelector('.liftova-home-shell'),shell=current||document.createElement('div');
+  const signature=JSON.stringify({name,count,muscles,minutes,overview,days,workouts,streak:streak(),week:weekMarkup()});
+  const current=home.querySelector('.liftova-home-shell');
+  if(current&&signature===lastSignature){syncHomeChrome();return true}
+  const shell=current||document.createElement('div');
   shell.className='liftova-home-shell';
+  shell.dataset.liftovaReady='true';
   shell.innerHTML=`<section class="lh-hero"><button class="lh-hero-menu" data-lh-action="menu" aria-label="Open menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h11"/></svg></button><button class="lh-hero-profile" data-lh-action="profile" aria-label="Open profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21c.7-4 3-6 7-6s6.3 2 7 6"/></svg></button><div class="lh-hero-mark"><img src="images/myliftcoach-icon.svg?v=22" alt="MYLIFTCOACH"></div><strong>MYLIFTCOACH</strong><span>TRAIN <i>•</i> TRACK <i>•</i> PROGRESS</span></section><div class="lh-week">${weekMarkup()}</div><section class="lh-workout"><div class="lh-label">TODAY’S WORKOUT</div><h2>${esc(name)}</h2><p>${esc(muscles)}</p>${isRest?'':`<div class="lh-meta"><span><b>◴</b>${minutes} min<small>EST. TIME</small></span><span><b>▥</b>${count||'—'} exercises<small>TOTAL</small></span><span><b>◎</b>Hypertrophy<small>FOCUS</small></span></div><div class="lh-overview"><strong>WORKOUT OVERVIEW</strong><ul>${overview}</ul></div>`}</section><div class="lh-insights"><section class="lh-progress" data-lh-action="analytics" role="button" tabindex="0"><header><b>↗</b><strong>WEEKLY PROGRESS</strong><span>›</span></header><div class="lh-chart">${chartBars()}</div></section><section class="lh-streak" data-lh-action="analytics" role="button" tabindex="0"><header><b>🔥</b><strong>WORKOUT STREAK</strong><span>›</span></header><div class="lh-streak-body"><div><strong>${streak()}</strong><small>DAYS</small></div><div class="lh-ring" style="--pct:${Math.min(100,(workouts/Math.max(days,1))*100)}%"></div></div></section></div>${lowerDashboard(days,workouts)}`;
   if(!current)home.prepend(shell);
   bindActions(shell);
+  lastSignature=signature;
   document.body.classList.add('liftova-ui');home.classList.add('liftova-home');syncHomeChrome();
+  if(!homeReadySent){homeReadySent=true;document.dispatchEvent(new CustomEvent('myliftcoach:home-ready'))}
+  return true;
 }
 
-function refreshHome(){render();syncHomeChrome()}
-function settleHome(){refreshHome();setTimeout(syncHomeChrome,150);setTimeout(syncHomeChrome,600)}
+function refreshHome(){return render()}
+function settleHome(){
+  if(refreshHome())return;
+  let tries=0;
+  const retry=()=>{if(refreshHome()||++tries>=20)return;setTimeout(retry,50)};
+  setTimeout(retry,0);
+}
 function loadProfileBranding(){if(document.querySelector('script[data-liftova-profile-branding]'))return;const s=document.createElement('script');s.src='liftova-profile-branding.js?v=1';s.dataset.liftovaProfileBranding='true';document.body.appendChild(s)}
-function boot(){settleHome();loadProfileBranding();const home=document.getElementById('home');if(home)new MutationObserver(syncHomeChrome).observe(home,{attributes:true,attributeFilter:['class']});const originalGoHome=window.goHome;if(typeof originalGoHome==='function'&&!originalGoHome.__liftovaWrapped){const wrapped=function(...args){const result=originalGoHome.apply(this,args);requestAnimationFrame(settleHome);return result};wrapped.__liftovaWrapped=true;window.goHome=wrapped}const originalShowScreen=window.showScreen;if(typeof originalShowScreen==='function'&&!originalShowScreen.__liftovaHomeChrome){const wrapped=function(...args){const result=originalShowScreen.apply(this,args);requestAnimationFrame(()=>{syncHomeChrome();if(args[0]==='home')settleHome()});return result};wrapped.__liftovaHomeChrome=true;window.showScreen=wrapped}}
+function boot(){
+  settleHome();loadProfileBranding();
+  const home=document.getElementById('home');if(home)new MutationObserver(()=>{syncHomeChrome();if(!home.classList.contains('hidden'))settleHome()}).observe(home,{attributes:true,attributeFilter:['class']});
+  const originalGoHome=window.goHome;if(typeof originalGoHome==='function'&&!originalGoHome.__liftovaWrapped){const wrapped=function(...args){const result=originalGoHome.apply(this,args);requestAnimationFrame(settleHome);return result};wrapped.__liftovaWrapped=true;window.goHome=wrapped}
+  const originalShowScreen=window.showScreen;if(typeof originalShowScreen==='function'&&!originalShowScreen.__liftovaHomeChrome){const wrapped=function(...args){const result=originalShowScreen.apply(this,args);requestAnimationFrame(()=>{syncHomeChrome();if(args[0]==='home')settleHome()});return result};wrapped.__liftovaHomeChrome=true;window.showScreen=wrapped}
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
