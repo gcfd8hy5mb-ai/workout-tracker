@@ -38,7 +38,7 @@
     screen.classList.remove('myliftcoach-native-enter','myliftcoach-native-back');
     void screen.offsetWidth;
     screen.classList.add(direction==='back'?'myliftcoach-native-back':'myliftcoach-native-enter');
-    setTimeout(()=>screen.classList.remove('myliftcoach-native-enter','myliftcoach-native-back'),220);
+    setTimeout(()=>screen.classList.remove('myliftcoach-native-enter','myliftcoach-native-back'),180);
   }
 
   function rememberScroll(id){
@@ -59,11 +59,11 @@
       html{overscroll-behavior:none;background:#07050d}
       body{min-height:100dvh;overscroll-behavior-y:none;-webkit-user-select:none;user-select:none}
       input,textarea,[contenteditable=true]{-webkit-user-select:text;user-select:text}
-      .container>section{transform-origin:center center;will-change:transform,opacity}
-      .container>section.myliftcoach-native-enter{animation:myliftcoachNativePush .19s cubic-bezier(.22,.78,.25,1) both}
-      .container>section.myliftcoach-native-back{animation:myliftcoachNativePop .19s cubic-bezier(.22,.78,.25,1) both}
-      @keyframes myliftcoachNativePush{from{opacity:.78;transform:translate3d(12px,0,0)}to{opacity:1;transform:translate3d(0,0,0)}}
-      @keyframes myliftcoachNativePop{from{opacity:.82;transform:translate3d(-9px,0,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+      .container>section{transform-origin:center center;will-change:opacity}
+      .container>section.myliftcoach-native-enter{animation:myliftcoachNativePush .15s ease-out both}
+      .container>section.myliftcoach-native-back{animation:myliftcoachNativePop .15s ease-out both}
+      @keyframes myliftcoachNativePush{from{opacity:.82}to{opacity:1}}
+      @keyframes myliftcoachNativePop{from{opacity:.86}to{opacity:1}}
       .prism-bottom-nav{padding-bottom:max(5px,env(safe-area-inset-bottom))!important}
       .prism-bottom-nav button,.menu-link,.back,button{cursor:default!important}
       .back,[data-liftova-back],[data-myliftcoach-back]{min-width:44px;min-height:44px!important;touch-action:manipulation}
