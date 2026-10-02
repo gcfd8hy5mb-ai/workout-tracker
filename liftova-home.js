@@ -37,10 +37,68 @@ function bindActions(shell){shell.querySelector('[data-lh-action="menu"]')?.addE
 
 let homeReadySent=false;
 let lastSignature='';
+let firstCandidateSignature='';
+let firstCandidateSince=0;
+let firstStableTimer=null;
+const FIRST_STABLE_MS=350;
+
 function dataReady(){if(document.documentElement.classList.contains('prism-account-booting'))return false;return typeof exerciseLibrary!=='undefined'&&Array.isArray(exerciseLibrary)&&exerciseLibrary.length>0}
-function render(){const home=document.getElementById('home');if(!home||!dataReady())return false;addStyles();const data=workoutSnapshot(home),days=planDays(),workouts=workoutCountThisWeek();const isRest=data.kind==='rest';const name=String(data.name||'Today’s Workout').toUpperCase();const count=isRest?0:(data.exercises||0);const muscles=isRest?'Recovery · No workout scheduled':(data.muscles||workoutMuscles(name));const minutes=isRest?0:(data.minutes||Math.max(30,count*6));const overview=isRest?'':(data.overview.length?data.overview.map(([m,n])=>`<li>${esc(m)}: ${n} exercise${n===1?'':'s'}</li>`).join(''):muscles.split(' · ').filter(Boolean).map(m=>`<li>${esc(m)}</li>`).join(''));const signature=JSON.stringify({name,count,muscles,minutes,overview,days,workouts,streak:streak(),week:weekMarkup()});const current=home.querySelector('.liftova-home-shell');if(current&&signature===lastSignature){syncHomeChrome();return true}const shell=current||document.createElement('div');shell.className='liftova-home-shell';shell.dataset.liftovaReady='true';shell.innerHTML=`<section class="lh-hero"><button class="lh-hero-menu" data-lh-action="menu" aria-label="Open menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h11"/></svg></button><button class="lh-hero-profile" data-lh-action="profile" aria-label="Open profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21c.7-4 3-6 7-6s6.3 2 7 6"/></svg></button><div class="lh-hero-mark"><img src="images/myliftcoach-icon.svg?v=22" alt="MYLIFTCOACH"></div><strong>MYLIFTCOACH</strong><span>TRAIN <i>•</i> TRACK <i>•</i> PROGRESS</span></section><div class="lh-week">${weekMarkup()}</div><section class="lh-workout"><div class="lh-label">TODAY’S WORKOUT</div><h2>${esc(name)}</h2><p>${esc(muscles)}</p>${isRest?'':`<div class="lh-meta"><span><b>◴</b>${minutes} min<small>EST. TIME</small></span><span><b>▥</b>${count||'—'} exercises<small>TOTAL</small></span><span><b>◎</b>Hypertrophy<small>FOCUS</small></span></div><div class="lh-overview"><strong>WORKOUT OVERVIEW</strong><ul>${overview}</ul></div>`}</section><div class="lh-insights"><section class="lh-progress" data-lh-action="analytics" role="button" tabindex="0"><header><b>↗</b><strong>WEEKLY PROGRESS</strong><span>›</span></header><div class="lh-chart">${chartBars()}</div></section><section class="lh-streak" data-lh-action="analytics" role="button" tabindex="0"><header><b>🔥</b><strong>WORKOUT STREAK</strong><span>›</span></header><div class="lh-streak-body"><div><strong>${streak()}</strong><small>DAYS</small></div><div class="lh-ring" style="--pct:${Math.min(100,(workouts/Math.max(days,1))*100)}%"></div></div></section></div>${lowerDashboard(days,workouts)}`;if(!current)home.prepend(shell);bindActions(shell);lastSignature=signature;document.body.classList.add('liftova-ui');home.classList.add('liftova-home');syncHomeChrome();if(!homeReadySent){homeReadySent=true;document.dispatchEvent(new CustomEvent('myliftcoach:home-ready'))}return true}
-function settleHome(){if(render())return;let tries=0;const retry=()=>{if(render()||++tries>=40)return;setTimeout(retry,50)};setTimeout(retry,0)}
+function snapshotState(home){
+  const data=workoutSnapshot(home),days=planDays(),workouts=workoutCountThisWeek();
+  const isRest=data.kind==='rest';
+  const name=String(data.name||'Today’s Workout').toUpperCase();
+  const count=isRest?0:(data.exercises||0);
+  const muscles=isRest?'Recovery · No workout scheduled':(data.muscles||workoutMuscles(name));
+  const minutes=isRest?0:(data.minutes||Math.max(30,count*6));
+  const overview=isRest?'':(data.overview.length?data.overview.map(([m,n])=>`<li>${esc(m)}: ${n} exercise${n===1?'':'s'}</li>`).join(''):muscles.split(' · ').filter(Boolean).map(m=>`<li>${esc(m)}</li>`).join(''));
+  const week=weekMarkup();
+  const streakValue=streak();
+  const signature=JSON.stringify({name,count,muscles,minutes,overview,days,workouts,streak:streakValue,week});
+  return{data,days,workouts,isRest,name,count,muscles,minutes,overview,week,streakValue,signature};
+}
+function firstSnapshotStable(signature){
+  const now=performance.now();
+  if(signature!==firstCandidateSignature){firstCandidateSignature=signature;firstCandidateSince=now;return false}
+  return now-firstCandidateSince>=FIRST_STABLE_MS;
+}
+function scheduleFirstStabilityCheck(){
+  if(homeReadySent||firstStableTimer)return;
+  firstStableTimer=setTimeout(()=>{firstStableTimer=null;settleHome()},60);
+}
+function render(force=false){
+  const home=document.getElementById('home');if(!home||!dataReady())return false;
+  addStyles();
+  const state=snapshotState(home);
+  if(!homeReadySent&&!firstSnapshotStable(state.signature)){scheduleFirstStabilityCheck();return false}
+  const current=home.querySelector('.liftova-home-shell');
+  if(current&&state.signature===lastSignature){syncHomeChrome();return true}
+  if(current&&!force&&homeReadySent){syncHomeChrome();return true}
+  const shell=current||document.createElement('div');
+  shell.className='liftova-home-shell';
+  shell.dataset.liftovaReady='true';
+  shell.innerHTML=`<section class="lh-hero"><button class="lh-hero-menu" data-lh-action="menu" aria-label="Open menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h11"/></svg></button><button class="lh-hero-profile" data-lh-action="profile" aria-label="Open profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21c.7-4 3-6 7-6s6.3 2 7 6"/></svg></button><div class="lh-hero-mark"><img src="images/myliftcoach-icon.svg?v=22" alt="MYLIFTCOACH"></div><strong>MYLIFTCOACH</strong><span>TRAIN <i>•</i> TRACK <i>•</i> PROGRESS</span></section><div class="lh-week">${state.week}</div><section class="lh-workout"><div class="lh-label">TODAY’S WORKOUT</div><h2>${esc(state.name)}</h2><p>${esc(state.muscles)}</p>${state.isRest?'':`<div class="lh-meta"><span><b>◴</b>${state.minutes} min<small>EST. TIME</small></span><span><b>▥</b>${state.count||'—'} exercises<small>TOTAL</small></span><span><b>◎</b>Hypertrophy<small>FOCUS</small></span></div><div class="lh-overview"><strong>WORKOUT OVERVIEW</strong><ul>${state.overview}</ul></div>`}</section><div class="lh-insights"><section class="lh-progress" data-lh-action="analytics" role="button" tabindex="0"><header><b>↗</b><strong>WEEKLY PROGRESS</strong><span>›</span></header><div class="lh-chart">${chartBars()}</div></section><section class="lh-streak" data-lh-action="analytics" role="button" tabindex="0"><header><b>🔥</b><strong>WORKOUT STREAK</strong><span>›</span></header><div class="lh-streak-body"><div><strong>${state.streakValue}</strong><small>DAYS</small></div><div class="lh-ring" style="--pct:${Math.min(100,(state.workouts/Math.max(state.days,1))*100)}%"></div></div></section></div>${lowerDashboard(state.days,state.workouts)}`;
+  if(!current)home.prepend(shell);
+  bindActions(shell);
+  lastSignature=state.signature;
+  document.body.classList.add('liftova-ui');home.classList.add('liftova-home');syncHomeChrome();
+  if(!homeReadySent){homeReadySent=true;document.dispatchEvent(new CustomEvent('myliftcoach:home-ready'))}
+  return true;
+}
+
+function refreshHome(force=false){return render(force)}
+function settleHome(force=false){
+  if(refreshHome(force))return;
+  let tries=0;
+  const retry=()=>{if(refreshHome(force)||++tries>=40)return;setTimeout(retry,50)};
+  setTimeout(retry,0);
+}
 function loadProfileBranding(){if(document.querySelector('script[data-liftova-profile-branding]'))return;const s=document.createElement('script');s.src='liftova-profile-branding.js?v=1';s.dataset.liftovaProfileBranding='true';document.body.appendChild(s)}
-function boot(){settleHome();loadProfileBranding();const home=document.getElementById('home');if(home)new MutationObserver(()=>{syncHomeChrome();if(!home.classList.contains('hidden'))settleHome()}).observe(home,{attributes:true,attributeFilter:['class']});new MutationObserver(()=>{if(!document.documentElement.classList.contains('prism-account-booting'))settleHome()}).observe(document.documentElement,{attributes:true,attributeFilter:['class']});const originalGoHome=window.goHome;if(typeof originalGoHome==='function'&&!originalGoHome.__liftovaWrapped){const wrapped=function(...args){const result=originalGoHome.apply(this,args);requestAnimationFrame(settleHome);return result};wrapped.__liftovaWrapped=true;window.goHome=wrapped}const originalShowScreen=window.showScreen;if(typeof originalShowScreen==='function'&&!originalShowScreen.__liftovaHomeChrome){const wrapped=function(...args){const result=originalShowScreen.apply(this,args);requestAnimationFrame(()=>{syncHomeChrome();if(args[0]==='home')settleHome()});return result};wrapped.__liftovaHomeChrome=true;window.showScreen=wrapped}}
+function boot(){
+  settleHome(false);loadProfileBranding();
+  const home=document.getElementById('home');if(home)new MutationObserver(()=>{syncHomeChrome();if(!home.classList.contains('hidden'))settleHome(false)}).observe(home,{attributes:true,attributeFilter:['class']});
+  new MutationObserver(()=>{if(!document.documentElement.classList.contains('prism-account-booting'))settleHome(false)}).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+  const originalGoHome=window.goHome;if(typeof originalGoHome==='function'&&!originalGoHome.__liftovaWrapped){const wrapped=function(...args){const result=originalGoHome.apply(this,args);requestAnimationFrame(()=>settleHome(true));return result};wrapped.__liftovaWrapped=true;window.goHome=wrapped}
+  const originalShowScreen=window.showScreen;if(typeof originalShowScreen==='function'&&!originalShowScreen.__liftovaHomeChrome){const wrapped=function(...args){const result=originalShowScreen.apply(this,args);requestAnimationFrame(()=>{syncHomeChrome();if(args[0]==='home')settleHome(true)});return result};wrapped.__liftovaHomeChrome=true;window.showScreen=wrapped}
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
