@@ -66,6 +66,25 @@
       });
     }
   }
+  function containLateModules(screen){
+    const ids=['prismCoach','prismAthleteProfile','prismAdaptiveProgramming','liftovaCoachCycle','prismAsk'];
+    const screenLeft=screen.getBoundingClientRect().left;
+    ids.forEach(id=>{
+      const node=screen.querySelector(`#${id}`);if(!node)return;
+      let current=node;
+      while(current&&current!==screen){
+        const rect=current.getBoundingClientRect();
+        const style=getComputedStyle(current);
+        if(rect.left<screenLeft-.5&&parseFloat(style.marginLeft)<0){
+          current.style.setProperty('margin-left','0','important');
+          current.style.setProperty('margin-right','0','important');
+          current.style.setProperty('max-width','100%','important');
+          current.style.setProperty('box-sizing','border-box','important');
+        }
+        current=current.parentElement;
+      }
+    });
+  }
   function decorate(){
     const screen=document.getElementById('overallProgressScreen');
     if(!screen)return;
@@ -87,6 +106,7 @@
     screen.querySelectorAll('.progress-links button,button.dashboard-link').forEach(button=>{
       if(!button.getAttribute('aria-label'))button.setAttribute('aria-label',(button.textContent||'Open progress detail').trim());
     });
+    containLateModules(screen);
     improveEmptyStates(screen);
   }
   const original=window.showOverallProgress;
