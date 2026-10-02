@@ -33,7 +33,7 @@ function sync(){
  if(syncing)return;syncing=true;requestAnimationFrame(()=>{
   syncing=false;injectStyle();const root=shell(),card=root?.querySelector('.lh-workout');if(!card)return;
   let button=card.querySelector('.myliftcoach-home-workout-action');if(!button){button=document.createElement('button');button.type='button';button.className='myliftcoach-home-workout-action';button.addEventListener('click',runAction);card.appendChild(button)}
-  const state=actionMode();button.textContent=state.label;button.dataset.mode=state.mode;button.setAttribute('aria-label',state.label);
+  const state=actionMode();if(button.textContent!==state.label)button.textContent=state.label;if(button.dataset.mode!==state.mode)button.dataset.mode=state.mode;if(button.getAttribute('aria-label')!==state.label)button.setAttribute('aria-label',state.label);
  });
 }
 function boot(){sync();const target=home();if(target)new MutationObserver(sync).observe(target,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});window.addEventListener('pageshow',sync,{passive:true});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sync()});}
