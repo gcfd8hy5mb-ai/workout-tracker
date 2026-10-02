@@ -3,7 +3,7 @@
   'use strict';
   const root=document.documentElement;
   root.classList.add('myliftcoach-starting');
-  let revealed=false,observer=null;
+  let revealed=false,observer=null,identityCheckStarted=false,identityRetry=null;
 
   function mount(){
     if(revealed||document.getElementById('myliftcoachStartupCover'))return;
@@ -12,6 +12,38 @@
     cover.setAttribute('aria-hidden','true');
     cover.innerHTML='<div class="mlc-startup-mark"><img src="images/myliftcoach-icon.svg?v=22" alt=""><strong>MYLIFTCOACH</strong><span>TRAIN · TRACK · PROGRESS</span></div>';
     (document.body||document.documentElement).appendChild(cover);
+  }
+
+  function retryIdentitySoon(delay=250){
+    if(revealed||identityRetry)return;
+    identityRetry=setTimeout(()=>{identityRetry=null;verifyScopedOwnerEarly();},delay);
+  }
+
+  async function verifyScopedOwnerEarly(){
+    if(revealed||identityCheckStarted||!root.classList.contains('prism-account-booting'))return;
+    const manager=window.PRISMDeviceStore,cloud=window.PRISMCloud;
+    if(!manager?.owner)return;
+    if(!cloud?.currentUser){retryIdentitySoon(75);return;}
+    identityCheckStarted=true;
+    let timedOut=false;
+    const timeout=new Promise((_,reject)=>setTimeout(()=>{timedOut=true;reject(new Error('identity-check-timeout'));},1800));
+    try{
+      const user=await Promise.race([cloud.currentUser(),timeout]);
+      /* The device store was selected from the cached session before app state
+         was read. Reveal the already account-scoped local copy only after the
+         server confirms the exact same user. Full cloud reconciliation, photo
+         push/restore and other account work continue in account-ui afterward. */
+      if(user?.id===manager.owner){
+        root.classList.remove('prism-account-booting');
+        check();
+        return;
+      }
+    }catch{
+      /* Fail closed: never reveal account data until this owner is confirmed. */
+    }finally{
+      identityCheckStarted=false;
+      if(manager?.owner&&!revealed&&root.classList.contains('prism-account-booting'))retryIdentitySoon(timedOut?250:500);
+    }
   }
 
   function visibleCanonicalHomeReady(){
@@ -30,6 +62,7 @@
     document.getElementById('myliftcoachStartupCover')?.remove();
     root.classList.remove('myliftcoach-starting','myliftcoach-ready');
     observer?.disconnect();
+    if(identityRetry){clearTimeout(identityRetry);identityRetry=null;}
   }
 
   function reveal(){
@@ -37,11 +70,11 @@
     revealed=true;
     root.classList.add('myliftcoach-ready');
     if(matchMedia('(prefers-reduced-motion: reduce)').matches)finishReveal();
-    else setTimeout(finishReveal,220);
+    else setTimeout(finishReveal,110);
     return true;
   }
 
-  function check(){if(revealed)return;mount();reveal()}
+  function check(){if(revealed)return;mount();verifyScopedOwnerEarly();reveal();}
 
   function boot(){
     mount();
@@ -52,5 +85,5 @@
 
   if(document.body)boot();
   else document.addEventListener('DOMContentLoaded',boot,{once:true});
-  document.addEventListener('myliftcoach:home-ready',reveal);
+  document.addEventListener('myliftcoach:home-ready',check);
 })();
