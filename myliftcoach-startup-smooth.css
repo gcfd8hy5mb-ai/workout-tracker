@@ -1,8 +1,12 @@
-/* MYLIFTCOACH startup cover — prevents iOS/PWA black flash + first-layout snap. */
-#myliftcoachStartupCover{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#050409;opacity:1;pointer-events:none;transition:opacity .16s ease-out}
+/* MYLIFTCOACH startup cover — blocks legacy first paint while auth + canonical Home settle. */
+html.myliftcoach-starting{background:#050409!important}
+html.myliftcoach-starting body>*:not(#myliftcoachStartupCover):not(#liftovaAuthGate){visibility:hidden!important}
+html.myliftcoach-starting::before{content:"";position:fixed;inset:0;z-index:2147482998;background:#050409 url('images/myliftcoach-icon.svg?v=10') center calc(50% - 22px)/68px 68px no-repeat;pointer-events:none}
+html.myliftcoach-starting::after{content:"MYLIFTCOACH";position:fixed;left:0;right:0;top:calc(50% + 30px);z-index:2147482999;text-align:center;color:#f9f7ff;font:800 15px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;letter-spacing:.18em;pointer-events:none}
+#myliftcoachStartupCover{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#050409;opacity:1;pointer-events:none;transition:opacity .1s ease-out}
 #myliftcoachStartupCover .mlc-startup-mark{display:flex;flex-direction:column;align-items:center;gap:12px;transform:translateY(-2vh)}
 #myliftcoachStartupCover img{width:68px;height:68px;display:block;object-fit:contain}
 #myliftcoachStartupCover strong{color:#f9f7ff;font:800 15px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;letter-spacing:.18em}
-html.myliftcoach-starting body{visibility:visible!important}
 html.myliftcoach-ready #myliftcoachStartupCover{opacity:0}
-@media (prefers-reduced-motion:reduce){#myliftcoachStartupCover{transition:none}}
+html.myliftcoach-ready::before,html.myliftcoach-ready::after{opacity:0;transition:opacity .1s ease-out}
+@media (prefers-reduced-motion:reduce){#myliftcoachStartupCover,html.myliftcoach-ready::before,html.myliftcoach-ready::after{transition:none}}
