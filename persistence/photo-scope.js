@@ -45,6 +45,10 @@ if (typeof document !== 'undefined') {
   entryCss.rel = 'stylesheet';
   entryCss.href = 'myliftcoach-entry-flow.css?v=1';
   document.head.appendChild(entryCss);
+  const onboardingCss = document.createElement('link');
+  onboardingCss.rel = 'stylesheet';
+  onboardingCss.href = 'myliftcoach-onboarding-polish.css?v=1';
+  document.head.appendChild(onboardingCss);
   const homeCss = document.createElement('link');
   homeCss.rel = 'stylesheet';
   homeCss.href = 'myliftcoach-home-refine-v2.css?v=1';
@@ -57,6 +61,10 @@ if (typeof document !== 'undefined') {
   menuCss.rel = 'stylesheet';
   menuCss.href = 'myliftcoach-menu-destinations.css?v=1';
   document.head.appendChild(menuCss);
+  const onboardingScript = document.createElement('script');
+  onboardingScript.src = 'myliftcoach-onboarding-polish.js?v=1';
+  onboardingScript.defer = true;
+  document.head.appendChild(onboardingScript);
   const script = document.createElement('script');
   script.src = 'app-feel.js?v=1';
   script.defer = true;
