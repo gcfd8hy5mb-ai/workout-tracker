@@ -77,6 +77,10 @@ if (typeof document !== 'undefined') {
   destinationFixScript.src = 'myliftcoach-settings-destination-fixes.js?v=1';
   destinationFixScript.defer = true;
   document.head.appendChild(destinationFixScript);
+  const brandSafetyScript = document.createElement('script');
+  brandSafetyScript.src = 'myliftcoach-brand-safety.js?v=1';
+  brandSafetyScript.defer = true;
+  document.head.appendChild(brandSafetyScript);
   const script = document.createElement('script');
   script.src = 'app-feel.js?v=1';
   script.defer = true;
