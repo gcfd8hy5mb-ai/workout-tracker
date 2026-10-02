@@ -32,7 +32,7 @@
   }
 
   function loadOwnerShadowTools(){
-    for(const [src,key] of [['myliftcoach-shadow-cloud.js?v=1','shadow-cloud'],['myliftcoach-admin-shadow-dashboard-v2.js?v=1','admin-shadow']]){
+    for(const [src,key] of [['myliftcoach-shadow-cloud.js?v=1','shadow-cloud'],['myliftcoach-admin-shadow-dashboard-v3.js?v=1','admin-shadow']]){
       if(document.querySelector(`script[data-myliftcoach-${key}]`)) continue;
       const script=document.createElement('script');
       script.src=src;script.async=false;script.setAttribute(`data-myliftcoach-${key}`,'true');
