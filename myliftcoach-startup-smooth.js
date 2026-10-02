@@ -12,9 +12,6 @@
     cover.setAttribute('aria-hidden','true');
     cover.innerHTML='<div class="mlc-startup-mark"><img src="images/myliftcoach-icon.svg?v=10" alt=""><strong>MYLIFTCOACH</strong></div>';
     (document.body||document.documentElement).appendChild(cover);
-
-    // The legacy account boot state hides the full body and produces the black flash.
-    // The startup cover now owns the visual handoff while state/layout settle.
     root.classList.remove('prism-account-booting');
   }
 
@@ -34,12 +31,21 @@
     }));
   }
 
+  function loadOwnerShadowTools(){
+    for(const [src,key] of [['myliftcoach-shadow-cloud.js?v=1','shadow-cloud'],['myliftcoach-admin-shadow-dashboard.js?v=1','admin-shadow']]){
+      if(document.querySelector(`script[data-myliftcoach-${key}]`)) continue;
+      const script=document.createElement('script');
+      script.src=src;script.async=false;script.setAttribute(`data-myliftcoach-${key}`,'true');
+      document.head.appendChild(script);
+    }
+  }
+
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount,{once:true});
   else mount();
 
   if(document.readyState==='complete') reveal();
   else window.addEventListener('load',reveal,{once:true});
 
-  // iOS safety valve: never leave the app covered if a resource stalls.
+  loadOwnerShadowTools();
   setTimeout(reveal,1600);
 })();
