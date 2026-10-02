@@ -48,11 +48,12 @@
 
   function visibleCanonicalHomeReady(){
     const home=document.getElementById('home');
-    return !!(home&&!home.classList.contains('hidden')&&home.querySelector('.liftova-home-shell[data-liftova-ready="true"]'));
+    const shell=home?.querySelector('.liftova-home-shell');
+    return !!(home&&!home.classList.contains('hidden')&&shell&&shell.dataset.liftovaReady==='true');
   }
 
   function surfaceReady(){
-    if(root.classList.contains('prism-account-booting'))return false;
+    if(root.classList.contains('prism-account-booting')) return false;
     if(document.getElementById('liftovaAuthGate'))return true;
     if(visibleCanonicalHomeReady())return true;
     return !!document.querySelector('#welcomeScreen:not(.hidden),#onboardingScreen:not(.hidden),#goalReviewScreen:not(.hidden),#setupScreen:not(.hidden),#workoutsScreen:not(.hidden),#workoutScreen:not(.hidden),#workoutDetailScreen:not(.hidden),#overallProgressScreen:not(.hidden),#profileScreen:not(.hidden)');
