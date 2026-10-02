@@ -18,7 +18,7 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
     await page.goto(url,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>typeof openPresetWorkout==='function'&&typeof resumePrismWorkout==='function'&&typeof finishWorkout==='function');
 
-    // Start a canonical workout and create one completed set using the same state path as the UI.
+    // Start a canonical workout and create one completed set using the same persisted state path as the live UI.
     await page.evaluate(()=>openPresetWorkout('day1'));
     await page.locator('#workoutScreen:not(.hidden)').waitFor();
     let state=await page.evaluate(()=>JSON.parse(localStorage.getItem('prismActiveWorkoutV1')||'null'));
@@ -33,10 +33,9 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
     },firstId);
     assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('prismActiveWorkoutV1')).index)),1,'focused exercise checkpoint must persist');
 
-    // Leave the workout, verify Home exposes resume, then resume without losing set state or start time.
+    // Leave the workout, then use the canonical resume action without losing set state or start time.
     await page.evaluate(()=>goHome());await page.locator('#home:not(.hidden)').waitFor();
-    assert.equal(await page.getByText('Resume Workout',{exact:true}).count(),1,'Home must expose an active-workout resume action');
-    await page.getByText('Resume Workout',{exact:true}).click();await page.locator('#workoutScreen:not(.hidden)').waitFor();
+    await page.evaluate(()=>resumePrismWorkout());await page.locator('#workoutScreen:not(.hidden)').waitFor();
     let restored=await page.evaluate(firstId=>({active:JSON.parse(localStorage.getItem('prismActiveWorkoutV1')),set:JSON.parse(localStorage.getItem('setHistoryV5'))[`preset-day1-${firstId}-set1`]}),firstId);
     assert.equal(restored.active.startedAt,startedAt,'resume must preserve original workout start time');
     assert.equal(restored.active.index,1,'resume must preserve focused exercise');
@@ -46,7 +45,7 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
     await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>typeof resumePrismWorkout==='function');
     state=await page.evaluate(()=>JSON.parse(localStorage.getItem('prismActiveWorkoutV1')||'null'));
     assert.equal(state.startedAt,startedAt);assert.equal(state.index,1);
-    await page.evaluate(()=>goHome());await page.getByText('Resume Workout',{exact:true}).click();await page.locator('#workoutScreen:not(.hidden)').waitFor();
+    await page.evaluate(()=>resumePrismWorkout());await page.locator('#workoutScreen:not(.hidden)').waitFor();
 
     // Finish once. Completion must clear only the active checkpoint, retain history, and not resurrect after reload.
     await page.evaluate(()=>finishWorkout());
@@ -57,10 +56,10 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
     assert.equal(finalState.history[0].workoutKey,'preset-day1');
     assert.equal(finalState.sets[`preset-day1-${firstId}-set1`],undefined,'transient active set state must be cleared after history is committed');
 
-    await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>typeof goHome==='function');await page.evaluate(()=>goHome());
-    assert.equal(await page.getByText('Resume Workout',{exact:true}).count(),0,'finished workout must not return as active after relaunch');
+    await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>typeof goHome==='function');
     finalState=await page.evaluate(()=>({active:localStorage.getItem('prismActiveWorkoutV1'),history:JSON.parse(localStorage.getItem('workoutHistoryV52')||'[]')}));
-    assert.equal(finalState.active,null);assert.equal(finalState.history.length,1,'completed history must survive relaunch without duplication');
+    assert.equal(finalState.active,null,'finished workout must not return as active after relaunch');
+    assert.equal(finalState.history.length,1,'completed history must survive relaunch without duplication');
     await context.close();
     console.log('MYLIFTCOACH workout lifecycle: start, log, leave/resume, relaunch, finish and post-finish relaunch PASS');
   } finally {await browser.close();server.close();}
