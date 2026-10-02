@@ -94,6 +94,15 @@
     return json;
   }
 
+  async function recoverPassword(email) {
+    const redirectTo = new URL(".", location.href).href;
+    return authRequest(`recover?redirect_to=${encodeURIComponent(redirectTo)}`, { email });
+  }
+
+  async function resendSignup(email) {
+    return authRequest("resend", { type: "signup", email });
+  }
+
   async function signOut() {
     const session = readSession();
     try {
@@ -158,6 +167,8 @@
   window.PRISMCloud = Object.freeze({
     signUp,
     signIn,
+    recoverPassword,
+    resendSignup,
     signOut,
     getSession: validSession,
     currentUser,
