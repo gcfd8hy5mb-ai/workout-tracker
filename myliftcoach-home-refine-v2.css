@@ -1,0 +1,74 @@
+/* MYLIFTCOACH Home refinement v2. Presentation only. */
+#home.liftova-home{padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+#home.liftova-home .liftova-home-shell{gap:12px}
+#home.liftova-home .lh-hero{min-height:164px!important;padding-bottom:14px!important;background:radial-gradient(circle at 50% 26%,rgba(142,45,255,.24),transparent 34%),linear-gradient(145deg,#030207 0%,#09040f 52%,#030207 100%)}
+#home.liftova-home .lh-hero-mark{width:68px;height:68px;border-radius:18px;box-shadow:0 8px 30px rgba(124,37,220,.22)}
+#home.liftova-home .lh-hero-mark img{width:58px;height:58px}
+#home.liftova-home .lh-hero>strong{margin-top:9px;font-size:27px;letter-spacing:.13em}
+#home.liftova-home .lh-hero>span{margin-top:7px;font-size:8px;letter-spacing:.2em;color:#a9a2b1}
+#home.liftova-home .lh-hero-menu,#home.liftova-home .lh-hero-profile{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;background:rgba(13,9,18,.82)!important;border-color:#4d315d!important;box-shadow:none!important}
+
+#home.liftova-home .lh-week{gap:6px;padding:0 1px}
+#home.liftova-home .lh-day{min-height:72px!important;border-radius:14px;padding:9px 3px 8px;background:#0a080d;border-color:#251e2c}
+#home.liftova-home .lh-day strong{font-size:7px;color:#8d8794}
+#home.liftova-home .lh-day b{font-size:16px}
+#home.liftova-home .lh-day span{font-size:7.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#home.liftova-home .lh-day.active{box-shadow:0 8px 22px rgba(146,42,242,.28)}
+
+#home.liftova-home .lh-workout{padding:20px 18px 18px;border-width:1px;border-color:#8f42bd;border-radius:20px;box-shadow:0 10px 28px rgba(0,0,0,.24),0 0 0 1px rgba(175,70,255,.07)}
+#home.liftova-home .lh-label{font-size:10px;letter-spacing:.14em;color:#be70e6}
+#home.liftova-home .lh-workout h2{margin:8px 0 6px;font-size:25px;line-height:1.06;letter-spacing:-.02em}
+#home.liftova-home .lh-workout>p{font-size:12.5px;line-height:1.4;color:#aaa3b1}
+#home.liftova-home .lh-meta{gap:8px;margin:16px 0 14px;padding-bottom:14px}
+#home.liftova-home .lh-meta span{min-height:42px!important;padding:5px 6px 5px 30px;border-radius:12px;background:#0d0a11;color:#efeaf2;font-size:9px}
+#home.liftova-home .lh-meta span>b{left:8px;top:8px;font-size:16px}
+#home.liftova-home .lh-meta small{font-size:6.5px;letter-spacing:.08em}
+#home.liftova-home .lh-overview>strong{font-size:8px;letter-spacing:.08em}
+#home.liftova-home .lh-overview ul{font-size:10px;line-height:1.5}
+#home.liftova-home .lh-overview li{display:flex;align-items:flex-start;gap:5px}
+#home.liftova-home .lh-overview li:before{margin-right:0;line-height:1}
+
+#home.liftova-home .lh-insights,#home.liftova-home .lh-lower-grid{gap:10px}
+#home.liftova-home .lh-progress,#home.liftova-home .lh-streak,#home.liftova-home .lh-lower-card{min-height:132px;border-color:#2b2232;border-radius:18px;background:#09070c;padding:14px}
+#home.liftova-home .lh-insights header strong,#home.liftova-home .lh-lower-card header strong{font-size:8px;letter-spacing:.07em;color:#c9c3cf}
+#home.liftova-home .lh-insights header b,#home.liftova-home .lh-lower-card header b{font-size:16px}
+#home.liftova-home .lh-chart{height:78px;margin-top:9px}
+#home.liftova-home .lh-streak-body{margin-top:14px}
+#home.liftova-home .lh-streak-body>div:first-child>strong{font-size:30px}
+#home.liftova-home .lh-ring{width:58px;height:58px}
+
+#home.liftova-home .lh-recent-row{grid-template-columns:34px 1fr auto;gap:8px;min-height:50px!important;padding:9px 0}
+#home.liftova-home .lh-recent-icon{width:32px;height:32px;border-radius:9px}
+#home.liftova-home .lh-recent-row p b{font-size:9px!important}
+#home.liftova-home .lh-recent-row p small{font-size:7.5px!important;line-height:1.3}
+#home.liftova-home .lh-week-stat p{font-size:8.5px}
+
+#home.liftova-home .lh-shortcuts{gap:10px}
+#home.liftova-home .lh-shortcuts button{min-height:68px!important;border-color:#3c2a48!important;border-radius:16px!important;background:#0a080d!important;grid-template-columns:26px 1fr 8px;padding:10px!important}
+#home.liftova-home .lh-shortcuts button>b{font-size:18px}
+#home.liftova-home .lh-shortcuts button span{font-size:8.5px!important;line-height:1.2}
+#home.liftova-home .lh-shortcuts button i{font-size:15px}
+
+@media(max-width:430px){
+  #home.liftova-home .lh-week{gap:4px}
+  #home.liftova-home .lh-day{min-height:68px!important}
+  #home.liftova-home .lh-workout{padding:18px 16px 16px}
+  #home.liftova-home .lh-workout h2{font-size:23px}
+  #home.liftova-home .lh-meta{grid-template-columns:1fr;gap:6px}
+  #home.liftova-home .lh-meta span{padding-left:34px}
+  #home.liftova-home .lh-insights,#home.liftova-home .lh-lower-grid{grid-template-columns:1fr}
+  #home.liftova-home .lh-progress,#home.liftova-home .lh-streak,#home.liftova-home .lh-lower-card{min-height:0}
+  #home.liftova-home .lh-streak-body{justify-content:flex-start;gap:24px}
+  #home.liftova-home .lh-shortcuts{grid-template-columns:1fr}
+  #home.liftova-home .lh-shortcuts button{min-height:56px!important;grid-template-columns:28px 1fr 12px}
+}
+
+@media(max-width:370px){
+  #home.liftova-home .lh-hero>strong{font-size:24px}
+  #home.liftova-home .lh-day{padding-left:2px;padding-right:2px}
+  #home.liftova-home .lh-day span{font-size:7px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #home.liftova-home *{scroll-behavior:auto!important}
+}
