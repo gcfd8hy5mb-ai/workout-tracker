@@ -15,6 +15,7 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await page.route('**/persistence/account-ui.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* guest settings fixture; account lifecycle is covered by authenticated account tests */'}));
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof showProfile==='function'&&typeof showSettings==='function'&&typeof showHelp==='function'&&typeof showDataBackup==='function'&&typeof showGlobalTimer==='function');
+  const waitInViewport=async id=>page.waitForFunction(targetId=>{const el=document.getElementById(targetId);if(!el)return false;const r=el.getBoundingClientRect();return r.top<innerHeight&&r.bottom>0;},id);
 
   // Profile: every remaining navigation row must be a real, tappable control.
   await page.evaluate(()=>showProfile());await page.locator('#profileScreen:not(.hidden)').waitFor();
@@ -25,7 +26,7 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await page.evaluate(()=>showProfile());assert.equal(await page.getByRole('button',{name:/Private progress photos/i}).count(),1,'Progress Photos row must remain present');
 
   // Settings: the destination must land on the actual settings card, not a dead Profile route.
-  await page.evaluate(()=>showSettings());await page.locator('#profileScreen:not(.hidden)').waitFor();
+  await page.evaluate(()=>showSettings());await page.locator('#profileScreen:not(.hidden)').waitFor();await waitInViewport('profileSettings');
   const settingsBox=await page.locator('#profileSettings').boundingBox();assert.ok(settingsBox&&settingsBox.y<844&&settingsBox.y+settingsBox.height>0,'Settings card must be brought into the iPhone viewport');
   const timerFromSettings=page.locator('#profileSettings').getByRole('button',{name:/Open timer/i});await timerFromSettings.click();await page.locator('#globalTimerScreen:not(.hidden)').waitFor();
 
@@ -39,7 +40,7 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   // Help: support content and Data & Backup handoff must both work.
   await page.evaluate(()=>showHelp());await page.locator('#helpScreen:not(.hidden)').waitFor();assert.match(await page.locator('#helpScreen').innerText(),/Help & Support/i);
   const support=page.locator('#helpScreen a[href*="github.com"]').first();assert.ok((await support.getAttribute('href')||'').includes('/issues'),'Support link must point to the project issue tracker');
-  await page.getByRole('button',{name:/Open Data & Backup/i}).click();await page.locator('#manageWorkoutScreen:not(.hidden)').waitFor();
+  await page.getByRole('button',{name:/Open Data & Backup/i}).click();await page.locator('#manageWorkoutScreen:not(.hidden)').waitFor();await waitInViewport('dataBackupSection');
   const backupBox=await page.locator('#dataBackupSection').boundingBox();assert.ok(backupBox&&backupBox.y<844&&backupBox.y+backupBox.height>0,'Data & Backup card must be brought into the iPhone viewport');
 
   // Backup: export must produce an actual JSON download.
@@ -54,7 +55,7 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
 
   // Compact iPhone safety across the remaining surfaces.
   for(const fn of ['showProfile','showSettings','showHelp','showDataBackup','showGlobalTimer']){
-    await page.evaluate(name=>window[name](),fn);await page.waitForTimeout(40);const geometry=await page.evaluate(()=>({innerWidth,scrollWidth:document.documentElement.scrollWidth}));assert.ok(geometry.scrollWidth<=geometry.innerWidth+2,`${fn} must not overflow compact iPhone width: ${JSON.stringify(geometry)}`);
+    await page.evaluate(name=>window[name](),fn);await page.waitForTimeout(100);const geometry=await page.evaluate(()=>({innerWidth,scrollWidth:document.documentElement.scrollWidth}));assert.ok(geometry.scrollWidth<=geometry.innerWidth+2,`${fn} must not overflow compact iPhone width: ${JSON.stringify(geometry)}`);
   }
   assert.deepEqual(errors,[],'Profile/Settings/Help/Backup/Timer QA must not produce page errors');
   await context.close();console.log('MYLIFTCOACH Profile + Settings + Data Backup + Help + Timer PASS');
