@@ -28,11 +28,11 @@
 #overallProgressScreen .progress-links button,#overallProgressScreen button.dashboard-link{min-height:48px!important;border:1px solid #38264c!important;border-radius:12px!important;background:#15101d!important;color:#d5c1f8!important;font-size:11px!important;font-weight:720!important;box-shadow:none!important;transition:transform .1s ease,background .14s ease,border-color .14s ease}
 #overallProgressScreen .progress-links button:active,#overallProgressScreen button.dashboard-link:active{transform:scale(.985);background:#1c1426!important;border-color:#5e3d79!important}
 #overallProgressScreen input,#overallProgressScreen select{background:#100c17!important;color:#fff!important;border-color:#3b2850!important}
-/* Late Coach/Athlete modules historically use full-bleed negative margins. The
+/* Late Coach/Athlete modules historically use full-bleed negative margins/transforms. The
    main app container is only 13px from the edge on compact iPhones, so a -16px
    offset leaks 3px beyond the viewport. Progress owns their presentation here. */
-#overallProgressScreen #prismCoach,#overallProgressScreen #prismAthleteProfile,#overallProgressScreen #prismAdaptiveProgramming,#overallProgressScreen #liftovaCoachCycle,#overallProgressScreen #prismAsk{margin-left:0!important;margin-right:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important}
-#overallProgressScreen #prismCoach>.card,#overallProgressScreen #prismAthleteProfile>.card,#overallProgressScreen #prismAsk>.card{margin-left:0!important;margin-right:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important}
+#overallProgressScreen #prismCoach,#overallProgressScreen #prismAthleteProfile,#overallProgressScreen #prismAdaptiveProgramming,#overallProgressScreen #liftovaCoachCycle,#overallProgressScreen #prismAsk{position:relative!important;left:0!important;right:auto!important;transform:none!important;margin-left:0!important;margin-right:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important}
+#overallProgressScreen #prismCoach>.card,#overallProgressScreen #prismAthleteProfile>.card,#overallProgressScreen #prismAsk>.card{transform:none!important;margin-left:0!important;margin-right:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important}
 .liftova-progress-hero{margin:0 0 11px!important;padding:15px!important;border:1px solid #3a2550!important;border-radius:18px!important;background:radial-gradient(circle at 92% 0,rgba(159,78,255,.19),transparent 45%),#100c17!important;box-shadow:none!important}
 .liftova-progress-hero .eyebrow{color:#a65cff!important;font-size:9px!important;font-weight:850!important;letter-spacing:.14em!important}
 .liftova-progress-hero strong{display:block!important;margin-top:5px!important;font-size:20px!important;letter-spacing:-.035em!important;color:#fff!important}

@@ -22,3 +22,5 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Exercise each Liftova screen twice
         run: node tests/liftova-browser-smoke.cjs
+      - name: Exercise MYLIFTCOACH workout lifecycle
+        run: node tests/myliftcoach-workout-lifecycle.cjs
