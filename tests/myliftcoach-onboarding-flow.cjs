@@ -5,27 +5,25 @@ const path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
 const mime={'.html':'text/html','.js':'application/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.json':'application/json'};
-const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\//,'')||'index.html';const target=path.resolve(root,filename);if(!target.startsWith(root+path.sep)){res.writeHead(403).end();return;}fs.readFile(target,(error,content)=>{if(error){res.writeHead(404).end();return;}res.writeHead(200,{'content-type':mime[path.extname(target)]||'application/octet-stream','connection':'close'}).end(content);});});
+const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\//,'')||'index.html';const target=path.resolve(root,filename);if(!target.startsWith(root+path.sep)){res.writeHead(403).end();return;}fs.readFile(target,(error,content)=>{if(error){res.writeHead(404).end();return;}res.writeHead(200,{'content-type':mime[path.extname(target)]||'application/octet-stream'}).end(content);});});
 
 (async()=>{
-  const watchdog=setTimeout(()=>{console.error('MYLIFTCOACH onboarding fixture exceeded 60 seconds');server.closeAllConnections?.();process.exit(1);},60000);
+  const watchdog=setTimeout(()=>{console.error('MYLIFTCOACH onboarding fixture exceeded 60 seconds');process.exit(1);},60000);
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   const url=`http://127.0.0.1:${server.address().port}/`;
   const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   try{
     const context=await browser.newContext({viewport:{width:390,height:844},screen:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:3,serviceWorkers:'block'});
-    const page=await context.newPage();page.setDefaultTimeout(8000);
+    const page=await context.newPage();page.setDefaultTimeout(8000);const errors=[];page.on('pageerror',error=>errors.push(error.message));
     const userId='11111111-1111-4111-8111-111111111111';
+    await page.route('**/persistence/account-ui.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* onboarding UI fixture: auth transport covered elsewhere */'}));
 
     console.log('[onboarding] boot runtime');
-    await page.goto(url,{waitUntil:'domcontentloaded'});
-    await page.waitForFunction(()=>window.PRISMDeviceStore&&typeof window.goHome==='function'&&typeof window.startPrismGuest==='function');
-    await page.evaluate(userId=>{
-      window.PRISMDeviceStore.select(userId);
-      document.getElementById('liftovaAuthGate')?.remove();
-      document.body.classList.remove('liftova-auth-locked');
-      startPrismGuest();
-    },userId);
+    await page.goto(url,{waitUntil:'domcontentloaded',timeout:15000});
+    await page.waitForFunction(()=>window.LiftovaAnatomy&&typeof window.goHome==='function'&&window.showWorkouts?.__liftovaCanonicalWorkout===true&&window.MYLIFTCOACHNavigation,{timeout:15000});
+    const hasOnboarding=await page.evaluate(()=>typeof window.startPrismGuest==='function'&&typeof window.initPrismJourney==='function');
+    assert.equal(hasOnboarding,true,`onboarding runtime must load after canonical shell: ${JSON.stringify(errors)}`);
+    await page.evaluate(userId=>{window.PRISMDeviceStore.select(userId);startPrismGuest();},userId);
     await page.locator('#onboardingScreen:not(.hidden)').waitFor();
 
     console.log('[onboarding] profile');
@@ -71,13 +69,13 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
     await page.locator('#home:not(.hidden)').waitFor();
     assert.equal(await page.locator('#onboardingScreen:not(.hidden)').count(),0,'returning completed account must bypass onboarding');
     assert.equal(await page.locator('#welcomeScreen:not(.hidden)').count(),0,'returning completed account must not return to local welcome');
+    assert.deepEqual(errors,[],'onboarding pass must not produce uncaught page errors');
 
     console.log('MYLIFTCOACH onboarding: account-scoped handoff, 7-step completion, first Home and returning-account bypass PASS');
     await context.close();
   } finally {
     clearTimeout(watchdog);
     await browser.close();
-    server.closeAllConnections?.();
-    await new Promise(resolve=>server.close(resolve));
+    server.close();
   }
-})().catch(error=>{server.closeAllConnections?.();server.close();console.error(error);process.exitCode=1;});
+})().catch(error=>{server.close();console.error(error);process.exitCode=1;});
