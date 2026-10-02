@@ -27,6 +27,13 @@
 
   function canGoBack(){return stack.length>0;}
 
+  function clampHorizontalScroll(){
+    const scrolling=document.scrollingElement;
+    if(scrolling&&scrolling.scrollLeft!==0)scrolling.scrollLeft=0;
+    if(document.documentElement.scrollLeft!==0)document.documentElement.scrollLeft=0;
+    if(document.body?.scrollLeft)document.body.scrollLeft=0;
+  }
+
   function closeTransientUI(){
     const menu=document.getElementById('sideMenu');
     if(menu?.classList.contains('open')&&typeof window.closeMenu==='function')window.closeMenu();
@@ -47,7 +54,7 @@
 
   function restoreScroll(id){
     const y=scrollByScreen.get(id)||0;
-    requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo({top:y,left:0,behavior:'auto'})));
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{clampHorizontalScroll();window.scrollTo({top:y,left:0,behavior:'auto'});}));
   }
 
   function installStyles(){
@@ -56,8 +63,8 @@
     const style=document.createElement('style');
     style.id='myliftcoachNativeNavigationStyles';
     style.textContent=`
-      html{overscroll-behavior:none;background:#07050d}
-      body{min-height:100dvh;overscroll-behavior-y:none;-webkit-user-select:none;user-select:none}
+      html{overscroll-behavior:none;background:#07050d;overflow-x:hidden!important}
+      body{min-height:100dvh;overscroll-behavior-y:none;overflow-x:hidden!important;-webkit-user-select:none;user-select:none}
       input,textarea,[contenteditable=true]{-webkit-user-select:text;user-select:text}
       .container>section{transform-origin:center center;will-change:opacity}
       .container>section.myliftcoach-native-enter{animation:myliftcoachNativePush .15s ease-out both}
@@ -89,11 +96,12 @@
       }
 
       closeTransientUI();
+      clampHorizontalScroll();
       const result=original.apply(this,arguments);
       currentId=id;
       animateScreen(id,navigatingBack?'back':'forward');
       if(navigatingBack)restoreScroll(id);
-      else requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}));
+      else requestAnimationFrame(()=>{clampHorizontalScroll();window.scrollTo({top:0,left:0,behavior:'auto'});});
       navigatingBack=false;
       return result;
     }
@@ -126,10 +134,6 @@
       if(!button)return;
       rememberScroll(currentId||visibleScreenId());
       stack.length=0;
-      // Bottom-nav actions can route through a canonical screen whose internal
-      // id is not one of the historical tab-root ids (notably Workouts). Keep
-      // that synchronous route root-scoped so it cannot immediately push the
-      // previous tab back onto the stack.
       rootNavigationPending=true;
       setTimeout(()=>{rootNavigationPending=false;},0);
     },true);
@@ -166,12 +170,15 @@
 
   function boot(){
     installStyles();
+    clampHorizontalScroll();
     currentId=visibleScreenId();
     wrapRouter();
     interceptBackControls();
     syncRootNavigation();
     installSwipeBack();
     installKeyboardBack();
+    window.addEventListener('resize',clampHorizontalScroll,{passive:true});
+    window.addEventListener('orientationchange',clampHorizontalScroll,{passive:true});
     window.LiftovaNavigation=window.MYLIFTCOACHNavigation={
       back:goBack,
       canGoBack,
