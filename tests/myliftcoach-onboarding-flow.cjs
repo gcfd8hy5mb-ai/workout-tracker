@@ -16,12 +16,16 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
     const context=await browser.newContext({viewport:{width:390,height:844},screen:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:3,serviceWorkers:'block'});
     const page=await context.newPage();page.setDefaultTimeout(8000);
     const userId='11111111-1111-4111-8111-111111111111';
-    await page.route('**/persistence/account-ui.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* account transport bypassed: onboarding fixture */'}));
 
     console.log('[onboarding] boot runtime');
     await page.goto(url,{waitUntil:'domcontentloaded'});
     await page.waitForFunction(()=>window.PRISMDeviceStore&&typeof window.goHome==='function'&&typeof window.startPrismGuest==='function');
-    await page.evaluate(userId=>{window.PRISMDeviceStore.select(userId);startPrismGuest();},userId);
+    await page.evaluate(userId=>{
+      window.PRISMDeviceStore.select(userId);
+      document.getElementById('liftovaAuthGate')?.remove();
+      document.body.classList.remove('liftova-auth-locked');
+      startPrismGuest();
+    },userId);
     await page.locator('#onboardingScreen:not(.hidden)').waitFor();
 
     console.log('[onboarding] profile');
