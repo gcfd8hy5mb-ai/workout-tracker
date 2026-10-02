@@ -2,11 +2,15 @@
 (()=>{'use strict';const root=document.documentElement;const standalone=window.matchMedia?.('(display-mode: standalone)').matches||window.navigator.standalone===true;root.classList.toggle('liftova-standalone',standalone);
 const syncViewport=()=>{const vv=window.visualViewport,h=vv?.height||window.innerHeight;root.style.setProperty('--liftova-vh',`${h*.01}px`);root.style.setProperty('--liftova-keyboard-offset',`${Math.max(0,window.innerHeight-h-(vv?.offsetTop||0))}px`)};syncViewport();window.visualViewport?.addEventListener('resize',syncViewport,{passive:true});window.visualViewport?.addEventListener('scroll',syncViewport,{passive:true});window.addEventListener('orientationchange',()=>setTimeout(syncViewport,80),{passive:true});
 let lastTap=0;document.addEventListener('touchend',e=>{const c=e.target.closest?.('button,[role="button"],a,.day-button,.action-button');if(!c)return;const n=Date.now();if(n-lastTap<280)e.preventDefault();lastTap=n},{passive:false});
-/* Root tabs are independent app destinations. Do not carry a long page's scroll
-   position into a shorter screen: on iPhone that can make History look blank or
-   land Progress halfway down in Coach content. Let the existing onclick route
-   finish first, then pin the new root surface to its top. */
-const resetRootScroll=()=>{const scroller=document.scrollingElement||document.documentElement;if(scroller)scroller.scrollTop=0;document.documentElement.scrollTop=0;document.body.scrollTop=0;window.scrollTo({top:0,left:0,behavior:'auto'})};
+/* Root tabs are independent app destinations. iPhone/PWA layouts can scroll an
+   inner screen surface instead of the document itself, so clear both the page
+   scroller and the newly visible root's vertical scroll state after routing. */
+const resetRootScroll=()=>{
+ const scroller=document.scrollingElement||document.documentElement;if(scroller)scroller.scrollTop=0;
+ document.documentElement.scrollTop=0;document.body.scrollTop=0;window.scrollTo({top:0,left:0,behavior:'auto'});
+ const roots=[...document.querySelectorAll('#home:not(.hidden),#workoutsScreen:not(.hidden),#overallProgressScreen:not(.hidden),#globalHistoryScreen:not(.hidden),#profileScreen:not(.hidden),.screen:not(.hidden),[data-screen]:not(.hidden)')];
+ roots.forEach(surface=>{surface.scrollTop=0;surface.querySelectorAll('*').forEach(el=>{if(el.scrollTop>0)el.scrollTop=0})});
+};
 document.addEventListener('click',e=>{const tab=e.target.closest?.('#prismBottomNav [data-prism-tab]');if(!tab)return;requestAnimationFrame(()=>requestAnimationFrame(resetRootScroll))},true);
 document.addEventListener('focusin',e=>{const el=e.target;if(!el?.matches?.('input,textarea,select,[contenteditable="true"]'))return;setTimeout(()=>el.scrollIntoView?.({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}),120)});document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const d=document.querySelector('dialog[open]');if(d?.close)d.close()});
 const syncBusy=el=>el instanceof HTMLElement&&el.classList.toggle('liftova-busy',el.getAttribute('aria-busy')==='true');document.querySelectorAll('[aria-busy]').forEach(syncBusy);new MutationObserver(rs=>rs.forEach(r=>syncBusy(r.target))).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['aria-busy']});
