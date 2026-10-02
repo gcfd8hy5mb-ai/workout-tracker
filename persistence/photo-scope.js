@@ -61,6 +61,10 @@ if (typeof document !== 'undefined') {
   menuCss.rel = 'stylesheet';
   menuCss.href = 'myliftcoach-menu-destinations.css?v=1';
   document.head.appendChild(menuCss);
+  const activeWorkoutCss = document.createElement('link');
+  activeWorkoutCss.rel = 'stylesheet';
+  activeWorkoutCss.href = 'myliftcoach-active-workout-prebeta.css?v=1';
+  document.head.appendChild(activeWorkoutCss);
   const onboardingScript = document.createElement('script');
   onboardingScript.src = 'myliftcoach-onboarding-polish.js?v=1';
   onboardingScript.defer = true;
