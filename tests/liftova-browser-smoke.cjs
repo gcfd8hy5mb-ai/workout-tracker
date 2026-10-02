@@ -86,7 +86,7 @@ async function runPass(browser,url,pass){
 
  stage('workout details');await page.locator('#workoutDetailScreen:not(.hidden) .lv3-exercise-row').first().waitFor();assert.equal(await page.locator('.lv3-exercise-row').count(),8,'full workout list must render');assert.equal(await page.locator('.lv3-exercise-row .liftova-anatomy').count(),8,'every workout row must show anatomy');
  stage('exercise info + native swipe back');await page.locator('.lv3-exercise-row').first().click();await page.locator('#exerciseInfoScreen:not(.hidden) .liftova-anatomy').first().waitFor();assert.deepEqual(await page.evaluate(()=>window.MYLIFTCOACHNavigation.getStack()),['workoutDetailScreen'],'exercise guide must push only its workout parent');
- await swipe(page,'#exerciseInfoScreen',{fromX:8,toX:116,y=500});
+ await swipe(page,'#exerciseInfoScreen',{fromX:8,toX:116,y:500});
  await page.locator('#workoutDetailScreen:not(.hidden)').waitFor();assert.deepEqual(await page.evaluate(()=>window.MYLIFTCOACHNavigation.getStack()),[],'native swipe-back must consume the workout detail entry');
 
  stage('exercise info menu');await page.locator('.lv3-exercise-row').first().click();await page.locator('#exerciseInfoScreen:not(.hidden) .liftova-anatomy').first().waitFor();await page.locator('#prismExerciseInfo [data-ex-more]').click();await page.locator('#sideMenu.open').waitFor();await page.locator('#sideMenu .menu-close').click();
