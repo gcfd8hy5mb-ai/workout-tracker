@@ -28,9 +28,11 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   });
 
   await page.evaluate(()=>showGlobalHistory());await page.locator('#globalHistoryScreen:not(.hidden)').waitFor();
-  const historyText=await page.locator('#globalHistoryList').innerText();
+  let historyText=await page.locator('#globalHistoryList').innerText();
   assert.match(historyText,/QA Progress Workout/i,'History must show the saved workout');
-  assert.ok(historyText.includes(seeded.exerciseName),'History must show the saved exercise');
+  const historyCard=page.locator('#globalHistoryList details').first();await historyCard.locator('summary').click();
+  historyText=await page.locator('#globalHistoryList').innerText();
+  assert.ok(historyText.includes(seeded.exerciseName),'Expanded History must show the saved exercise');
 
   await page.evaluate(()=>showOverallProgress());await page.locator('#overallProgressScreen:not(.hidden)').waitFor();
   const progressText=await page.locator('#overallProgressScreen').innerText();
