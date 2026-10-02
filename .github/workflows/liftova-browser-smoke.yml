@@ -24,3 +24,5 @@ jobs:
         run: node tests/liftova-browser-smoke.cjs
       - name: Exercise MYLIFTCOACH workout lifecycle
         run: node tests/myliftcoach-workout-lifecycle.cjs
+      - name: Exercise MYLIFTCOACH onboarding flow
+        run: node tests/myliftcoach-onboarding-flow.cjs
