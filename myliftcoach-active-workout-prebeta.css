@@ -1,0 +1,44 @@
+/* Pre-beta active workout interaction hardening. */
+#workoutScreen #workoutRestPresets,
+#workoutScreen .workout-readiness,
+#workoutScreen .workout-progress,
+#workoutScreen #exerciseList{
+  scroll-margin-top:calc(var(--header-height,72px) + env(safe-area-inset-top) + 14px);
+  scroll-margin-bottom:96px;
+}
+
+/* The prior sticky rest strip could sit over the rest-duration controls while
+   Safari/Chromium scrolled them into view. Keep rest controls in normal flow;
+   Finish Workout remains the single sticky bottom action. */
+#workoutScreen .rest-strip{
+  position:relative!important;
+  bottom:auto!important;
+  z-index:1!important;
+  margin:12px 0 16px!important;
+}
+
+#workoutScreen #workoutRestPresets{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:7px;
+  margin:0 0 12px;
+}
+#workoutScreen #workoutRestPresets button{
+  min-width:0;
+  min-height:48px;
+  padding:8px 5px;
+  position:relative;
+  z-index:1;
+}
+#workoutScreen .readiness-options{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+#workoutScreen .readiness-options button{min-height:48px;min-width:0}
+
+@media(max-width:360px){
+  #workoutScreen #workoutRestPresets{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
