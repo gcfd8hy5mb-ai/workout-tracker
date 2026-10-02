@@ -14,15 +14,15 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   const page=await context.newPage();page.setDefaultTimeout(12000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/persistence/account-ui.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* guest progress fixture */'}));
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>typeof showOverallProgress==='function'&&typeof showGlobalHistory==='function'&&typeof showWorkoutCalendar==='function'&&typeof showPersonalRecords==='function');
+  await page.waitForFunction(()=>typeof showOverallProgress==='function'&&typeof showGlobalHistory==='function'&&typeof showWorkoutCalendar==='function'&&typeof showPersonalRecords==='function'&&typeof goHome==='function');
+  await page.evaluate(()=>{workoutGoals={goal:'muscle',days:4,focus:'balanced',gender:'prefer'};localStorage.setItem('workoutGoalsV1',JSON.stringify(workoutGoals));renderHome();goHome();});
+  await page.locator('#home:not(.hidden)').waitFor();
   const seeded=await page.evaluate(()=>{
     const ex=exerciseLibrary.find(item=>item?.id&&item?.name)||exerciseLibrary[0];
     const day=localDay();
     const session={date:new Date().toISOString(),workoutKey:'qa-progress-workout',workoutTitle:'QA Progress Workout',recordIds:[ex.id],exercises:[{id:ex.id,name:ex.name,sets:[{weight:100,reps:10},{weight:105,reps:8}]}]};
     workoutHistory=[session];
     localStorage.setItem('workoutHistoryV52',JSON.stringify(workoutHistory));
-    workoutGoals={goal:'muscle',days:4,focus:'balanced',gender:'prefer'};
-    localStorage.setItem('workoutGoalsV1',JSON.stringify(workoutGoals));
     updateProgress();
     return {day,exerciseName:ex.name};
   });
