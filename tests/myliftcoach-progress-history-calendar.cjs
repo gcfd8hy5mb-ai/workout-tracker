@@ -18,7 +18,7 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   const seeded=await page.evaluate(()=>{
     const ex=exerciseLibrary.find(item=>item?.id&&item?.name)||exerciseLibrary[0];
     const day=localDay();
-    const session={date:new Date().toISOString(),workoutKey:'qa-progress-workout',name:'QA Progress Workout',title:'QA Progress Workout',recordIds:[ex.id],exercises:[{id:ex.id,name:ex.name,sets:[{weight:100,reps:10},{weight:105,reps:8}]}]};
+    const session={date:new Date().toISOString(),workoutKey:'qa-progress-workout',workoutTitle:'QA Progress Workout',recordIds:[ex.id],exercises:[{id:ex.id,name:ex.name,sets:[{weight:100,reps:10},{weight:105,reps:8}]}]};
     workoutHistory=[session];
     localStorage.setItem('workoutHistoryV52',JSON.stringify(workoutHistory));
     workoutGoals={goal:'muscle',days:4,focus:'balanced',gender:'prefer'};
