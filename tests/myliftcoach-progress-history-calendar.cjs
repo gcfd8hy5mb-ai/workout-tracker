@@ -43,7 +43,8 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await page.evaluate(day=>{calendarMonthDate=new Date(`${day}T12:00:00`);calendarMonthDate=new Date(calendarMonthDate.getFullYear(),calendarMonthDate.getMonth(),1);calendarSelectedDay=day;showWorkoutCalendar();},seeded.day);
   await page.locator('#calendarScreen:not(.hidden)').waitFor();
   const calendarText=await page.locator('#calendarDetail').innerText();
-  assert.match(calendarText,/QA Progress Workout/i,'Calendar selected day must show the saved workout');
+  assert.match(calendarText,/Workout completed/i,'Calendar selected day must mark the saved workout as completed');
+  assert.ok(!/No activity logged/i.test(calendarText),'Calendar must not treat the completed-workout day as empty');
   geometry=await page.evaluate(()=>({innerWidth,scrollWidth:document.documentElement.scrollWidth}));
   assert.ok(geometry.scrollWidth<=geometry.innerWidth+2,`Calendar must not overflow compact iPhone width: ${JSON.stringify(geometry)}`);
 
