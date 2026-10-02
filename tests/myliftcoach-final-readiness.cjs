@@ -14,7 +14,7 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   const page=await context.newPage();page.setDefaultTimeout(15000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/persistence/account-ui.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* guest final-readiness fixture */'}));
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>typeof goHome==='function'&&typeof showWorkouts==='function'&&typeof showOverallProgress==='function'&&typeof showProfile==='function'&&window.MYLIFTCOACHBrandSafety);
+  await page.waitForFunction(()=>typeof goHome==='function'&&typeof showWorkouts==='function'&&typeof showOverallProgress==='function'&&typeof showProfile==='function'&&typeof showGlobalHistory==='function'&&window.MYLIFTCOACHBrandSafety);
   const visibleLegacy=async()=>page.evaluate(()=>{
     const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);const hits=[];let node;
     while((node=walker.nextNode())){
@@ -26,12 +26,49 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
     return hits;
   });
   const check=async(label,open)=>{await page.evaluate(open);await page.waitForTimeout(120);const hits=await visibleLegacy();assert.deepEqual(hits,[],`${label} must not expose legacy LIFTOVA/PRISM branding: ${hits.join(' | ')}`);const geo=await page.evaluate(()=>({w:innerWidth,sw:document.documentElement.scrollWidth}));assert.ok(geo.sw<=geo.w+2,`${label} must not horizontally overflow iPhone viewport: ${JSON.stringify(geo)}`);};
+  const seedDestinationScroll=async(type)=>{
+    await page.evaluate(t=>t==='History'?showGlobalHistory():showOverallProgress(),type);
+    await page.waitForTimeout(100);
+    const result=await page.evaluate(t=>{
+      const id=t==='History'?'globalHistoryScreen':'overallProgressScreen',screen=document.getElementById(id);
+      screen.querySelector('[data-root-scroll-fixture]')?.remove();
+      screen.style.height='720px';screen.style.overflowY='auto';
+      const spacer=document.createElement('div');spacer.dataset.rootScrollFixture='true';spacer.style.cssText='height:1600px;width:1px;pointer-events:none';screen.appendChild(spacer);
+      screen.scrollTop=900;
+      return {top:screen.scrollTop,height:screen.scrollHeight,client:screen.clientHeight,id};
+    },type);
+    assert.ok(result.top>100,`${type} fixture must hold a prior per-screen scroll offset: ${JSON.stringify(result)}`);
+    await page.evaluate(()=>showProfile());await page.waitForTimeout(120);
+    return result;
+  };
+  const destinationScroll=type=>page.evaluate(t=>document.getElementById(t==='History'?'globalHistoryScreen':'overallProgressScreen').scrollTop,type);
+  const cleanupDestination=type=>page.evaluate(t=>{const s=document.getElementById(t==='History'?'globalHistoryScreen':'overallProgressScreen');s.querySelector('[data-root-scroll-fixture]')?.remove();s.style.removeProperty('height');s.style.removeProperty('overflow-y')},type);
 
   await check('Home',()=>goHome());
   await check('Workouts',()=>showWorkouts());
   await check('Progress/Coach',()=>showOverallProgress());
   const coachText=await page.locator('#prismAsk').innerText();assert.match(coachText,/MYLIFTCOACH/i,'Coach preview must use current MYLIFTCOACH branding');assert.doesNotMatch(coachText,/LIFTOVA|PRISM/,'Coach preview must not expose legacy branding');
   await check('Profile',()=>showProfile());
+
+  // Reproduce the Oct 2 iPhone recording at the actual screen-scroll level:
+  // History/Progress have a previous deep offset, another root is opened, then
+  // the fixed bottom nav returns to the destination. It must reopen at its top.
+  await seedDestinationScroll('History');
+  await page.locator('#prismBottomNav [data-prism-tab="History"]').click();
+  await page.waitForFunction(()=>!document.getElementById('globalHistoryScreen').classList.contains('hidden'));
+  await page.waitForTimeout(100);
+  assert.ok((await destinationScroll('History'))<=2,'History bottom-tab navigation must clear its previous screen scroll offset');
+  assert.equal(await page.locator('#globalHistoryScreen h2').first().isVisible(),true,'History heading must be immediately visible after root-tab navigation');
+  await cleanupDestination('History');
+
+  await seedDestinationScroll('Progress');
+  await page.locator('#prismBottomNav [data-prism-tab="Progress"]').click();
+  await page.waitForFunction(()=>!document.getElementById('overallProgressScreen').classList.contains('hidden'));
+  await page.waitForTimeout(100);
+  assert.ok((await destinationScroll('Progress'))<=2,'Progress bottom-tab navigation must clear its previous screen scroll offset');
+  const progressTop=await page.locator('#overallProgressScreen').boundingBox();assert.ok(progressTop&&progressTop.y<180,'Progress root content must begin in the visible top viewport');
+  await cleanupDestination('Progress');
+
   await check('Settings',()=>showSettings());
   await check('Timer',()=>showGlobalTimer());
   await check('Help',()=>showHelp());
@@ -39,6 +76,6 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await page.evaluate(()=>openMenu());await page.waitForTimeout(80);assert.deepEqual(await visibleLegacy(),[],'Side menu must not expose legacy branding');
   const brand=await page.locator('#sideMenu').innerText();assert.match(brand,/MYLIFTCOACH/,'Side menu must show MYLIFTCOACH brand');
   assert.deepEqual(errors,[],'Final tester-readiness sweep must not produce page errors');
-  await context.close();console.log('MYLIFTCOACH final tester-readiness: major surfaces, Coach branding, menu branding, compact iPhone geometry PASS');
+  await context.close();console.log('MYLIFTCOACH final tester-readiness: major surfaces, per-screen root-tab scroll reset, Coach branding, menu branding, compact iPhone geometry PASS');
  }finally{await browser.close();server.close();}
 })().catch(error=>{server.close();console.error(error);process.exitCode=1;});
