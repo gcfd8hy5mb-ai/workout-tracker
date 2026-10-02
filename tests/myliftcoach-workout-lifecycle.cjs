@@ -18,7 +18,6 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await page.goto(url,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof goHome==='function'&&typeof resumePrismWorkout==='function'&&typeof finishWorkout==='function');
 
-  // Mirror a completed onboarding plan so the canonical calendar Home has an actual scheduled workout.
   await page.evaluate(()=>{
     workoutGoals={goal:'muscle',days:4,focus:'balanced',gender:'prefer'};
     localStorage.setItem('workoutGoalsV1',JSON.stringify(workoutGoals));
@@ -26,7 +25,6 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   });
   await page.locator('#home:not(.hidden)').waitFor();
 
-  // Start from the actual calendar Home CTA rather than calling the workout opener directly.
   const start=page.locator('#home .myliftcoach-home-workout-action');await start.waitFor();
   assert.equal((await start.innerText()).trim(),'Start Workout','canonical Home must expose Start Workout for a scheduled session');
   await start.click();await page.locator('#workoutScreen:not(.hidden)').waitFor();
@@ -34,7 +32,6 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   assert.ok(state?.key&&state.ids.length>0&&state.startedAt>0,'Home Start Workout must create an active checkpoint');
   const key=state.key,firstId=state.ids[0],startedAt=state.startedAt;
 
-  // Readiness and rest controls must be tappable and persist their selected states.
   await page.getByRole('button',{name:'Tired',exact:true}).click();
   assert.equal(await page.getByRole('button',{name:'Tired',exact:true}).getAttribute('aria-pressed'),'true');
   await page.getByRole('button',{name:'1 min',exact:true}).click();
@@ -43,22 +40,22 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   assert.equal(tracking.restSeconds,60,'rest preset must persist');
   assert.equal(tracking.readiness[`${new Date().toISOString().slice(0,10)}-${key}`],'Tired','readiness must persist');
 
-  // Exercise focus must expose four set controls and remain inside the compact iPhone viewport.
   assert.equal(await page.locator('#exerciseList > .exercise').count()>0,true,'active workout must render exercise cards');
-  assert.equal(await page.locator('#exerciseList > .exercise').first().locator('.set-done').count(),4,'focused exercise must expose four Complete Set controls');
+  await page.locator('#exerciseList > .exercise').first().locator('.liftova-log-check').first().waitFor();
+  assert.equal(await page.locator('#exerciseList > .exercise').first().locator('.liftova-log-check').count(),4,'focused exercise must expose four visible one-tap set controls');
   const geometry=await page.evaluate(()=>({innerWidth,scrollWidth:document.documentElement.scrollWidth}));
   assert.ok(geometry.scrollWidth<=geometry.innerWidth+2,`active workout must not overflow horizontally: ${JSON.stringify(geometry)}`);
 
-  // Mark a real set complete through the app control and verify rest starts automatically.
   await page.evaluate(({key,firstId})=>{const setKey=`${key}-${firstId}-set1`;setHistory[setKey]={weight:135,reps:8,done:false};localStorage.setItem('setHistoryV5',JSON.stringify(setHistory));renderActiveWorkoutExercises();focusWorkoutExercise(0);},{key,firstId});
-  const done=page.locator('#exerciseList > .exercise').first().locator('.set-done').first();await done.click();
-  assert.equal(await done.getAttribute('aria-pressed'),'true','Complete Set must mark the set done');
+  const logSet=page.locator('#exerciseList > .exercise').first().locator('.liftova-log-check').first();await logSet.waitFor();await logSet.click();
+  const underlying=page.locator('#exerciseList > .exercise').first().locator('.set-done').first();
+  assert.equal(await underlying.getAttribute('aria-pressed'),'true','visible Log Set control must mark the underlying set done');
+  assert.equal((await logSet.innerText()).trim(),'✓','visible Log Set control must reflect completion');
   assert.match(await page.locator('#workoutRestStatus').innerText(),/Rest timer running/i,'completing a set must start rest');
   assert.ok(Number(await page.evaluate(()=>localStorage.getItem('prismRestEndsAtV1')||0))>Date.now(),'rest end time must persist');
   await page.getByRole('button',{name:'Skip',exact:true}).click();
   assert.equal(await page.evaluate(()=>localStorage.getItem('prismRestEndsAtV1')),null,'Skip must clear persisted rest timer');
 
-  // Focus checkpoint, leave, resume from the visible calendar Home control, and preserve workout state.
   if(state.ids.length>1)await page.evaluate(()=>focusWorkoutExercise(1));
   state=await page.evaluate(()=>JSON.parse(localStorage.getItem('prismActiveWorkoutV1')));const savedIndex=state.index;
   await page.evaluate(()=>goHome());await page.locator('#home:not(.hidden)').waitFor();
@@ -79,6 +76,6 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   assert.equal(finalState.active,null,'finished workout must clear active checkpoint');assert.equal(finalState.history.length,1,'finish must create exactly one history record');assert.equal(finalState.history[0].workoutKey,key);assert.equal(finalState.sets[`${key}-${firstId}-set1`],undefined,'active set state must clear after commit');
   await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>typeof goHome==='function');
   finalState=await page.evaluate(()=>({active:localStorage.getItem('prismActiveWorkoutV1'),history:JSON.parse(localStorage.getItem('workoutHistoryV52')||'[]')}));assert.equal(finalState.active,null);assert.equal(finalState.history.length,1);assert.deepEqual(errors,[],'active-workout QA must not produce page errors');
-  await context.close();console.log('MYLIFTCOACH active workout: calendar Home start, readiness, rest, Complete Set, resume, relaunch and finish PASS');
+  await context.close();console.log('MYLIFTCOACH active workout: calendar Home start, readiness, rest, visible Log Set, resume, relaunch and finish PASS');
  }finally{await browser.close();server.close();}
 })().catch(error=>{server.close();console.error(error);process.exitCode=1;});
