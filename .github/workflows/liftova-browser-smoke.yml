@@ -26,5 +26,7 @@ jobs:
         run: node tests/myliftcoach-workout-lifecycle.cjs
       - name: Exercise MYLIFTCOACH substitution navigation and summary
         run: node tests/myliftcoach-substitution-summary.cjs
+      - name: Exercise MYLIFTCOACH Progress History Records Calendar
+        run: node tests/myliftcoach-progress-history-calendar.cjs
       - name: Exercise MYLIFTCOACH onboarding flow
         run: node tests/myliftcoach-onboarding-flow.cjs
