@@ -1,12 +1,9 @@
 /* MYLIFTCOACH startup handoff. Owns launch presentation only. */
 (() => {
   'use strict';
-
   const root=document.documentElement;
   root.classList.add('myliftcoach-starting');
-
-  let revealed=false;
-  let observer=null;
+  let revealed=false,observer=null;
 
   function mount(){
     if(revealed||document.getElementById('myliftcoachStartupCover'))return;
@@ -17,11 +14,15 @@
     (document.body||document.documentElement).appendChild(cover);
   }
 
+  function visibleCanonicalHomeReady(){
+    const home=document.getElementById('home');
+    return !!(home&&!home.classList.contains('hidden')&&home.querySelector('.liftova-home-shell[data-liftova-ready="true"]'));
+  }
+
   function surfaceReady(){
     if(root.classList.contains('prism-account-booting'))return false;
     if(document.getElementById('liftovaAuthGate'))return true;
-    const home=document.getElementById('home');
-    if(home&&!home.classList.contains('hidden'))return !!home.querySelector('.liftova-home-shell[data-liftova-ready="true"]');
+    if(visibleCanonicalHomeReady())return true;
     return !!document.querySelector('#welcomeScreen:not(.hidden),#onboardingScreen:not(.hidden),#goalReviewScreen:not(.hidden),#setupScreen:not(.hidden),#workoutsScreen:not(.hidden),#workoutScreen:not(.hidden),#workoutDetailScreen:not(.hidden),#overallProgressScreen:not(.hidden),#profileScreen:not(.hidden)');
   }
 
@@ -31,8 +32,8 @@
     observer?.disconnect();
   }
 
-  function reveal(force=false){
-    if(revealed||(!force&&!surfaceReady()))return false;
+  function reveal(){
+    if(revealed||!surfaceReady())return false;
     revealed=true;
     root.classList.add('myliftcoach-ready');
     if(matchMedia('(prefers-reduced-motion: reduce)').matches)finishReveal();
@@ -40,23 +41,16 @@
     return true;
   }
 
-  function check(){
-    if(revealed)return;
-    mount();
-    reveal(false);
-  }
+  function check(){if(revealed)return;mount();reveal()}
 
   function boot(){
     mount();
     observer=new MutationObserver(check);
     observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','data-liftova-ready']});
     check();
-    // Safety valve for non-canonical/error states; normal Home launch reveals from home-ready.
-    setTimeout(()=>reveal(true),1800);
   }
 
   if(document.body)boot();
   else document.addEventListener('DOMContentLoaded',boot,{once:true});
-
-  document.addEventListener('myliftcoach:home-ready',()=>reveal(false));
+  document.addEventListener('myliftcoach:home-ready',reveal);
 })();
