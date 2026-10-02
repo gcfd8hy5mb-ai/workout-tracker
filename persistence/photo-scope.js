@@ -22,6 +22,10 @@ if (typeof document !== 'undefined') {
   css.rel = 'stylesheet';
   css.href = 'app-feel.css?v=1';
   document.head.appendChild(css);
+  const entryCss = document.createElement('link');
+  entryCss.rel = 'stylesheet';
+  entryCss.href = 'myliftcoach-entry-flow.css?v=1';
+  document.head.appendChild(entryCss);
   const script = document.createElement('script');
   script.src = 'app-feel.js?v=1';
   script.defer = true;
