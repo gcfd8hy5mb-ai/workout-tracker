@@ -98,7 +98,7 @@ async function runPass(browser,url,pass){
  const week=page.locator('#overallProgressScreen [data-period="week"]'),month=page.locator('#overallProgressScreen [data-period="month"]');
  await week.click();assert.equal(await week.getAttribute('aria-pressed'),'true','Week must be the active Free period');assert.equal(await week.getAttribute('aria-selected'),'true','presentation selection must mirror the real Week period');
  await month.click();await page.locator('#prismProOverlay:not(.hidden)').waitFor();assert.equal(await week.getAttribute('aria-pressed'),'true','gated Month must not change the real period');assert.equal(await week.getAttribute('aria-selected'),'true','gated Month must not visually replace Week');assert.equal(await month.getAttribute('aria-pressed'),'false','gated Month stays inactive');assert.equal(await month.getAttribute('aria-selected'),'false','presentation state must stay inactive for gated Month');
- await page.keyboard.press('Escape');await page.locator('#prismProOverlay.hidden').waitFor();
+ await page.keyboard.press('Escape');await page.locator('#prismProOverlay').waitFor({state:'hidden'});
  await swipe(page,'#overallProgressScreen',{fromX:330,toX:220,y:700});assert.equal(await page.locator('#prismProOverlay:not(.hidden)').count(),0,'Free Progress swipe must not accidentally open the Pro paywall');assert.equal(await week.getAttribute('aria-pressed'),'true','Free Progress swipe stays on the accessible Week period');
  await assertViewportSafe(page,'overallProgressScreen');
 
