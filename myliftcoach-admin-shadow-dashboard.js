@@ -1,0 +1,1 @@
+(()=>{'use strict';window.MYLIFTCOACH_ADMIN_SHADOW_VERSION='1.0.0';})();
