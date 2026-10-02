@@ -26,40 +26,31 @@
     });
   }
   function ensureProgressTargets(screen){
-    const segment=screen.querySelector('.prism-segments');
+    const segment=screen.querySelector('.prism-segments[data-progress-segment],.prism-segments[aria-label="Progress period"]')||screen.querySelector('.prism-segments');
     if(!segment)return;
+    segment.dataset.progressSegment='period';
     segment.setAttribute('role','tablist');
-    segment.setAttribute('aria-label','Progress views');
+    segment.setAttribute('aria-label','Progress period');
     const buttons=[...segment.querySelectorAll('button')];
-    const targets=['strength','body','activity'];
-    buttons.forEach((button,index)=>{
-      if(!button.dataset.progressTarget)button.dataset.progressTarget=targets[index]||`progress-${index}`;
-      button.setAttribute('role','tab');
-      const active=button.getAttribute('aria-pressed')==='true'||button.classList.contains('active');
-      button.setAttribute('aria-selected',String(active));
-      button.tabIndex=active?0:-1;
-    });
+    const syncSelection=()=>{
+      buttons.forEach((button,index)=>{
+        if(!button.dataset.progressTarget)button.dataset.progressTarget=button.dataset.period||`progress-${index}`;
+        button.setAttribute('role','tab');
+        const active=button.getAttribute('aria-pressed')==='true';
+        button.classList.toggle('active',active);
+        button.setAttribute('aria-selected',String(active));
+        button.tabIndex=active?0:-1;
+      });
+    };
+    syncSelection();
     if(!segment.__myliftcoachProgressTargets){
       segment.__myliftcoachProgressTargets=true;
-      const activate=button=>{
-        if(!button)return;
-        button.click();
-        buttons.forEach(item=>{
-          const active=item===button;
-          item.classList.toggle('active',active);
-          item.setAttribute('aria-pressed',String(active));
-          item.setAttribute('aria-selected',String(active));
-          item.tabIndex=active?0:-1;
-        });
-      };
       segment.addEventListener('click',event=>{
-        const button=event.target.closest?.('[data-progress-target]');if(!button)return;
-        buttons.forEach(item=>{
-          const active=item===button;
-          item.classList.toggle('active',active);
-          item.setAttribute('aria-selected',String(active));
-          item.tabIndex=active?0:-1;
-        });
+        if(!event.target.closest?.('[data-progress-target]'))return;
+        // The period's existing click handler owns the real selection and may
+        // reject a gated Month/Year request. Mirror that resulting state instead
+        // of visually selecting a period the app did not actually activate.
+        queueMicrotask(syncSelection);
       });
       segment.addEventListener('keydown',event=>{
         if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
@@ -70,7 +61,8 @@
         if(event.key==='ArrowLeft')next=(current-1+buttons.length)%buttons.length;
         if(event.key==='Home')next=0;
         if(event.key==='End')next=buttons.length-1;
-        buttons[next]?.focus();activate(buttons[next]);
+        const target=buttons[next];
+        target?.focus();target?.click();queueMicrotask(syncSelection);
       });
     }
   }
