@@ -20,6 +20,11 @@ const server=http.createServer((req,res)=>{const p=new URL(req.url,'http://local
   assert.equal(await page.locator('#myliftcoachStartupCover').count(),0,'Startup cover must be removed after verified recovery');
   assert.equal(await page.locator('#home .liftova-home-shell').count(),1,'Canonical Home must remain mounted before reveal');
   assert.equal(await page.evaluate(()=>document.documentElement.classList.contains('prism-account-booting')),false,'Verified owner must clear account boot gate');
-  console.log('MYLIFTCOACH startup recovery PASS');
+
+  await page.evaluate(()=>document.dispatchEvent(new Event('myliftcoach:home-ready')));
+  await page.waitForTimeout(350);
+  assert.equal(await page.locator('#myliftcoachStartupCover').count(),0,'Late Home-ready events must never remount the startup cover after reveal');
+  assert.equal(await page.evaluate(()=>document.documentElement.classList.contains('myliftcoach-starting')),false,'Late Home-ready events must not restart startup state');
+  console.log('MYLIFTCOACH startup recovery + late-event remount guard PASS');
  }finally{await browser.close();server.close();}
 })().catch(error=>{server.close();console.error(error);process.exitCode=1;});

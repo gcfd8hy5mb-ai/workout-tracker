@@ -6,7 +6,7 @@
   let revealed=false,observer=null,identityCheckStarted=false,identityRetry=null;
 
   function mount(){
-    if(document.getElementById('myliftcoachStartupCover')) return;
+    if(revealed||document.getElementById('myliftcoachStartupCover')) return;
     const cover=document.createElement('div');
     cover.id='myliftcoachStartupCover';
     cover.setAttribute('aria-hidden','true');
@@ -82,7 +82,7 @@
     return true;
   }
 
-  function check(){mount();verifyScopedOwnerEarly();reveal();}
+  function check(){if(revealed)return;mount();verifyScopedOwnerEarly();reveal();}
   if(document.body) mount();
   else document.addEventListener('DOMContentLoaded',mount,{once:true});
 
