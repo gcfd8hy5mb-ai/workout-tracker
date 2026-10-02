@@ -21,33 +21,35 @@ function swipeRight(page){return page.evaluate(()=>{const make=(type,x)=>{const 
   await page.locator('#home:not(.hidden)').waitFor();
   await page.locator('#home .myliftcoach-home-workout-action').click();
   await page.locator('#workoutScreen:not(.hidden)').waitFor();
-  await page.evaluate(()=>focusWorkoutExercise(0));
-  const card=page.locator('#exerciseList > .exercise').first();
-  await card.locator('.swap-toggle').waitFor();
+  const candidateIndex=await page.evaluate(()=>{const active=JSON.parse(localStorage.getItem('prismActiveWorkoutV1'));return active.ids.findIndex(id=>{const ex=getExercise(id);return ex&&exerciseLibrary.some(other=>other.id!==id&&other.muscle===ex.muscle&&!active.ids.includes(other.id));});});
+  assert.ok(candidateIndex>=0,'active workout must contain an exercise with a manual replacement option');
+  await page.evaluate(index=>focusWorkoutExercise(index),candidateIndex);await page.waitForTimeout(250);
+  const card=page.locator('#exerciseList > .exercise').nth(candidateIndex);
+  const toggle=card.locator('.swap-toggle');await toggle.waitFor();
   const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('prismActiveWorkoutV1')));
-  const oldId=before.ids[0];
+  const oldId=before.ids[candidateIndex];
 
   // Manual substitution must be usable in Free and persist into the active workout checkpoint.
-  await card.locator('.swap-toggle').click();
+  await toggle.click();
   const options=card.locator('.exercise-swap-list:not(.hidden)');await options.waitFor();
   const option=options.locator('button').first();await option.waitFor();const replacementName=(await option.innerText()).trim();assert.ok(replacementName,'replacement option must have a visible name');
   await option.click();
   const after=await page.evaluate(()=>({active:JSON.parse(localStorage.getItem('prismActiveWorkoutV1')),tracking:JSON.parse(localStorage.getItem('dailyTrackingV1')||'{}')}));
-  assert.notEqual(after.active.ids[0],oldId,'unused exercise should be replaced in place');
+  assert.notEqual(after.active.ids[candidateIndex],oldId,'unused exercise should be replaced in place');
   assert.deepEqual(after.tracking.substitutions[after.active.key],after.active.ids,'substitution order must persist');
-  const replacementId=after.active.ids[0];
+  const replacementId=after.active.ids[candidateIndex];
 
   // Exercise info is a drill-down screen and the native left-edge swipe must return to the active workout.
-  await page.evaluate(()=>focusWorkoutExercise(0));
-  const activeCard=page.locator('#exerciseList > .exercise').first();await activeCard.locator('.prism-info-toggle').click();
+  await page.evaluate(index=>focusWorkoutExercise(index),candidateIndex);await page.waitForTimeout(200);
+  const activeCard=page.locator('#exerciseList > .exercise').nth(candidateIndex);await activeCard.locator('.prism-info-toggle').click();
   await page.locator('#exerciseInfoScreen:not(.hidden)').waitFor();
   assert.equal(await page.evaluate(()=>window.MYLIFTCOACHNavigation?.canGoBack()),true,'exercise info must participate in native back stack');
   await swipeRight(page);await page.locator('#workoutScreen:not(.hidden)').waitFor();
   assert.equal(await page.evaluate(()=>window.MYLIFTCOACHNavigation?.getCurrent()),'workoutScreen','edge swipe must return to workout');
 
   // Log one replacement set through the visible compact control so the completion summary has real data.
-  await page.evaluate(({replacementId})=>{const active=JSON.parse(localStorage.getItem('prismActiveWorkoutV1'));const k=`${active.key}-${replacementId}-set1`;setHistory[k]={weight:100,reps:10,done:false};localStorage.setItem('setHistoryV5',JSON.stringify(setHistory));renderActiveWorkoutExercises();focusWorkoutExercise(0);},{replacementId});
-  const log=page.locator('#exerciseList > .exercise').first().locator('.liftova-log-check').first();await log.waitFor();await log.click();
+  await page.evaluate(({replacementId,candidateIndex})=>{const active=JSON.parse(localStorage.getItem('prismActiveWorkoutV1'));const k=`${active.key}-${replacementId}-set1`;setHistory[k]={weight:100,reps:10,done:false};localStorage.setItem('setHistoryV5',JSON.stringify(setHistory));renderActiveWorkoutExercises();focusWorkoutExercise(candidateIndex);},{replacementId,candidateIndex});
+  const log=page.locator('#exerciseList > .exercise').nth(candidateIndex).locator('.liftova-log-check').first();await log.waitFor();await log.click();
   assert.equal((await log.innerText()).trim(),'✓','replacement set must log through the visible control');
   if(await page.getByRole('button',{name:'Skip',exact:true}).count())await page.getByRole('button',{name:'Skip',exact:true}).click();
 
