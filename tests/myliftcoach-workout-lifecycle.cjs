@@ -18,9 +18,18 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await page.goto(url,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof goHome==='function'&&typeof resumePrismWorkout==='function'&&typeof finishWorkout==='function');
 
-  // Start from the actual Home CTA rather than calling the workout opener directly.
-  await page.evaluate(()=>goHome());await page.locator('#home:not(.hidden)').waitFor();
-  const start=page.locator('#home button').filter({hasText:'Start Workout'}).first();await start.waitFor();await start.click();await page.locator('#workoutScreen:not(.hidden)').waitFor();
+  // Mirror a completed onboarding plan so the canonical calendar Home has an actual scheduled workout.
+  await page.evaluate(()=>{
+    workoutGoals={goal:'muscle',days:4,focus:'balanced',gender:'prefer'};
+    localStorage.setItem('workoutGoalsV1',JSON.stringify(workoutGoals));
+    renderHome();goHome();
+  });
+  await page.locator('#home:not(.hidden)').waitFor();
+
+  // Start from the actual calendar Home CTA rather than calling the workout opener directly.
+  const start=page.locator('#home .myliftcoach-home-workout-action');await start.waitFor();
+  assert.equal((await start.innerText()).trim(),'Start Workout','canonical Home must expose Start Workout for a scheduled session');
+  await start.click();await page.locator('#workoutScreen:not(.hidden)').waitFor();
   let state=await page.evaluate(()=>JSON.parse(localStorage.getItem('prismActiveWorkoutV1')||'null'));
   assert.ok(state?.key&&state.ids.length>0&&state.startedAt>0,'Home Start Workout must create an active checkpoint');
   const key=state.key,firstId=state.ids[0],startedAt=state.startedAt;
@@ -49,11 +58,13 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await page.getByRole('button',{name:'Skip',exact:true}).click();
   assert.equal(await page.evaluate(()=>localStorage.getItem('prismRestEndsAtV1')),null,'Skip must clear persisted rest timer');
 
-  // Focus checkpoint, leave, resume from the visible Home control, and preserve workout state.
+  // Focus checkpoint, leave, resume from the visible calendar Home control, and preserve workout state.
   if(state.ids.length>1)await page.evaluate(()=>focusWorkoutExercise(1));
   state=await page.evaluate(()=>JSON.parse(localStorage.getItem('prismActiveWorkoutV1')));const savedIndex=state.index;
   await page.evaluate(()=>goHome());await page.locator('#home:not(.hidden)').waitFor();
-  const resume=page.locator('#home button').filter({hasText:'Resume Workout'}).first();await resume.waitFor();await resume.click();await page.locator('#workoutScreen:not(.hidden)').waitFor();
+  const resume=page.locator('#home .myliftcoach-home-workout-action');await resume.waitFor();
+  await page.waitForFunction(()=>document.querySelector('#home .myliftcoach-home-workout-action')?.textContent.trim()==='Resume Workout');
+  await resume.click();await page.locator('#workoutScreen:not(.hidden)').waitFor();
   let restored=await page.evaluate(({key,firstId})=>({active:JSON.parse(localStorage.getItem('prismActiveWorkoutV1')),set:JSON.parse(localStorage.getItem('setHistoryV5'))[`${key}-${firstId}-set1`]}),{key,firstId});
   assert.equal(restored.active.startedAt,startedAt,'resume must preserve original workout start time');
   assert.equal(restored.active.index,savedIndex,'resume must preserve focused exercise');
@@ -68,6 +79,6 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   assert.equal(finalState.active,null,'finished workout must clear active checkpoint');assert.equal(finalState.history.length,1,'finish must create exactly one history record');assert.equal(finalState.history[0].workoutKey,key);assert.equal(finalState.sets[`${key}-${firstId}-set1`],undefined,'active set state must clear after commit');
   await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>typeof goHome==='function');
   finalState=await page.evaluate(()=>({active:localStorage.getItem('prismActiveWorkoutV1'),history:JSON.parse(localStorage.getItem('workoutHistoryV52')||'[]')}));assert.equal(finalState.active,null);assert.equal(finalState.history.length,1);assert.deepEqual(errors,[],'active-workout QA must not produce page errors');
-  await context.close();console.log('MYLIFTCOACH active workout: Home start, readiness, rest, Complete Set, resume, relaunch and finish PASS');
+  await context.close();console.log('MYLIFTCOACH active workout: calendar Home start, readiness, rest, Complete Set, resume, relaunch and finish PASS');
  }finally{await browser.close();server.close();}
 })().catch(error=>{server.close();console.error(error);process.exitCode=1;});
