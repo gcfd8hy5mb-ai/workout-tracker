@@ -15,12 +15,15 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
     const context=await browser.newContext({viewport:{width:390,height:844},screen:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:3,serviceWorkers:'block'});
     const page=await context.newPage();page.setDefaultTimeout(12000);
     const userId='11111111-1111-4111-8111-111111111111';
-    await page.addInitScript(({userId})=>{
-      localStorage.setItem('prismSupabaseSessionV1',JSON.stringify({access_token:'qa-token',refresh_token:'qa-refresh',expires_at:4102444800,user:{id:userId,email:'qa@example.com'}}));
-    },{userId});
     await page.route('**/persistence/account-ui.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* account gate bypassed: signed-in onboarding fixture */'}));
+
+    // Establish the real app origin first, then seed the same session object that
+    // index.html reads synchronously before scoped storage/bootstrap.
     await page.goto(url,{waitUntil:'domcontentloaded'});
-    await page.waitForFunction(()=>window.PRISMDeviceStore?.owner&&typeof window.prismNext==='function');
+    await page.evaluate(({userId})=>window.localStorage.setItem('prismSupabaseSessionV1',JSON.stringify({access_token:'qa-token',refresh_token:'qa-refresh',expires_at:4102444800,user:{id:userId,email:'qa@example.com'}})),{userId});
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>window.PRISMDeviceStore?.owner&&typeof window.startPrismGuest==='function');
+    assert.equal(await page.evaluate(()=>window.PRISMDeviceStore.owner),userId,'startup must select the verified account before onboarding');
     await page.locator('#onboardingScreen:not(.hidden)').waitFor();
 
     assert.equal(await page.locator('#welcomeScreen:not(.hidden)').count(),0,'verified accounts must not stop at the legacy local welcome screen');
@@ -57,7 +60,7 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
     assert.equal(scoped.profile.displayName,'QA Athlete');
 
     await page.reload({waitUntil:'domcontentloaded'});
-    await page.waitForFunction(()=>typeof window.goHome==='function');
+    await page.waitForFunction(()=>window.PRISMDeviceStore?.owner&&typeof window.goHome==='function');
     await page.locator('#home:not(.hidden)').waitFor();
     assert.equal(await page.locator('#onboardingScreen:not(.hidden)').count(),0,'returning completed account must bypass onboarding after relaunch');
     assert.equal(await page.locator('#welcomeScreen:not(.hidden)').count(),0,'returning completed account must never return to local welcome');
