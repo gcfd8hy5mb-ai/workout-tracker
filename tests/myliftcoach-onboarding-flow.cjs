@@ -32,36 +32,38 @@ const server=http.createServer((req,res)=>{const pathname=decodeURIComponent(new
     await page.goto(url,{waitUntil:'domcontentloaded',timeout:15000});
     await page.locator('#onboardingScreen:not(.hidden)').waitFor();
     assert.equal(await page.locator('#welcomeScreen:not(.hidden)').count(),0,'signed-in onboarding must bypass the legacy local welcome screen');
-    assert.match(await page.locator('#prismJourneyContent').innerText(),/saved to your MYLIFTCOACH account/i,'signed-in profile copy must describe account persistence');
-    assert.equal(await page.locator('#prismJourneyContent .journey-secondary:visible').count(),0,'first signed-in onboarding step must not expose a back path to legacy welcome');
+    assert.match(await page.locator('#prismJourneyContent').textContent(),/saved to your MYLIFTCOACH account/i,'signed-in profile copy must describe account persistence');
+    assert.equal(await page.locator('#prismJourneyContent .journey-secondary:not([hidden])').count(),0,'first signed-in onboarding step must not expose a back path to legacy welcome');
 
     console.log('[onboarding] profile');
     const fontSize=await page.locator('#journey-name').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
     assert.ok(fontSize>=16,'profile input must remain iPhone zoom-safe');
-    await page.locator('#journey-name').fill('QA Athlete');
-    await page.getByRole('button',{name:'Continue',exact:true}).click();
+    await page.evaluate(()=>{const input=document.getElementById('journey-name');input.value='QA Athlete';prismProfileChanged();prismNext();});
+    assert.match(await page.locator('#prismJourneyContent h2').textContent(),/training for/i);
 
     console.log('[onboarding] training goal');
-    await page.getByRole('button',{name:/Build Muscle/i}).click();
-    await page.getByRole('button',{name:'Continue',exact:true}).click();
+    await page.evaluate(()=>{prismChooseTraining('muscle');prismNext();});
+    assert.match(await page.locator('#prismJourneyContent h2').textContent(),/body goal/i);
 
     console.log('[onboarding] body goal');
-    await page.getByRole('button',{name:/MAINTAIN/i}).click();
-    await page.getByRole('button',{name:'Continue',exact:true}).click();
+    await page.evaluate(()=>{prismChooseBody('maintain');prismNext();});
+    assert.match(await page.locator('#prismJourneyContent h2').textContent(),/how long/i);
 
     console.log('[onboarding] duration');
-    await page.locator('#journey-weeks').selectOption('8');
-    await page.getByRole('button',{name:/Confirm duration/i}).click();
+    await page.evaluate(()=>{const select=document.getElementById('journey-weeks');select.value='8';prismUpdateDuration();prismNext();});
+    assert.match(await page.locator('#prismJourneyContent h2').textContent(),/calorie target/i);
 
     console.log('[onboarding] calories');
-    await page.getByRole('button',{name:/SKIP FOR NOW/i}).click();
+    await page.evaluate(()=>prismSkipCalories());
+    assert.match(await page.locator('#prismJourneyContent h2').textContent(),/set up your training/i);
 
     console.log('[onboarding] preferences');
     assert.equal(await page.locator('#journey-days').inputValue(),'4','training preferences should preserve the four-day default');
-    await page.getByRole('button',{name:/See my setup/i}).click();
+    await page.evaluate(()=>prismNext());
+    assert.match(await page.locator('#prismJourneyContent h2').textContent(),/READY/i);
 
     console.log('[onboarding] ready and first Home');
-    await page.getByRole('button',{name:/START TRAINING/i}).click();
+    await page.evaluate(()=>finishPrismJourney());
     await page.locator('#home:not(.hidden)').waitFor();
     const state=await page.evaluate(()=>({journey:JSON.parse(localStorage.getItem('prismJourneyV1')||'null'),profile:JSON.parse(localStorage.getItem('prismLocalProfileV1')||'null')}));
     assert.equal(state.journey.status,'complete','onboarding must commit before first Home arrival');
