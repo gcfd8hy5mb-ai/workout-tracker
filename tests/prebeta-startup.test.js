@@ -21,8 +21,8 @@ assert(startup.includes('requestIdleCallback'),'owner-only shadow tooling must b
 
 const startupIndex=config.indexOf("myliftcoach-startup-smooth.js?v=2");
 const anatomyIndex=config.indexOf("myliftcoach-anatomy-v2.js?v=1");
-const homeIndex=config.indexOf("liftova-home.js?v=13");
-const scheduleIndex=config.indexOf("myliftcoach-home-sequence-fix.js?v=5");
+const homeIndex=config.indexOf("liftova-home.js?v=12");
+const scheduleIndex=config.indexOf("myliftcoach-home-sequence-fix.js?v=4");
 const onboardingIndex=config.indexOf("liftova-onboarding.js?v=7");
 assert(startupIndex>=0&&anatomyIndex>startupIndex&&homeIndex>anatomyIndex&&scheduleIndex>homeIndex&&onboardingIndex>scheduleIndex,'canonical Home must load at the front of the sequential module chain');
 
