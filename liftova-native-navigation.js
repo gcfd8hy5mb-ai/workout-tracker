@@ -12,6 +12,7 @@
   const SWIPE_MAX_MS=700;
   let currentId=null;
   let navigatingBack=false;
+  let rootNavigationPending=false;
   let edgeStart=null;
 
   function visibleScreenId(){
@@ -77,10 +78,12 @@
 
     function nativeShowScreen(id){
       const previous=currentId||visibleScreenId();
+      const isRootNavigation=rootNavigationPending||TAB_ROOTS.has(id);
+      rootNavigationPending=false;
       if(previous&&previous!==id)rememberScroll(previous);
 
       if(!navigatingBack&&previous&&previous!==id){
-        if(TAB_ROOTS.has(id))stack.length=0;
+        if(isRootNavigation)stack.length=0;
         else if(!stack.length||stack[stack.length-1].id!==previous)stack.push({id:previous});
       }
 
@@ -122,6 +125,12 @@
       if(!button)return;
       rememberScroll(currentId||visibleScreenId());
       stack.length=0;
+      // Bottom-nav actions can route through a canonical screen whose internal
+      // id is not one of the historical tab-root ids (notably Workouts). Keep
+      // that synchronous route root-scoped so it cannot immediately push the
+      // previous tab back onto the stack.
+      rootNavigationPending=true;
+      setTimeout(()=>{rootNavigationPending=false;},0);
     },true);
   }
 
