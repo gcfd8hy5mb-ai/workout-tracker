@@ -49,7 +49,7 @@
   function visibleCanonicalHomeReady(){
     const home=document.getElementById('home');
     const shell=home&&home.querySelector('.liftova-home-shell');
-    return !!(home&&!home.classList.contains('hidden')&&shell&&shell.dataset.liftovaReady==='true');
+    return !!(home&&!home.classList.contains('hidden')&&shell);
   }
 
   function surfaceReady(){
