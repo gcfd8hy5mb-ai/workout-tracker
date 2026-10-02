@@ -134,6 +134,19 @@ header{backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);background:
 .progress-detail,.history-date{line-height:1.45}
 .history-exercise{border-top-color:var(--mlc-divider)}
 
+/* Screen hierarchy: Coach */
+#prismAsk{margin-top:18px}
+#prismAsk>.card{padding:18px;border-color:var(--mlc-divider);box-shadow:none}
+#prismAsk h3{margin:8px 0 6px;font-size:20px;letter-spacing:-.02em}
+#prismAsk form{display:grid;gap:10px;margin-top:16px}
+#prismAsk form label{display:grid;gap:7px;margin:0}
+#prismAsk form input{background:var(--card);border:1px solid var(--mlc-divider);padding:13px 14px}
+#prismAsk form>button,#prismAsk>button,#prismAsk .card>button{min-height:50px;border:1px solid var(--mlc-divider);background:var(--mlc-surface-raised);color:var(--text);font-weight:700;padding:12px 14px}
+.prism-coach-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0}
+.prism-coach-actions button{min-height:46px;border:1px solid var(--mlc-divider);background:var(--mlc-surface-raised);color:var(--text);font-size:13px;font-weight:650;padding:9px}
+.prism-coach-decision{margin-top:12px;padding:15px;border:1px solid var(--mlc-divider);border-radius:15px;background:color-mix(in srgb,var(--card) 92%,white 2%)}
+.prism-coach-decision h4{margin:0 0 8px;font-size:15px}.prism-coach-decision p{margin:6px 0;line-height:1.45}.prism-coach-decision button{width:100%;margin-top:8px;border:1px solid var(--mlc-divider);background:var(--mlc-surface-raised);color:var(--text);font-weight:650;padding:10px}
+
 /* Screen hierarchy: forms, settings and utility pages */
 .tracker-form,.prism-local-section,.timer-card{max-width:640px;margin-left:auto;margin-right:auto}
 .tracker-row{border-bottom-color:var(--mlc-divider)}
@@ -155,6 +168,7 @@ header{backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);background:
   .container #weeklySummaryHome .weekly-dashboard .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .stat-grid{gap:9px}
   .stat-card{min-height:96px}
+  .prism-coach-actions{grid-template-columns:1fr}
 }
 @media(display-mode:standalone){.app-header,[data-app-header]{padding-top:max(env(safe-area-inset-top),6px)}}
 @media(prefers-reduced-motion:reduce){.liftova-resuming{transition:none!important}.page.active,.screen.active,[data-screen].active,.success-state,.workout-complete,.completion-summary{animation:none!important}}
