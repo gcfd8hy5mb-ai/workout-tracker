@@ -65,6 +65,10 @@ if (typeof document !== 'undefined') {
   onboardingScript.src = 'myliftcoach-onboarding-polish.js?v=1';
   onboardingScript.defer = true;
   document.head.appendChild(onboardingScript);
+  const homeWorkoutScript = document.createElement('script');
+  homeWorkoutScript.src = 'myliftcoach-home-workout-actions.js?v=1';
+  homeWorkoutScript.defer = true;
+  document.head.appendChild(homeWorkoutScript);
   const script = document.createElement('script');
   script.src = 'app-feel.js?v=1';
   script.defer = true;
