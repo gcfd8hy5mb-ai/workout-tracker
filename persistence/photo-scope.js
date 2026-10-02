@@ -30,6 +30,10 @@ if (typeof document !== 'undefined') {
   homeCss.rel = 'stylesheet';
   homeCss.href = 'myliftcoach-home-refine-v2.css?v=1';
   document.head.appendChild(homeCss);
+  const finalCss = document.createElement('link');
+  finalCss.rel = 'stylesheet';
+  finalCss.href = 'myliftcoach-remaining-screens-final.css?v=1';
+  document.head.appendChild(finalCss);
   const script = document.createElement('script');
   script.src = 'app-feel.js?v=1';
   script.defer = true;
