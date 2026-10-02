@@ -1,0 +1,68 @@
+/* MYLIFTCOACH menu destination polish. Presentation only. */
+:root{--mlc-dest-gap:14px;--mlc-dest-line:rgba(255,255,255,.09);--mlc-dest-surface:#0e0b13;--mlc-dest-raised:#15101d;--mlc-dest-muted:#9f98aa;--mlc-dest-accent:#a851ff}
+
+/* Shared destination framing */
+#workoutsScreen,#libraryScreen,#manageWorkoutScreen,#globalTimerScreen,#overallProgressScreen,#calendarScreen,#recordsScreen,#measurementsScreen,#photosScreen,#waterScreen,#foodScreen,#weightScreen,#goalsScreen,#profileScreen,#helpScreen{max-width:760px;margin:0 auto;padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+#workoutsScreen>.back,#libraryScreen>.back,#manageWorkoutScreen>.back,#globalTimerScreen>.back,#overallProgressScreen>.back,#calendarScreen>.back,#recordsScreen>.back,#measurementsScreen>.back,#photosScreen>.back,#waterScreen>.back,#foodScreen>.back,#weightScreen>.back,#goalsScreen>.back,#profileScreen>.back,#helpScreen>.back{margin-bottom:10px}
+#workoutsScreen h2,#libraryScreen h2,#manageWorkoutScreen h2,#globalTimerScreen h2,#overallProgressScreen h2,#calendarScreen h2,#recordsScreen h2,#measurementsScreen h2,#photosScreen h2,#waterScreen h2,#foodScreen h2,#weightScreen h2,#goalsScreen h2,#profileScreen h2,#helpScreen h2{margin:4px 0 8px;font-size:clamp(25px,7vw,32px);line-height:1.08;letter-spacing:-.035em}
+#workoutsScreen .small,#libraryScreen .small,#manageWorkoutScreen .small,#globalTimerScreen .small,#overallProgressScreen .small,#calendarScreen .small,#recordsScreen .small,#measurementsScreen .small,#photosScreen .small,#waterScreen .small,#foodScreen .small,#weightScreen .small,#goalsScreen .small,#profileScreen .small,#helpScreen .small{color:var(--mlc-dest-muted);line-height:1.5}
+
+/* Workouts / library / manage */
+#workoutsScreen .prism-browser-row,#libraryScreen .library-item,#manageWorkoutScreen .action-button,#manageWorkoutScreen .card{border:1px solid var(--mlc-dest-line)!important;border-radius:16px!important;background:linear-gradient(145deg,#100c15,#0b0910)!important;box-shadow:none!important}
+#workoutsScreen .prism-browser-row{min-height:74px;margin-bottom:9px;padding:12px!important}
+#workoutsScreen .prism-browser-row strong{font-size:15px;line-height:1.25}
+#workoutsScreen .prism-browser-row small{margin-top:4px;color:var(--mlc-dest-muted);line-height:1.35}
+#libraryScreen .library-item{padding:12px;margin-bottom:9px}
+#libraryScreen .add-small,#manageWorkoutScreen .save-button{min-height:48px}
+#manageWorkoutScreen .builder-exercise{border:1px solid var(--mlc-dest-line);background:var(--mlc-dest-raised)}
+
+/* Timer */
+#globalTimerScreen .timer-card{border:1px solid var(--mlc-dest-line);background:linear-gradient(160deg,#110d17,#09070d);box-shadow:none}
+#globalTimerScreen .timer-display{margin:20px 0;font-size:clamp(52px,18vw,72px);letter-spacing:-.045em}
+#globalTimerScreen .timer-button,#globalTimerScreen .timer-reset{border:1px solid var(--mlc-dest-line);background:var(--mlc-dest-raised)}
+
+/* Progress family */
+#overallProgressScreen .stat-card,#overallProgressScreen .card,#recordsScreen .record-row,#measurementsScreen .measure-row,#photosScreen .photo-card,#calendarScreen .card{border:1px solid var(--mlc-dest-line)!important;background:linear-gradient(145deg,#100c15,#0b0910)!important;box-shadow:none!important}
+#overallProgressScreen .stat-grid{gap:10px}
+#overallProgressScreen .stat-card{min-height:96px;padding:14px}
+#overallProgressScreen .stat-number{font-size:24px}
+#calendarScreen .calendar-grid{gap:5px}
+#calendarScreen .calendar-day{min-height:58px;border-color:var(--mlc-dest-line);background:#0d0a12}
+#calendarScreen .calendar-day.selected{border-color:var(--mlc-dest-accent);background:#20102e}
+#recordsScreen .record-row,#measurementsScreen .measure-row,#photosScreen .photo-card{padding:14px}
+#photosScreen .photo-list{gap:10px}
+
+/* Daily tracking */
+#waterScreen .tracker-form,#foodScreen .tracker-form,#weightScreen .tracker-form,#goalsScreen .tracker-form{display:grid;gap:10px}
+#waterScreen .card,#foodScreen .card,#weightScreen .card,#goalsScreen .card{border:1px solid var(--mlc-dest-line);background:linear-gradient(145deg,#100c15,#0b0910);box-shadow:none}
+#waterScreen .tracker-row,#foodScreen .tracker-row,#weightScreen .tracker-row{border-bottom-color:var(--mlc-dest-line)}
+#waterScreen .tracker-add,#foodScreen .tracker-add,#weightScreen .tracker-add,#goalsScreen .tracker-add{min-height:50px;border:1px solid #63388b;background:#241231;color:#fff}
+#waterScreen input,#foodScreen input,#weightScreen input,#goalsScreen input,#goalsScreen select{background:#0d0a12;border-color:#352a40;color:#fff}
+
+/* Profile / settings / account / backup */
+#profileScreen>.card,#profileScreen #profileSettings,#manageWorkoutScreen #dataBackupSection{border:1px solid var(--mlc-dest-line);border-radius:18px;background:linear-gradient(145deg,#100c15,#0b0910);box-shadow:none}
+#profileScreen .prism-profile-links button,#profileScreen .prism-profile-links [role=button]{min-height:50px}
+#profileScreen #profileSettings{padding:16px;margin-top:14px;scroll-margin-top:calc(var(--header-height) + 16px)}
+#manageWorkoutScreen #dataBackupSection{padding:16px;margin-top:18px;scroll-margin-top:calc(var(--header-height) + 16px)}
+#manageWorkoutScreen #dataBackupSection .backup-actions{gap:8px}
+#manageWorkoutScreen #dataBackupSection .backup-actions button{flex:1 1 160px;min-height:48px}
+
+/* Help */
+#helpScreen .card{border:1px solid var(--mlc-dest-line);background:linear-gradient(145deg,#100c15,#0b0910);box-shadow:none}
+#helpScreen details{border-top:1px solid var(--mlc-dest-line);padding:12px 0}
+#helpScreen summary{min-height:44px;display:flex;align-items:center;font-weight:700;cursor:pointer}
+
+/* Drawer touch and active feedback */
+#sideMenu .menu-link{min-height:50px}
+#sideMenu .menu-link[aria-current="page"]{background:#2a153b;border-color:#704195;color:#d8a8ff}
+#sideMenu .menu-link[aria-current="page"] .menu-icon{color:#c783ff}
+#sideMenu .menu-link:active{transform:scale(.985)}
+
+@media(max-width:390px){
+  #workoutsScreen,#libraryScreen,#manageWorkoutScreen,#globalTimerScreen,#overallProgressScreen,#calendarScreen,#recordsScreen,#measurementsScreen,#photosScreen,#waterScreen,#foodScreen,#weightScreen,#goalsScreen,#profileScreen,#helpScreen{padding-left:0;padding-right:0}
+  #overallProgressScreen .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #photosScreen .photo-list{grid-template-columns:1fr}
+  #calendarScreen .calendar-day{min-height:52px;font-size:12px}
+}
+
+@media(prefers-reduced-motion:reduce){#sideMenu .menu-link{transition:none!important}#sideMenu .menu-link:active{transform:none}}
