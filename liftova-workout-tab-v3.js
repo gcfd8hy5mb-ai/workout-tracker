@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const CANONICAL_IDS=['machine-chest-press','incline-chest-press','pec-deck','lat-pulldown','seated-row','shoulder-press','lateral-raise','triceps-pushdown'];
-  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
   const ex=id=>{try{return typeof getExercise==='function'?getExercise(id):null}catch{return null}};
   const display=e=>{const n=String(e?.name||'Exercise');return /machine/i.test(n)&&!/\(machine\)/i.test(n)?n.replace(/\s*machine\s*$/i,'')+' (Machine)':n};
   const profile=e=>window.LiftovaAnatomy?.profile(e)||{primaryLabels:[e?.muscle||'Target'],secondaryLabels:[]};
@@ -12,14 +12,37 @@
   function addStyles(){
     if(typeof document.querySelector!=='function'||typeof document.createElement!=='function'||!document.head?.appendChild)return;
     if(document.querySelector('link[data-myliftcoach-workout-detail]'))return;
-    const l=document.createElement('link');l.rel='stylesheet';l.href='liftova-reference-v3.css?v=5';l.dataset.myliftcoachWorkoutDetail='true';document.head.appendChild(l);
+    const l=document.createElement('link');l.rel='stylesheet';l.href='liftova-reference-v3.css?v=6';l.dataset.myliftcoachWorkoutDetail='true';document.head.appendChild(l);
   }
   function canonicalItem(){return{kind:'liftova-reference',key:'upper-body',title:'Upper Body',ids:CANONICAL_IDS.filter(id=>!!ex(id)),workoutKey:'liftova-reference-upper-body'};}
+  function openHistory(item){
+    try{
+      window.prismSelectedWorkoutKey=item?.workoutKey||item?.key||null;
+      window.prismSelectedWorkoutTitle=item?.title||'Workout';
+      if(typeof window.showGlobalHistory==='function'){window.showGlobalHistory();return;}
+      if(typeof window.showHistory==='function'){window.showHistory();return;}
+      if(typeof window.showScreen==='function')window.showScreen('historyScreen');
+    }catch(error){console.error('MYLIFTCOACH workout history could not open',error)}
+  }
+  function openProgression(item){
+    try{
+      window.prismSelectedWorkoutKey=item?.workoutKey||item?.key||null;
+      window.prismSelectedWorkoutTitle=item?.title||'Workout';
+      if(typeof window.showOverallProgress==='function'){window.showOverallProgress();return;}
+      if(typeof window.showProgress==='function'){window.showProgress();return;}
+      if(typeof window.showScreen==='function')window.showScreen('overallProgressScreen');
+    }catch(error){console.error('MYLIFTCOACH workout progression could not open',error)}
+  }
   function renderDetail(item){
     const area=document.getElementById('prismWorkoutDetail');if(!area||!item)return;const ids=(item.ids||[]).filter(id=>ex(id));
-    area.innerHTML=`<div class="lv3-detail-top"><button data-lv3-back>${icon('back')}</button><div><h2>${esc(String(item.title||'Workout').toUpperCase())}</h2><p>CHEST · BACK · SHOULDERS · ARMS</p></div><button data-lv3-more aria-label="Open menu">${icon('more')}</button></div><div class="lv3-tabs"><button class="active">EXERCISES</button></div><div class="lv3-workout-metrics"><div><b>45 – 60 min</b><span>Estimated Time</span></div><div><b>${ids.length}</b><span>Exercises</span></div><div><b>Hypertrophy</b><span>Goal</span></div></div><div class="lv3-exercise-list">${ids.map((id,i)=>{const e=ex(id),s=scheme(e),p=profile(e);return `<button class="lv3-exercise-row" type="button" data-exercise-id="${esc(id)}"><span class="lv3-ex-number">${i+1}</span><span class="lv3-ex-photo">${e?.image?`<img src="${esc(e.image)}" alt="${esc(display(e))}">`:''}</span>${anatomy(e,'compact')}<span class="lv3-ex-copy"><strong>${esc(display(e))}</strong><span class="lv3-muscle-chips"><i>${esc(p.primaryLabels.join(' / '))}</i>${p.secondaryLabels.map(m=>`<em>${esc(m)}</em>`).join('')}</span><small>• ${esc(e?.how||'Use a controlled range of motion.')}</small></span><span class="lv3-set-box"><b>${s.sets} × ${s.reps}</b><small>Rest ${s.rest}</small></span><span class="lv3-chevron">›</span></button>`}).join('')}</div><button class="lv3-start-workout" id="lv3DetailStart">▶ <b>START WORKOUT</b></button>`;
+    area.innerHTML=`<div class="lv3-detail-top"><button data-lv3-back>${icon('back')}</button><div><h2>${esc(String(item.title||'Workout').toUpperCase())}</h2><p>CHEST · BACK · SHOULDERS · ARMS</p></div><button data-lv3-more aria-label="Open menu">${icon('more')}</button></div><div class="lv3-tabs" role="tablist" aria-label="Workout detail"><button class="active" type="button" role="tab" aria-selected="true">EXERCISES</button><button type="button" role="tab" data-lv3-history>HISTORY</button><button type="button" role="tab" data-lv3-progression>PROGRESSION</button></div><div class="lv3-workout-metrics"><div><b>45 – 60 min</b><span>Estimated Time</span></div><div><b>${ids.length}</b><span>Exercises</span></div><div><b>Hypertrophy</b><span>Goal</span></div></div><div class="lv3-exercise-list">${ids.map((id,i)=>{const e=ex(id),s=scheme(e),p=profile(e);return `<button class="lv3-exercise-row" type="button" data-exercise-id="${esc(id)}"><span class="lv3-ex-number">${i+1}</span><span class="lv3-ex-photo">${e?.image?`<img src="${esc(e.image)}" alt="${esc(display(e))}">`:''}</span>${anatomy(e,'compact')}<span class="lv3-ex-copy"><strong>${esc(display(e))}</strong><span class="lv3-muscle-chips"><i>${esc(p.primaryLabels.join(' / '))}</i>${p.secondaryLabels.map(m=>`<em>${esc(m)}</em>`).join('')}</span><small>• ${esc(e?.how||'Use a controlled range of motion.')}</small></span><span class="lv3-set-box"><b>${s.sets} × ${s.reps}</b><small>Rest ${s.rest}</small></span><span class="lv3-chevron">›</span></button>`}).join('')}</div><button class="lv3-start-workout" id="lv3DetailStart">▶ <b>START WORKOUT</b></button>`;
     document.getElementById('workoutDetailScreen')?.classList.add('lv3-workout-detail');
-    area.querySelector('[data-lv3-back]')?.addEventListener('click',()=>window.goHome?.());area.querySelector('[data-lv3-more]')?.addEventListener('click',()=>window.openMenu?.());area.querySelectorAll('[data-exercise-id]').forEach(b=>b.addEventListener('click',()=>window.showExerciseInfo?.(b.dataset.exerciseId,'workoutDetailScreen')));area.querySelector('#lv3DetailStart')?.addEventListener('click',()=>window.startPrismWorkout?.(item));
+    area.querySelector('[data-lv3-back]')?.addEventListener('click',()=>window.goHome?.());
+    area.querySelector('[data-lv3-more]')?.addEventListener('click',()=>window.openMenu?.());
+    area.querySelector('[data-lv3-history]')?.addEventListener('click',()=>openHistory(item));
+    area.querySelector('[data-lv3-progression]')?.addEventListener('click',()=>openProgression(item));
+    area.querySelectorAll('[data-exercise-id]').forEach(b=>b.addEventListener('click',()=>window.showExerciseInfo?.(b.dataset.exerciseId,'workoutDetailScreen')));
+    area.querySelector('#lv3DetailStart')?.addEventListener('click',()=>window.startPrismWorkout?.(item));
   }
   function renderExercise(id,returnTo){
     const e=ex(id),area=document.getElementById('prismExerciseInfo');if(!e||!area)return;const p=profile(e);
