@@ -22,7 +22,8 @@
   async function verifyScopedOwnerEarly(){
     if(revealed||identityCheckStarted||!root.classList.contains('prism-account-booting')) return;
     const manager=window.PRISMDeviceStore,cloud=window.PRISMCloud;
-    if(!manager?.owner||!cloud?.currentUser){retryIdentitySoon(75);return;}
+    if(!manager?.owner) return;
+    if(!cloud?.currentUser){retryIdentitySoon(75);return;}
     identityCheckStarted=true;
     let timedOut=false;
     const timeout=new Promise((_,reject)=>setTimeout(()=>{timedOut=true;reject(new Error('identity-check-timeout'));},1800));
@@ -42,7 +43,7 @@
       /* Fail closed. Never reveal account data without confirming this owner. */
     }finally{
       identityCheckStarted=false;
-      if(!revealed&&root.classList.contains('prism-account-booting')) retryIdentitySoon(timedOut?250:500);
+      if(manager?.owner&&!revealed&&root.classList.contains('prism-account-booting')) retryIdentitySoon(timedOut?250:500);
     }
   }
 
