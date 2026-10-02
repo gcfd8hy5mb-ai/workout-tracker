@@ -1,5 +1,5 @@
 /* MYLIFTCOACH Progress — compact, touch-friendly training trends. */
-#overallProgressScreen{position:relative;color:#f8f5ff!important;padding:2px 0 104px!important;background:#07050d!important;overflow-x:hidden}
+#overallProgressScreen{position:relative!important;color:#f8f5ff!important;padding:2px 0 104px!important;background:#07050d!important;overflow-x:hidden;margin-left:0!important;margin-right:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;left:0!important;right:auto!important}
 #overallProgressScreen:before{content:"";position:absolute;inset:-20px -16px auto;height:220px;z-index:-1;background:radial-gradient(circle at 18% 0,rgba(142,67,255,.25),transparent 48%)}
 #overallProgressScreen>h2{font-size:27px!important;margin:4px 0 5px!important;letter-spacing:-.035em!important;color:#fff!important;text-align:left}
 #overallProgressScreen>h2:before{content:"MYLIFTCOACH";display:block;margin-bottom:5px;color:#9d56ef;font-size:9px;font-weight:850;letter-spacing:.18em}
