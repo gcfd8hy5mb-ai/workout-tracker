@@ -26,6 +26,7 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
     return hits;
   });
   const check=async(label,open)=>{await page.evaluate(open);await page.waitForTimeout(120);const hits=await visibleLegacy();assert.deepEqual(hits,[],`${label} must not expose legacy LIFTOVA/PRISM branding: ${hits.join(' | ')}`);const geo=await page.evaluate(()=>({w:innerWidth,sw:document.documentElement.scrollWidth}));assert.ok(geo.sw<=geo.w+2,`${label} must not horizontally overflow iPhone viewport: ${JSON.stringify(geo)}`);};
+  const forceDeepRootScroll=async()=>page.evaluate(()=>{showProfile();document.getElementById('myliftcoachScrollFixture')?.remove();const spacer=document.createElement('div');spacer.id='myliftcoachScrollFixture';spacer.style.height='1800px';document.getElementById('profileScreen').appendChild(spacer);window.scrollTo(0,1200);});
 
   await check('Home',()=>goHome());
   await check('Workouts',()=>showWorkouts());
@@ -36,7 +37,7 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   // Reproduce the Oct 2 iPhone recording: leave a long root screen scrolled down,
   // then use the fixed bottom navigation. The next root must start at its top;
   // otherwise History can look blank and Progress lands in mid-page Coach cards.
-  await page.evaluate(()=>{showProfile();window.scrollTo(0,Math.max(900,document.documentElement.scrollHeight));});
+  await forceDeepRootScroll();
   assert.ok(await page.evaluate(()=>window.scrollY>100),'fixture must begin with a non-zero root scroll position');
   await page.locator('#prismBottomNav [data-prism-tab="History"]').click();
   await page.waitForFunction(()=>!document.getElementById('globalHistoryScreen').classList.contains('hidden'));
@@ -44,13 +45,14 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   assert.ok(await page.evaluate(()=>window.scrollY<=2),'History bottom-tab navigation must reset document scroll to the top');
   assert.equal(await page.locator('#globalHistoryScreen h2').first().isVisible(),true,'History heading must be immediately visible after root-tab navigation');
 
-  await page.evaluate(()=>{showProfile();window.scrollTo(0,Math.max(900,document.documentElement.scrollHeight));});
+  await forceDeepRootScroll();
   assert.ok(await page.evaluate(()=>window.scrollY>100),'fixture must restore a deep scroll before Progress navigation');
   await page.locator('#prismBottomNav [data-prism-tab="Progress"]').click();
   await page.waitForFunction(()=>!document.getElementById('overallProgressScreen').classList.contains('hidden'));
   await page.waitForTimeout(80);
   assert.ok(await page.evaluate(()=>window.scrollY<=2),'Progress bottom-tab navigation must reset document scroll to the top');
   const progressTop=await page.locator('#overallProgressScreen').boundingBox();assert.ok(progressTop&&progressTop.y<180,'Progress root content must begin in the visible top viewport');
+  await page.evaluate(()=>document.getElementById('myliftcoachScrollFixture')?.remove());
 
   await check('Settings',()=>showSettings());
   await check('Timer',()=>showGlobalTimer());
