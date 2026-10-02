@@ -58,11 +58,24 @@
     return !!document.querySelector('#welcomeScreen:not(.hidden),#onboardingScreen:not(.hidden),#goalReviewScreen:not(.hidden),#setupScreen:not(.hidden),#workoutsScreen:not(.hidden),#workoutScreen:not(.hidden),#workoutDetailScreen:not(.hidden),#overallProgressScreen:not(.hidden),#profileScreen:not(.hidden)');
   }
 
+  function loadOwnerShadowTools(){
+    for(const [src,key] of [['myliftcoach-shadow-cloud.js?v=1','shadow-cloud'],['myliftcoach-admin-shadow-dashboard-v4.js?v=1','admin-shadow']]){
+      if(document.querySelector(`script[data-myliftcoach-${key}]`))continue;
+      const script=document.createElement('script');
+      script.src=src;
+      script.async=true;
+      script.setAttribute(`data-myliftcoach-${key}`,'true');
+      document.head.appendChild(script);
+    }
+  }
+
   function finishReveal(){
     document.getElementById('myliftcoachStartupCover')?.remove();
     root.classList.remove('myliftcoach-starting','myliftcoach-ready');
     observer?.disconnect();
     if(identityRetry){clearTimeout(identityRetry);identityRetry=null;}
+    const idle=window.requestIdleCallback||((fn)=>setTimeout(fn,600));
+    idle(loadOwnerShadowTools,{timeout:1800});
   }
 
   function reveal(){
