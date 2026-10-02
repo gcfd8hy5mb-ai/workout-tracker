@@ -67,6 +67,7 @@
       .prism-bottom-nav{padding-bottom:max(5px,env(safe-area-inset-bottom))!important}
       .prism-bottom-nav button,.menu-link,.back,button{cursor:default!important}
       .back,[data-liftova-back],[data-myliftcoach-back]{min-width:44px;min-height:44px!important;touch-action:manipulation}
+      @media(max-width:430px){body.liftova-home-visible .lh-hero{margin-left:-13px!important;margin-right:-13px!important}}
       @media(prefers-reduced-motion:reduce){.container>section.myliftcoach-native-enter,.container>section.myliftcoach-native-back{animation:none!important}}
     `;
     document.head.appendChild(style);
