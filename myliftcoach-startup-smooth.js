@@ -3,7 +3,7 @@
   'use strict';
   const root=document.documentElement;
   root.classList.add('myliftcoach-starting');
-  let revealed=false,observer=null,identityCheckStarted=false;
+  let revealed=false,observer=null,identityCheckStarted=false,identityRetry=null;
 
   function mount(){
     if(document.getElementById('myliftcoachStartupCover')) return;
@@ -14,24 +14,46 @@
     (document.body||document.documentElement).appendChild(cover);
   }
 
+  function retryIdentitySoon(delay=250){
+    if(revealed||identityRetry) return;
+    identityRetry=setTimeout(()=>{identityRetry=null;verifyScopedOwnerEarly();},delay);
+  }
+
   async function verifyScopedOwnerEarly(){
-    if(identityCheckStarted||!root.classList.contains('prism-account-booting')) return;
+    if(revealed||identityCheckStarted||!root.classList.contains('prism-account-booting')) return;
     const manager=window.PRISMDeviceStore,cloud=window.PRISMCloud;
-    if(!manager?.owner||!cloud?.currentUser){setTimeout(verifyScopedOwnerEarly,50);return;}
+    if(!manager?.owner||!cloud?.currentUser){retryIdentitySoon(75);return;}
     identityCheckStarted=true;
+    let timedOut=false;
+    const timeout=new Promise((_,reject)=>setTimeout(()=>{timedOut=true;reject(new Error('identity-check-timeout'));},1800));
     try{
-      const user=await cloud.currentUser();
+      const user=await Promise.race([cloud.currentUser(),timeout]);
       /* The device store was selected from the cached session before any app
          state was read. It is safe to show that already-scoped local copy as
          soon as Supabase confirms the exact same user. Full cloud + photo sync
          continues afterward in account-ui without blocking first paint. */
       if(user?.id===manager.owner){
         root.classList.remove('prism-account-booting');
+        recoverCanonicalHome();
         check();
+        return;
       }
     }catch{
-      /* Fail closed. account-ui owns the normal retry/timeout path. */
+      /* Fail closed. Never reveal account data without confirming this owner. */
+    }finally{
+      identityCheckStarted=false;
+      if(!revealed&&root.classList.contains('prism-account-booting')) retryIdentitySoon(timedOut?250:500);
     }
+  }
+
+  function recoverCanonicalHome(){
+    if(root.classList.contains('prism-account-booting')) return;
+    const home=document.getElementById('home');
+    if(!home||home.classList.contains('hidden')||home.querySelector('.liftova-home-shell')) return;
+    try{
+      if(typeof window.MYLIFTCOACHRenderHome==='function') window.MYLIFTCOACHRenderHome();
+      else if(typeof window.goHome==='function') window.goHome();
+    }catch{}
   }
 
   function canonicalSurfaceReady(){
@@ -57,6 +79,7 @@
     if(revealed||!canonicalSurfaceReady()) return false;
     revealed=true;
     observer?.disconnect();
+    if(identityRetry){clearTimeout(identityRetry);identityRetry=null;}
     root.classList.add('myliftcoach-ready');
     const finish=()=>{
       document.getElementById('myliftcoachStartupCover')?.remove();
@@ -69,7 +92,7 @@
     return true;
   }
 
-  function check(){mount();verifyScopedOwnerEarly();reveal();}
+  function check(){mount();verifyScopedOwnerEarly();recoverCanonicalHome();reveal();}
   if(document.body) mount();
   else document.addEventListener('DOMContentLoaded',mount,{once:true});
 
@@ -84,5 +107,11 @@
 
   document.addEventListener('myliftcoach:home-ready',check);
   document.addEventListener('DOMContentLoaded',check,{once:true});
-  setTimeout(check,2500);
+  /* Watchdog is intentionally non-bypassing: it retries the verified handoff
+     and canonical render, but never exposes account data while auth is booting. */
+  let watchdogCount=0;
+  const watchdog=setInterval(()=>{
+    if(revealed||watchdogCount++>30){clearInterval(watchdog);return;}
+    check();
+  },250);
 })();
