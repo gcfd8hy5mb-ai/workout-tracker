@@ -47,9 +47,6 @@
       segment.__myliftcoachProgressTargets=true;
       segment.addEventListener('click',event=>{
         if(!event.target.closest?.('[data-progress-target]'))return;
-        // The period's existing click handler owns the real selection and may
-        // reject a gated Month/Year request. Mirror that resulting state instead
-        // of visually selecting a period the app did not actually activate.
         queueMicrotask(syncSelection);
       });
       segment.addEventListener('keydown',event=>{
@@ -66,14 +63,26 @@
       });
     }
   }
+  function containScreenFrame(screen){
+    // Old full-bleed presentation rules can arrive after the first Progress paint
+    // when cached assets load in a different order. Inline important geometry is
+    // the final presentation authority for this one screen, so the 13px iPhone
+    // app gutter cannot become a -3px viewport leak.
+    screen.style.setProperty('position','relative','important');
+    screen.style.setProperty('margin-left','0','important');
+    screen.style.setProperty('margin-right','0','important');
+    screen.style.setProperty('left','0','important');
+    screen.style.setProperty('right','auto','important');
+    screen.style.setProperty('width','100%','important');
+    screen.style.setProperty('max-width','100%','important');
+    screen.style.setProperty('box-sizing','border-box','important');
+    screen.style.setProperty('transform','none','important');
+  }
   function containLateModules(screen){
     const ids=['prismCoach','prismAthleteProfile','prismAdaptiveProgramming','liftovaCoachCycle','prismAsk'];
     const screenRect=screen.getBoundingClientRect();
     ids.forEach(id=>{
       const node=screen.querySelector(`#${id}`);if(!node)return;
-      // Late presentation modules can receive a full-bleed offset after this
-      // screen has already rendered. Correct the visible module itself from its
-      // actual geometry so stylesheet/load order cannot push it off an iPhone.
       node.style.removeProperty('left');
       node.style.removeProperty('position');
       const rect=node.getBoundingClientRect();
@@ -89,7 +98,7 @@
   function decorate(){
     const screen=document.getElementById('overallProgressScreen');
     if(!screen)return;
-    ensureStyles();ensureProgressTargets(screen);
+    ensureStyles();containScreenFrame(screen);ensureProgressTargets(screen);
     screen.classList.add('mlc-progress-ready');
     if(!screen.querySelector('.liftova-progress-hero')){
       const hero=document.createElement('div');
@@ -107,6 +116,7 @@
     screen.querySelectorAll('.progress-links button,button.dashboard-link').forEach(button=>{
       if(!button.getAttribute('aria-label'))button.setAttribute('aria-label',(button.textContent||'Open progress detail').trim());
     });
+    containScreenFrame(screen);
     containLateModules(screen);
     improveEmptyStates(screen);
   }
@@ -122,6 +132,13 @@
   }
   let queued=false;
   const observer=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;decorate();});});
-  function boot(){const screen=document.getElementById('overallProgressScreen');if(screen)observer.observe(screen,{subtree:true,childList:true});decorate();}
+  function boot(){
+    const screen=document.getElementById('overallProgressScreen');
+    if(screen){
+      containScreenFrame(screen);
+      observer.observe(screen,{subtree:true,childList:true});
+    }
+    decorate();
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
