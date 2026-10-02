@@ -3,7 +3,7 @@
   'use strict';
   const root=document.documentElement;
   root.classList.add('myliftcoach-starting');
-  let revealed=false,observer=null;
+  let revealed=false,observer=null,identityCheckStarted=false;
 
   function mount(){
     if(document.getElementById('myliftcoachStartupCover')) return;
@@ -14,18 +14,33 @@
     (document.body||document.documentElement).appendChild(cover);
   }
 
+  async function verifyScopedOwnerEarly(){
+    if(identityCheckStarted||!root.classList.contains('prism-account-booting')) return;
+    const manager=window.PRISMDeviceStore,cloud=window.PRISMCloud;
+    if(!manager?.owner||!cloud?.currentUser){setTimeout(verifyScopedOwnerEarly,50);return;}
+    identityCheckStarted=true;
+    try{
+      const user=await cloud.currentUser();
+      /* The device store was selected from the cached session before any app
+         state was read. It is safe to show that already-scoped local copy as
+         soon as Supabase confirms the exact same user. Full cloud + photo sync
+         continues afterward in account-ui without blocking first paint. */
+      if(user?.id===manager.owner){
+        root.classList.remove('prism-account-booting');
+        check();
+      }
+    }catch{
+      /* Fail closed. account-ui owns the normal retry/timeout path. */
+    }
+  }
+
   function canonicalSurfaceReady(){
-    /* Never bypass account isolation. account-ui removes this class only after
-       it verifies that the restored Supabase user still owns the selected
-       device scope (or deliberately times out to the already-scoped copy). */
     if(root.classList.contains('prism-account-booting')) return false;
     if(document.getElementById('liftovaAuthGate')) return true;
 
     const home=document.getElementById('home');
     if(home&&!home.classList.contains('hidden')) return !!home.querySelector('.liftova-home-shell');
 
-    /* First-run onboarding and explicit non-Home routes do not need the
-       canonical Home shell before they can safely paint. */
     return !!document.querySelector('#welcomeScreen:not(.hidden),#onboardingScreen:not(.hidden),#goalReviewScreen:not(.hidden),#setupScreen:not(.hidden),#workoutsScreen:not(.hidden),#workoutScreen:not(.hidden),#overallProgressScreen:not(.hidden),#profileScreen:not(.hidden)');
   }
 
@@ -54,7 +69,7 @@
     return true;
   }
 
-  function check(){mount();reveal();}
+  function check(){mount();verifyScopedOwnerEarly();reveal();}
   if(document.body) mount();
   else document.addEventListener('DOMContentLoaded',mount,{once:true});
 
@@ -69,7 +84,5 @@
 
   document.addEventListener('myliftcoach:home-ready',check);
   document.addEventListener('DOMContentLoaded',check,{once:true});
-  /* Safety nudge only: this never forces disclosure while account scope is
-     still booting and never reveals the legacy Home without its canonical shell. */
   setTimeout(check,2500);
 })();
