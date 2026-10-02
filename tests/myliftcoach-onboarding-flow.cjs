@@ -17,13 +17,18 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
     const userId='11111111-1111-4111-8111-111111111111';
     await page.route('**/persistence/account-ui.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* account gate bypassed: signed-in onboarding fixture */'}));
 
-    // Establish the real app origin first, then seed the same session object that
-    // index.html reads synchronously before scoped storage/bootstrap.
     await page.goto(url,{waitUntil:'domcontentloaded'});
     await page.evaluate(({userId})=>window.localStorage.setItem('prismSupabaseSessionV1',JSON.stringify({access_token:'qa-token',refresh_token:'qa-refresh',expires_at:4102444800,user:{id:userId,email:'qa@example.com'}})),{userId});
     await page.reload({waitUntil:'domcontentloaded'});
-    await page.waitForFunction(()=>window.PRISMDeviceStore?.owner&&typeof window.startPrismGuest==='function');
-    assert.equal(await page.evaluate(()=>window.PRISMDeviceStore.owner),userId,'startup must select the verified account before onboarding');
+    await page.waitForFunction(()=>window.PRISMDeviceStore&&typeof window.goHome==='function');
+    const startup=await page.evaluate(()=>({
+      owner:window.PRISMDeviceStore?.owner||null,
+      hasStart:typeof window.startPrismGuest,
+      rawSession:window.localStorage.getItem('prismSupabaseSessionV1'),
+      visible:[...document.querySelectorAll('section:not(.hidden)')].map(el=>el.id).filter(Boolean)
+    }));
+    assert.equal(startup.owner,userId,`startup must select verified account before onboarding: ${JSON.stringify(startup)}`);
+    assert.equal(startup.hasStart,'function',`onboarding runtime must expose startPrismGuest: ${JSON.stringify(startup)}`);
     await page.locator('#onboardingScreen:not(.hidden)').waitFor();
 
     assert.equal(await page.locator('#welcomeScreen:not(.hidden)').count(),0,'verified accounts must not stop at the legacy local welcome screen');
@@ -34,33 +39,27 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
     assert.ok(fontSize>=16,'profile input must remain iPhone zoom-safe');
     await page.locator('#journey-name').fill('QA Athlete');
     await page.getByRole('button',{name:'Continue',exact:true}).click();
-
     await page.getByRole('button',{name:/Build Muscle/i}).click();
     await page.getByRole('button',{name:'Continue',exact:true}).click();
     await page.getByRole('button',{name:/Maintain/i}).click();
     await page.getByRole('button',{name:'Continue',exact:true}).click();
-
     await page.locator('#journey-weeks').selectOption('8');
     await page.getByRole('button',{name:/Confirm duration/i}).click();
     await page.getByRole('button',{name:/SKIP FOR NOW/i}).click();
-
     assert.equal(await page.locator('#journey-days').inputValue(),'4','training preferences should preserve the four-day default');
     await page.getByRole('button',{name:/See my setup/i}).click();
     await page.getByRole('button',{name:/START TRAINING/i}).click();
     await page.locator('#home:not(.hidden)').waitFor();
 
-    const scoped=await page.evaluate(()=>({
-      owner:window.PRISMDeviceStore.owner,
-      journey:JSON.parse(localStorage.getItem('prismJourneyV1')||'null'),
-      profile:JSON.parse(localStorage.getItem('prismLocalProfileV1')||'null')
-    }));
+    const scoped=await page.evaluate(()=>({owner:window.PRISMDeviceStore.owner,journey:JSON.parse(localStorage.getItem('prismJourneyV1')||'null'),profile:JSON.parse(localStorage.getItem('prismLocalProfileV1')||'null')}));
     assert.equal(scoped.owner,userId);
     assert.equal(scoped.journey.status,'complete','onboarding must commit before first Home arrival');
     assert.equal(scoped.profile.onboardingComplete,true,'profile must be marked complete');
     assert.equal(scoped.profile.displayName,'QA Athlete');
 
     await page.reload({waitUntil:'domcontentloaded'});
-    await page.waitForFunction(()=>window.PRISMDeviceStore?.owner&&typeof window.goHome==='function');
+    await page.waitForFunction(()=>window.PRISMDeviceStore&&typeof window.goHome==='function');
+    assert.equal(await page.evaluate(()=>window.PRISMDeviceStore.owner),userId,'returning relaunch must restore the same owner before app routing');
     await page.locator('#home:not(.hidden)').waitFor();
     assert.equal(await page.locator('#onboardingScreen:not(.hidden)').count(),0,'returning completed account must bypass onboarding after relaunch');
     assert.equal(await page.locator('#welcomeScreen:not(.hidden)').count(),0,'returning completed account must never return to local welcome');
