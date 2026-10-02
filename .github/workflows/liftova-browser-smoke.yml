@@ -30,5 +30,7 @@ jobs:
         run: node tests/myliftcoach-progress-history-calendar.cjs
       - name: Exercise MYLIFTCOACH daily tracking
         run: node tests/myliftcoach-daily-tracking.cjs
+      - name: Exercise MYLIFTCOACH profile settings backup help and timer
+        run: node tests/myliftcoach-settings-tools.cjs
       - name: Exercise MYLIFTCOACH onboarding flow
         run: node tests/myliftcoach-onboarding-flow.cjs
