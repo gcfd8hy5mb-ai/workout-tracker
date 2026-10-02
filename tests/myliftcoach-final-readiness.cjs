@@ -32,6 +32,26 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await check('Progress/Coach',()=>showOverallProgress());
   const coachText=await page.locator('#prismAsk').innerText();assert.match(coachText,/MYLIFTCOACH/i,'Coach preview must use current MYLIFTCOACH branding');assert.doesNotMatch(coachText,/LIFTOVA|PRISM/,'Coach preview must not expose legacy branding');
   await check('Profile',()=>showProfile());
+
+  // Reproduce the Oct 2 iPhone recording: leave a long root screen scrolled down,
+  // then use the fixed bottom navigation. The next root must start at its top;
+  // otherwise History can look blank and Progress lands in mid-page Coach cards.
+  await page.evaluate(()=>{showProfile();window.scrollTo(0,Math.max(900,document.documentElement.scrollHeight));});
+  assert.ok(await page.evaluate(()=>window.scrollY>100),'fixture must begin with a non-zero root scroll position');
+  await page.locator('#prismBottomNav [data-prism-tab="History"]').click();
+  await page.waitForFunction(()=>!document.getElementById('globalHistoryScreen').classList.contains('hidden'));
+  await page.waitForTimeout(80);
+  assert.ok(await page.evaluate(()=>window.scrollY<=2),'History bottom-tab navigation must reset document scroll to the top');
+  assert.equal(await page.locator('#globalHistoryScreen h2').first().isVisible(),true,'History heading must be immediately visible after root-tab navigation');
+
+  await page.evaluate(()=>{showProfile();window.scrollTo(0,Math.max(900,document.documentElement.scrollHeight));});
+  assert.ok(await page.evaluate(()=>window.scrollY>100),'fixture must restore a deep scroll before Progress navigation');
+  await page.locator('#prismBottomNav [data-prism-tab="Progress"]').click();
+  await page.waitForFunction(()=>!document.getElementById('overallProgressScreen').classList.contains('hidden'));
+  await page.waitForTimeout(80);
+  assert.ok(await page.evaluate(()=>window.scrollY<=2),'Progress bottom-tab navigation must reset document scroll to the top');
+  const progressTop=await page.locator('#overallProgressScreen').boundingBox();assert.ok(progressTop&&progressTop.y<180,'Progress root content must begin in the visible top viewport');
+
   await check('Settings',()=>showSettings());
   await check('Timer',()=>showGlobalTimer());
   await check('Help',()=>showHelp());
@@ -39,6 +59,6 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await page.evaluate(()=>openMenu());await page.waitForTimeout(80);assert.deepEqual(await visibleLegacy(),[],'Side menu must not expose legacy branding');
   const brand=await page.locator('#sideMenu').innerText();assert.match(brand,/MYLIFTCOACH/,'Side menu must show MYLIFTCOACH brand');
   assert.deepEqual(errors,[],'Final tester-readiness sweep must not produce page errors');
-  await context.close();console.log('MYLIFTCOACH final tester-readiness: major surfaces, Coach branding, menu branding, compact iPhone geometry PASS');
+  await context.close();console.log('MYLIFTCOACH final tester-readiness: major surfaces, root-tab scroll reset, Coach branding, menu branding, compact iPhone geometry PASS');
  }finally{await browser.close();server.close();}
 })().catch(error=>{server.close();console.error(error);process.exitCode=1;});
