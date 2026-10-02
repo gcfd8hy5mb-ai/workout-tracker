@@ -22,7 +22,7 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await page.locator('#waterAmount').fill('500');await page.locator('#waterScreen form').first().evaluate(form=>form.requestSubmit());
   assert.match(await page.locator('#waterSummary').innerText(),/500 mL/i,'Water save must update the daily total');
   await page.evaluate(()=>goHome());await page.evaluate(()=>showWater());assert.match(await page.locator('#waterSummary').innerText(),/500 mL/i,'Water must survive navigation away and back');
-  const waterDelete=page.locator('#waterList button').first();if(await waterDelete.count()){await waterDelete.click();assert.doesNotMatch(await page.locator('#waterSummary').innerText(),/500 mL of/i,'Water delete must update the total');await page.locator('#quickWaterButton').click();}
+  const waterDelete=page.getByRole('button',{name:/Remove 500 mL/i}).first();if(await waterDelete.count()){await waterDelete.click();await page.waitForFunction(()=>!document.getElementById('waterSummary').textContent.includes('500 mL of'));assert.doesNotMatch(await page.locator('#waterSummary').innerText(),/500 mL of/i,'Water delete must update the total');await page.locator('#quickWaterButton').click();}
 
   // Food: custom entry save.
   await page.evaluate(()=>showFood());await page.locator('#foodScreen:not(.hidden)').waitFor();
