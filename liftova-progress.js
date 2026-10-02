@@ -26,40 +26,28 @@
     });
   }
   function ensureProgressTargets(screen){
-    const segment=screen.querySelector('.prism-segments');
+    const segment=screen.querySelector('.prism-segments[data-progress-segment],.prism-segments[aria-label="Progress period"]')||screen.querySelector('.prism-segments');
     if(!segment)return;
+    segment.dataset.progressSegment='period';
     segment.setAttribute('role','tablist');
-    segment.setAttribute('aria-label','Progress views');
+    segment.setAttribute('aria-label','Progress period');
     const buttons=[...segment.querySelectorAll('button')];
-    const targets=['strength','body','activity'];
-    buttons.forEach((button,index)=>{
-      if(!button.dataset.progressTarget)button.dataset.progressTarget=targets[index]||`progress-${index}`;
-      button.setAttribute('role','tab');
-      const active=button.getAttribute('aria-pressed')==='true'||button.classList.contains('active');
-      button.setAttribute('aria-selected',String(active));
-      button.tabIndex=active?0:-1;
-    });
+    const syncSelection=()=>{
+      buttons.forEach((button,index)=>{
+        if(!button.dataset.progressTarget)button.dataset.progressTarget=button.dataset.period||`progress-${index}`;
+        button.setAttribute('role','tab');
+        const active=button.getAttribute('aria-pressed')==='true';
+        button.classList.toggle('active',active);
+        button.setAttribute('aria-selected',String(active));
+        button.tabIndex=active?0:-1;
+      });
+    };
+    syncSelection();
     if(!segment.__myliftcoachProgressTargets){
       segment.__myliftcoachProgressTargets=true;
-      const activate=button=>{
-        if(!button)return;
-        button.click();
-        buttons.forEach(item=>{
-          const active=item===button;
-          item.classList.toggle('active',active);
-          item.setAttribute('aria-pressed',String(active));
-          item.setAttribute('aria-selected',String(active));
-          item.tabIndex=active?0:-1;
-        });
-      };
       segment.addEventListener('click',event=>{
-        const button=event.target.closest?.('[data-progress-target]');if(!button)return;
-        buttons.forEach(item=>{
-          const active=item===button;
-          item.classList.toggle('active',active);
-          item.setAttribute('aria-selected',String(active));
-          item.tabIndex=active?0:-1;
-        });
+        if(!event.target.closest?.('[data-progress-target]'))return;
+        queueMicrotask(syncSelection);
       });
       segment.addEventListener('keydown',event=>{
         if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
@@ -70,14 +58,47 @@
         if(event.key==='ArrowLeft')next=(current-1+buttons.length)%buttons.length;
         if(event.key==='Home')next=0;
         if(event.key==='End')next=buttons.length-1;
-        buttons[next]?.focus();activate(buttons[next]);
+        const target=buttons[next];
+        target?.focus();target?.click();queueMicrotask(syncSelection);
       });
     }
+  }
+  function containScreenFrame(screen){
+    // Old full-bleed presentation rules can arrive after the first Progress paint
+    // when cached assets load in a different order. Inline important geometry is
+    // the final presentation authority for this one screen, so the 13px iPhone
+    // app gutter cannot become a -3px viewport leak.
+    screen.style.setProperty('position','relative','important');
+    screen.style.setProperty('margin-left','0','important');
+    screen.style.setProperty('margin-right','0','important');
+    screen.style.setProperty('left','0','important');
+    screen.style.setProperty('right','auto','important');
+    screen.style.setProperty('width','100%','important');
+    screen.style.setProperty('max-width','100%','important');
+    screen.style.setProperty('box-sizing','border-box','important');
+    screen.style.setProperty('transform','none','important');
+  }
+  function containLateModules(screen){
+    const ids=['prismCoach','prismAthleteProfile','prismAdaptiveProgramming','liftovaCoachCycle','prismAsk'];
+    const screenRect=screen.getBoundingClientRect();
+    ids.forEach(id=>{
+      const node=screen.querySelector(`#${id}`);if(!node)return;
+      node.style.removeProperty('left');
+      node.style.removeProperty('position');
+      const rect=node.getBoundingClientRect();
+      const delta=Math.max(0,screenRect.left-rect.left);
+      if(delta>.5){
+        node.style.setProperty('position','relative','important');
+        node.style.setProperty('left',`${delta}px`,'important');
+      }
+      node.style.setProperty('max-width','100%','important');
+      node.style.setProperty('box-sizing','border-box','important');
+    });
   }
   function decorate(){
     const screen=document.getElementById('overallProgressScreen');
     if(!screen)return;
-    ensureStyles();ensureProgressTargets(screen);
+    ensureStyles();containScreenFrame(screen);ensureProgressTargets(screen);
     screen.classList.add('mlc-progress-ready');
     if(!screen.querySelector('.liftova-progress-hero')){
       const hero=document.createElement('div');
@@ -95,14 +116,29 @@
     screen.querySelectorAll('.progress-links button,button.dashboard-link').forEach(button=>{
       if(!button.getAttribute('aria-label'))button.setAttribute('aria-label',(button.textContent||'Open progress detail').trim());
     });
+    containScreenFrame(screen);
+    containLateModules(screen);
     improveEmptyStates(screen);
   }
   const original=window.showOverallProgress;
   if(typeof original==='function'){
-    window.showOverallProgress=function(){const out=original.apply(this,arguments);requestAnimationFrame(decorate);return out;};
+    window.showOverallProgress=function(){
+      const out=original.apply(this,arguments);
+      requestAnimationFrame(decorate);
+      setTimeout(decorate,120);
+      setTimeout(decorate,500);
+      return out;
+    };
   }
   let queued=false;
   const observer=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;decorate();});});
-  function boot(){const screen=document.getElementById('overallProgressScreen');if(screen)observer.observe(screen,{subtree:true,childList:true});decorate();}
+  function boot(){
+    const screen=document.getElementById('overallProgressScreen');
+    if(screen){
+      containScreenFrame(screen);
+      observer.observe(screen,{subtree:true,childList:true});
+    }
+    decorate();
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

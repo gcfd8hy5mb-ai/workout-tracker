@@ -22,11 +22,17 @@
   }
 
   function progressButtons(screen){
-    return [...screen.querySelectorAll('.prism-segments button')].filter(button=>!button.disabled);
+    const buttons=[...screen.querySelectorAll('.prism-segments[data-progress-segment="period"] button,.prism-segments[aria-label="Progress period"] button')].filter(button=>!button.disabled);
+    return buttons.filter(button=>{
+      const period=button.dataset.period;
+      if(!period||period==='week')return true;
+      try{return typeof window.canAccessFeature!=='function'||window.canAccessFeature('long_term_comparisons');}
+      catch{return false;}
+    });
   }
 
   function activeIndex(buttons){
-    const index=buttons.findIndex(button=>button.classList.contains('active')||button.getAttribute('aria-selected')==='true');
+    const index=buttons.findIndex(button=>button.getAttribute('aria-pressed')==='true'||button.getAttribute('aria-selected')==='true');
     return index>=0?index:0;
   }
 
