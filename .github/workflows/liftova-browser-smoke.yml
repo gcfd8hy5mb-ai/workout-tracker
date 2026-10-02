@@ -36,3 +36,5 @@ jobs:
         run: node tests/myliftcoach-onboarding-flow.cjs
       - name: Exercise MYLIFTCOACH final tester readiness
         run: node tests/myliftcoach-final-readiness.cjs
+      - name: Exercise MYLIFTCOACH startup recovery
+        run: node tests/myliftcoach-startup-recovery.cjs
