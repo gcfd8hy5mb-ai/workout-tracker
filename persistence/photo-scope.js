@@ -34,6 +34,10 @@ if (typeof document !== 'undefined') {
   finalCss.rel = 'stylesheet';
   finalCss.href = 'myliftcoach-remaining-screens-final.css?v=1';
   document.head.appendChild(finalCss);
+  const menuCss = document.createElement('link');
+  menuCss.rel = 'stylesheet';
+  menuCss.href = 'myliftcoach-menu-destinations.css?v=1';
+  document.head.appendChild(menuCss);
   const script = document.createElement('script');
   script.src = 'app-feel.js?v=1';
   script.defer = true;
