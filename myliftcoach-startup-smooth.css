@@ -1,16 +1,13 @@
-/* MYLIFTCOACH startup cover — blocks legacy first paint while auth + canonical Home settle. */
+/* MYLIFTCOACH launch presentation. */
 html.myliftcoach-starting{background:#050409!important}
 html.myliftcoach-starting body>*:not(#myliftcoachStartupCover):not(#liftovaAuthGate){visibility:hidden!important}
-html.myliftcoach-starting::before{content:"";position:fixed;inset:0;z-index:2147482998;background:#050409 url('images/myliftcoach-icon.svg?v=22') center calc(50% - 22px)/68px 68px no-repeat;pointer-events:none}
-html.myliftcoach-starting::after{content:"MYLIFTCOACH";position:fixed;left:0;right:0;top:calc(50% + 30px);z-index:2147482999;text-align:center;color:#f9f7ff;font:800 15px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;letter-spacing:.18em;pointer-events:none}
-#myliftcoachStartupCover{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#050409;opacity:1;pointer-events:none;transition:opacity .07s ease-out}
-#myliftcoachStartupCover .mlc-startup-mark{display:flex;flex-direction:column;align-items:center;gap:12px;transform:translateY(-2vh)}
-#myliftcoachStartupCover img{width:68px;height:68px;display:block;object-fit:contain}
+html.myliftcoach-starting::before{content:"";position:fixed;inset:0;z-index:2147482998;background:#050409;pointer-events:none}
+#myliftcoachStartupCover{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#050409;opacity:1;pointer-events:none;transition:opacity .22s cubic-bezier(.22,1,.36,1)}
+#myliftcoachStartupCover .mlc-startup-mark{display:flex;flex-direction:column;align-items:center;gap:12px;transform:translateY(-2vh);opacity:1;transition:transform .22s cubic-bezier(.22,1,.36,1),opacity .22s ease}
+#myliftcoachStartupCover img{width:72px;height:72px;display:block;object-fit:contain}
 #myliftcoachStartupCover strong{color:#f9f7ff;font:800 15px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;letter-spacing:.18em}
+#myliftcoachStartupCover span{color:#aaa3b4;font:600 10px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;letter-spacing:.24em}
 html.myliftcoach-ready #myliftcoachStartupCover{opacity:0}
-html.myliftcoach-ready::before,html.myliftcoach-ready::after{opacity:0;transition:opacity .07s ease-out}
-.mlc-detail-insights{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:-1px 0 22px;padding:0 4px}
-.mlc-detail-insight{min-height:52px;border:1px solid #5b2876;border-radius:13px;background:#0d0912;color:#d9b2ff;font:800 12px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;letter-spacing:.08em;text-align:center;touch-action:manipulation}
-.mlc-detail-insight:active{background:#21102d}
-@media(max-width:430px){.mlc-detail-insights{grid-template-columns:1fr 1fr}}
-@media (prefers-reduced-motion:reduce){#myliftcoachStartupCover,html.myliftcoach-ready::before,html.myliftcoach-ready::after{transition:none}}
+html.myliftcoach-ready #myliftcoachStartupCover .mlc-startup-mark{transform:translateY(-1vh) scale(.985);opacity:.94}
+html.myliftcoach-ready::before{opacity:0;transition:opacity .22s cubic-bezier(.22,1,.36,1)}
+@media (prefers-reduced-motion:reduce){#myliftcoachStartupCover,#myliftcoachStartupCover .mlc-startup-mark,html.myliftcoach-ready::before{transition:none}}
