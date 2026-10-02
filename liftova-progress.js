@@ -68,21 +68,22 @@
   }
   function containLateModules(screen){
     const ids=['prismCoach','prismAthleteProfile','prismAdaptiveProgramming','liftovaCoachCycle','prismAsk'];
-    const screenLeft=screen.getBoundingClientRect().left;
+    const screenRect=screen.getBoundingClientRect();
     ids.forEach(id=>{
       const node=screen.querySelector(`#${id}`);if(!node)return;
-      let current=node;
-      while(current&&current!==screen){
-        const rect=current.getBoundingClientRect();
-        const style=getComputedStyle(current);
-        if(rect.left<screenLeft-.5&&parseFloat(style.marginLeft)<0){
-          current.style.setProperty('margin-left','0','important');
-          current.style.setProperty('margin-right','0','important');
-          current.style.setProperty('max-width','100%','important');
-          current.style.setProperty('box-sizing','border-box','important');
-        }
-        current=current.parentElement;
+      // Late presentation modules can receive a full-bleed offset after this
+      // screen has already rendered. Correct the visible module itself from its
+      // actual geometry so stylesheet/load order cannot push it off an iPhone.
+      node.style.removeProperty('left');
+      node.style.removeProperty('position');
+      const rect=node.getBoundingClientRect();
+      const delta=Math.max(0,screenRect.left-rect.left);
+      if(delta>.5){
+        node.style.setProperty('position','relative','important');
+        node.style.setProperty('left',`${delta}px`,'important');
       }
+      node.style.setProperty('max-width','100%','important');
+      node.style.setProperty('box-sizing','border-box','important');
     });
   }
   function decorate(){
@@ -111,7 +112,13 @@
   }
   const original=window.showOverallProgress;
   if(typeof original==='function'){
-    window.showOverallProgress=function(){const out=original.apply(this,arguments);requestAnimationFrame(decorate);return out;};
+    window.showOverallProgress=function(){
+      const out=original.apply(this,arguments);
+      requestAnimationFrame(decorate);
+      setTimeout(decorate,120);
+      setTimeout(decorate,500);
+      return out;
+    };
   }
   let queued=false;
   const observer=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;decorate();});});
