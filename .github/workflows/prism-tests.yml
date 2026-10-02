@@ -63,3 +63,5 @@ jobs:
         run: node tests/test_autonomy_calibration_long_simulation_v10_3_6.js
       - name: Run MYLIFTCOACH owner shadow dashboard security regression
         run: node tests/test_admin_shadow_dashboard.js
+      - name: Run MYLIFTCOACH 20-athlete 12-week shadow simulation
+        run: node tests/test_shadow_20_athlete_12_week_simulation.js
