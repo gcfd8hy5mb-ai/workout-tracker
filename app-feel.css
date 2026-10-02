@@ -6,5 +6,66 @@ body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-ri
 .app-header,[data-app-header]{position:relative;z-index:90;padding-top:max(env(safe-area-inset-top),0px)}
 .bottom-nav,[data-bottom-nav]{position:relative;z-index:90;isolation:isolate;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}.bottom-nav button,.bottom-nav [role=button],[data-bottom-nav] button{min-width:44px;min-height:48px}.bottom-nav [aria-current=page],[data-bottom-nav] [aria-current=page]{font-weight:700}.side-menu,.sheet,[role=dialog]{overscroll-behavior:contain}.side-menu{padding-top:max(env(safe-area-inset-top),12px);padding-bottom:max(env(safe-area-inset-bottom),12px)}.sheet,[role=dialog]{border-radius:22px 22px 0 0}.sheet-handle,[data-sheet-handle]{width:38px;height:5px;border-radius:999px;margin:8px auto;opacity:.35}.page.active,.screen.active,[data-screen].active{animation:liftova-enter 120ms ease-out}@keyframes liftova-enter{from{opacity:.94;transform:translateY(2px)}to{opacity:1;transform:none}}.back-button,.close-button,[aria-label^="Back"],[aria-label^="Close"]{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}.empty-state,.no-results,.no-data{min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 20px;gap:8px}.empty-state p,.no-results p,.no-data p{max-width:34ch;opacity:.72;margin:0 auto}.success-state,.workout-complete,.completion-summary{animation:liftova-complete 180ms ease-out;transform-origin:center top}@keyframes liftova-complete{from{opacity:.7;transform:scale(.99) translateY(3px)}to{opacity:1;transform:none}}.danger-zone,.destructive-actions{margin-top:20px;padding-top:16px;border-top:1px solid color-mix(in srgb,currentColor 12%,transparent)}.badge,.status-chip,[data-status]{display:inline-flex;align-items:center;justify-content:center;min-height:24px;padding:3px 8px;border-radius:999px;line-height:1.15}button:disabled,[aria-disabled=true]{filter:saturate(.65);opacity:.46}
 body{font-variant-numeric:tabular-nums}button,input,select,textarea{font:inherit}h1,h2,h3,.screen-title,.page-title{text-wrap:balance}.subtitle,.secondary-text,.helper-text{text-wrap:pretty}.weight,.reps,.set-number,.timer-display,.stat-value,[data-weight],[data-reps]{font-variant-numeric:tabular-nums lining-nums}img,a,button{-webkit-user-drag:none}button svg,a svg{pointer-events:none}.icon-button,[data-icon-button]{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}.tabs,.chip-row,.horizontal-scroll{overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}.card,.exercise,.stat-card{transform-origin:center;will-change:auto}
+
+/* MYLIFTCOACH UI/UX screen-pass foundation — presentation only. */
+:root{
+  --mlc-space-1:4px;
+  --mlc-space-2:8px;
+  --mlc-space-3:12px;
+  --mlc-space-4:16px;
+  --mlc-space-5:20px;
+  --mlc-space-6:24px;
+  --mlc-radius-sm:12px;
+  --mlc-radius-md:16px;
+  --mlc-radius-lg:20px;
+  --mlc-touch:48px;
+  --mlc-content-max:760px;
+  --mlc-surface-raised:color-mix(in srgb,var(--card,#0d0a12) 92%,white 8%);
+  --mlc-divider:color-mix(in srgb,var(--text,#fff) 11%,transparent);
+  --mlc-muted:var(--sub,#aaa3b4);
+  --mlc-accent:var(--blue,#9d46ff);
+}
+body{line-height:1.35;letter-spacing:-.005em}
+.container{width:100%;max-width:var(--mlc-content-max);padding:var(--mlc-space-4);padding-bottom:max(var(--mlc-space-6),env(safe-area-inset-bottom));}
+h1,h2,h3,.screen-title,.page-title,.section-heading{letter-spacing:-.025em}
+.section-heading{margin:var(--mlc-space-6) 2px var(--mlc-space-3);font-size:1.22rem;line-height:1.2;font-weight:750}
+.small,.secondary-text,.helper-text,.subtitle{color:var(--mlc-muted);line-height:1.45}
+.card,.exercise,.history-card,.stat-card,.progress-exercise{border:1px solid var(--mlc-divider);box-shadow:0 8px 24px rgba(0,0,0,.14)}
+.card,.history-card,.stat-card,.progress-exercise{border-radius:var(--mlc-radius-md)}
+.exercise{border-radius:var(--mlc-radius-lg)}
+button,[role=button],input,select,textarea{border-radius:var(--mlc-radius-sm)}
+button,[role=button]{min-height:var(--mlc-touch)}
+input,select,textarea{min-height:48px;font-size:16px}
+label{margin-top:var(--mlc-space-4);margin-bottom:6px;font-size:.92rem;line-height:1.3}
+.day-button,.action-button{padding:17px var(--mlc-space-4);margin-bottom:var(--mlc-space-3);border:1px solid var(--mlc-divider);box-shadow:none}
+.day-button span,.action-button span{line-height:1.4}
+.primary,.save-button,.timer-start,.add-small{box-shadow:0 8px 22px color-mix(in srgb,var(--mlc-accent) 26%,transparent)}
+.back{display:inline-flex;align-items:center;min-height:44px;padding:0 var(--mlc-space-2) 0 0;margin-bottom:var(--mlc-space-2);font-size:16px}
+.menu-toggle,.header-today,.icon-button,[data-icon-button]{min-width:var(--mlc-touch);min-height:var(--mlc-touch)}
+.menu-toggle,.header-today{border-radius:var(--mlc-radius-sm)}
+.side-menu{width:min(86vw,336px)}
+.side-menu,.sheet,[role=dialog]{box-shadow:0 20px 60px rgba(0,0,0,.42)}
+.workout-tabs{gap:4px;padding:4px;border:1px solid var(--mlc-divider);box-shadow:none}
+.workout-tab{min-height:42px;font-size:13px}
+.exercise-header{padding:var(--mlc-space-4)}
+.exercise-title{font-size:1.08rem;line-height:1.25;letter-spacing:-.015em}
+.muscle,.badge,.status-chip,[data-status]{font-weight:650}
+.tracking{padding:var(--mlc-space-3);border:1px solid var(--mlc-divider)}
+.set-row{grid-template-columns:44px minmax(0,1fr) minmax(0,1fr);gap:var(--mlc-space-2)}
+.picker-button{min-height:48px;padding:11px 6px}
+.finish-workout,.save-button,.timer-start{min-height:54px;font-size:1rem}
+.timer-display{font-size:clamp(48px,16vw,64px);letter-spacing:-.035em}
+.stat-grid{gap:var(--mlc-space-3)}
+.stat-card{padding:var(--mlc-space-4)}
+.stat-number{font-size:clamp(24px,8vw,30px);letter-spacing:-.035em}
+.library-item{min-height:60px;padding:var(--mlc-space-3) 0}
+.empty,.empty-state,.no-results,.no-data{color:var(--mlc-muted)}
+
+@media(max-width:430px){
+  .container{padding-left:14px;padding-right:14px}
+  .card,.history-card,.stat-card,.progress-exercise{padding:15px}
+  .section-heading{margin-top:22px}
+  .set-row{grid-template-columns:40px minmax(0,1fr) minmax(0,1fr)}
+}
 @media(display-mode:standalone){.app-header,[data-app-header]{padding-top:max(env(safe-area-inset-top),6px)}}
 @media(prefers-reduced-motion:reduce){.liftova-resuming{transition:none!important}.page.active,.screen.active,[data-screen].active,.success-state,.workout-complete,.completion-summary{animation:none!important}}
