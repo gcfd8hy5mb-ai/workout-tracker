@@ -73,6 +73,10 @@ if (typeof document !== 'undefined') {
   homeWorkoutScript.src = 'myliftcoach-home-workout-actions.js?v=1';
   homeWorkoutScript.defer = true;
   document.head.appendChild(homeWorkoutScript);
+  const destinationFixScript = document.createElement('script');
+  destinationFixScript.src = 'myliftcoach-settings-destination-fixes.js?v=1';
+  destinationFixScript.defer = true;
+  document.head.appendChild(destinationFixScript);
   const script = document.createElement('script');
   script.src = 'app-feel.js?v=1';
   script.defer = true;
