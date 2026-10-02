@@ -18,6 +18,25 @@
 
 /* Presentation-only shell loader. Browser guarded so photo-scope Node/regression tests are unchanged. */
 if (typeof document !== 'undefined') {
+  /* This file is parsed in <head>, before the legacy Home markup can paint. Keep
+     the app behind an intentional startup surface until auth scope and the
+     canonical Home/auth gate are ready. */
+  document.documentElement.classList.add('myliftcoach-starting');
+
+  const startupCss = document.createElement('link');
+  startupCss.rel = 'stylesheet';
+  startupCss.href = 'myliftcoach-startup-smooth.css?v=2';
+  startupCss.dataset.myliftcoachStartupSmooth = 'true';
+  document.head.appendChild(startupCss);
+
+  /* Start fetching the canonical Home skin during head parsing rather than
+     waiting for liftova-home.js to render after the secondary module chain. */
+  const canonicalHomeCss = document.createElement('link');
+  canonicalHomeCss.rel = 'stylesheet';
+  canonicalHomeCss.href = 'liftova-home.css?v=12';
+  canonicalHomeCss.dataset.liftovaHome = 'true';
+  document.head.appendChild(canonicalHomeCss);
+
   const css = document.createElement('link');
   css.rel = 'stylesheet';
   css.href = 'app-feel.css?v=1';
