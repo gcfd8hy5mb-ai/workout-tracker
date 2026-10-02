@@ -31,11 +31,11 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   const timerFromSettings=page.locator('#profileSettings').getByRole('button',{name:/Open timer/i});await timerFromSettings.click();await page.locator('#globalTimerScreen:not(.hidden)').waitFor();
 
   // Timer: preset, start, pause and reset through visible controls.
-  const display=page.locator('#globalTimerContent [data-timer-display]').first();assert.match(await display.innerText(),/^01:30$/,'Timer should open at the saved/default 1:30 state');
-  await page.locator('#globalTimerContent').getByRole('button',{name:'1:00',exact:true}).click();assert.equal(await display.innerText(),'01:00','1:00 preset must apply');
-  const start=page.locator('#globalTimerContent [data-timer-start]').first();await start.click();await page.waitForTimeout(1150);assert.notEqual(await display.innerText(),'01:00','Running timer must count down');await start.click();
+  const display=page.locator('#globalTimerContent [data-timer-display]').first();assert.match(await display.innerText(),/^1:30$/,'Timer should open at the saved/default 1:30 state');
+  await page.locator('#globalTimerContent').getByRole('button',{name:'1:00',exact:true}).click();assert.equal(await display.innerText(),'1:00','1:00 preset must apply');
+  const start=page.locator('#globalTimerContent [data-timer-start]').first();await start.click();await page.waitForTimeout(1150);assert.notEqual(await display.innerText(),'1:00','Running timer must count down');await start.click();
   const paused=await display.innerText();await page.waitForTimeout(1100);assert.equal(await display.innerText(),paused,'Paused timer must stop counting');
-  await page.locator('#globalTimerContent').getByRole('button',{name:/Reset/i}).click();assert.equal(await display.innerText(),'01:00','Reset must restore selected preset');
+  await page.locator('#globalTimerContent').getByRole('button',{name:/Reset/i}).click();assert.equal(await display.innerText(),'1:00','Reset must restore selected preset');
 
   // Help: support content and Data & Backup handoff must both work.
   await page.evaluate(()=>showHelp());await page.locator('#helpScreen:not(.hidden)').waitFor();assert.match(await page.locator('#helpScreen').innerText(),/Help & Support/i);
