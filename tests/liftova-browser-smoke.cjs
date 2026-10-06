@@ -58,7 +58,7 @@ async function runPass(browser,url,pass){
  const stage=name=>console.log(`[browser-smoke pass ${pass}] ${name}`);
  await page.route('**/persistence/account-ui.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* UI-only guest fixture */'}));
  stage('load app');await page.goto(url,{waitUntil:'domcontentloaded',timeout:15000});
- stage('wait for runtime');await page.waitForFunction(()=>window.LiftovaAnatomy&&typeof window.goHome==='function'&&window.showWorkouts?.__liftovaCanonicalWorkout===true&&window.MYLIFTCOACHNavigation,{timeout:15000});
+ stage('wait for runtime');await page.waitForFunction(()=>window.LiftovaAnatomy&&typeof window.goHome==='function'&&window.showWorkouts?.__myliftcoachScheduledWorkout===true&&window.MYLIFTCOACHNavigation,{timeout:15000});
  stage('home');await page.evaluate(()=>goHome());await page.locator('#home:not(.hidden)').waitFor();await page.waitForTimeout(500);
  assert.equal(await page.locator('#lv3StartWorkout:visible').count(),0,'legacy Home Start button must not reappear');assert.equal(await page.locator('#home:not(.hidden)').count(),1,'canonical Home must remain visible');
  await assertViewportSafe(page,'home');
@@ -84,7 +84,7 @@ async function runPass(browser,url,pass){
  assert.deepEqual(await page.evaluate(()=>window.MYLIFTCOACHNavigation.getStack()),[],'bottom-nav Workouts must behave like a tab root even when its canonical screen id is workoutDetailScreen');
  await assertViewportSafe(page,'workoutDetailScreen');
 
- stage('workout details');await page.locator('#workoutDetailScreen:not(.hidden) .lv3-exercise-row').first().waitFor();assert.equal(await page.locator('.lv3-exercise-row').count(),8,'full workout list must render');assert.equal(await page.locator('.lv3-exercise-row .liftova-anatomy').count(),8,'every workout row must show anatomy');
+ stage('workout details');await page.locator('#workoutDetailScreen:not(.hidden) .lv3-exercise-row').first().waitFor();const scheduledCount=await page.evaluate(()=>{const week=window.myliftcoachWeeklySchedule?.();const index=(new Date().getDay()+6)%7;return week?.[index]?.ids?.length||0});assert.ok(scheduledCount>0,'current weekday must resolve a scheduled workout in the smoke fixture');assert.equal(await page.locator('.lv3-exercise-row').count(),scheduledCount,'workout detail must render the current day exercise list');assert.equal(await page.locator('.lv3-exercise-row .liftova-anatomy').count(),scheduledCount,'every current-day workout row must show anatomy');
  stage('exercise info + native swipe back');await page.locator('.lv3-exercise-row').first().click();await page.locator('#exerciseInfoScreen:not(.hidden) .liftova-anatomy').first().waitFor();assert.deepEqual(await page.evaluate(()=>window.MYLIFTCOACHNavigation.getStack()),['workoutDetailScreen'],'exercise guide must push only its workout parent');
  await swipe(page,'#exerciseInfoScreen',{fromX:8,toX:116,y:500});
  await page.locator('#workoutDetailScreen:not(.hidden)').waitFor();assert.deepEqual(await page.evaluate(()=>window.MYLIFTCOACHNavigation.getStack()),[],'native swipe-back must consume the workout detail entry');
