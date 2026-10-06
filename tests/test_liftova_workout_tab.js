@@ -4,11 +4,15 @@ const fs = require('node:fs');
 const patch = fs.readFileSync('liftova-workout-tab-v3.js','utf8');
 const config = fs.readFileSync('supabase-config.js','utf8');
 
-assert.match(config, /liftova-workout-tab-v3\.js\?v=2/, 'current-day Workout-tab patch must be cache-bumped');
+assert.match(config, /liftova-workout-tab-v3\.js\?v=3/, 'workout-tab performance patch must be cache-bumped');
 assert.match(patch, /window\.showWorkouts\s*=\s*function/, 'Workout tab must override the legacy browser entry');
 assert.match(patch, /myliftcoachWeeklySchedule/, 'Workout tab must use the same weekly schedule authority as Home');
 assert.match(patch, /const dayIndex=\(new Date\(\)\.getDay\(\)\+6\)%7/, 'Workout tab must resolve the actual weekday');
 assert.match(patch, /showPrismWorkoutDetail\(item\)/, 'Workout tab must open the resolved scheduled workout');
+assert.match(patch, /showScreen\('workoutDetailScreen'\)/, 'Workout detail must route directly to the detail screen');
+assert.match(patch, /renderDetail\(item\)/, 'Workout detail must render directly in the same pass');
+assert.doesNotMatch(patch, /baseDetail\?\.apply\(this,arguments\);requestAnimationFrame\(\(\)=>renderDetail\(item\)\)/, 'Workout detail must not legacy-render then replace on the next frame');
+assert.match(patch, /anatomyCache=new Map\(\)/, 'Workout detail must cache anatomy markup across tab visits');
 assert.match(patch, /kind:'suggested'/, 'generated plan days must retain suggested-workout behavior');
 assert.match(patch, /kind:'preset'/, 'basic plan days must retain preset-workout behavior');
 assert.match(patch, /kind:'custom'/, 'custom scheduled days must retain custom-workout behavior');
