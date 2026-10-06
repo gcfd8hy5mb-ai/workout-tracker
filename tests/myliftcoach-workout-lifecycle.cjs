@@ -35,6 +35,7 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await page.getByRole('button',{name:'Tired',exact:true}).click();
   assert.equal(await page.getByRole('button',{name:'Tired',exact:true}).getAttribute('aria-pressed'),'true');
   await page.getByRole('button',{name:'1 min',exact:true}).click();
+  await page.waitForFunction(()=>document.querySelector('#workoutRestPresets button[aria-pressed="true"]')?.textContent.trim()==='1 min');
   assert.equal(await page.getByRole('button',{name:'1 min',exact:true}).getAttribute('aria-pressed'),'true');
   const tracking=await page.evaluate(()=>JSON.parse(localStorage.getItem('dailyTrackingV1')||'{}'));
   assert.equal(tracking.restSeconds,60,'rest preset must persist');
