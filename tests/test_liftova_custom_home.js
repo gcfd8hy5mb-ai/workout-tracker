@@ -4,8 +4,8 @@ const assert = require('assert');
 const config = fs.readFileSync('supabase-config.js', 'utf8');
 const schedule = fs.readFileSync('myliftcoach-home-sequence-fix.js', 'utf8');
 
-const canonicalPos = config.indexOf("'liftova-home.js?v=12'");
-const schedulePos = config.indexOf("'myliftcoach-home-sequence-fix.js?v=4'");
+const canonicalPos = config.indexOf("'liftova-home.js?v=13'");
+const schedulePos = config.indexOf("'myliftcoach-home-sequence-fix.js?v=5'");
 assert(canonicalPos >= 0, 'canonical Home must remain loaded');
 assert(schedulePos > canonicalPos, 'canonical weekday schedule authority must load after Home');
 assert(!config.includes("'liftova-custom-home.js"), 'retired history-cycling custom Home layer must not load');

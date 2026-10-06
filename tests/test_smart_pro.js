@@ -23,7 +23,7 @@ assert.equal(ranked[0].exercise.id,'smith-bench-press','same pressing pattern ou
 assert.equal(ranked.at(-1).exercise.id,'pec-deck');
 assert.equal(ranked.some(item=>item.exercise.id==='triceps-pushdown'),false,'keep replacements in the primary muscle group');
 assert.match(ranked[0].reason,/horizontal press/);
-assert.match(source,/const suggestion=showGoal&&smart\?progressionSuggestion\(ex.id\):null/,'only Pro sees progression UI');
+assert.match(source,/const suggestion=showGoal&&smart\?progressionSuggestion\(ex.id,\{min:repMin,max:repMax\|\|repMin\}\):null/,'only Pro sees progression UI with the current program rep range');
 assert.match(source,/if\(canAccessFeature\("smart_substitutions"\)\)\{\s*const ranked=rankExerciseSubstitutions/,'Pro uses ranked replacements');
 assert.match(source,/\}else\{alternatives.sort\(\(a,b\)=>a.name.localeCompare/,'Free retains manual alphabetical choices');
 assert.doesNotMatch(source.slice(source.indexOf('function finishWorkout(){'),source.indexOf('function showLastWorkoutSummary()')),/overloadTargets\[overloadKey/,'workout completion never applies suggested load');

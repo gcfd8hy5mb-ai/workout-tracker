@@ -2071,6 +2071,7 @@ saveTracking();
 let builderSelected=[];
 
 let activeWorkoutKey=null;
+let activeWorkoutPrescription=null;
 
 let activeWorkoutTitle="";
 
@@ -2208,7 +2209,7 @@ const shortPlans={
 
 const fifthDay={title:"Day 5 — Glutes & Core",exercises:["hip-thrust","hip-abduction","ab-crunch","calf-raise"]};
 
-function suggestedWorkouts(profile){
+function buildSuggestedWorkouts(profile){
 if(!profile||!([2,3,4,5].includes(profile.days)))return [];
 const base=profile.days>=4?
 Object.values(presetWorkouts).concat(profile.days===5?[fifthDay]:[]):shortPlans[profile.days];
@@ -2237,7 +2238,24 @@ return {title,exercises};
 });
 }
 
-function suggestedWorkoutKey(index){return `plan-${workoutGoals.goal}-${workoutGoals.days}-day${index+1}`}
+// The generated plan lives inside the already account-scoped workout goals record.
+// A profile preference change replaces only this generated snapshot, never custom
+// workouts, completed sessions, or an in-progress workout.
+function ensureGeneratedProgram(profile=workoutGoals){
+if(!profile||profile.skipped||profile.basic)return null;
+const level=tracking.trainingLevel||"Beginner",rest=Number(tracking.restSeconds)||90;
+const old=profile.activeProgram;
+if(old?.version===1&&old.sourceGoal===profile.goal&&old.sourceDays===Number(profile.days)&&old.sourceFocus===(profile.focus||"balanced")&&old.sourceLevel===level&&old.sourceRestSeconds===rest&&Array.isArray(old.days)&&old.days.length===Number(profile.days))return old;
+const prescription={muscle:{sets:4,reps:"8–10",label:"Hypertrophy"},strength:{sets:5,reps:"3–5",label:"Strength"},consistency:{sets:2,reps:"10–15",label:"General Fitness"},"fat-loss":{sets:3,reps:"12–15",label:"Fat Loss"}}[profile.goal]||{sets:4,reps:"8–10",label:"Hypertrophy"};
+const sets=Math.max(2,prescription.sets+(level==="Advanced"?1:level==="Beginner"&&profile.goal==="strength"?-1:0));
+const next={version:1,sourceGoal:profile.goal,sourceDays:Number(profile.days),sourceFocus:profile.focus||"balanced",sourceLevel:level,sourceRestSeconds:rest,focusLabel:prescription.label,prescription:{sets,reps:prescription.reps,restSeconds:rest},days:buildSuggestedWorkouts(profile)};
+profile.activeProgram=next;
+localStorage.setItem("workoutGoalsV1",JSON.stringify(profile));
+return next;
+}
+function suggestedWorkouts(profile){return profile===workoutGoals?(ensureGeneratedProgram(profile)?.days||[]):buildSuggestedWorkouts(profile)}
+function suggestedWorkoutKey(index){const plan=ensureGeneratedProgram();return `plan-${plan?.sourceGoal||workoutGoals.goal}-${plan?.sourceDays||workoutGoals.days}-${plan?.sourceFocus||"balanced"}-${plan?.sourceLevel||"Beginner"}-${plan?.sourceRestSeconds||90}-day${index+1}`}
+function workoutPrescription(){return activeWorkoutPrescription||{sets:4,reps:"8–10"}}
 
 function showGoalsSetup(){
 if(workoutGoals&&!workoutGoals.skipped){
@@ -2258,6 +2276,7 @@ if(!["muscle","strength","fat-loss","consistency"].includes(goal)||![2,3,4,5].in
 if(!["male","female","prefer"].includes(gender)||!["balanced","upper","lower"].includes(focus))return;
 workoutGoals={goal,days,gender,focus};
 localStorage.setItem("workoutGoalsV1",JSON.stringify(workoutGoals));
+ensureGeneratedProgram();
 goHome();
 }
 
@@ -2477,7 +2496,7 @@ const label=document.createElement("h3");label.textContent="Exercises";area.appe
 const list=document.createElement("div");list.className="prism-detail-list";
 item.ids.forEach((id,index)=>{
 const ex=getExercise(id);if(!ex)return;
-const button=document.createElement("button");button.type="button";button.innerHTML=`<strong>${index+1}</strong>${prismExerciseVisual(ex)}<span>${escapeHTML(ex.name)}<small>4 sets · 8–10 reps · ${escapeHTML(ex.muscle)}</small></span>`;
+const button=document.createElement("button");button.type="button";const prescription=item.kind==="suggested"?ensureGeneratedProgram()?.prescription:null;button.innerHTML=`<strong>${index+1}</strong>${prismExerciseVisual(ex)}<span>${escapeHTML(ex.name)}<small>${prescription?.sets||4} sets · ${prescription?.reps||"8–10"} reps · ${escapeHTML(ex.muscle)}</small></span>`;
 button.onclick=()=>showExerciseInfo(id,"workoutDetailScreen");list.appendChild(button);
 });area.appendChild(list);
 }
@@ -2742,6 +2761,7 @@ else goHome();
 
 function openSuggestedWorkout(index){
 const day=suggestedWorkouts(workoutGoals)[index];if(!day)return;
+activeWorkoutPrescription={...ensureGeneratedProgram().prescription};
 activeWorkoutKey=suggestedWorkoutKey(index);
 activeWorkoutTitle=day.title;
 activeWorkoutExerciseIds=[...day.exercises];
@@ -2751,6 +2771,7 @@ openWorkout(day.title,day.exercises,false);
 }
 
 function openPresetWorkout(key){
+activeWorkoutPrescription=null;
 
 activeWorkoutKey="preset-"+key;
 
@@ -2767,6 +2788,7 @@ openWorkout(activeWorkoutTitle,activeWorkoutExerciseIds,false);
 }
 
 function openCustomWorkout(index){
+activeWorkoutPrescription=null;
 
 const w=customWorkouts[index];
 
@@ -2789,7 +2811,7 @@ function openWorkout(title,ids,isCustom){
 if(activeWorkoutKey!=="library"){
 const existing=readPrismActiveWorkout();
 const index=existing?.key===activeWorkoutKey?existing.index||0:0;
-localStorage.setItem("prismActiveWorkoutV1",JSON.stringify({key:activeWorkoutKey,title,ids:[...activeWorkoutExerciseIds],isCustom,index,context:lastWorkoutContext,startedAt:existing?.key===activeWorkoutKey?existing.startedAt:Date.now()}));
+localStorage.setItem("prismActiveWorkoutV1",JSON.stringify({key:activeWorkoutKey,title,ids:[...activeWorkoutExerciseIds],isCustom,index,context:lastWorkoutContext,prescription:activeWorkoutPrescription,startedAt:existing?.key===activeWorkoutKey?existing.startedAt:Date.now()}));
 }
 showScreen("workoutScreen");setBottomNav("Workout");
 const savedIds=tracking.substitutions?.[activeWorkoutKey];
@@ -2830,7 +2852,7 @@ try{const saved=JSON.parse(localStorage.getItem("prismActiveWorkoutV1")||"null")
 }
 function resumePrismWorkout(){
 const saved=readPrismActiveWorkout();if(!saved){showWorkouts();return}
-activeWorkoutKey=saved.key;activeWorkoutTitle=saved.title;activeWorkoutExerciseIds=[...saved.ids];activeCustomIndex=saved.context?.type==="custom"?saved.context.index:null;lastWorkoutContext=saved.context||null;
+activeWorkoutKey=saved.key;activeWorkoutTitle=saved.title;activeWorkoutExerciseIds=[...saved.ids];activeCustomIndex=saved.context?.type==="custom"?saved.context.index:null;lastWorkoutContext=saved.context||null;activeWorkoutPrescription=saved.prescription||null;
 openWorkout(saved.title,saved.ids,Boolean(saved.isCustom));
 }
 function focusWorkoutExercise(index){
@@ -2842,7 +2864,7 @@ cards.forEach((card,position)=>{card.classList.toggle("prism-out-of-focus",posit
 const ex=getExercise(activeWorkoutExerciseIds[index]);const heading=document.getElementById("prismWorkoutFocus");
 heading.classList.remove("hidden");heading.replaceChildren();
 const title=document.createElement("strong");title.textContent=`Exercise ${index+1} of ${activeWorkoutExerciseIds.length} · ${ex?.name||"Exercise"}`;
-const description=document.createElement("small");description.textContent=`${ex?.muscle||""}${ex?prismEquipment(ex)?` · ${prismEquipment(ex)}`:"":""} · 4 sets`;
+const description=document.createElement("small");description.textContent=`${ex?.muscle||""}${ex?prismEquipment(ex)?` · ${prismEquipment(ex)}`:"":""} · ${workoutPrescription().sets} sets`;
 const controls=document.createElement("div");controls.className="prism-focus-controls";
 if(index>0){const prior=document.createElement("button");prior.textContent="← Previous";prior.onclick=()=>focusWorkoutExercise(index-1);controls.appendChild(prior)}
 const all=document.createElement("button");all.textContent="All exercises";all.onclick=()=>{cards.forEach(c=>c.classList.remove("prism-out-of-focus"));heading.classList.add("hidden");document.getElementById("prismNextExercise").classList.add("hidden")};controls.appendChild(all);
@@ -2853,8 +2875,8 @@ else next.classList.add("hidden");
 }
 function focusNextExercise(){const current=readPrismActiveWorkout()?.index||0;focusWorkoutExercise(current+1)}
 function renderWorkoutProgress(){
-const planned=activeWorkoutExerciseIds.length*4;
-const recorded=activeWorkoutExerciseIds.reduce((count,id)=>count+[1,2,3,4].filter(set=>{const item=setHistory[`${activeWorkoutKey}-${id}-set${set}`];return item&&Number(item.weight)>0&&Number(item.reps)>0}).length,0);
+const planned=activeWorkoutExerciseIds.length*workoutPrescription().sets;
+const recorded=activeWorkoutExerciseIds.reduce((count,id)=>count+Array.from({length:workoutPrescription().sets},(_,i)=>i+1).filter(set=>{const item=setHistory[`${activeWorkoutKey}-${id}-set${set}`];return item&&Number(item.weight)>0&&Number(item.reps)>0}).length,0);
 document.getElementById("workoutProgressHeading").textContent=recorded?`${recorded} of ${planned} sets logged`:"Ready to start";
 document.getElementById("workoutProgressText").textContent=recorded?"Save your workout when you've finished. Sets with both weight and reps count toward your summary.":"Open an exercise to choose your weight and reps.";
 document.getElementById("workoutProgressFill").style.width=`${planned?Math.round(recorded/planned*100):0}%`;
@@ -2862,7 +2884,7 @@ document.getElementById("workoutProgressFill").style.width=`${planned?Math.round
 function replaceExercise(oldId,newId){
 const alternative=getExercise(newId),original=getExercise(oldId);
 if(!alternative||!original||alternative.muscle!==original.muscle||activeWorkoutExerciseIds.includes(newId))return;
-const hasSets=[1,2,3,4].some(set=>{const entry=setHistory[`${activeWorkoutKey}-${oldId}-set${set}`];return entry&&(entry.weight!==""&&entry.weight!==undefined||entry.reps!==""&&entry.reps!==undefined)});
+const hasSets=Array.from({length:workoutPrescription().sets},(_,i)=>i+1).some(set=>{const entry=setHistory[`${activeWorkoutKey}-${oldId}-set${set}`];return entry&&(entry.weight!==""&&entry.weight!==undefined||entry.reps!==""&&entry.reps!==undefined)});
 if(hasSets){const index=activeWorkoutExerciseIds.indexOf(oldId);activeWorkoutExerciseIds.splice(index+1,0,newId)}
 else activeWorkoutExerciseIds=activeWorkoutExerciseIds.map(id=>id===oldId?newId:id);
 tracking.substitutions[activeWorkoutKey]=[...activeWorkoutExerciseIds];saveTracking();
@@ -2915,9 +2937,10 @@ const diagram=exerciseMuscleDiagram(ex);
 const showGoal=activeWorkoutKey!=="library";
 const smart=canAccessFeature("smart_progression");
 const goal=showGoal?overloadGoal(ex.id):null;
-const suggestion=showGoal&&smart?progressionSuggestion(ex.id):null;
+const [repMin,repMax]=workoutPrescription().reps.split('–').map(Number);
+const suggestion=showGoal&&smart?progressionSuggestion(ex.id,{min:repMin,max:repMax||repMin}):null;
 const manual=showGoal&&Number(tracking.manualTargets?.[overloadKey(ex.id)])>0;
-const goalText=goal!==null?`Today: ${goal} lb × 8–10 reps${manual?" · Your target":""}`:"Choose a starting weight · 8–10 reps";
+const goalText=goal!==null?`Today: ${goal} lb × ${workoutPrescription().reps} reps${manual?" · Your target":""}`:`Choose a starting weight · ${workoutPrescription().reps} reps`;
 card.innerHTML=`
 
 <div class="exercise-header" role="button" tabindex="0" aria-expanded="false" aria-controls="${detailId}"
@@ -2946,7 +2969,7 @@ ${showGoal?`<div class="overload-guide">
 ${suggestion?`<div class="smart-progress-card"><strong>MYLIFTCOACH PRO RECOMMENDS</strong>${suggestion.lastWeight?`<p>Last session: ${suggestion.lastWeight} lb · ${suggestion.lastReps.join(" / ")} reps</p>`:""}${suggestion.status==="ready"?`<p><strong>${suggestion.weight} lb</strong> · Target: ${suggestion.range.min}–${suggestion.range.max} reps</p><p>${escapeHTML(suggestion.reason)}</p><div class="smart-choice-row"><button type="button" class="accept-suggestion">Use ${suggestion.weight} lb</button><button type="button" class="keep-suggestion">Keep ${suggestion.lastWeight} lb</button></div>`:"<p>Complete more sessions with this exercise to unlock a progression recommendation.</p>"}</div>`:""}
 <label for="${safeId(unique+"-goal")}">Target weight (lb)</label>
 <div class="goal-controls"><input class="goal-weight" id="${safeId(unique+"-goal")}" type="number" inputmode="decimal" min="0" max="1000" step="any" value="${goal??""}" placeholder="Starting weight"></div>
-<p>Aim for 8–10 reps. ${smart?"Choose a recommendation above or enter your own target.":"Enter a weight that works for you."}</p>
+<p>Aim for ${workoutPrescription().reps} reps. ${smart?"Choose a recommendation above or enter your own target.":"Enter a weight that works for you."}</p>
 <div class="warmup-guide"></div>
 </div>`:""}
 
@@ -3073,7 +3096,7 @@ else{overloadTargets[overloadKey(exerciseId)]=weight;tracking.manualTargets[over
 localStorage.setItem("overloadTargetsV1",JSON.stringify(overloadTargets));
 saveTracking();
 const next=overloadGoal(exerciseId);
-preview.textContent=next!==null?`Today: ${next} lb × 8–10 reps${input.value!==""?" · Your target":""}`:"Choose a starting weight · 8–10 reps";
+preview.textContent=next!==null?`Today: ${next} lb × ${workoutPrescription().reps} reps${input.value!==""?" · Your target":""}`:`Choose a starting weight · ${workoutPrescription().reps} reps`;
 renderWarmupGuide(exerciseId,input.closest(".exercise"));
 }
 function renderWarmupGuide(exerciseId,card){
@@ -3089,7 +3112,7 @@ function createSetRows(unique){
 
 let html="";
 
-for(let set=1;set<=4;set++){
+for(let set=1;set<=workoutPrescription().sets;set++){
 
 const key=unique+"-set"+set;
 
@@ -3199,7 +3222,7 @@ setHistory[key][type]=value;
 if(setHistory[key].done){setHistory[key].done=false;const done=document.getElementById(safeId(key+"-done"));if(done){done.textContent="Complete Set";done.setAttribute("aria-pressed","false")}}
 
 localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
-const id=key.slice(activeWorkoutKey.length+1).replace(/-set[1-4]$/,"");
+const id=key.slice(activeWorkoutKey.length+1).replace(/-set[1-6]$/,"");
 renderWarmupGuide(id,document.getElementById(safeId(activeWorkoutKey+"-"+id))?.closest(".exercise"));
 renderWorkoutProgress();
 
@@ -3217,7 +3240,7 @@ delete setHistory[key];localStorage.setItem("setHistoryV5",JSON.stringify(setHis
 for(const [type,label] of [["weight","Weight"],["reps","Reps"]]){const button=document.getElementById(safeId(key+"-"+type+"-button"));if(button)button.textContent=label}
 document.getElementById(safeId(key+"-compare"))?.remove();
 const button=document.getElementById(safeId(key+"-done"));if(button){button.textContent="Complete Set";button.setAttribute("aria-pressed","false")}
-const id=key.slice(activeWorkoutKey.length+1).replace(/-set[1-4]$/ ,"");
+const id=key.slice(activeWorkoutKey.length+1).replace(/-set[1-6]$/ ,"");
 renderWarmupGuide(id,document.getElementById(safeId(activeWorkoutKey+"-"+id))?.closest(".exercise"));renderWorkoutProgress();
 }
 
@@ -3258,7 +3281,7 @@ wheel.appendChild(o);
 
 });
 
-const exerciseId=key.replace(/-set[1-4]$/,"").slice(activeWorkoutKey.length+1);
+const exerciseId=key.replace(/-set[1-6]$/,"").slice(activeWorkoutKey.length+1);
 const goalInput=document.getElementById(safeId(activeWorkoutKey+"-"+exerciseId+"-goal"));
 const target=Number(goalInput?.value)>0?Number(goalInput.value):overloadGoal(exerciseId);
 const saved=Number(setHistory[key]?.[type]);
@@ -3342,7 +3365,7 @@ else old.remove();
 function finishWorkout(){
 
 if(!activeWorkoutKey)return;
-for(const id of activeWorkoutExerciseIds)for(let set=1;set<=4;set++){
+for(const id of activeWorkoutExerciseIds)for(let set=1;set<=workoutPrescription().sets;set++){
 const entry=setHistory[`${activeWorkoutKey}-${id}-set${set}`];if(!entry)continue;
 const hasWeight=entry.weight!==""&&entry.weight!==undefined,hasReps=entry.reps!==""&&entry.reps!==undefined;
 if(hasWeight!==hasReps){alert(`Finish the weight and reps for ${getExercise(id)?.name||"this exercise"}, set ${set}, or clear the unfinished entry.`);
@@ -3371,7 +3394,7 @@ const ex=getExercise(exerciseId);
 
 const exerciseSession={id:exerciseId,name:ex?ex.name:exerciseId,sets:[]};
 
-for(let set=1;set<=4;set++){
+for(let set=1;set<=workoutPrescription().sets;set++){
 
 const key=`${activeWorkoutKey}-${exerciseId}-set${set}`;
 
@@ -3429,7 +3452,7 @@ completedExercises=[...new Set([...completedExercises,...session.exercises.map(e
 localStorage.setItem("completedExercisesV5",JSON.stringify(completedExercises));
 
 activeWorkoutExerciseIds.forEach(id=>{
-for(let set=1;set<=4;set++)delete setHistory[`${activeWorkoutKey}-${id}-set${set}`];
+for(let set=1;set<=workoutPrescription().sets;set++)delete setHistory[`${activeWorkoutKey}-${id}-set${set}`];
 });
 localStorage.setItem("setHistoryV5",JSON.stringify(setHistory));
 localStorage.removeItem("prismActiveWorkoutV1");
@@ -4573,7 +4596,7 @@ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{u
 }
 
 </script>
-<script src="onboarding.js?v=10.3-beta5"></script>
+<script src="onboarding.js?v=10.3-beta6"></script>
 <script src="pro-experience.js"></script>
 <script src="liftova-anatomy.js?v=1"></script>
 <link rel="stylesheet" href="liftova-anatomy.css?v=1">

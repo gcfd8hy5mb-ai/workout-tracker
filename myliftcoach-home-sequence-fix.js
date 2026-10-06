@@ -126,7 +126,8 @@
     let meta=card.querySelector('.lh-meta');
     if(!meta){meta=document.createElement('div');meta.className='lh-meta';const overview=card.querySelector('.lh-overview');if(overview)overview.before(meta);else card.appendChild(meta)}
     const count=rows.length,minutes=Math.max(30,count*6);
-    setMarkup(meta,`<span><b>◴</b>${minutes} min<small>EST. TIME</small></span><span><b>▥</b>${count||'—'} exercises<small>TOTAL</small></span><span><b>◎</b>Hypertrophy<small>FOCUS</small></span>`);
+    const focus=workout.kind==='plan'?(typeof ensureGeneratedProgram==='function'?ensureGeneratedProgram()?.focusLabel:'Hypertrophy'):'Custom';
+    setMarkup(meta,`<span><b>◴</b>${minutes} min<small>EST. TIME</small></span><span><b>▥</b>${count||'—'} exercises<small>TOTAL</small></span><span><b>◎</b>${focus||'Hypertrophy'}<small>FOCUS</small></span>`);
     meta.removeAttribute('hidden');meta.style.display='';
     let overview=card.querySelector('.lh-overview');
     if(!overview){overview=document.createElement('div');overview.className='lh-overview';overview.innerHTML='<strong>WORKOUT OVERVIEW</strong><ul></ul>';card.appendChild(overview)}

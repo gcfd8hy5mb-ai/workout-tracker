@@ -14,11 +14,11 @@ const accountSync=fs.readFileSync('persistence/account-sync.js','utf8');
 assert.equal(manifest.name,'MYLIFTCOACH','installed app must use MYLIFTCOACH name');
 assert.equal(manifest.display,'standalone','installed app must launch standalone');
 assert.equal(manifest.scope,'./','installed app scope must stay inside the app');
-assert(sw.includes('myliftcoach-home-v22-anatomy'),'beta readiness must bump the installed PWA cache');
-assert(sw.includes('UPGRADE_VERSION = "22"'),'installed clients must receive the v22 upgrade signal');
+assert(sw.includes('myliftcoach-home-v23-goal-program'),'beta readiness must bump the installed PWA cache');
+assert(sw.includes('UPGRADE_VERSION = "23"'),'installed clients must receive the v23 upgrade signal');
 assert(sw.includes('url.pathname.includes("/myliftcoach-")'),'MYLIFTCOACH runtime and UX files must be network-first');
 for(const asset of [
-  'myliftcoach-home-sequence-fix.js?v=4',
+  'myliftcoach-home-sequence-fix.js?v=5',
   'myliftcoach-custom-workout-fix.js?v=2',
   'myliftcoach-daily-tracking-ux.js?v=1',
   'myliftcoach-history-records-ux.css?v=1',
@@ -26,7 +26,7 @@ for(const asset of [
 ])assert(sw.includes(asset),`installed shell must cache current ${asset}`);
 
 // Loader must point at the same scheduling/runtime generation the service worker protects.
-assert(config.includes("'myliftcoach-home-sequence-fix.js?v=4'"),'runtime must load current schedule authority');
+assert(config.includes("'myliftcoach-home-sequence-fix.js?v=5'"),'runtime must load current schedule authority');
 assert(config.includes("'myliftcoach-custom-workout-fix.js?v=2'"),'runtime must load current custom workout editor');
 assert(!config.includes("'liftova-custom-home.js"),'retired history-driven custom Home scheduler must stay unloaded');
 
