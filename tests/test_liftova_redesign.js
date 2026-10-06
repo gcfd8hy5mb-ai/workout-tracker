@@ -51,7 +51,7 @@ assert.equal(manifest.icons.some(item => item.src === 'images/myliftcoach-icon.s
 assert.equal(manifest.icons.some(item => item.src === 'images/apple-touch-icon-180.png?v=10' && item.type === 'image/png'), true);
 
 const sw = read('sw.js');
-assert.match(sw, /myliftcoach-home-v21-beta-readiness/, 'service worker must use current MYLIFTCOACH beta-readiness cache identity');
+assert.match(sw, /myliftcoach-home-v22-anatomy/, 'service worker must use current MYLIFTCOACH beta-readiness cache identity');
 assert.doesNotMatch(sw, /const CACHE_NAME = ["']liftova-/i, 'service worker cache must not retain old brand identity');
 assert.match(sw, /url\.pathname\.includes\("\/liftova-"\)/, 'historical filenames remain network-first only for compatibility');
 assert.match(sw, /url\.pathname\.includes\("\/myliftcoach-"\)/, 'current MYLIFTCOACH runtime files must be network-first for installed-app freshness');
