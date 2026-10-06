@@ -28,7 +28,7 @@ events.click({target:{closest(s){return s==='#lv3StartWorkout'?{}:null}},prevent
 assert.deepEqual(calls.shift(),['legacy start']);
 assert.equal(prevented,1);assert.equal(stopped,1);
 assert.equal(ctx.activeWorkoutKey,null);
-ctx.showWorkouts();assert.deepEqual(calls.shift(),['detail',3]);
+ctx.showWorkouts();assert.equal(calls.shift(),undefined,'direct workout detail must not invoke the legacy detail renderer');
 ctx.startPrismWorkout({kind:'scheduled',workoutKey:'weekday-0',ids:['machine-chest-press'],title:'Monday Override'});
 assert.deepEqual(calls.shift(),['live','Monday Override',1,false]);
 
