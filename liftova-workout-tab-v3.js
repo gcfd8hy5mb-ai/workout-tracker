@@ -5,7 +5,14 @@
   const ex=id=>{try{return typeof getExercise==='function'?getExercise(id):null}catch{return null}};
   const display=e=>{const n=String(e?.name||'Exercise');return /machine/i.test(n)&&!/\(machine\)/i.test(n)?n.replace(/\s*machine\s*$/i,'')+' (Machine)':n};
   const profile=e=>window.LiftovaAnatomy?.profile(e)||{primaryLabels:[e?.muscle||'Target'],secondaryLabels:[]};
-  const anatomy=(e,size='compact')=>window.LiftovaAnatomy?.render?.(e,{size})||'';
+  const anatomyCache=new Map();
+  const anatomy=(e,size='compact')=>{
+    const key=[e?.id||'',e?.name||'',e?.muscle||'',size].join('|');
+    if(anatomyCache.has(key))return anatomyCache.get(key);
+    const markup=window.LiftovaAnatomy?.render?.(e,{size})||'';
+    anatomyCache.set(key,markup);
+    return markup;
+  };
   const fallbackScheme=e=>/fly|lateral|triceps/i.test(String(e?.name||''))?{sets:3,reps:'12',rest:'45–60s'}:{sets:3,reps:'10',rest:'60–90s'};
   const restLabel=seconds=>Number(seconds)>=60?(Number(seconds)%60?String(Math.floor(Number(seconds)/60))+'m '+String(Number(seconds)%60)+'s':String(Number(seconds)/60)+'m'):String(Number(seconds)||60)+'s';
   const itemScheme=(item,e)=>item?.prescription?{sets:item.prescription.sets||3,reps:item.prescription.reps||'8–10',rest:restLabel(item.prescription.restSeconds||90)}:fallbackScheme(e);
@@ -81,7 +88,21 @@
     const baseDetail=typeof window.showPrismWorkoutDetail==='function'?window.showPrismWorkoutDetail:null;
     const baseExercise=typeof window.showExerciseInfo==='function'?window.showExerciseInfo:null;
     const baseWorkouts=window.showWorkouts,baseStart=window.startPrismWorkout;
-    window.showPrismWorkoutDetail=function(item){const result=baseDetail?.apply(this,arguments);requestAnimationFrame(()=>renderDetail(item));return result};
+    window.showPrismWorkoutDetail=function(item){
+      if(!item||!Array.isArray(item.ids))return baseDetail?.apply(this,arguments);
+      try{
+        if(typeof prismDetailContext!=='undefined')prismDetailContext=item;
+        if(typeof window.showScreen==='function')window.showScreen('workoutDetailScreen');
+        else if(typeof showScreen==='function')showScreen('workoutDetailScreen');
+        if(typeof window.setBottomNav==='function')window.setBottomNav('Workouts');
+        else if(typeof setBottomNav==='function')setBottomNav('Workouts');
+        renderDetail(item);
+        return;
+      }catch(error){
+        console.error('MYLIFTCOACH direct workout detail render failed',error);
+        return baseDetail?.apply(this,arguments);
+      }
+    };
     if(baseExercise)window.showExerciseInfo=function(id,returnTo){const result=baseExercise.apply(this,arguments);requestAnimationFrame(()=>renderExercise(id,returnTo));return result};
     window.showWorkouts=function(){const item=scheduledItem();if(item?.ids?.length){window.showPrismWorkoutDetail(item);return}return baseWorkouts.apply(this,arguments)};window.showWorkouts.__myliftcoachScheduledWorkout=true;window.showWorkouts.__legacyShowWorkouts=baseWorkouts;
     window.startPrismWorkout=function(item){if(item?.kind==='scheduled'&&startScheduledWorkout(item))return;return baseStart?.apply(this,arguments)};
