@@ -19,7 +19,7 @@ assert.doesNotMatch(manager,/syncWeekStrip|\.lh-week/,'custom workout manager mu
 assert.match(manager,/window\.myliftcoachRefreshHomeSchedule\?\.\(\)/,'editing a custom workout must request a canonical schedule refresh');
 
 assert.doesNotMatch(config,/['\"]liftova-custom-home\.js/,'legacy history-cycling custom Home overlay must not load');
-assert.match(config,/myliftcoach-home-sequence-fix\.js\?v=4/,'canonical schedule authority must be cache-busted');
+assert.match(config,/myliftcoach-home-sequence-fix\.js\?v=5/,'canonical schedule authority must be cache-busted');
 assert.match(config,/myliftcoach-custom-workout-fix\.js\?v=2/,'custom workout manager must load the non-scheduling version');
 
 console.log(JSON.stringify({suite:'MYLIFTCOACH custom program single schedule authority',checks:{customOverridesPreset:true,selectedDaysPreserved:true,customsCycleAcrossDays:true,restOverrides:true,staleCardStateCleared:true,exactCustomOpens:true,legacySchedulerRemoved:true,managerNoLongerSchedules:true}},null,2));
