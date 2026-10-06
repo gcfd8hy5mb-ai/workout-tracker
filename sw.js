@@ -1,19 +1,19 @@
-const CACHE_NAME = "myliftcoach-home-v22-anatomy";
-const UPGRADE_VERSION = "22";
+const CACHE_NAME = "myliftcoach-home-v23-goal-program";
+const UPGRADE_VERSION = "23";
 
 // Keep the install shell deliberately small. Runtime/presentation modules are network-first below,
 // so an installed PWA cannot remain pinned to a stale presentation or scheduling bundle.
 const APP_FILES = [
-  "./", "./index.html", "./onboarding.js?v=10.3-beta5", "./pro-experience.js", "./manifest.json", "./sw.js",
+  "./", "./index.html", "./onboarding.js?v=10.3-beta6", "./pro-experience.js", "./manifest.json", "./sw.js",
   "./persistence/storage-model.js", "./persistence/scoped-storage.js", "./persistence/photo-scope.js", "./persistence/reconcile.js",
   "./persistence/account-sync.js", "./persistence/account-controller.js", "./persistence/photo-sync.js", "./persistence/account-ui.js",
-  "./supabase-config.js", "./liftova-home.js?v=12", "./liftova-home.css?v=12", "./liftova-onboarding.js?v=7",
+  "./supabase-config.js", "./liftova-home.js?v=13", "./liftova-home.css?v=12", "./liftova-onboarding.js?v=7",
   "./liftova-workouts.js?v=7", "./liftova-active-workout.js?v=7", "./liftova-library.js?v=7", "./liftova-progress.js?v=7",
   "./liftova-profile.js?v=7", "./liftova-pro.js?v=7", "./liftova-polish.js?v=8",
   "./liftova-workout-tab-v3.js?v=1", "./liftova-anatomy.js?v=1", "./liftova-anatomy.css?v=1",
   "./myliftcoach-startup-smooth.js?v=1", "./myliftcoach-startup-smooth.css?v=1", "./myliftcoach-anatomy-v2.js?v=1",
   "./myliftcoach-library-ux.js?v=1", "./myliftcoach-swipe-ux.js?v=1", "./myliftcoach-daily-tracking-ux.js?v=1",
-  "./myliftcoach-profile-brand-lock.js?v=3", "./myliftcoach-visual-cleanup.js?v=1", "./myliftcoach-home-sequence-fix.js?v=4",
+  "./myliftcoach-profile-brand-lock.js?v=3", "./myliftcoach-visual-cleanup.js?v=1", "./myliftcoach-home-sequence-fix.js?v=5",
   "./myliftcoach-custom-workout-fix.js?v=2", "./myliftcoach-core-ux-v1.css?v=1", "./myliftcoach-core-ux-v2.css?v=1",
   "./myliftcoach-core-ux-v3.css?v=1", "./myliftcoach-core-ux-v4.css?v=1", "./myliftcoach-anatomy-polish.css?v=2",
   "./myliftcoach-home-dashboard-ux.css?v=1", "./myliftcoach-library-ux.css?v=1", "./myliftcoach-daily-tracking-ux.css?v=1",

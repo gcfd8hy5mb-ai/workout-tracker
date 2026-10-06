@@ -17,7 +17,7 @@ assert(homePos >= 0, 'canonical Home must remain loaded');
 assert(!config.includes("'liftova-custom-home.js"), 'retired history-cycling custom Home layer must not be loaded');
 assert(polishPos > homePos, 'presentation polish must load after canonical Home');
 assert(schedulePos > polishPos, 'single weekday schedule authority must load after Home presentation is established');
-assert(scheduleMatch && scheduleMatch[0].includes('v=4'), 'weekday schedule authority must use the cache-bumped runtime');
+assert(scheduleMatch && scheduleMatch[0].includes('v=5'), 'weekday schedule authority must use the cache-bumped runtime');
 assert(polishMatch && polishMatch[0].includes('v=8'), 'presentation polish must use the cache-bumped runtime');
 assert(config.includes('window.MYLIFTCOACH_SUPABASE_CONFIG'), 'canonical MYLIFTCOACH config namespace must be present');
 assert(!config.includes('setTimeout(mount,500)'), 'canonical Home must not be delayed behind later presentation modules');

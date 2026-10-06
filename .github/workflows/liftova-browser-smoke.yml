@@ -24,6 +24,8 @@ jobs:
         run: node tests/liftova-browser-smoke.cjs
       - name: Exercise MYLIFTCOACH workout lifecycle
         run: node tests/myliftcoach-workout-lifecycle.cjs
+      - name: Exercise goal to program changes and reload
+        run: node tests/myliftcoach-goal-program.cjs
       - name: Exercise MYLIFTCOACH substitution navigation and summary
         run: node tests/myliftcoach-substitution-summary.cjs
       - name: Exercise MYLIFTCOACH Progress History Records Calendar

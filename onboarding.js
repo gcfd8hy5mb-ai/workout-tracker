@@ -233,10 +233,10 @@ const phase=prismActivePhase(),type=document.getElementById("goalEditType").valu
 if(!phase||!PRISM_GOAL_NAMES[type]||!PRISM_TRAINING_NAMES[training]||!PRISM_PACES[pace]||!Number.isFinite(prismDateAtNoon(end).getTime())||prismDaysBetween(localDay(),end)<1||prismDaysBetween(localDay(),end)>730){document.getElementById("goalEditError").textContent="Choose a future review date within two years.";return}
 if(type!==phase.type){phase.status="closed";phase.closedAt=localDay();prismPhases.push({id:newTrackingId(),status:"active",type,startDate:localDay(),endDate:end,durationWeeks:Math.max(1,Math.round(prismDaysBetween(localDay(),end)/7)),pace,startWeight:prismCurrentWeight(),calorieTarget:null,customCalorieTarget:tracking.calorieMode==="manual"?tracking.calorieGoal:null})}
 else{phase.endDate=end;phase.durationWeeks=Math.max(1,Math.round(prismDaysBetween(phase.startDate,end)/7));phase.pace=pace}
-workoutGoals=workoutGoals&&!workoutGoals.skipped?{...workoutGoals,goal:training}: {goal:training,days:4,focus:"balanced",gender:"prefer"};
+workoutGoals=workoutGoals&&!workoutGoals.skipped?{...workoutGoals,goal:training,basic:false}: {goal:training,days:4,focus:"balanced",gender:"prefer"};
 localStorage.setItem("workoutGoalsV1",JSON.stringify(workoutGoals));
 tracking.calorieActivity=document.getElementById("goalEditActivity").value;tracking.preferredWeightUnit=document.getElementById("goalEditUnits").value;tracking.restSeconds=Number(document.getElementById("goalEditRest").value);
-saveTracking();savePrismPhases();showTrackingGoals();
+saveTracking();ensureGeneratedProgram();savePrismPhases();showTrackingGoals();renderHome();window.myliftcoachRefreshHomeSchedule?.();
 }
 function showCalorieSettings(){document.getElementById("calorieMode").scrollIntoView({block:"center"});document.getElementById("calorieMode").focus()}
 function startNewPrismGoal(){prismJourney={status:"onboarding",mode:"guest",origin:"goals",step:prismProfileName()?1:0,localProfileStepVersion:1,draft:{displayName:prismProfileName(),avatarId:prismLocalProfile.avatarId,units:tracking.preferredWeightUnit||"lb"}};savePrismJourney();renderPrismJourney()}
@@ -286,9 +286,10 @@ renderPrismLocalProfile();
 function savePrismTraining(event){
 event.preventDefault();const goal=document.getElementById("prismEditTraining").value;
 if(!PRISM_TRAINING_NAMES[goal])return;
-workoutGoals={...(workoutGoals||{}),goal,days:Number(document.getElementById("prismEditDays").value),focus:document.getElementById("prismEditFocus").value,gender:workoutGoals?.gender||"prefer"};
+workoutGoals={...(workoutGoals||{}),basic:false,goal,days:Number(document.getElementById("prismEditDays").value),focus:document.getElementById("prismEditFocus").value,gender:workoutGoals?.gender||"prefer"};
 localStorage.setItem("workoutGoalsV1",JSON.stringify(workoutGoals));
 tracking.trainingLevel=document.getElementById("prismEditLevel").value;tracking.restSeconds=Number(document.getElementById("prismEditRest").value);saveTracking();
+ensureGeneratedProgram();renderHome();window.myliftcoachRefreshHomeSchedule?.();
 renderPrismLocalProfile();
 }
 function initPrismJourney(){
