@@ -37,6 +37,7 @@ progressionSuggestion:()=>({weight:185}),overloadKey:id=>`preset-day1-${id}`,
 activeWorkoutCompletionIds:()=>['preset-day1-press'],saveTracking:()=>{},skipWorkoutRest:()=>{},
 updateProgress:()=>{},showWorkoutSummary:s=>saved.push(s),alert:msg=>{throw Error(msg)},
 readPrismActiveWorkout:()=>null,
+workoutPrescription:()=>({sets:4,reps:'8–10'}),
 localStorage:{setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)}
 };
 vm.createContext(finishContext);
