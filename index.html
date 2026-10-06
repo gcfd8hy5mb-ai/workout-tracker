@@ -19,6 +19,7 @@
 
 <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon-180.png?v=10">
 <link rel="icon" type="image/svg+xml" href="images/liftova-icon.svg?v=10">
+<link rel="preload" as="image" href="images/myliftcoach-icon.svg?v=22">
 
 <title>MYLIFTCOACH · Train · Track · Progress</title>
 
@@ -27,6 +28,8 @@
 <script src="persistence/scoped-storage.js"></script>
 <script src="persistence/photo-scope.js"></script>
 <script>
+window.MYLIFTCOACHStartupTrace={events:[],mark(name){const at=performance.now();this.events.push({name,at});performance.mark('myliftcoach:'+name);}};
+window.MYLIFTCOACHStartupTrace.mark('scope-start');
 window.PRISMDeviceStore=window.PRISMScopedStorage.create(window.localStorage);
 try{
   const session=JSON.parse(window.localStorage.getItem('prismSupabaseSessionV1')||'null');
@@ -34,6 +37,7 @@ try{
 }catch{}
 window.PRISMAccountInitialSnapshot=window.PRISMDeviceStore.snapshot();
 if(window.PRISMDeviceStore.owner)document.documentElement.classList.add('prism-account-booting');
+window.MYLIFTCOACHStartupTrace.mark(window.PRISMDeviceStore.owner?'account-gate':'guest-scope-ready');
 const localStorage=window.PRISMDeviceStore.storage;
 </script>
 

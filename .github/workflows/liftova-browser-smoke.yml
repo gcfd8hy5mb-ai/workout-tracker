@@ -38,3 +38,5 @@ jobs:
         run: node tests/myliftcoach-final-readiness.cjs
       - name: Exercise MYLIFTCOACH startup recovery
         run: node tests/myliftcoach-startup-recovery.cjs
+      - name: Exercise MYLIFTCOACH iPhone Home startup
+        run: node tests/myliftcoach-home-startup.cjs
