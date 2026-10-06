@@ -9,7 +9,7 @@ assert.doesNotMatch(fs.readFileSync('phase-insights.js','utf8'),/^const PRISM_GO
 assert.match(polish,/screenObserver\.observe\(screen,\{subtree:true,childList:true\}\)/);
 assert.doesNotMatch(polish,/observe\(document\.(body|documentElement)/);
 const events={};const calls=[];
-const ctx={console,activeWorkoutKey:null,activeWorkoutTitle:null,activeWorkoutExerciseIds:null,activeCustomIndex:null,lastWorkoutContext:null,requestAnimationFrame(fn){fn()},setTimeout(){throw Error('module should install immediately')},
+const ctx={console,activeWorkoutKey:null,activeWorkoutTitle:null,activeWorkoutExerciseIds:null,activeCustomIndex:null,activeWorkoutPrescription:null,lastWorkoutContext:null,requestAnimationFrame(fn){fn()},setTimeout(){throw Error('module should install immediately')},
  localStorage:{_v:{},getItem(k){return this._v[k]??null},setItem(k,v){this._v[k]=String(v)},removeItem(k){delete this._v[k]}},
  document:{readyState:'complete',addEventListener(type,fn,capture){events[type]=fn},getElementById(){return null}},
  getExercise(id){return {id,name:id,muscle:'Chest'}},
