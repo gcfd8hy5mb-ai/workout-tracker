@@ -39,13 +39,20 @@ const server=http.createServer((req,res)=>{
       assert.ok(before.logoLoaded,`${launch}: logo must be decoded when Home is interactive`);
       assert.ok(before.trace?.some(e=>e.name==='home-mounted')&&before.trace?.some(e=>e.name==='home-interactive'),`${launch}: startup timing marks must identify mount and reveal`);
       const started=Date.now();await menu.click();await page.locator('#sideMenu.open').waitFor({timeout:1000});
-      assert.ok(Date.now()-started<1000,`${launch}: first Home tap must work without waiting for hydration`);
+      const tapMs=Date.now()-started;
+      assert.ok(tapMs<500,`${launch}: first Home tap took ${tapMs}ms after Home became interactive`);
       await page.locator('#sideMenu .menu-close').click();
+      if(launch==='cold')await page.evaluate(()=>{
+        const id=exerciseLibrary[0].id,weekday=(new Date().getDay()+6)%7;
+        localStorage.setItem('customWorkoutsV5',JSON.stringify([{id:'qa-startup',name:'QA Workout',exercises:[id]}]));
+        localStorage.setItem('myliftcoachWeeklyDayOverridesV1',JSON.stringify({[weekday]:{name:'QA Workout',ids:[id]}}));
+      });
       await page.evaluate(()=>goHome());
       await page.waitForTimeout(500);
       const after=await page.evaluate(()=>({sameShell:window.__startupNodes.shell===document.querySelector('#home .liftova-home-shell'),sameCard:window.__startupNodes.card===document.querySelector('#home .lh-workout'),sameLogo:window.__startupNodes.logo===document.querySelector('#home .lh-hero-mark img'),cover:!!document.getElementById('myliftcoachStartupCover'),accountGate:document.documentElement.classList.contains('prism-account-booting')}));
       assert.deepEqual(after,{sameShell:true,sameCard:true,sameLogo:true,cover:false,accountGate:false},`${launch}: Home and workout card must stay mounted`);
-      console.log(`[startup ${launch}] menu tap ${Date.now()-started}ms; trace ${JSON.stringify(before.trace)}`);
+      if(launch==='cold')assert.match(await page.locator('#home .lh-workout h2').textContent(),/QA WORKOUT/, 'in-place card must reflect changed schedule');
+      console.log(`[startup ${launch}] first menu tap ${tapMs}ms; trace ${JSON.stringify(before.trace)}`);
     }
     assert.deepEqual(errors,[],'startup must not throw');
     await context.close();
