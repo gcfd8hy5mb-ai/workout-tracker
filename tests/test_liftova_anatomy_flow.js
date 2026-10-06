@@ -17,16 +17,16 @@ const ctx={console,activeWorkoutKey:null,activeWorkoutTitle:null,activeWorkoutEx
  startPrismWorkout(){calls.push(['legacy start'])},
  openWorkout(title,ids,restored){calls.push(['live',title,ids.length,restored])},
  goHome(){calls.push(['home'])},
- myliftcoachWeeklySchedule(){return [{workoutKey:'plan-muscle-4-balanced-Beginner-90-day1',name:'Day 1 — Chest & Triceps',ids:['machine-chest-press','pec-deck','triceps-pushdown'],kind:'plan'},null,null,null,null,null,null]},
+ myliftcoachWeeklySchedule(){return Array.from({length:7},(_,i)=>({workoutKey:`plan-muscle-4-balanced-Beginner-90-day${i+1}`,name:`Day ${i+1} — Scheduled Workout`,ids:['machine-chest-press','pec-deck','triceps-pushdown'],kind:'plan'}))},
  ensureGeneratedProgram(){return {focusLabel:'Hypertrophy',prescription:{sets:4,reps:'8–10',restSeconds:90}}}
 };ctx.window=ctx;
 vm.runInNewContext(js,ctx);
 assert.equal(typeof events.click,'function');
 let prevented=0,stopped=0;
 events.click({target:{closest(s){return s==='#lv3StartWorkout'?{}:null}},preventDefault(){prevented++},stopImmediatePropagation(){stopped++}});
-assert.deepEqual(calls.shift(),['live','Day 1 — Chest & Triceps',3,false]);
+assert.deepEqual(calls.shift(),['live',`Day ${(new Date().getDay()+6)%7+1} — Scheduled Workout`,3,false]);
 assert.equal(prevented,1);assert.equal(stopped,1);
-assert.equal(ctx.activeWorkoutKey,'plan-muscle-4-balanced-Beginner-90-day1');
+assert.equal(ctx.activeWorkoutKey,`plan-muscle-4-balanced-Beginner-90-day${(new Date().getDay()+6)%7+1}`);
 ctx.showWorkouts();assert.deepEqual(calls.shift(),['detail',3]);
 ctx.startPrismWorkout({kind:'scheduled',workoutKey:'weekday-0',ids:['machine-chest-press'],title:'Monday Override'});
 assert.deepEqual(calls.shift(),['live','Monday Override',1,false]);
