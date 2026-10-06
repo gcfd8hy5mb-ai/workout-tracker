@@ -1,5 +1,5 @@
-const CACHE_NAME = "myliftcoach-home-v21-beta-readiness";
-const UPGRADE_VERSION = "21";
+const CACHE_NAME = "myliftcoach-home-v22-anatomy";
+const UPGRADE_VERSION = "22";
 
 // Keep the install shell deliberately small. Runtime/presentation modules are network-first below,
 // so an installed PWA cannot remain pinned to a stale presentation or scheduling bundle.
@@ -17,7 +17,7 @@ const APP_FILES = [
   "./myliftcoach-custom-workout-fix.js?v=2", "./myliftcoach-core-ux-v1.css?v=1", "./myliftcoach-core-ux-v2.css?v=1",
   "./myliftcoach-core-ux-v3.css?v=1", "./myliftcoach-core-ux-v4.css?v=1", "./myliftcoach-anatomy-polish.css?v=2",
   "./myliftcoach-home-dashboard-ux.css?v=1", "./myliftcoach-library-ux.css?v=1", "./myliftcoach-daily-tracking-ux.css?v=1",
-  "./myliftcoach-history-records-ux.css?v=1", "./images/liftova-anatomy-atlas.webp", "./images/app-icon.png?v=11",
+  "./myliftcoach-history-records-ux.css?v=1", "./images/myliftcoach-anatomy-realistic.webp", "./images/myliftcoach-anatomy-body-mask.png", "./images/app-icon.png?v=11",
   "./images/apple-touch-icon-180.png?v=10", "./cloud-backup.js"
 ];
 

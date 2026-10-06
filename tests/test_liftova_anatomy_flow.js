@@ -38,6 +38,6 @@ const output=anatomy.render(ex,{size:'mini'});
 assert.ok(output.includes('data-muscle="obliques"'));
 assert.ok(!output.includes('data-muscle="chest"'));
 const empty=anatomy.render({name:'Unfamiliar custom movement',muscle:'Custom'});
-assert.ok(empty.includes('liftova-anatomy-atlas.webp'));
+assert.ok(empty.includes('myliftcoach-anatomy-realistic.webp'));
 assert.ok(!empty.includes('class="liftova-muscle'));
 console.log('LIFTOVA Start Workout interaction, navigation routes, details and fallback anatomy: OK');

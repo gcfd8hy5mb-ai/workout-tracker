@@ -14,8 +14,8 @@ const accountSync=fs.readFileSync('persistence/account-sync.js','utf8');
 assert.equal(manifest.name,'MYLIFTCOACH','installed app must use MYLIFTCOACH name');
 assert.equal(manifest.display,'standalone','installed app must launch standalone');
 assert.equal(manifest.scope,'./','installed app scope must stay inside the app');
-assert(sw.includes('myliftcoach-home-v21-beta-readiness'),'beta readiness must bump the installed PWA cache');
-assert(sw.includes('UPGRADE_VERSION = "21"'),'installed clients must receive the v21 upgrade signal');
+assert(sw.includes('myliftcoach-home-v22-anatomy'),'beta readiness must bump the installed PWA cache');
+assert(sw.includes('UPGRADE_VERSION = "22"'),'installed clients must receive the v22 upgrade signal');
 assert(sw.includes('url.pathname.includes("/myliftcoach-")'),'MYLIFTCOACH runtime and UX files must be network-first');
 for(const asset of [
   'myliftcoach-home-sequence-fix.js?v=4',
