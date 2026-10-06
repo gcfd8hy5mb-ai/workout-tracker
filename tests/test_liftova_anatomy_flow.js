@@ -16,18 +16,20 @@ const ctx={console,activeWorkoutKey:null,activeWorkoutTitle:null,activeWorkoutEx
  showWorkouts(){calls.push(['legacy'])},
  startPrismWorkout(){calls.push(['legacy start'])},
  openWorkout(title,ids,restored){calls.push(['live',title,ids.length,restored])},
- goHome(){calls.push(['home'])}
+ goHome(){calls.push(['home'])},
+ myliftcoachWeeklySchedule(){return [{workoutKey:'plan-muscle-4-balanced-Beginner-90-day1',name:'Day 1 — Chest & Triceps',ids:['machine-chest-press','pec-deck','triceps-pushdown'],kind:'plan'},null,null,null,null,null,null]},
+ ensureGeneratedProgram(){return {focusLabel:'Hypertrophy',prescription:{sets:4,reps:'8–10',restSeconds:90}}}
 };ctx.window=ctx;
 vm.runInNewContext(js,ctx);
 assert.equal(typeof events.click,'function');
 let prevented=0,stopped=0;
 events.click({target:{closest(s){return s==='#lv3StartWorkout'?{}:null}},preventDefault(){prevented++},stopImmediatePropagation(){stopped++}});
-assert.deepEqual(calls.shift(),['live','Upper Body',8,false]);
+assert.deepEqual(calls.shift(),['live','Day 1 — Chest & Triceps',3,false]);
 assert.equal(prevented,1);assert.equal(stopped,1);
-assert.equal(ctx.activeWorkoutKey,'liftova-reference-upper-body');
-ctx.showWorkouts();assert.deepEqual(calls.shift(),['detail',8]);
-ctx.startPrismWorkout({kind:'liftova-reference',ids:['machine-chest-press'],title:'Upper Body'});
-assert.deepEqual(calls.shift(),['live','Upper Body',1,false]);
+assert.equal(ctx.activeWorkoutKey,'plan-muscle-4-balanced-Beginner-90-day1');
+ctx.showWorkouts();assert.deepEqual(calls.shift(),['detail',3]);
+ctx.startPrismWorkout({kind:'scheduled',workoutKey:'weekday-0',ids:['machine-chest-press'],title:'Monday Override'});
+assert.deepEqual(calls.shift(),['live','Monday Override',1,false]);
 
 const required=['showScreen("home")','showWorkouts()','showLibrary()','showScreen("overallProgressScreen")','showScreen("profileScreen")'];
 for(const route of required)assert.ok(html.includes(route),`navigation route missing: ${route}`);
@@ -40,4 +42,4 @@ assert.ok(!output.includes('data-muscle="chest"'));
 const empty=anatomy.render({name:'Unfamiliar custom movement',muscle:'Custom'});
 assert.ok(empty.includes('myliftcoach-anatomy-realistic.webp'));
 assert.ok(!empty.includes('class="liftova-muscle'));
-console.log('LIFTOVA Start Workout interaction, navigation routes, details and fallback anatomy: OK');
+console.log('MYLIFTCOACH scheduled Start Workout interaction, navigation routes, details and fallback anatomy: OK');
