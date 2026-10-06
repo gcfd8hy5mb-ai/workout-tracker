@@ -3,6 +3,8 @@
   'use strict';
   const root=document.documentElement;
   root.classList.add('myliftcoach-starting');
+  const trace=name=>window.MYLIFTCOACHStartupTrace?.mark(name);
+  trace('presentation-start');
   let revealed=false,observer=null,identityCheckStarted=false,identityRetry=null;
 
   function mount(){
@@ -34,6 +36,7 @@
          server confirms the exact same user. Full cloud reconciliation, photo
          push/restore and other account work continue in account-ui afterward. */
       if(user?.id===manager.owner){
+        trace('account-verified');
         root.classList.remove('prism-account-booting');
         check();
         return;
@@ -73,6 +76,7 @@
   function finishReveal(){
     document.getElementById('myliftcoachStartupCover')?.remove();
     root.classList.remove('myliftcoach-starting','myliftcoach-ready');
+    trace('home-interactive');
     observer?.disconnect();
     if(identityRetry){clearTimeout(identityRetry);identityRetry=null;}
     const idle=window.requestIdleCallback||((fn)=>setTimeout(fn,600));
@@ -82,6 +86,7 @@
   function reveal(){
     if(revealed||!surfaceReady())return false;
     revealed=true;
+    trace('surface-ready');
     root.classList.add('myliftcoach-ready');
     if(matchMedia('(prefers-reduced-motion: reduce)').matches)finishReveal();
     else setTimeout(finishReveal,110);

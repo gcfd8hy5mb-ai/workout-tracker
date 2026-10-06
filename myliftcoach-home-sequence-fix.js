@@ -64,6 +64,8 @@
   }
 
   const compactName=name=>String(name||'Workout').replace(/^day\s*\d+\s*[—–:\-]\s*/i,'').trim()||'Workout';
+  const setText=(element,value)=>{if(element&&element.textContent!==value)element.textContent=value};
+  const setMarkup=(element,value)=>{if(element&&element.innerHTML!==value)element.innerHTML=value};
 
   function requestedTrainingDays(sourceLength){
     let requested=sourceLength;
@@ -119,17 +121,17 @@
     const summary=muscleSummary(rows);
     const title=card.querySelector('h2');
     const desc=card.querySelector(':scope > p');
-    if(title)title.textContent=String(workout?.name||'Today’s Workout').toUpperCase();
-    if(desc)desc.textContent=summary.text||'Training day';
+    setText(title,String(workout?.name||'Today’s Workout').toUpperCase());
+    setText(desc,summary.text||'Training day');
     let meta=card.querySelector('.lh-meta');
     if(!meta){meta=document.createElement('div');meta.className='lh-meta';const overview=card.querySelector('.lh-overview');if(overview)overview.before(meta);else card.appendChild(meta)}
     const count=rows.length,minutes=Math.max(30,count*6);
-    meta.innerHTML=`<span><b>◴</b>${minutes} min<small>EST. TIME</small></span><span><b>▥</b>${count||'—'} exercises<small>TOTAL</small></span><span><b>◎</b>Hypertrophy<small>FOCUS</small></span>`;
+    setMarkup(meta,`<span><b>◴</b>${minutes} min<small>EST. TIME</small></span><span><b>▥</b>${count||'—'} exercises<small>TOTAL</small></span><span><b>◎</b>Hypertrophy<small>FOCUS</small></span>`);
     meta.removeAttribute('hidden');meta.style.display='';
     let overview=card.querySelector('.lh-overview');
     if(!overview){overview=document.createElement('div');overview.className='lh-overview';overview.innerHTML='<strong>WORKOUT OVERVIEW</strong><ul></ul>';card.appendChild(overview)}
     const ul=overview.querySelector('ul');
-    if(ul)ul.innerHTML=summary.entries.length?summary.entries.map(([m,n])=>`<li>${m}: ${n} exercise${n===1?'':'s'}</li>`).join(''):'<li>Workout scheduled</li>';
+    setMarkup(ul,summary.entries.length?summary.entries.map(([m,n])=>`<li>${m}: ${n} exercise${n===1?'':'s'}</li>`).join(''):'<li>Workout scheduled</li>');
     overview.removeAttribute('hidden');overview.style.display='';
     clearCardAction(card);
     card.dataset.scheduledWorkoutKey=workout.workoutKey||'';
@@ -144,8 +146,8 @@
 
   function showRestDay(card){
     const title=card.querySelector('h2'),desc=card.querySelector(':scope > p');
-    if(title)title.textContent='REST DAY';
-    if(desc)desc.textContent='Recovery · No workout scheduled';
+    setText(title,'REST DAY');
+    setText(desc,'Recovery · No workout scheduled');
     const meta=card.querySelector('.lh-meta');if(meta){meta.setAttribute('hidden','');meta.style.display='none'}
     const overview=card.querySelector('.lh-overview');if(overview){overview.setAttribute('hidden','');overview.style.display='none'}
     clearCardAction(card);
@@ -236,7 +238,7 @@
     const todayIndex=(new Date().getDay()+6)%7;
     const days=[...shell.querySelectorAll('.lh-day')];
     days.forEach((day,index)=>{
-      const label=day.querySelector('span');if(label)label.textContent=schedule[index]?compactName(schedule[index].name):'Rest';
+      const label=day.querySelector('span');setText(label,schedule[index]?compactName(schedule[index].name):'Rest');
       day.classList.toggle('active',index===todayIndex);bindDay(day,index);
     });
     const todayWorkout=schedule[todayIndex];if(todayWorkout)ensureWorkoutDetails(card,todayWorkout);else showRestDay(card);
@@ -249,9 +251,9 @@
   document.addEventListener('click',openDisplayedCustom);
   document.addEventListener('keydown',openDisplayedCustom);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',queue,{once:true});else queue();
-  document.addEventListener('click',()=>setTimeout(queue,0),true);
   window.addEventListener('storage',queue);
   const observer=new MutationObserver(queue);
-  if(document.body)observer.observe(document.body,{subtree:true,childList:true});
-  else document.addEventListener('DOMContentLoaded',()=>observer.observe(document.body,{subtree:true,childList:true}),{once:true});
+  const observe=()=>{const home=document.getElementById('home');if(home)observer.observe(home,{subtree:true,childList:true})};
+  if(document.body)observe();
+  else document.addEventListener('DOMContentLoaded',observe,{once:true});
 })();

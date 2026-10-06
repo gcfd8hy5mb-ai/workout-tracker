@@ -78,7 +78,8 @@
         header.style.setProperty('transform','none','important');
       }
     });
-    syncHomeWorkoutCard();
+    // The weekday schedule module owns this card. Branding must not rewrite it
+    // on every unrelated body mutation during startup or account restore.
   }
 
   function openHomeWorkout(){
@@ -116,7 +117,7 @@
     document.__liftovaInteractionFixes=true;
     document.addEventListener('click',event=>{
       const card=event.target.closest?.('.liftova-home-shell .lh-workout');
-      if(card){event.preventDefault();openHomeWorkout();return;}
+      if(card&&!event.target.closest('button,a,input,select,textarea,[role="button"]')){event.preventDefault();openHomeWorkout();return;}
       const button=event.target.closest?.('button,[role="button"],a');
       if(!button)return;
       const label=(button.textContent||button.getAttribute('aria-label')||'').replace(/\s+/g,' ').trim();
