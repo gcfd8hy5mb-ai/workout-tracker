@@ -1166,7 +1166,7 @@ Exercise Library
 <div class="prism-section-head"><div><span class="prism-eyebrow">YOUR TRAINING</span><h2>Workouts</h2></div><button type="button" class="prism-icon-button" onclick="showManageWorkouts()" aria-label="Manage workouts">•••</button></div>
 <label class="prism-search-label" for="workoutBrowserSearch">Search workouts</label><input id="workoutBrowserSearch" type="search" placeholder="Search workouts or exercises" oninput="renderWorkoutBrowser()">
 <div class="prism-segments" aria-label="Workout types"><button type="button" data-browser-filter="all" aria-pressed="true" onclick="setWorkoutBrowserFilter('all')">All</button><button type="button" data-browser-filter="plans" aria-pressed="false" onclick="setWorkoutBrowserFilter('plans')">Plans</button><button type="button" data-browser-filter="mine" aria-pressed="false" onclick="setWorkoutBrowserFilter('mine')">My workouts</button></div>
-<div id="workoutBrowserList"></div>
+<div id="customScheduleControls" class="card"></div><div id="workoutBrowserList"></div>
 <button class="prism-text-link" onclick="showGoalsSetup()">Change training plan</button>
 <button class="prism-primary prism-wide" onclick="showBuilder()">＋ Create Workout</button>
 <button class="prism-text-link" onclick="showLibrary()">Browse exercise library →</button>
@@ -2057,8 +2057,8 @@ let workoutGoals=JSON.parse(localStorage.getItem("workoutGoalsV1")||"null");
 function readTrackingData(){
 try{
 const saved=JSON.parse(localStorage.getItem("dailyTrackingV1")||"{}");
-return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],foodFavorites:Array.isArray(saved.foodFavorites)?saved.foodFavorites:[],waterUnit:saved.waterUnit==="oz"?"oz":"ml",waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null,calorieMode:["auto","manual"].includes(saved.calorieMode)?saved.calorieMode:null,calorieWorkout:saved.calorieWorkout&&typeof saved.calorieWorkout==="object"&&!Array.isArray(saved.calorieWorkout)?saved.calorieWorkout:null,restSeconds:[60,90,120,180].includes(saved.restSeconds)?saved.restSeconds:90,readiness:saved.readiness&&typeof saved.readiness==="object"?saved.readiness:{},manualTargets:saved.manualTargets&&typeof saved.manualTargets==="object"?saved.manualTargets:{},substitutions:saved.substitutions&&typeof saved.substitutions==="object"?saved.substitutions:{},measurements:Array.isArray(saved.measurements)?saved.measurements:[],calendarNotes:saved.calendarNotes&&typeof saved.calendarNotes==="object"&&!Array.isArray(saved.calendarNotes)?saved.calendarNotes:{},calorieAge:saved.calorieAge||"",calorieFeet:saved.calorieFeet||"",calorieInches:saved.calorieInches??"",calorieEquation:saved.calorieEquation||"",calorieActivity:saved.calorieActivity||"1.4",preferredWeightUnit:saved.preferredWeightUnit==="kg"?"kg":"lb",trainingLevel:["Beginner","Intermediate","Advanced"].includes(saved.trainingLevel)?saved.trainingLevel:"Beginner"};
-}catch{return {water:[],food:[],weight:[],foodFavorites:[],waterUnit:"ml",waterGoal:2000,calorieGoal:null,calorieMode:null,calorieWorkout:null,restSeconds:90,readiness:{},manualTargets:{},substitutions:{},measurements:[],calendarNotes:{},calorieAge:"",calorieFeet:"",calorieInches:"",calorieEquation:"",calorieActivity:"1.4",preferredWeightUnit:"lb",trainingLevel:"Beginner"}}
+return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],foodFavorites:Array.isArray(saved.foodFavorites)?saved.foodFavorites:[],waterUnit:saved.waterUnit==="oz"?"oz":"ml",waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null,calorieMode:["auto","manual"].includes(saved.calorieMode)?saved.calorieMode:null,calorieWorkout:saved.calorieWorkout&&typeof saved.calorieWorkout==="object"&&!Array.isArray(saved.calorieWorkout)?saved.calorieWorkout:null,restSeconds:[60,90,120,180].includes(saved.restSeconds)?saved.restSeconds:90,readiness:saved.readiness&&typeof saved.readiness==="object"?saved.readiness:{},manualTargets:saved.manualTargets&&typeof saved.manualTargets==="object"?saved.manualTargets:{},substitutions:saved.substitutions&&typeof saved.substitutions==="object"?saved.substitutions:{},measurements:Array.isArray(saved.measurements)?saved.measurements:[],calendarNotes:saved.calendarNotes&&typeof saved.calendarNotes==="object"&&!Array.isArray(saved.calendarNotes)?saved.calendarNotes:{},calorieAge:saved.calorieAge||"",calorieFeet:saved.calorieFeet||"",calorieInches:saved.calorieInches??"",calorieEquation:saved.calorieEquation||"",calorieActivity:saved.calorieActivity||"1.4",preferredWeightUnit:saved.preferredWeightUnit==="kg"?"kg":"lb",trainingLevel:["Beginner","Intermediate","Advanced"].includes(saved.trainingLevel)?saved.trainingLevel:"Beginner",customSchedule:saved.customSchedule&&typeof saved.customSchedule==="object"&&!Array.isArray(saved.customSchedule)?saved.customSchedule:{}};
+}catch{return {water:[],food:[],weight:[],foodFavorites:[],waterUnit:"ml",waterGoal:2000,calorieGoal:null,calorieMode:null,calorieWorkout:null,restSeconds:90,readiness:{},manualTargets:{},substitutions:{},measurements:[],calendarNotes:{},calorieAge:"",calorieFeet:"",calorieInches:"",calorieEquation:"",calorieActivity:"1.4",preferredWeightUnit:"lb",trainingLevel:"Beginner",customSchedule:{}}}
 }
 let tracking=readTrackingData();
 function saveTracking(){localStorage.setItem("dailyTrackingV1",JSON.stringify(tracking))}
@@ -2445,7 +2445,27 @@ suggestedWorkouts(workoutGoals).forEach((day,index)=>plans.push({kind:"suggested
 Object.entries(presetWorkouts).forEach(([key,day])=>plans.push({kind:"preset",key,title:day.title,ids:day.exercises}));
 return plans;
 }
-function showWorkouts(){showScreen("workoutsScreen");setBottomNav("Workouts");renderWorkoutBrowser()}
+function scheduledCustomWorkout(day=localDay()){
+const entry=tracking.customSchedule?.[day];if(!entry)return null;
+const workout=customWorkouts.find(w=>w&&w.name===entry.name&&Array.isArray(w.exercises)&&w.exercises.length&&JSON.stringify(w.exercises)===JSON.stringify(entry.exercises));
+if(!workout)return null;
+return {kind:"custom",index:customWorkouts.indexOf(workout),title:workout.name,ids:workout.exercises,workoutKey:"custom-"+customWorkouts.indexOf(workout)};
+}
+function renderCustomWorkoutSchedule(){
+let area=document.getElementById("customScheduleControls");if(!area)return;area.replaceChildren();
+const title=document.createElement("h3");title.textContent="Schedule a custom workout";area.append(title);
+const date=document.createElement("input");date.type="date";date.value=localDay();date.setAttribute("aria-label","Custom workout date");
+const select=document.createElement("select");select.setAttribute("aria-label","Scheduled custom workout");
+const button=document.createElement("button");button.type="button";button.textContent="Save custom schedule";
+const status=document.createElement("p");status.className="small";status.setAttribute("role","status");
+function options(){const previous=tracking.customSchedule?.[date.value];select.replaceChildren();const none=document.createElement("option");none.value="";none.textContent="Use programmed workout or rest day";select.append(none);
+customWorkouts.forEach((workout,index)=>{if(!workout?.name||!workout.exercises?.length)return;const option=document.createElement("option");option.value=String(index);option.textContent=workout.name;select.append(option)});
+const found=customWorkouts.findIndex(w=>w.name===previous?.name&&JSON.stringify(w.exercises)===JSON.stringify(previous?.exercises));select.value=found<0?"":String(found);}
+date.addEventListener("change",options);options();
+button.onclick=()=>{const index=select.value===""?-1:Number(select.value);const selected=customWorkouts[index];if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date.value))return;if(!tracking.customSchedule)tracking.customSchedule={};if(selected)tracking.customSchedule[date.value]={name:selected.name,exercises:[...selected.exercises]};else delete tracking.customSchedule[date.value];saveTracking();status.textContent=selected?"Custom workout takes priority on "+date.value:"Programmed workout or rest day restored for "+date.value;renderHome()};
+area.append(date,select,button,status);
+}
+function showWorkouts(){showScreen("workoutsScreen");setBottomNav("Workouts");renderWorkoutBrowser();renderCustomWorkoutSchedule()}
 function showProfile(){showScreen("profileScreen");setBottomNav("Profile");renderPrismAccessState();renderPrismLocalProfile()}
 function showSettings(){showProfile();setBottomNav("Settings");document.getElementById("profileSettings").scrollIntoView({block:"start"})}
 function showHelp(){showScreen("helpScreen");setBottomNav("Help")}
@@ -2652,10 +2672,10 @@ const plans=workoutGoals&&!workoutGoals.skipped?
 suggestedWorkouts(workoutGoals).map((day,index)=>({kind:"suggested",index,title:day.title,ids:day.exercises,workoutKey:suggestedWorkoutKey(index)}))):[];
 const last=workoutHistory.find(session=>plans.some(plan=>plan.workoutKey===session.workoutKey));
 const lastIndex=plans.findIndex(plan=>plan.workoutKey===last?.workoutKey);
-const next=plans.length?plans[(lastIndex+1)%plans.length]:null;
+const next=scheduledCustomWorkout()||(plans.length?plans[(lastIndex+1)%plans.length]:null);
 const hero=document.createElement("div");hero.className="prism-today-hero";
 const eyebrow=document.createElement("span");eyebrow.className="eyebrow";eyebrow.textContent="TODAY'S WORKOUT";hero.appendChild(eyebrow);
-const name=document.createElement("h3");name.textContent=next?.title||"Make today count";hero.appendChild(name);
+const name=document.createElement("h3");name.textContent=next?.title||"Make today count";hero.appendChild(name);if(next?.kind==="custom"){const tag=document.createElement("p");tag.className="small";tag.textContent="Your scheduled custom workout";hero.appendChild(tag)}
 const detail=document.createElement("p");detail.textContent=next?`${next.ids.length} ${next.ids.length===1?"exercise":"exercises"} · about ${Math.max(20,next.ids.length*10)} min`:"Choose a plan or build your own workout.";hero.appendChild(detail);
 const start=document.createElement("button");start.className="prism-primary prism-wide";start.textContent=next?"Start Workout":"Explore Workouts";start.onclick=next?()=>startPrismWorkout(next):showWorkouts;hero.appendChild(start);area.appendChild(hero);
 const active=readPrismActiveWorkout();
