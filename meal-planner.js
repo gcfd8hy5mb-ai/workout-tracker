@@ -102,7 +102,7 @@ function render(){
  card.append(el("p","Day total: "+day.items.reduce((s,m)=>s+m.kcal,0)+" kcal · "+day.items.reduce((s,m)=>s+m.protein,0)+" g protein","small"));root.append(card);
  }
  const groceries=el("details");groceries.append(el("summary","Weekly ingredient list · tap to expand"));root.append(groceries);
- const list=el("ul");for(const [name,count] of grocery)list.append(el("li",groceryLabel(entry)));
+ const list=el("ul");for(const entry of grocery)list.append(el("li",groceryLabel(entry)));
  groceries.append(list,button("Copy grocery list",()=>{let msg=[...grocery].map(entry=>groceryLabel(entry)).join("\n");if(navigator.clipboard?.writeText)navigator.clipboard.writeText(msg).catch(()=>prompt("Copy list",msg));else prompt("Copy list",msg)}));
  root.append(el("p","This is a starter recipe rotation, not a complete recipe library. Shopping amounts are estimates based on raw recipe ingredients. Check packaging, cooking yield and recipe details. Exclusion filters cover listed ingredients only; check packaging for cross-contact.","small"));
 }
