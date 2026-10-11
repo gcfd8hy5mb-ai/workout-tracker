@@ -2486,6 +2486,7 @@ function renderCustomWorkoutSchedule(){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date.value))return;
   if(!tracking.customSchedule)tracking.customSchedule={};
   const selected=select.value===""?null:customWorkouts[Number(select.value)];
+  if(selected&&frequency.value==="weekly"&&duration.value==="custom"&&(!end.value||end.value<date.value)){status.textContent="Choose an end date on or after the starting date.";return}
   tracking.customRecurringSchedule=rules().filter(r=>r.start!==date.value);
   delete tracking.customSchedule[date.value];
   if(selected){
@@ -2493,7 +2494,7 @@ function renderCustomWorkoutSchedule(){
    if(frequency.value==="once")tracking.customSchedule[date.value]=entry;
    else{
     let endDate=null;const weeks=Number(duration.value);
-    if(duration.value==="custom"){if(!end.value||end.value<date.value){status.textContent="Choose an end date after the starting date.";return}endDate=end.value}
+    if(duration.value==="custom"){endDate=end.value}
     else if(Number.isInteger(weeks)&&weeks>0){const d=new Date(date.value+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+weeks*7-1);endDate=d.toISOString().slice(0,10)}
     tracking.customRecurringSchedule.push({...entry,start:date.value,end:endDate,weeks:Number.isInteger(weeks)&&weeks>0?weeks:null});
    }
