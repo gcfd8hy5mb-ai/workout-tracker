@@ -24,6 +24,9 @@ function datePlus(d,n){let x=new Date(d+"T12:00:00");x.setDate(x.getDate()+n);re
 function startDate(){return typeof localDay==="function"?localDay():new Date().toISOString().slice(0,10)}
 function target(){const v=typeof dailyCalorieTarget==="function"?Number(dailyCalorieTarget(startDate())):0;return Number.isFinite(v)&&v>=1200&&v<=5000?v:2200}
 function allowed(m){let excluded=state.excluded||[];return !m.allergens.some(x=>excluded.includes(x))&&!(excluded.includes("meat")&&/Chicken|Turkey/.test(m.name))&&!(excluded.includes("fish")&&/Salmon/.test(m.name))}
+function mealEntry(m,p){return {name:m.name,type:m.type,kcal:Math.round(m.kcal*p),protein:Math.round(m.protein*p),servings:p,ingredients:m.ingredients}}
+function swapMeal(dayDate,index){if(!paidAccess())return;const day=state.days?.find(d=>d.date===dayDate),old=day?.items[index];if(!old)return;const options=meals.filter(m=>m.type===old.type&&allowed(m)&&m.name!==old.name);if(!options.length)return;const next=options[(state.revision||0)%options.length];day.items[index]=mealEntry(next,Math.max(.5,Math.min(2.5,Math.round(old.kcal/next.kcal*4)/4)));state.revision=(state.revision||0)+1;persist();render()}
+function changePortion(date,index,p){if(!paidAccess())return;const day=state.days?.find(d=>d.date===date),item=day?.items[index],m=meals.find(v=>v.name===item?.name);if(!m||!Number.isFinite(p)||p<.5||p>2.5)return;day.items[index]=mealEntry(m,p);persist();render()}
 function createPlan(){
  if(!paidAccess())return;
  const t=target(), week=state.week||startDate(), revision=(state.revision||0)+1;
@@ -32,7 +35,7 @@ function createPlan(){
  let opts=meals.filter(m=>m.type===type&&allowed(m));if(!opts.length)return null;
  let meal=opts[(day+revision+i)%opts.length],mult=Math.round((t*weights[i]/meal.kcal)*4)/4;
  mult=Math.max(.5,Math.min(2.5,mult));
- return {name:meal.name,type,kcal:Math.round(meal.kcal*mult),protein:Math.round(meal.protein*mult),servings:mult,ingredients:meal.ingredients};
+ return mealEntry(meal,mult);
  });return {date:datePlus(week,day),items:items.filter(Boolean)};
  });
  state={...state,week,revision,goal:t,days};persist();render();
@@ -65,9 +68,10 @@ function render(){
  for(const day of state.days){
  if(day.date!==active){for(const meal of day.items)for(const ingredient of meal.ingredients)grocery.set(ingredient,(grocery.get(ingredient)||0)+meal.servings);continue}
  let card=el("div",undefined,"card");card.style.marginTop="10px";card.append(el("h4",day.date));
- for(const item of day.items){
+ for(const [index,item] of day.items.entries()){
  const line=el("div");line.style.cssText="padding:7px 0;border-bottom:1px solid var(--line)";
  line.append(el("strong",item.type+": "+item.name),el("p",item.kcal+" kcal · "+item.protein+" g protein · "+item.servings+"× reference portion","small"));
+ const actions=el("div");actions.style.cssText="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0";actions.append(button("Swap meal",()=>swapMeal(day.date,index)));const portion=el("select");portion.setAttribute("aria-label","Portions for "+item.name);for(const p of [.5,.75,1,1.25,1.5,1.75,2,2.25,2.5]){const opt=el("option",p+" portions");opt.value=String(p);portion.append(opt)}portion.value=String(item.servings);portion.addEventListener("change",()=>changePortion(day.date,index,Number(portion.value)));actions.append(portion);line.append(actions);
  line.append(button("Log this meal today",()=>{
  if(typeof tracking==="undefined"||typeof saveTracking!=="function"||typeof renderFood!=="function")return;
  const today=startDate(),name=item.name+" (meal plan)";
@@ -80,10 +84,10 @@ function render(){
  }
  card.append(el("p","Day total: "+day.items.reduce((s,m)=>s+m.kcal,0)+" kcal · "+day.items.reduce((s,m)=>s+m.protein,0)+" g protein","small"));root.append(card);
  }
- const groceries=el("details");groceries.append(el("summary","Weekly grocery list · tap to expand"));root.append(groceries);
+ const groceries=el("details");groceries.append(el("summary","Weekly ingredient list · tap to expand"));root.append(groceries);
  const list=el("ul");for(const [name,count] of [...grocery].sort((a,b)=>a[0].localeCompare(b[0])))list.append(el("li",name+" — "+Number(count.toFixed(2))+" meal portions"));
  groceries.append(list,button("Copy grocery list",()=>{let msg=[...grocery].map(([n,c])=>n+" — "+Number(c.toFixed(2))+" meal portions").join("\n");if(navigator.clipboard?.writeText)navigator.clipboard.writeText(msg).catch(()=>prompt("Copy list",msg));else prompt("Copy list",msg)}));
- root.append(el("p","This is a starter recipe rotation, not a complete recipe library. Grocery quantities are estimates, not shopping-unit amounts. Exclusion filters cover listed ingredients only; check packaging for cross-contact.","small"));
+ root.append(el("p","This is a starter recipe rotation, not a complete recipe library. Ingredient counts are estimates, not shopping-unit quantities. Exclusion filters cover listed ingredients only; check packaging for cross-contact.","small"));
 }
 window.mlcRefreshMealPlanner=render;
 function init(){const food=document.getElementById("foodScreen");if(!food||document.getElementById("mlcMealPlanner"))return;state=read();let root=el("div",undefined,"card");root.id="mlcMealPlanner";food.insertBefore(root,food.children[1]);render()}
