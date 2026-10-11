@@ -19,7 +19,8 @@ async function swipe(page,selector,{fromX,toX,y=260}){
  },{selector,fromX,toX,y});
 }
 
-async function assertViewportSafe(page,screenId){
+async async function assertViewportSafe(page,screenId){
+ await page.evaluate(async screenId=>{const el=document.getElementById(screenId);if(!el)return;const animations=el.getAnimations({subtree:false}).filter(a=>a.playState==='running');await Promise.allSettled(animations.map(a=>a.finished));await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))},screenId);
  const report=await page.evaluate(screenId=>{
    const screen=document.getElementById(screenId);const visible=screen&&!screen.classList.contains('hidden');
    const width=window.innerWidth;
