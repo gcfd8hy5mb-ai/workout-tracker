@@ -2,6 +2,10 @@
 (function(){
 "use strict";
 const KEY="myliftcoachMealPlannerV1";
+let lastOwner=null;
+function owner(){return window.PRISMDeviceStore?.owner||"guest"}
+function storageKey(){return KEY+":"+owner()}
+function refreshOwner(){const current=owner();if(current!==lastOwner){lastOwner=current;state=read()}}
 const meals=[
 ["Eggs, oats & berries",520,30,["Eggs","Oats","Berries"],[],"Breakfast"],
 ["Greek yogurt, banana & almonds",430,30,["Greek yogurt","Bananas","Almonds"],["nuts","dairy"],"Breakfast"],
@@ -35,17 +39,17 @@ function groceryTotals(days){const totals=new Map();for(const day of days||[])fo
 function groceryLabel(entry){const number=Math.ceil(entry.amount*4)/4;return entry.name+" — "+Number(number.toFixed(2))+" "+entry.unit}
 const types=["Breakfast","Lunch","Dinner","Snack"];
 let state={};
-function read(){try{let v=JSON.parse(localStorage.getItem(KEY)||"{}");return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}catch{return {}}}
-function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
+function read(){try{let v=JSON.parse(window.localStorage.getItem(storageKey())||"{}");return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}catch{return {}}}
+function persist(){window.localStorage.setItem(storageKey(),JSON.stringify(state))}
 function datePlus(d,n){let x=new Date(d+"T12:00:00");x.setDate(x.getDate()+n);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")}
 function startDate(){return typeof localDay==="function"?localDay():new Date().toISOString().slice(0,10)}
 function target(){const v=typeof dailyCalorieTarget==="function"?Number(dailyCalorieTarget(startDate())):0;return Number.isFinite(v)&&v>=1200&&v<=5000?v:2200}
 function allowed(m){let excluded=state.excluded||[];return !m.allergens.some(x=>excluded.includes(x))&&!(excluded.includes("meat")&&/Chicken|Turkey/.test(m.name))&&!(excluded.includes("fish")&&/Salmon/.test(m.name))}
 function mealEntry(m,p){return {name:m.name,type:m.type,kcal:Math.round(m.kcal*p),protein:Math.round(m.protein*p),servings:p,ingredients:m.ingredients}}
-function swapMeal(dayDate,index){if(!paidAccess())return;const day=state.days?.find(d=>d.date===dayDate),old=day?.items[index];if(!old)return;const options=meals.filter(m=>m.type===old.type&&allowed(m)&&m.name!==old.name);if(!options.length)return;const next=options[(state.revision||0)%options.length];day.items[index]=mealEntry(next,Math.max(.5,Math.min(2.5,Math.round(old.kcal/next.kcal*4)/4)));state.revision=(state.revision||0)+1;persist();render()}
-function changePortion(date,index,p){if(!paidAccess())return;const day=state.days?.find(d=>d.date===date),item=day?.items[index],m=meals.find(v=>v.name===item?.name);if(!m||!Number.isFinite(p)||p<.5||p>2.5)return;day.items[index]=mealEntry(m,p);persist();render()}
+function swapMeal(dayDate,index){refreshOwner();if(!paidAccess())return;const day=state.days?.find(d=>d.date===dayDate),old=day?.items[index];if(!old)return;const options=meals.filter(m=>m.type===old.type&&allowed(m)&&m.name!==old.name);if(!options.length)return;const next=options[(state.revision||0)%options.length];day.items[index]=mealEntry(next,Math.max(.5,Math.min(2.5,Math.round(old.kcal/next.kcal*4)/4)));state.revision=(state.revision||0)+1;persist();render()}
+function changePortion(date,index,p){refreshOwner();if(!paidAccess())return;const day=state.days?.find(d=>d.date===date),item=day?.items[index],m=meals.find(v=>v.name===item?.name);if(!m||!Number.isFinite(p)||p<.5||p>2.5)return;day.items[index]=mealEntry(m,p);persist();render()}
 function createPlan(){
- if(!paidAccess())return;
+ refreshOwner();if(!paidAccess())return;
  const t=target(), week=state.week||startDate(), revision=(state.revision||0)+1;
  const days=Array.from({length:7},(_,day)=>{
  const weights=[.23,.30,.32,.15]; const items=types.map((type,i)=>{
@@ -61,6 +65,7 @@ function el(tag,content,cls){const x=document.createElement(tag);if(content!==un
 function button(label,fn){let b=el("button",label);b.type="button";b.addEventListener("click",fn);return b}
 function paidAccess(){return typeof prismEntitlement!=="undefined"&&["pro","lifetime_pro"].includes(prismEntitlement.tier)&&["storekit","manual_grant","account_sync"].includes(prismEntitlement.source)}
 function render(){
+ refreshOwner();
  const root=document.getElementById("mlcMealPlanner");if(!root)return;root.replaceChildren();
  if(!paidAccess()){
  root.append(el("h3","7-day meal planner · PRO"),el("p","Automatic weekly meal plans, portions and grocery lists are for paid Pro members. Manual food and calorie tracking remain free.","small"));
@@ -107,6 +112,6 @@ function render(){
  root.append(el("p","This is a starter recipe rotation, not a complete recipe library. Shopping amounts are estimates based on raw recipe ingredients. Check packaging, cooking yield and recipe details. Exclusion filters cover listed ingredients only; check packaging for cross-contact.","small"));
 }
 window.mlcRefreshMealPlanner=render;
-function init(){const food=document.getElementById("foodScreen");if(!food||document.getElementById("mlcMealPlanner"))return;state=read();let root=el("div",undefined,"card");root.id="mlcMealPlanner";food.insertBefore(root,food.children[1]);render()}
+function init(){const food=document.getElementById("foodScreen");if(!food||document.getElementById("mlcMealPlanner"))return;refreshOwner();let root=el("div",undefined,"card");root.id="mlcMealPlanner";food.insertBefore(root,food.children[1]);render()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
