@@ -2462,7 +2462,7 @@ function options(){const previous=tracking.customSchedule?.[date.value];select.r
 customWorkouts.forEach((workout,index)=>{if(!workout?.name||!workout.exercises?.length)return;const option=document.createElement("option");option.value=String(index);option.textContent=workout.name;select.append(option)});
 const found=customWorkouts.findIndex(w=>w.name===previous?.name&&JSON.stringify(w.exercises)===JSON.stringify(previous?.exercises));select.value=found<0?"":String(found);}
 date.addEventListener("change",options);options();
-button.onclick=()=>{const index=select.value===""?-1:Number(select.value);const selected=customWorkouts[index];if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date.value))return;if(!tracking.customSchedule)tracking.customSchedule={};if(selected)tracking.customSchedule[date.value]={name:selected.name,exercises:[...selected.exercises]};else delete tracking.customSchedule[date.value];saveTracking();status.textContent=selected?"Custom workout takes priority on "+date.value:"Programmed workout or rest day restored for "+date.value;renderHome()};
+button.onclick=()=>{const index=select.value===""?-1:Number(select.value);const selected=customWorkouts[index];if(!/^\d{4}-\d{2}-\d{2}$/.test(date.value))return;if(!tracking.customSchedule)tracking.customSchedule={};if(selected)tracking.customSchedule[date.value]={name:selected.name,exercises:[...selected.exercises]};else delete tracking.customSchedule[date.value];saveTracking();status.textContent=selected?"Custom workout takes priority on "+date.value:"Programmed workout or rest day restored for "+date.value;renderHome()};
 area.append(date,select,button,status);
 }
 function showWorkouts(){showScreen("workoutsScreen");setBottomNav("Workouts");renderWorkoutBrowser();renderCustomWorkoutSchedule()}
