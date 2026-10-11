@@ -1347,11 +1347,11 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 </section>
 
 <section id="foodScreen" class="hidden">
-<h2>Food</h2><div class="card"><p class="small">Choose a common food and enter how many servings you had. Calories are estimated automatically; brands and preparation can differ.</p><label for="foodDay">Date</label><input id="foodDay" type="date" onchange="renderFood()"><div id="foodSummary" class="tracker-value"></div>
+<h2>Food & Nutrition</h2><p class="small">Free food logging and calorie tracking. Pro adds automatic weekly meal plans.</p><div class="card"><h3>Quick food log · FREE</h3><p class="small">Choose a common food and enter how many servings you had. Calories are estimated automatically; brands and preparation can differ.</p><label for="foodDay">Date</label><input id="foodDay" type="date" onchange="renderFood()"><div id="foodSummary" class="tracker-value"></div>
 <form class="tracker-form" onsubmit="addFood(event)"><label for="foodChoice">Food</label><select id="foodChoice" onchange="updateFoodEstimate()" required><option value="">Select a food</option><option value="custom">Other food (use label calories)</option></select>
 <div id="servingFields" class="hidden"><label for="foodServings" id="servingLabel">Number of servings</label><input id="foodServings" type="number" min="0.25" max="100" step="0.25" inputmode="decimal" value="1" oninput="updateFoodEstimate()"><p id="foodEstimate" role="status" class="small"></p></div>
 <div id="customFoodFields" class="hidden"><label for="foodName">Food or meal</label><input id="foodName" maxlength="100" placeholder="For example, lunch"><label for="foodCalories">Calories from label or recipe</label><input id="foodCalories" type="number" min="0" max="10000" inputmode="numeric"></div>
-<button type="submit">Add food</button></form><p class="small">For packaged foods, the label is more accurate. For other foods, use the label or <a href="https://fdc.nal.usda.gov/" target="_blank" rel="noopener">look them up</a>.</p></div>
+<button type="submit">Log food</button></form><p id="foodLogFeedback" role="status" aria-live="polite" class="small"></p><p class="small">For packaged foods, the label is more accurate. For other foods, use the label or <a href="https://fdc.nal.usda.gov/" target="_blank" rel="noopener">look them up</a>.</p></div>
 <h3 id="foodListTitle">Food logged</h3><div id="foodList"></div><h3>Favorites</h3><div id="foodFavorites" class="tracker-shortcuts"></div><h3>Recent foods</h3><div id="foodRecent" class="tracker-shortcuts"></div>
 </section>
 
@@ -4485,10 +4485,10 @@ const name=food?`${food.name} · ${servings} × ${food.serving}`:document.getEle
 const calories=food?estimateFoodCalories(food,servings):Number(document.getElementById("foodCalories").value);
 if(!food&&choice!=="custom"||food&&(!Number.isFinite(servings)||servings<.25||servings>100))return;
 if(!name||!Number.isInteger(calories)||calories<0||calories>10000)return;
-tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name,calories});saveTracking();event.target.reset();updateFoodEstimate();renderFood();
+tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name,calories});saveTracking();event.target.reset();updateFoodEstimate();renderFood();const notice=document.getElementById("foodLogFeedback");if(notice)notice.textContent="Food added to your log.";
 }
 function repeatFood(name,calories){
-tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name,calories});saveTracking();renderFood();
+tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name,calories});saveTracking();renderFood();const notice=document.getElementById("foodLogFeedback");if(notice)notice.textContent="Food added to your log.";
 }
 function foodFavoriteKey(entry){return `${entry.name}|${entry.calories}`}
 function toggleFoodFavorite(entry){
