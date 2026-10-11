@@ -85,10 +85,23 @@ async function runPass(browser,url,pass){
  await assertViewportSafe(page,'workoutDetailScreen');
 
  stage('workout details');await page.locator('#workoutDetailScreen:not(.hidden) .lv3-exercise-row').first().waitFor();const displayedCount=await page.locator('#workoutDetailScreen:not(.hidden) .lv3-exercise-row').count();assert.ok(displayedCount>0,'selected workout must contain exercises even when today is a rest day');assert.equal(await page.locator('#workoutDetailScreen .lv3-exercise-row .liftova-anatomy').count(),displayedCount,'every selected workout row must show anatomy');
- stage('exercise info + native swipe back');await page.locator('.lv3-exercise-row').first().click();await page.locator('#exerciseInfoScreen:not(.hidden) .liftova-anatomy').first().waitFor();assert.deepEqual(await page.evaluate(()=>window.MYLIFTCOACHNavigation.getStack()),['workoutDetailScreen'],'exercise guide must push only its workout parent');
+ stage('exercise info + native swipe back');await page.locator('.lv3-exercise-row').first().click();await page.locator('#exerciseInfoScreen:not(.hidden) .liftova-anatomy').first().waitFor();assert.deepEqual(await page.evaluate(()=>window.MYLIFTCOACHNavigation.getStack()),['workoutsScreen','workoutDetailScreen'],'exercise guide must retain workout browser and detail parents');
  await swipe(page,'#exerciseInfoScreen',{fromX:8,toX:116,y:500});
- await page.locator('#workoutDetailScreen:not(.hidden)').waitFor();assert.deepEqual(await page.evaluate(()=>window.MYLIFTCOACHNavigation.getStack()),[],'native swipe-back must consume the workout detail entry');
+ await page.locator('#workoutDetailScreen:not(.hidden)').waitFor();assert.deepEqual(await page.evaluate(()=>window.MYLIFTCOACHNavigation.getStack()),['workoutsScreen'],'native swipe-back must return to workout details without losing its browser parent');
 
+ stage('preset and custom workout navigation');
+ await page.evaluate(()=>showWorkouts());await page.locator('#workoutsScreen:not(.hidden)').waitFor();
+ await page.evaluate(()=>{const item=availableWorkoutPlans().find(p=>p.ids?.length);if(!item)throw Error('No preset workout found');showPrismWorkoutDetail(item)});
+ await page.locator('#workoutDetailScreen:not(.hidden) .lv3-exercise-row').first().waitFor();
+ await page.locator('#workoutDetailScreen .lv3-exercise-row').first().click();await page.locator('#exerciseInfoScreen:not(.hidden)').waitFor();
+ assert.deepEqual(await page.evaluate(()=>window.MYLIFTCOACHNavigation.getStack()),['workoutsScreen','workoutDetailScreen'],'preset workout exercise must retain its parents');
+ await page.evaluate(()=>showWorkouts());await page.locator('#workoutsScreen:not(.hidden)').waitFor();
+ await page.evaluate(()=>{const sample=availableWorkoutPlans().find(p=>p.ids?.length);if(!sample)throw Error('No exercises available');customWorkouts.push({name:'QA custom navigation',exercises:sample.ids.slice(0,2)})});
+ await page.evaluate(()=>{const item=customWorkouts[customWorkouts.length-1];showPrismWorkoutDetail({kind:'custom',index:customWorkouts.length-1,title:item.name,ids:item.exercises})});
+ await page.locator('#workoutDetailScreen:not(.hidden) .lv3-exercise-row').first().waitFor();
+ await page.locator('#workoutDetailScreen .lv3-exercise-row').first().click();await page.locator('#exerciseInfoScreen:not(.hidden)').waitFor();
+ assert.deepEqual(await page.evaluate(()=>window.MYLIFTCOACHNavigation.getStack()),['workoutsScreen','workoutDetailScreen'],'custom workout exercise must retain its parents');
+ await page.evaluate(()=>{customWorkouts.pop();showWorkouts()});
  stage('exercise info menu');await page.locator('.lv3-exercise-row').first().click();await page.locator('#exerciseInfoScreen:not(.hidden) .liftova-anatomy').first().waitFor();await page.locator('#prismExerciseInfo [data-ex-more]').click();await page.locator('#sideMenu.open').waitFor();await page.locator('#sideMenu .menu-close').click();
  stage('library');await page.evaluate(()=>showLibrary());await page.locator('#libraryScreen:not(.hidden) .library-item').first().waitFor();assert.ok(await page.locator('#libraryList .library-item').count()>100,'full Exercise Library must render');assert.equal(await page.locator('#libraryList .liftova-anatomy').count(),await page.locator('#libraryList .library-item').count(),'every library row must show anatomy');await assertViewportSafe(page,'libraryScreen');
  stage('add to custom workout');await page.locator('#libraryList .library-item button').first().click();await page.locator('#exerciseInfoScreen:not(.hidden) .liftova-anatomy').first().waitFor();const selectedName=await page.locator('#prismExerciseInfo h2').textContent();await page.locator('#prismExerciseInfo .lv3-add-workout').click();await page.locator('#builderScreen:not(.hidden)').waitFor();const builderText=(await page.locator('#builderExercises').innerText()).toLowerCase();const selectedTokens=selectedName.toLowerCase().replace(/[()]/g,' ').split(/\s+/).filter(Boolean);assert.ok(selectedTokens.every(token=>builderText.includes(token)),'Add to Workout must preselect the same exercise even when its canonical display alias reorders “Machine”');
