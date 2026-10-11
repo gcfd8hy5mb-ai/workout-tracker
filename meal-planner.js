@@ -25,6 +25,7 @@ function startDate(){return typeof localDay==="function"?localDay():new Date().t
 function target(){const v=typeof dailyCalorieTarget==="function"?Number(dailyCalorieTarget(startDate())):0;return Number.isFinite(v)&&v>=1200&&v<=5000?v:2200}
 function allowed(m){let excluded=state.excluded||[];return !m.allergens.some(x=>excluded.includes(x))&&!(excluded.includes("meat")&&/Chicken|Turkey/.test(m.name))&&!(excluded.includes("fish")&&/Salmon/.test(m.name))}
 function createPlan(){
+ if(!paidAccess())return;
  const t=target(), week=state.week||startDate(), revision=(state.revision||0)+1;
  const days=Array.from({length:7},(_,day)=>{
  const weights=[.23,.30,.32,.15]; const items=types.map((type,i)=>{
@@ -38,8 +39,14 @@ function createPlan(){
 }
 function el(tag,content,cls){const x=document.createElement(tag);if(content!==undefined)x.textContent=content;if(cls)x.className=cls;return x}
 function button(label,fn){let b=el("button",label);b.type="button";b.addEventListener("click",fn);return b}
+function paidAccess(){return typeof prismEntitlement!=="undefined"&&["pro","lifetime_pro"].includes(prismEntitlement.tier)&&["storekit","manual_grant","account_sync"].includes(prismEntitlement.source)}
 function render(){
  const root=document.getElementById("mlcMealPlanner");if(!root)return;root.replaceChildren();
+ if(!paidAccess()){
+ root.append(el("h3","7-day meal planner · PRO"),el("p","Automatic weekly meal plans, portions and grocery lists are for paid Pro members. Manual food and calorie tracking remain free.","small"));
+ root.append(button("See MYLIFTCOACH Pro",()=>{if(typeof showPrismPro==="function")showPrismPro()}));
+ return;
+ }
  root.append(el("h3","7-day meal planner"),el("p","Build a weekly plan around your current calorie target. Macro counts and ingredients are estimates; verify labels, portions, allergens and dietary needs.","small"));
  let controls=el("div");controls.style.cssText="display:flex;flex-wrap:wrap;gap:8px;align-items:center";
  let date=el("input");date.type="date";date.value=state.week||startDate();date.setAttribute("aria-label","First day of plan");
@@ -74,6 +81,7 @@ function render(){
  root.append(list,button("Copy grocery list",()=>{let msg=[...grocery].map(([n,c])=>n+" — "+Number(c.toFixed(2))+" meal portions").join("\n");if(navigator.clipboard?.writeText)navigator.clipboard.writeText(msg).catch(()=>prompt("Copy list",msg));else prompt("Copy list",msg)}));
  root.append(el("p","This is a starter recipe rotation, not a complete recipe library. Grocery quantities are estimates, not shopping-unit amounts. Exclusion filters cover listed ingredients only; check packaging for cross-contact.","small"));
 }
+window.mlcRefreshMealPlanner=render;
 function init(){const food=document.getElementById("foodScreen");if(!food||document.getElementById("mlcMealPlanner"))return;state=read();let root=el("div",undefined,"card");root.id="mlcMealPlanner";food.insertBefore(root,food.children[1]);render()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
