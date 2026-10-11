@@ -28,7 +28,7 @@ async function assertViewportSafe(page,screenId){
      const style=getComputedStyle(el);if(style.position==='fixed'||style.position==='absolute')return false;
      const r=el.getBoundingClientRect();return r.left<-2||r.right>width+2;
    }).slice(0,8).map(el=>({tag:el.tagName,id:el.id,className:typeof el.className==='string'?el.className:'',rect:el.getBoundingClientRect().toJSON?.()||{left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right}}));
-   return {visible,innerWidth:width,documentWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,offenders};
+   const overflowSources=[...document.body.querySelectorAll('*')].filter(el=>el.getClientRects().length&&getComputedStyle(el).display!=='none'&&el.getBoundingClientRect().right>width+2).slice(0,12).map(el=>({tag:el.tagName,id:el.id,className:typeof el.className==='string'?el.className:'',right:Math.round(el.getBoundingClientRect().right*10)/10,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}));return {visible,innerWidth:width,documentWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,offenders,overflowSources};
  },screenId);
  assert.equal(report.visible,true,`${screenId} must be visible for viewport QA`);
  assert.ok(report.documentWidth<=report.innerWidth+2,`${screenId} must not create horizontal document overflow: ${JSON.stringify(report)}`);
