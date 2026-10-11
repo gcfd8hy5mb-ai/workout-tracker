@@ -4,7 +4,7 @@
 const KEY="myliftcoachMealPlannerV1";
 const meals=[
 ["Eggs, oats & berries",520,30,["Eggs","Oats","Berries"],[],"Breakfast"],
-["Greek yogurt, banana & almonds",430,30,["Greek yogurt","Bananas","Almonds"],["nuts"],"Breakfast"],
+["Greek yogurt, banana & almonds",430,30,["Greek yogurt","Bananas","Almonds"],["nuts","dairy"],"Breakfast"],
 ["Tofu scramble & toast",480,28,["Tofu","Wholegrain bread","Spinach"],["soy","gluten"],"Breakfast"],
 ["Chicken, rice & broccoli",650,52,["Chicken breast","Rice","Broccoli"],[],"Lunch"],
 ["Turkey & bean bowl",620,44,["Ground turkey","Black beans","Rice"],[],"Lunch"],
