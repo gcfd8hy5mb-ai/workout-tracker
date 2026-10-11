@@ -18,11 +18,14 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await page.goto(url,{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof goHome==='function'&&typeof resumePrismWorkout==='function'&&typeof finishWorkout==='function');
 
+  // Initialize the same persisted goal before boot instead of mutating the
+  // legacy global after canonical Home has already captured its initial state.
   await page.evaluate(()=>{
-    workoutGoals={goal:'muscle',days:4,focus:'balanced',gender:'prefer'};
-    localStorage.setItem('workoutGoalsV1',JSON.stringify(workoutGoals));
-    renderHome();goHome();
+    localStorage.setItem('workoutGoalsV1',JSON.stringify({goal:'muscle',days:4,focus:'balanced',gender:'prefer'}));
   });
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>typeof goHome==='function'&&typeof resumePrismWorkout==='function'&&typeof finishWorkout==='function');
+  await page.evaluate(()=>goHome());
   await page.locator('#home:not(.hidden)').waitFor();
 
   const start=page.locator('#home .myliftcoach-home-workout-action');await start.waitFor();
