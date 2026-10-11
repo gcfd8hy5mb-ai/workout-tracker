@@ -16,6 +16,23 @@ const meals=[
 ["Hummus, carrots & pita",310,12,["Hummus","Carrots","Pita bread"],["gluten"],"Snack"],
 ["Protein yogurt & banana",320,28,["Greek yogurt","Bananas"],["dairy"],"Snack"]
 ].map(([name,kcal,protein,ingredients,allergens,type])=>({name,kcal,protein,ingredients,allergens,type}));
+// Approximate raw shopping amounts per reference recipe serving, not nutrition database measurements.
+const recipeQuantities={
+"Eggs, oats & berries":[["Eggs",2,"each"],["Oats",70,"g"],["Berries",120,"g"]],
+"Greek yogurt, banana & almonds":[["Greek yogurt",220,"g"],["Bananas",1,"each"],["Almonds",28,"g"]],
+"Tofu scramble & toast":[["Tofu",180,"g"],["Wholegrain bread",2,"slices"],["Spinach",60,"g"]],
+"Chicken, rice & broccoli":[["Chicken breast",180,"g"],["Rice",75,"g dry"],["Broccoli",180,"g"]],
+"Turkey & bean bowl":[["Ground turkey",160,"g"],["Black beans",140,"g drained"],["Rice",60,"g dry"]],
+"Lentil quinoa bowl":[["Lentils",75,"g dry"],["Quinoa",65,"g dry"],["Bell peppers",120,"g"]],
+"Salmon, potatoes & greens":[["Salmon",200,"g"],["Potatoes",300,"g"],["Green beans",160,"g"]],
+"Chicken fajita bowl":[["Chicken breast",200,"g"],["Rice",75,"g dry"],["Bell peppers",150,"g"]],
+"Chickpea veggie curry":[["Chickpeas",180,"g drained"],["Rice",75,"g dry"],["Coconut milk",140,"mL"]],
+"Cottage cheese & fruit":[["Cottage cheese",220,"g"],["Berries",100,"g"]],
+"Hummus, carrots & pita":[["Hummus",100,"g"],["Carrots",140,"g"],["Pita bread",1,"each"]],
+"Protein yogurt & banana":[["Greek yogurt",250,"g"],["Bananas",1,"each"]]
+};
+function groceryTotals(days){const totals=new Map();for(const day of days||[])for(const item of day.items||[]){const p=Number(item.servings);if(!Number.isFinite(p)||p<=0)continue;for(const [name,amount,unit] of recipeQuantities[item.name]||[]){const key=name+"|"+unit;const previous=totals.get(key)||{name,unit,amount:0};previous.amount+=amount*p;totals.set(key,previous)}}return [...totals.values()].sort((a,b)=>a.name.localeCompare(b.name))}
+function groceryLabel(entry){const number=Math.ceil(entry.amount*4)/4;return entry.name+" — "+Number(number.toFixed(2))+" "+entry.unit}
 const types=["Breakfast","Lunch","Dinner","Snack"];
 let state={};
 function read(){try{let v=JSON.parse(localStorage.getItem(KEY)||"{}");return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}catch{return {}}}
@@ -62,11 +79,11 @@ function render(){
  }root.append(exclusions);
  if(!Array.isArray(state.days)||!state.days.length){root.append(el("p","Choose Generate 7 days to create your first plan.","small"));return}
  root.append(el("p","Target: "+state.goal.toLocaleString()+" kcal/day · Estimated protein varies by meal · Changes to your calorie goal require regenerating this plan.","small"));
- let grocery=new Map();
+ const grocery=groceryTotals(state.days);
  const picker=el("select");picker.setAttribute("aria-label","Select planned day");for(const d of state.days){const option=el("option",d.date);option.value=d.date;picker.append(option)}
  const active=state.days.some(d=>d.date===state.activeDay)?state.activeDay:state.days[0].date;picker.value=active;picker.addEventListener("change",()=>{state.activeDay=picker.value;persist();render()});root.append(el("h4","Choose a day"),picker);
  for(const day of state.days){
- if(day.date!==active){for(const meal of day.items)for(const ingredient of meal.ingredients)grocery.set(ingredient,(grocery.get(ingredient)||0)+meal.servings);continue}
+ if(day.date!==active)continue
  let card=el("div",undefined,"card");card.style.marginTop="10px";card.append(el("h4",day.date));
  for(const [index,item] of day.items.entries()){
  const line=el("div");line.style.cssText="padding:7px 0;border-bottom:1px solid var(--line)";
@@ -80,14 +97,14 @@ function render(){
  tracking.food.push({id:typeof newTrackingId==="function"?newTrackingId():String(Date.now()),day:today,name,calories:item.kcal});
  saveTracking();renderFood();const notice=document.getElementById("foodLogFeedback");if(notice)notice.textContent="Planned meal added to today's food log.";
  }));card.append(line);
- for(const ingredient of item.ingredients)grocery.set(ingredient,(grocery.get(ingredient)||0)+item.servings);
+
  }
  card.append(el("p","Day total: "+day.items.reduce((s,m)=>s+m.kcal,0)+" kcal · "+day.items.reduce((s,m)=>s+m.protein,0)+" g protein","small"));root.append(card);
  }
  const groceries=el("details");groceries.append(el("summary","Weekly ingredient list · tap to expand"));root.append(groceries);
- const list=el("ul");for(const [name,count] of [...grocery].sort((a,b)=>a[0].localeCompare(b[0])))list.append(el("li",name+" — "+Number(count.toFixed(2))+" meal portions"));
- groceries.append(list,button("Copy grocery list",()=>{let msg=[...grocery].map(([n,c])=>n+" — "+Number(c.toFixed(2))+" meal portions").join("\n");if(navigator.clipboard?.writeText)navigator.clipboard.writeText(msg).catch(()=>prompt("Copy list",msg));else prompt("Copy list",msg)}));
- root.append(el("p","This is a starter recipe rotation, not a complete recipe library. Ingredient counts are estimates, not shopping-unit quantities. Exclusion filters cover listed ingredients only; check packaging for cross-contact.","small"));
+ const list=el("ul");for(const [name,count] of grocery)list.append(el("li",groceryLabel(entry)));
+ groceries.append(list,button("Copy grocery list",()=>{let msg=[...grocery].map(entry=>groceryLabel(entry)).join("\n");if(navigator.clipboard?.writeText)navigator.clipboard.writeText(msg).catch(()=>prompt("Copy list",msg));else prompt("Copy list",msg)}));
+ root.append(el("p","This is a starter recipe rotation, not a complete recipe library. Shopping amounts are estimates based on raw recipe ingredients. Check packaging, cooking yield and recipe details. Exclusion filters cover listed ingredients only; check packaging for cross-contact.","small"));
 }
 window.mlcRefreshMealPlanner=render;
 function init(){const food=document.getElementById("foodScreen");if(!food||document.getElementById("mlcMealPlanner"))return;state=read();let root=el("div",undefined,"card");root.id="mlcMealPlanner";food.insertBefore(root,food.children[1]);render()}
