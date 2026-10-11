@@ -5,7 +5,7 @@ const HOST="https://world.openfoodfacts.org";
 let current=[],lastRequest=0;
 function node(tag,text){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e}
 function valid(p){
- const n=p?.nutriments||{};const c=Number(n["energy-kcal_100g"]);
+ const n=p?.nutriments||{};const raw=n["energy-kcal_100g"];if(raw===undefined||raw===null||raw==="")return null;const c=Number(raw);
  if(!p?.product_name||!Number.isFinite(c)||c<0||c>900)return null;
  const product={id:String(p.code||""),name:String(p.product_name).slice(0,140),brand:String(p.brands||"").slice(0,100),calories:c,protein:Number(n.proteins_100g)||0,carbs:Number(n.carbohydrates_100g)||0,fat:Number(n.fat_100g)||0};
  return product;
@@ -26,7 +26,7 @@ async function request(url){
  lastRequest=Date.now();status("Searching packaged foods…");render([]);
  try{const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),9000);let response;try{response=await fetch(url,{signal:controller.signal,headers:{Accept:"application/json"}})}finally{clearTimeout(timer)}
  if(!response.ok)throw Error("Service status "+response.status);
- const data=await response.json();const items=(Array.isArray(data.products)?data.products:[data.product]).map(valid).filter(Boolean).slice(0,15);
+ const data=await response.json();if(data?.status===0){status("Barcode not found. Try manual entry.");return}const items=(Array.isArray(data.products)?data.products:[data.product]).map(valid).filter(Boolean).slice(0,15);
  render(items);status(items.length?items.length+" products found. Choose a product to log its grams.":"No verified calorie records found. Use manual entry instead.");
  }catch{status("Online search is unavailable. You can still log foods manually.");}
 }
