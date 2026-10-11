@@ -1916,10 +1916,10 @@ basic_workout_tracking:"free",set_logging:"free",preset_workouts:"free",
 exercise_library:"free",exercise_instructions:"free",rest_timer:"free",
 basic_history:"free",basic_progress:"free",basic_progress_trends:"free",
 water_tracking:"free",weight_tracking:"free",basic_goals:"free",
-body_goal_setup:"free",calorie_estimate:"free",local_profile:"free",
+body_goal_setup:"free",calorie_estimate:"free",manual_food_logging:"free",local_profile:"free",
 custom_workouts:"free",manual_substitutions:"free",basic_records:"free",
 measurement_logging:"free",local_backup:"free",
-smart_progression:"pro",smart_substitutions:"pro",advanced_analytics:"pro",
+meal_planner:"pro",smart_progression:"pro",smart_substitutions:"pro",advanced_analytics:"pro",
 full_time_trends:"pro",muscle_volume_analytics:"pro",advanced_pr_insights:"pro",
 plateau_detection:"pro",weekly_prism_summary:"pro",phase_analysis:"pro",
 photo_comparison:"pro",advanced_measurement_trends:"pro",
@@ -4368,7 +4368,7 @@ renderWater();
 function newTrackingId(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function weightEntriesNewestFirst(){return tracking.weight.slice().reverse().sort((a,b)=>b.day.localeCompare(a.day))}
 function showWater(){showScreen("waterScreen");setBottomNav("Water");document.getElementById("waterDay").value=localDay();document.getElementById("waterUnit").value=tracking.waterUnit;renderWater()}
-function showFood(){showScreen("foodScreen");setBottomNav("Food");document.getElementById("foodDay").value=localDay();populateFoodChoices();updateFoodEstimate();renderFood()}
+function showFood(){showScreen("foodScreen");setBottomNav("Food");document.getElementById("foodDay").value=localDay();populateFoodChoices();updateFoodEstimate();renderFood();if(typeof window.mlcRefreshMealPlanner==="function")window.mlcRefreshMealPlanner()}
 function showWeight(){showScreen("weightScreen");setBottomNav("Weight");renderWeight()}
 function showTrackingGoals(){
 showScreen("goalsScreen");setBottomNav("Goals");
