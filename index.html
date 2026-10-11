@@ -2057,8 +2057,8 @@ let workoutGoals=JSON.parse(localStorage.getItem("workoutGoalsV1")||"null");
 function readTrackingData(){
 try{
 const saved=JSON.parse(localStorage.getItem("dailyTrackingV1")||"{}");
-return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],foodFavorites:Array.isArray(saved.foodFavorites)?saved.foodFavorites:[],waterUnit:saved.waterUnit==="oz"?"oz":"ml",waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null,calorieMode:["auto","manual"].includes(saved.calorieMode)?saved.calorieMode:null,calorieWorkout:saved.calorieWorkout&&typeof saved.calorieWorkout==="object"&&!Array.isArray(saved.calorieWorkout)?saved.calorieWorkout:null,restSeconds:[60,90,120,180].includes(saved.restSeconds)?saved.restSeconds:90,readiness:saved.readiness&&typeof saved.readiness==="object"?saved.readiness:{},manualTargets:saved.manualTargets&&typeof saved.manualTargets==="object"?saved.manualTargets:{},substitutions:saved.substitutions&&typeof saved.substitutions==="object"?saved.substitutions:{},measurements:Array.isArray(saved.measurements)?saved.measurements:[],calendarNotes:saved.calendarNotes&&typeof saved.calendarNotes==="object"&&!Array.isArray(saved.calendarNotes)?saved.calendarNotes:{},calorieAge:saved.calorieAge||"",calorieFeet:saved.calorieFeet||"",calorieInches:saved.calorieInches??"",calorieEquation:saved.calorieEquation||"",calorieActivity:saved.calorieActivity||"1.4",preferredWeightUnit:saved.preferredWeightUnit==="kg"?"kg":"lb",trainingLevel:["Beginner","Intermediate","Advanced"].includes(saved.trainingLevel)?saved.trainingLevel:"Beginner",customSchedule:saved.customSchedule&&typeof saved.customSchedule==="object"&&!Array.isArray(saved.customSchedule)?saved.customSchedule:{}};
-}catch{return {water:[],food:[],weight:[],foodFavorites:[],waterUnit:"ml",waterGoal:2000,calorieGoal:null,calorieMode:null,calorieWorkout:null,restSeconds:90,readiness:{},manualTargets:{},substitutions:{},measurements:[],calendarNotes:{},calorieAge:"",calorieFeet:"",calorieInches:"",calorieEquation:"",calorieActivity:"1.4",preferredWeightUnit:"lb",trainingLevel:"Beginner",customSchedule:{}}}
+return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],foodFavorites:Array.isArray(saved.foodFavorites)?saved.foodFavorites:[],waterUnit:saved.waterUnit==="oz"?"oz":"ml",waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null,calorieMode:["auto","manual"].includes(saved.calorieMode)?saved.calorieMode:null,calorieWorkout:saved.calorieWorkout&&typeof saved.calorieWorkout==="object"&&!Array.isArray(saved.calorieWorkout)?saved.calorieWorkout:null,restSeconds:[60,90,120,180].includes(saved.restSeconds)?saved.restSeconds:90,readiness:saved.readiness&&typeof saved.readiness==="object"?saved.readiness:{},manualTargets:saved.manualTargets&&typeof saved.manualTargets==="object"?saved.manualTargets:{},substitutions:saved.substitutions&&typeof saved.substitutions==="object"?saved.substitutions:{},measurements:Array.isArray(saved.measurements)?saved.measurements:[],calendarNotes:saved.calendarNotes&&typeof saved.calendarNotes==="object"&&!Array.isArray(saved.calendarNotes)?saved.calendarNotes:{},calorieAge:saved.calorieAge||"",calorieFeet:saved.calorieFeet||"",calorieInches:saved.calorieInches??"",calorieEquation:saved.calorieEquation||"",calorieActivity:saved.calorieActivity||"1.4",preferredWeightUnit:saved.preferredWeightUnit==="kg"?"kg":"lb",trainingLevel:["Beginner","Intermediate","Advanced"].includes(saved.trainingLevel)?saved.trainingLevel:"Beginner",customSchedule:saved.customSchedule&&typeof saved.customSchedule==="object"&&!Array.isArray(saved.customSchedule)?saved.customSchedule:{},customRecurringSchedule:Array.isArray(saved.customRecurringSchedule)?saved.customRecurringSchedule:[]};
+}catch{return {water:[],food:[],weight:[],foodFavorites:[],waterUnit:"ml",waterGoal:2000,calorieGoal:null,calorieMode:null,calorieWorkout:null,restSeconds:90,readiness:{},manualTargets:{},substitutions:{},measurements:[],calendarNotes:{},calorieAge:"",calorieFeet:"",calorieInches:"",calorieEquation:"",calorieActivity:"1.4",preferredWeightUnit:"lb",trainingLevel:"Beginner",customSchedule:{},customRecurringSchedule:[]}}
 }
 let tracking=readTrackingData();
 function saveTracking(){localStorage.setItem("dailyTrackingV1",JSON.stringify(tracking))}
@@ -2446,24 +2446,65 @@ Object.entries(presetWorkouts).forEach(([key,day])=>plans.push({kind:"preset",ke
 return plans;
 }
 function scheduledCustomWorkout(day=localDay()){
-const entry=tracking.customSchedule?.[day];if(!entry)return null;
-const workout=customWorkouts.find(w=>w&&w.name===entry.name&&Array.isArray(w.exercises)&&w.exercises.length&&JSON.stringify(w.exercises)===JSON.stringify(entry.exercises));
-if(!workout)return null;
-return {kind:"custom",index:customWorkouts.indexOf(workout),title:workout.name,ids:workout.exercises,workoutKey:"custom-"+customWorkouts.indexOf(workout)};
+ const oneTime=tracking.customSchedule?.[day];
+ const rules=Array.isArray(tracking.customRecurringSchedule)?tracking.customRecurringSchedule:[];
+ const match=rules.filter(rule=>rule&&rule.start<=day&&(!rule.end||day<=rule.end)&&/^\d{4}-\d{2}-\d{2}$/.test(rule.start)&&((Date.parse(day+"T00:00:00Z")-Date.parse(rule.start+"T00:00:00Z"))/86400000)%7===0).sort((a,b)=>b.start.localeCompare(a.start))[0];
+ const entry=oneTime||match;if(!entry)return null;
+ const index=customWorkouts.findIndex(w=>w?.name===entry.name&&Array.isArray(w.exercises)&&w.exercises.length&&JSON.stringify(w.exercises)===JSON.stringify(entry.exercises));
+ if(index<0)return null;const workout=customWorkouts[index];
+ return {kind:"custom",index,title:workout.name,ids:workout.exercises,workoutKey:"custom-"+index};
 }
 function renderCustomWorkoutSchedule(){
-let area=document.getElementById("customScheduleControls");if(!area)return;area.replaceChildren();
-const title=document.createElement("h3");title.textContent="Schedule a custom workout";area.append(title);
-const date=document.createElement("input");date.type="date";date.value=localDay();date.setAttribute("aria-label","Custom workout date");
-const select=document.createElement("select");select.setAttribute("aria-label","Scheduled custom workout");
-const button=document.createElement("button");button.type="button";button.textContent="Save custom schedule";
-const status=document.createElement("p");status.className="small";status.setAttribute("role","status");
-function options(){const previous=tracking.customSchedule?.[date.value];select.replaceChildren();const none=document.createElement("option");none.value="";none.textContent="Use programmed workout or rest day";select.append(none);
-customWorkouts.forEach((workout,index)=>{if(!workout?.name||!workout.exercises?.length)return;const option=document.createElement("option");option.value=String(index);option.textContent=workout.name;select.append(option)});
-const found=customWorkouts.findIndex(w=>w.name===previous?.name&&JSON.stringify(w.exercises)===JSON.stringify(previous?.exercises));select.value=found<0?"":String(found);}
-date.addEventListener("change",options);options();
-button.onclick=()=>{const index=select.value===""?-1:Number(select.value);const selected=customWorkouts[index];if(!/^\d{4}-\d{2}-\d{2}$/.test(date.value))return;if(!tracking.customSchedule)tracking.customSchedule={};if(selected)tracking.customSchedule[date.value]={name:selected.name,exercises:[...selected.exercises]};else delete tracking.customSchedule[date.value];saveTracking();status.textContent=selected?"Custom workout takes priority on "+date.value:"Programmed workout or rest day restored for "+date.value;renderHome()};
-area.append(date,select,button,status);
+ const area=document.getElementById("customScheduleControls");if(!area)return;area.replaceChildren();
+ const heading=document.createElement("h3");heading.textContent="Schedule a custom workout";area.append(heading);
+ const date=document.createElement("input");date.type="date";date.value=localDay();date.setAttribute("aria-label","Custom workout date");
+ const select=document.createElement("select");select.setAttribute("aria-label","Custom workout");
+ const frequency=document.createElement("select");frequency.setAttribute("aria-label","Repeat custom workout");
+ for(const [value,label] of [["weekly","Repeat every week"],["once","Just this day"]]){const opt=document.createElement("option");opt.value=value;opt.textContent=label;frequency.append(opt)}
+ const duration=document.createElement("select");duration.setAttribute("aria-label","How long should this workout repeat?");
+ for(const [value,label] of [["4","For 4 weeks"],["8","For 8 weeks"],["12","For 12 weeks"],["26","For 6 months (26 weeks)"],["52","For 1 year (52 weeks)"],["forever","Until I turn it off"],["custom","Until a date I choose"]]){const opt=document.createElement("option");opt.value=value;opt.textContent=label;duration.append(opt)}
+ duration.value="12";
+ const end=document.createElement("input");end.type="date";end.setAttribute("aria-label","Repeat until date");
+ const prompt=document.createElement("label");prompt.textContent="How long should it repeat?";prompt.append(duration);
+ const button=document.createElement("button");button.type="button";button.textContent="Save schedule";
+ const remove=document.createElement("button");remove.type="button";remove.textContent="Remove repeat starting this day";remove.className="prism-text-link";
+ const status=document.createElement("p");status.className="small";status.setAttribute("role","status");
+ const rules=()=>Array.isArray(tracking.customRecurringSchedule)?tracking.customRecurringSchedule:[];
+ function refresh(){
+  const once=tracking.customSchedule?.[date.value],repeat=rules().find(r=>r.start===date.value);
+  select.replaceChildren();const none=document.createElement("option");none.value="";none.textContent="Use programmed workout or rest day";select.append(none);
+  customWorkouts.forEach((w,index)=>{if(!w?.name||!w.exercises?.length)return;const option=document.createElement("option");option.value=String(index);option.textContent=w.name;select.append(option)});
+  const entry=once||repeat;const index=customWorkouts.findIndex(w=>w.name===entry?.name&&JSON.stringify(w.exercises)===JSON.stringify(entry?.exercises));
+  select.value=index>=0?String(index):"";frequency.value=repeat?"weekly":once?"once":"weekly";
+  duration.value=repeat?.weeks?String(repeat.weeks):repeat?"forever":"12";
+  if(![...duration.options].some(opt=>opt.value===duration.value))duration.value="custom";
+  end.value=repeat?.end||"";
+  toggle();
+ }
+ function toggle(){prompt.hidden=frequency.value!=="weekly";end.hidden=prompt.hidden||duration.value!=="custom";remove.hidden=!rules().some(r=>r.start===date.value)}
+ function store(){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date.value))return;
+  if(!tracking.customSchedule)tracking.customSchedule={};
+  const selected=select.value===""?null:customWorkouts[Number(select.value)];
+  tracking.customRecurringSchedule=rules().filter(r=>r.start!==date.value);
+  delete tracking.customSchedule[date.value];
+  if(selected){
+   const entry={name:selected.name,exercises:[...selected.exercises]};
+   if(frequency.value==="once")tracking.customSchedule[date.value]=entry;
+   else{
+    let endDate=null;const weeks=Number(duration.value);
+    if(duration.value==="custom"){if(!end.value||end.value<date.value){status.textContent="Choose an end date after the starting date.";return}endDate=end.value}
+    else if(Number.isInteger(weeks)&&weeks>0){const d=new Date(date.value+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+weeks*7-1);endDate=d.toISOString().slice(0,10)}
+    tracking.customRecurringSchedule.push({...entry,start:date.value,end:endDate,weeks:Number.isInteger(weeks)&&weeks>0?weeks:null});
+   }
+  }
+  saveTracking();status.textContent=selected?(frequency.value==="once"?"Scheduled just for "+date.value:"Repeating weekly from "+date.value+(duration.value==="forever"?" until turned off":"")):"Removed schedule for "+date.value;
+  refresh();renderHome();
+ }
+ date.addEventListener("change",refresh);frequency.addEventListener("change",toggle);duration.addEventListener("change",toggle);
+ button.addEventListener("click",store);
+ remove.addEventListener("click",()=>{tracking.customRecurringSchedule=rules().filter(r=>r.start!==date.value);saveTracking();status.textContent="Weekly repeat removed";refresh();renderHome()});
+ area.append(date,select,frequency,prompt,end,button,remove,status);refresh();
 }
 function showWorkouts(){showScreen("workoutsScreen");setBottomNav("Workouts");renderWorkoutBrowser();renderCustomWorkoutSchedule()}
 function showProfile(){showScreen("profileScreen");setBottomNav("Profile");renderPrismAccessState();renderPrismLocalProfile()}
