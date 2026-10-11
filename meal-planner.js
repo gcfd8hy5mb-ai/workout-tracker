@@ -47,20 +47,23 @@ function render(){
  root.append(button("See MYLIFTCOACH Pro",()=>{if(typeof showPrismPro==="function")showPrismPro()}));
  return;
  }
- root.append(el("h3","7-day meal planner"),el("p","Build a weekly plan around your current calorie target. Macro counts and ingredients are estimates; verify labels, portions, allergens and dietary needs.","small"));
+ root.append(el("h3","7-day meal planner · PRO"),el("p","Build a weekly plan around your current calorie target. Macro counts and ingredients are estimates; verify labels, portions, allergens and dietary needs.","small"));
  let controls=el("div");controls.style.cssText="display:flex;flex-wrap:wrap;gap:8px;align-items:center";
  let date=el("input");date.type="date";date.value=state.week||startDate();date.setAttribute("aria-label","First day of plan");
  date.addEventListener("change",()=>{if(!date.value)return;state.week=date.value;createPlan()});
- controls.append(date,button("Generate 7 days",createPlan),button("New meal combinations",createPlan));root.append(controls);
+ controls.append(date,button(state.days?.length?"Regenerate 7 days":"Generate my week",createPlan));root.append(controls);
  let exclusions=el("div");exclusions.style.cssText="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0";
  for(const [value,label] of [["meat","No meat"],["fish","No fish"],["dairy","No dairy"],["nuts","No nuts"],["gluten","No gluten"],["soy","No soy"]]){
  let wrap=el("label"),cb=document.createElement("input");cb.type="checkbox";cb.checked=(state.excluded||[]).includes(value);
- cb.addEventListener("change",()=>{let s=new Set(state.excluded||[]);cb.checked?s.add(value):s.delete(value);state.excluded=[...s];createPlan()});wrap.append(cb,document.createTextNode(" "+label));exclusions.append(wrap);
+ cb.addEventListener("change",()=>{let s=new Set(state.excluded||[]);cb.checked?s.add(value):s.delete(value);state.excluded=[...s];state.days=[];persist();render()});wrap.append(cb,document.createTextNode(" "+label));exclusions.append(wrap);
  }root.append(exclusions);
  if(!Array.isArray(state.days)||!state.days.length){root.append(el("p","Choose Generate 7 days to create your first plan.","small"));return}
  root.append(el("p","Target: "+state.goal.toLocaleString()+" kcal/day · Estimated protein varies by meal · Changes to your calorie goal require regenerating this plan.","small"));
  let grocery=new Map();
+ const picker=el("select");picker.setAttribute("aria-label","Select planned day");for(const d of state.days){const option=el("option",d.date);option.value=d.date;picker.append(option)}
+ const active=state.days.some(d=>d.date===state.activeDay)?state.activeDay:state.days[0].date;picker.value=active;picker.addEventListener("change",()=>{state.activeDay=picker.value;persist();render()});root.append(el("h4","Choose a day"),picker);
  for(const day of state.days){
+ if(day.date!==active){for(const meal of day.items)for(const ingredient of meal.ingredients)grocery.set(ingredient,(grocery.get(ingredient)||0)+meal.servings);continue}
  let card=el("div",undefined,"card");card.style.marginTop="10px";card.append(el("h4",day.date));
  for(const item of day.items){
  const line=el("div");line.style.cssText="padding:7px 0;border-bottom:1px solid var(--line)";
@@ -68,17 +71,18 @@ function render(){
  line.append(button("Log this meal today",()=>{
  if(typeof tracking==="undefined"||typeof saveTracking!=="function"||typeof renderFood!=="function")return;
  const today=startDate(),name=item.name+" (meal plan)";
+ if(!confirm("Log "+item.name+" ("+item.kcal+" estimated calories) for today?"))return;
  if(!Array.isArray(tracking.food))return;
  tracking.food.push({id:typeof newTrackingId==="function"?newTrackingId():String(Date.now()),day:today,name,calories:item.kcal});
- saveTracking();renderFood();alert("Added to today's food log. Calories are estimated.");
+ saveTracking();renderFood();const notice=document.getElementById("foodLogFeedback");if(notice)notice.textContent="Planned meal added to today's food log.";
  }));card.append(line);
  for(const ingredient of item.ingredients)grocery.set(ingredient,(grocery.get(ingredient)||0)+item.servings);
  }
  card.append(el("p","Day total: "+day.items.reduce((s,m)=>s+m.kcal,0)+" kcal · "+day.items.reduce((s,m)=>s+m.protein,0)+" g protein","small"));root.append(card);
  }
- root.append(el("h4","Grocery list (reference-portion counts)"));
+ const groceries=el("details");groceries.append(el("summary","Weekly grocery list · tap to expand"));root.append(groceries);
  const list=el("ul");for(const [name,count] of [...grocery].sort((a,b)=>a[0].localeCompare(b[0])))list.append(el("li",name+" — "+Number(count.toFixed(2))+" meal portions"));
- root.append(list,button("Copy grocery list",()=>{let msg=[...grocery].map(([n,c])=>n+" — "+Number(c.toFixed(2))+" meal portions").join("\n");if(navigator.clipboard?.writeText)navigator.clipboard.writeText(msg).catch(()=>prompt("Copy list",msg));else prompt("Copy list",msg)}));
+ groceries.append(list,button("Copy grocery list",()=>{let msg=[...grocery].map(([n,c])=>n+" — "+Number(c.toFixed(2))+" meal portions").join("\n");if(navigator.clipboard?.writeText)navigator.clipboard.writeText(msg).catch(()=>prompt("Copy list",msg));else prompt("Copy list",msg)}));
  root.append(el("p","This is a starter recipe rotation, not a complete recipe library. Grocery quantities are estimates, not shopping-unit amounts. Exclusion filters cover listed ingredients only; check packaging for cross-contact.","small"));
 }
 window.mlcRefreshMealPlanner=render;
