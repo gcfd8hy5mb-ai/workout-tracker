@@ -55,6 +55,7 @@ function persist(){
 function datePlus(d,n){let x=new Date(d+"T12:00:00");x.setDate(x.getDate()+n);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")}
 function startDate(){return typeof localDay==="function"?localDay():new Date().toISOString().slice(0,10)}
 function target(){const v=typeof dailyCalorieTarget==="function"?Number(dailyCalorieTarget(startDate())):0;return Number.isFinite(v)&&v>=1200&&v<=5000?v:2200}
+function proteinTarget(){const n=Number(state.proteinGoal);return Number.isFinite(n)&&n>=60&&n<=250?n:0}
 function allowed(m){
  const excluded=state.excluded||[];
  const ingredients=m.ingredients.join(" ").toLowerCase();
@@ -77,7 +78,9 @@ function createPlan(){
  const days=Array.from({length:7},(_,day)=>{
  const weights=[.23,.30,.32,.15]; const items=types.map((type,i)=>{
  let opts=meals.filter(m=>m.type===type&&allowed(m));if(!opts.length)return null;
- let meal=opts[(day+revision+i)%opts.length],mult=Math.round((t*weights[i]/meal.kcal)*4)/4;
+ let calorieShare=t*weights[i],proteinShare=proteinTarget()*weights[i];
+ opts=opts.slice().sort((a,b)=>Math.abs(a.protein/a.kcal-proteinShare/calorieShare)-Math.abs(b.protein/b.kcal-proteinShare/calorieShare));
+ let meal=proteinTarget()?opts[(day+revision)%Math.min(2,opts.length)]:opts[(day+revision+i)%opts.length],mult=Math.round((calorieShare/meal.kcal)*4)/4;
  mult=Math.max(.5,Math.min(2.5,mult));
  return mealEntry(meal,mult);
  });return {date:datePlus(week,day),items:items.filter(Boolean)};
@@ -100,13 +103,14 @@ function render(){
  let date=el("input");date.type="date";date.value=state.week||startDate();date.setAttribute("aria-label","First day of plan");
  date.addEventListener("change",()=>{if(!date.value)return;state.week=date.value;createPlan()});
  controls.append(date,button(state.days?.length?"Regenerate 7 days":"Generate my week",createPlan));root.append(controls);
+ const proteinRow=el("div");proteinRow.style.cssText="margin:10px 0";const proteinLabel=el("label","Daily protein target (g) · optional");const proteinInput=el("input");proteinInput.type="number";proteinInput.min="60";proteinInput.max="250";proteinInput.step="5";proteinInput.placeholder="Example: 150";proteinInput.value=proteinTarget()||"";proteinInput.setAttribute("aria-label","Daily protein target in grams");proteinInput.addEventListener("change",()=>{const n=Number(proteinInput.value);state.proteinGoal=proteinInput.value!==""&&Number.isFinite(n)&&n>=60&&n<=250?n:null;persist();render()});proteinRow.append(proteinLabel,proteinInput,el("p","A planning preference, not a prescribed requirement. Regenerate to apply your target; recipe limits may prevent an exact match.","small"));root.append(proteinRow);
  let exclusions=el("div");exclusions.style.cssText="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0";
  for(const [value,label] of [["meat","No meat"],["fish","No fish"],["dairy","No dairy"],["nuts","No nuts"],["gluten","No gluten"],["soy","No soy"]]){
  let wrap=el("label"),cb=document.createElement("input");cb.type="checkbox";cb.checked=(state.excluded||[]).includes(value);
  cb.addEventListener("change",()=>{let s=new Set(state.excluded||[]);cb.checked?s.add(value):s.delete(value);state.excluded=[...s];state.days=[];persist();render()});wrap.append(cb,document.createTextNode(" "+label));exclusions.append(wrap);
  }root.append(exclusions);
  if(!Array.isArray(state.days)||!state.days.length){root.append(el("p","Choose Generate 7 days to create your first plan.","small"));return}
- root.append(el("p","Target: "+state.goal.toLocaleString()+" kcal/day · Estimated protein varies by meal · Changes to your calorie goal require regenerating this plan.","small"));
+ root.append(el("p","Target: "+state.goal.toLocaleString()+" kcal/day · Protein preference: "+(proteinTarget()?proteinTarget()+" g/day":"not set")+" · Actual daily totals may differ · Regenerate after changing goals.","small"));
  const grocery=groceryTotals(state.days);
  const picker=el("select");picker.setAttribute("aria-label","Select planned day");for(const d of state.days){const option=el("option",d.date);option.value=d.date;picker.append(option)}
  const active=state.days.some(d=>d.date===state.activeDay)?state.activeDay:state.days[0].date;picker.value=active;picker.addEventListener("change",()=>{state.activeDay=picker.value;persist();render()});root.append(el("h4","Choose a day"),picker);
