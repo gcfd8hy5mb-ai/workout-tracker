@@ -135,6 +135,7 @@ const server=http.createServer((req,res)=>{
   const noMeat=await page.evaluate(()=>tracking.mealPlanner.days.every(day=>day.items.every(item=>!/(Chicken|Turkey)/.test(item.name))));
   assert.ok(noMeat,'Pro meat exclusion must remove chicken and turkey');
   await planner.locator('label').filter({hasText:'No meat'}).locator('input').uncheck();
+  await planner.getByRole('button',{name:/Generate|Regenerate/}).click(); // Rebuild cleared plan after changing exclusions.
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof showFood==='function'&&typeof window.mlcRefreshMealPlanner==='function');
   await page.evaluate(()=>{document.documentElement.classList.remove('myliftcoach-starting');prismEntitlement={tier:'pro',source:'manual_grant'};goHome();showFood()});
