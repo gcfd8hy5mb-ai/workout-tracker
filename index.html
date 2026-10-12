@@ -1353,7 +1353,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <div id="servingFields" class="hidden"><label for="foodServings" id="servingLabel">Number of servings</label><div class="tracker-shortcuts" aria-label="Quick portions"><button type="button" onclick="setFoodServings(.5)">½</button><button type="button" onclick="setFoodServings(1)">1</button><button type="button" onclick="setFoodServings(1.5)">1½</button><button type="button" onclick="setFoodServings(2)">2</button></div><input id="foodServings" type="number" min="0.25" max="100" step="0.25" inputmode="decimal" value="1" oninput="updateFoodEstimate()"><p id="foodEstimate" role="status" class="small"></p></div>
 <div id="customFoodFields" class="hidden"><label for="foodName">Food or meal</label><input id="foodName" maxlength="100" placeholder="For example, lunch"><label for="foodCalories">Calories from label or recipe</label><input id="foodCalories" type="number" min="0" max="10000" inputmode="numeric"></div>
 <button type="submit">Log food</button></form><p id="foodLogFeedback" role="status" aria-live="polite" class="small"></p><p class="small">For packaged foods, the label is more accurate. For other foods, use the label or <a href="https://fdc.nal.usda.gov/" target="_blank" rel="noopener">look them up</a>.</p></div>
-<div class="card" id="savedMealsCard"><h3>My saved meals · FREE</h3><p class="small">Create a meal from common foods, choose servings, and log the whole meal in one tap.</p><label for="savedMealName">Meal name</label><input id="savedMealName" maxlength="80" placeholder="Example: My usual lunch"><label for="savedMealFood">Add an ingredient</label><select id="savedMealFood" aria-label="Ingredient for saved meal"></select><label for="savedMealServings">Servings of ingredient</label><input id="savedMealServings" type="number" min=".25" max="20" step=".25" value="1" inputmode="decimal"><button type="button" onclick="addSavedMealIngredient()">Add ingredient</button><div id="savedMealIngredients" aria-live="polite"></div><button type="button" onclick="saveCustomMeal()">Save this meal</button><p id="savedMealFeedback" class="small" role="status"></p><h4>Saved meals</h4><div id="savedMealsList"></div></div><h3 id="foodListTitle">Food logged</h3><div id="foodList"></div><h3>Favorites</h3><div id="foodFavorites" class="tracker-shortcuts"></div><h3>Recent foods</h3><div id="foodRecent" class="tracker-shortcuts"></div>
+<div class="card" id="savedMealsCard"><h3>My saved meals · FREE</h3><p class="small">Create a meal from common foods, choose servings, and log the whole meal in one tap.</p><label for="savedMealName">Meal name</label><input id="savedMealName" maxlength="80" placeholder="Example: My usual lunch"><label for="savedMealFood">Add an ingredient</label><select id="savedMealFood" aria-label="Ingredient for saved meal"></select><label for="savedMealServings">Servings of ingredient</label><input id="savedMealServings" type="number" min=".25" max="20" step=".25" value="1" inputmode="decimal"><button type="button" onclick="addSavedMealIngredient()">Add ingredient</button><div id="savedMealIngredients" aria-live="polite"></div><button type="button" onclick="saveCustomMeal()" id="saveCustomMealButton">Save this meal</button><button type="button" id="cancelSavedMealEdit" class="hidden" onclick="cancelSavedMealEdit()">Cancel editing</button><p id="savedMealFeedback" class="small" role="status"></p><h4>Saved meals</h4><div id="savedMealsList"></div></div><h3 id="foodListTitle">Food logged</h3><div id="foodList"></div><h3>Favorites</h3><div id="foodFavorites" class="tracker-shortcuts"></div><h3>Recent foods</h3><div id="foodRecent" class="tracker-shortcuts"></div>
 </section>
 
 <section id="goalsScreen" class="hidden">
@@ -4799,6 +4799,7 @@ document.getElementById("waterListTitle").textContent=`Water logged · ${day}`;
 trackingRows("water",entries.slice().reverse(),entry=>formatWater(entry.amount));
 }
 let savedMealDraft=[];
+let editingSavedMealId=null;
 function populateSavedMealFoods(){
  const select=document.getElementById("savedMealFood");if(!select||select.options.length)return;
  for(const food of commonFoods){const option=document.createElement("option");option.value=food.id;option.textContent=food.name+" · "+food.serving;select.append(option)}
@@ -4823,15 +4824,35 @@ function addSavedMealIngredient(){
  if(savedMealDraft.length>=20)return;
  savedMealDraft.push({id,servings});renderSavedMealDraft();
 }
+function editSavedMeal(id){
+ const meal=(tracking.savedMeals||[]).find(x=>x.id===id);if(!meal)return;
+ editingSavedMealId=id;
+ savedMealDraft=(meal.ingredients||[]).map(x=>({id:x.id,servings:Number(x.servings)}));
+ document.getElementById("savedMealName").value=meal.name;
+ document.getElementById("saveCustomMealButton").textContent="Save changes";
+ document.getElementById("cancelSavedMealEdit").classList.remove("hidden");
+ renderSavedMealDraft();
+ document.getElementById("savedMealName").focus();
+}
+function cancelSavedMealEdit(){
+ editingSavedMealId=null;savedMealDraft=[];
+ document.getElementById("savedMealName").value="";
+ document.getElementById("saveCustomMealButton").textContent="Save this meal";
+ document.getElementById("cancelSavedMealEdit").classList.add("hidden");
+ renderSavedMealDraft();
+}
 function saveCustomMeal(){
  const name=document.getElementById("savedMealName")?.value.trim();
  const feedback=document.getElementById("savedMealFeedback");
  if(!name||name.length>80||!savedMealDraft.length||savedMealDraft.length>20){if(feedback)feedback.textContent="Enter a meal name and add at least one ingredient.";return}
  if(!Array.isArray(tracking.savedMeals))tracking.savedMeals=[];
- if(tracking.savedMeals.length>=50){if(feedback)feedback.textContent="Maximum 50 saved meals. Remove one to save another.";return}
- tracking.savedMeals.push({id:newTrackingId(),name,ingredients:savedMealDraft.map(x=>({...x}))});
- saveTracking();savedMealDraft=[];document.getElementById("savedMealName").value="";renderSavedMealDraft();renderSavedMeals();
- if(feedback)feedback.textContent="Saved "+name+".";
+ const existing=editingSavedMealId?tracking.savedMeals.find(x=>x.id===editingSavedMealId):null;
+ if(editingSavedMealId&&!existing){if(feedback)feedback.textContent="This saved meal no longer exists.";cancelSavedMealEdit();return}
+ if(!existing&&tracking.savedMeals.length>=50){if(feedback)feedback.textContent="Maximum 50 saved meals. Remove one to save another.";return}
+ if(existing){existing.name=name;existing.ingredients=savedMealDraft.map(x=>({...x}));}
+ else tracking.savedMeals.push({id:newTrackingId(),name,ingredients:savedMealDraft.map(x=>({...x}))});
+ saveTracking();cancelSavedMealEdit();renderSavedMeals();
+ if(feedback)feedback.textContent=(existing?"Updated ":"Saved ")+name+".";
 }
 function caloriesForSavedMeal(meal){
  return (meal.ingredients||[]).reduce((sum,item)=>{
@@ -4858,8 +4879,9 @@ function renderSavedMeals(){
   const row=document.createElement("div");row.className="tracker-row";
   const label=document.createElement("span");label.textContent=meal.name+" · "+caloriesForSavedMeal(meal)+" cal";
   const log=document.createElement("button");log.type="button";log.textContent="Log meal";log.setAttribute("aria-label","Log saved meal "+meal.name);log.onclick=()=>logSavedMeal(meal.id);
+  const edit=document.createElement("button");edit.type="button";edit.textContent="Edit";edit.setAttribute("aria-label","Edit saved meal "+meal.name);edit.onclick=()=>editSavedMeal(meal.id);
   const remove=document.createElement("button");remove.type="button";remove.textContent="Remove";remove.setAttribute("aria-label","Remove saved meal "+meal.name);remove.onclick=()=>removeSavedMeal(meal.id);
-  row.append(label,log,remove);area.append(row);
+  row.append(label,log,edit,remove);area.append(row);
  }
  if(!area.children.length){const empty=document.createElement("p");empty.className="small";empty.textContent="No saved meals yet.";area.append(empty)}
 }

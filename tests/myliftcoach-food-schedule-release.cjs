@@ -50,6 +50,21 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.evaluate(()=>tracking.food.length),mealsBeforeLog+1,'Saved meal logs exactly one entry');
   assert.equal(await page.evaluate(()=>tracking.food.at(-1).calories),mealCalories,'Logged saved meal preserves total calories');
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('dailyTrackingV1')).savedMeals.length),1,'Saved meals persist in account sync tracking data');
+  await page.getByRole('button',{name:'Edit saved meal QA Lunch'}).click();
+  await page.locator('#savedMealName').fill('QA Dinner');
+  await page.locator('#savedMealServings').fill('0.5');
+  await page.locator('#savedMealFood').selectOption('egg');
+  await page.getByRole('button',{name:'Add ingredient'}).click();
+  await page.locator('#saveCustomMealButton').click();
+  assert.equal(await page.evaluate(()=>tracking.savedMeals.length),1,'Editing must not duplicate saved meals');
+  assert.equal(await page.evaluate(()=>tracking.savedMeals[0].name),'QA Dinner','Edited meal name saved');
+  assert.equal(await page.evaluate(()=>tracking.savedMeals[0].ingredients.length),3,'New ingredient persisted in edited meal');
+  assert.ok(await page.evaluate(()=>tracking.food.some(x=>x.name.includes('QA Lunch (saved meal)'))),'Editing saved meal must not rewrite prior food log');
+  await page.getByRole('button',{name:'Edit saved meal QA Dinner'}).click();
+  await page.locator('#savedMealName').fill('Discarded edit');
+  await page.getByRole('button',{name:'Cancel editing'}).click();
+  assert.equal(await page.evaluate(()=>tracking.savedMeals[0].name),'QA Dinner','Cancel must not save draft edits');
+
   const planner=page.locator('#mlcMealPlanner');
   assert.equal(await planner.getByRole('button',{name:'Generate my week'}).count(),0,'Free users must not generate Pro plans');
   assert.equal(await page.locator('#onlineFoodLookup').count(),1,'Food search must be available to Free users');
