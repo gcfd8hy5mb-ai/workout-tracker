@@ -34,6 +34,22 @@ const server=http.createServer((req,res)=>{
   await page.getByRole('button',{name:'Quick log one serving of Banana'}).click();
   assert.equal(await page.evaluate(()=>tracking.food.length),beforeQuick+1,'One-tap quick food must save exactly one entry');
   assert.ok(await page.evaluate(()=>tracking.food.at(-1).name.includes('Banana')),'Quick food must log selected item');
+  // Free saved meals: compose, save, log once, and persist after reload.
+  await page.locator('#savedMealName').fill('QA Lunch');
+  await page.locator('#savedMealFood').selectOption('chicken');
+  await page.locator('#savedMealServings').fill('1');
+  await page.getByRole('button',{name:'Add ingredient'}).click();
+  await page.locator('#savedMealFood').selectOption('rice');
+  await page.getByRole('button',{name:'Add ingredient'}).click();
+  await page.getByRole('button',{name:'Save this meal'}).click();
+  assert.equal(await page.evaluate(()=>tracking.savedMeals.length),1,'Free user can save custom meal');
+  const mealCalories=await page.evaluate(()=>caloriesForSavedMeal(tracking.savedMeals[0]));
+  assert.ok(mealCalories>200,'Saved meal totals multiple foods');
+  const mealsBeforeLog=await page.evaluate(()=>tracking.food.length);
+  await page.getByRole('button',{name:'Log saved meal QA Lunch'}).click();
+  assert.equal(await page.evaluate(()=>tracking.food.length),mealsBeforeLog+1,'Saved meal logs exactly one entry');
+  assert.equal(await page.evaluate(()=>tracking.food.at(-1).calories),mealCalories,'Logged saved meal preserves total calories');
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('dailyTrackingV1')).savedMeals.length),1,'Saved meals persist in account sync tracking data');
   const planner=page.locator('#mlcMealPlanner');
   assert.equal(await planner.getByRole('button',{name:'Generate my week'}).count(),0,'Free users must not generate Pro plans');
   assert.equal(await page.locator('#onlineFoodLookup').count(),1,'Food search must be available to Free users');
