@@ -35,6 +35,18 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   let state=await page.evaluate(()=>JSON.parse(localStorage.getItem('prismActiveWorkoutV1')||'null'));
   assert.ok(state?.key&&state.ids.length>0&&state.startedAt>0,'Home Start Workout must create an active checkpoint');
   const key=state.key,firstId=state.ids[0],startedAt=state.startedAt;
+  const jumpButtons=page.locator('#workoutExerciseJumpList button[aria-label^="Go to "]');
+  assert.equal(await jumpButtons.count(),state.ids.length,'All workout exercises must be directly selectable');
+  await jumpButtons.last().click();
+  let jumped=await page.evaluate(()=>JSON.parse(localStorage.getItem('prismActiveWorkoutV1')).index);
+  assert.equal(jumped,state.ids.length-1,'Must jump straight to last exercise without stepping through others');
+  await jumpButtons.first().click();
+  jumped=await page.evaluate(()=>JSON.parse(localStorage.getItem('prismActiveWorkoutV1')).index);
+  assert.equal(jumped,0,'Must jump directly back to first exercise');
+  await page.getByRole('button',{name:'Show all exercises'}).click();
+  assert.equal(await page.locator('#exerciseList > .exercise.prism-out-of-focus').count(),0,'Show all makes every exercise visible');
+  await jumpButtons.first().click();
+
 
   await page.getByRole('button',{name:'Tired',exact:true}).click();
   assert.equal(await page.getByRole('button',{name:'Tired',exact:true}).getAttribute('aria-pressed'),'true');
