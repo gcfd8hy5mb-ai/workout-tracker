@@ -18,7 +18,7 @@ const server=http.createServer((req,res)=>{
   const page=await context.newPage();page.setDefaultTimeout(15000);
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/persistence/account-ui.js',r=>r.fulfill({status:200,contentType:'application/javascript',body:'/* isolated UI fixture */'}));
-  await page.route('https://world.openfoodfacts.org/**',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({products:[{code:'1234567890123',product_name:'QA Cereal',brands:'Test Brand',nutriments:{'energy-kcal_100g':400}}]})}));
+  await page.route('https://world.openfoodfacts.org/**',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({products:[{code:'1234567890123',product_name:'QA Cereal',brands:'Test Brand',nutriments:{'energy-kcal_100g':400,proteins_100g:10,carbohydrates_100g:70,fat_100g:8}}]})}));
   await page.goto('http://127.0.0.1:'+server.address().port+'/',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof showFood==='function'&&typeof showWorkoutsBrowserRoot==='function'&&typeof window.mlcRefreshMealPlanner==='function');
   await page.evaluate(()=>{document.documentElement.classList.remove('myliftcoach-starting');goHome();showFood()});
@@ -92,6 +92,9 @@ const server=http.createServer((req,res)=>{
   await page.locator('#onlineFoodResults button').first().click();
   const freeFood=await page.evaluate(()=>tracking.food.find(x=>x.name.includes('QA Cereal')));
   assert.equal(freeFood?.calories,600,'150g of 400kcal/100g product must log 600 calories');
+  assert.equal(freeFood?.protein,15,'Packaged food protein scales by grams');
+  assert.equal(freeFood?.carbs,105,'Packaged food carbs scale by grams');
+  assert.equal(freeFood?.fat,12,'Packaged food fat scales by grams');
   assert.ok(await page.locator('#onlineFoodStatus').innerText().then(x=>x.includes('600 calories')),'Food lookup must confirm calorie log');
 
   // Simulate a trusted verified subscription, not a beta preview.
