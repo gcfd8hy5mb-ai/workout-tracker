@@ -39,8 +39,19 @@ function groceryTotals(days){const totals=new Map();for(const day of days||[])fo
 function groceryLabel(entry){const number=Math.ceil(entry.amount*4)/4;return entry.name+" — "+Number(number.toFixed(2))+" "+entry.unit}
 const types=["Breakfast","Lunch","Dinner","Snack"];
 let state={};
-function read(){try{let v=JSON.parse(window.localStorage.getItem(storageKey())||"{}");return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}catch{return {}}}
-function persist(){window.localStorage.setItem(storageKey(),JSON.stringify(state))}
+function read(){
+ const synced=typeof tracking!=="undefined"&&tracking?.mealPlanner;
+ if(synced&&typeof synced==="object"&&!Array.isArray(synced))return JSON.parse(JSON.stringify(synced));
+ try{const v=JSON.parse(window.localStorage.getItem(storageKey())||"{}");return v&&typeof v==="object"&&!Array.isArray(v)?v:{}}catch{return {}}
+}
+function persist(){
+ // Save to the same account-scoped tracking source as food logs and workout schedules.
+ // This source participates in the existing authenticated cloud backup/restore.
+ if(typeof tracking!=="undefined"&&typeof saveTracking==="function"){
+  tracking.mealPlanner=JSON.parse(JSON.stringify(state));saveTracking();
+ }
+ window.localStorage.setItem(storageKey(),JSON.stringify(state));
+}
 function datePlus(d,n){let x=new Date(d+"T12:00:00");x.setDate(x.getDate()+n);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")}
 function startDate(){return typeof localDay==="function"?localDay():new Date().toISOString().slice(0,10)}
 function target(){const v=typeof dailyCalorieTarget==="function"?Number(dailyCalorieTarget(startDate())):0;return Number.isFinite(v)&&v>=1200&&v<=5000?v:2200}
