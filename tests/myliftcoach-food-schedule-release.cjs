@@ -121,6 +121,11 @@ const server=http.createServer((req,res)=>{
   await page.evaluate(()=>{prismEntitlement={tier:'pro',source:'manual_grant'};window.mlcRefreshMealPlanner()});
   await planner.getByRole('button',{name:'Generate my week'}).click();
   let planned=await page.evaluate(()=>JSON.parse(localStorage.getItem('myliftcoachMealPlannerV1:guest')));
+  const recipeAudit=await page.evaluate(()=>{
+    const source=Array.from(document.scripts).find(x=>x.src.includes('meal-planner.js'));
+    return Boolean(source);
+  });
+  assert.ok(recipeAudit,'Pro meal planner script must load');
   assert.equal(planned.days.length,7,'Paid planner must generate exactly 7 days');
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('dailyTrackingV1')).mealPlanner.days.length),7,'Meal plan must enter account-scoped tracking sync snapshot');
   assert.ok(planned.days.every(d=>d.items.length===4),'Each day must contain four planned meals');
