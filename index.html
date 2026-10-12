@@ -1386,7 +1386,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 <nav id="prismBottomNav" class="prism-bottom-nav" aria-label="Primary navigation">
 <button type="button" data-prism-tab="Home" onclick="goHome()" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></svg><span>Home</span></button>
-<button type="button" data-prism-tab="Workouts" onclick="showWorkouts()" aria-label="Workouts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9v6m3-8v10m12-10v10m3-8v6M6 12h12"/></svg><span>Workouts</span></button>
+<button type="button" data-prism-tab="Workouts" onclick="showWorkoutsBrowserRoot()" aria-label="Workouts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9v6m3-8v10m12-10v10m3-8v6M6 12h12"/></svg><span>Workouts</span></button>
 <button type="button" data-prism-tab="Progress" onclick="showOverallProgress()" aria-label="Progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V12m6 8V8m6 12V4m4 16H2"/></svg><span>Progress</span></button>
 <button type="button" data-prism-tab="History" onclick="showGlobalHistory()" aria-label="History"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>History</span></button>
 <button type="button" data-prism-tab="Profile" onclick="showProfile()" aria-label="Profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 21c0-4 3-6 7-6s7 2 7 6"/></svg><span>Profile</span></button>
@@ -1417,7 +1417,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <div class="menu-head"><div class="menu-brand"><img src="images/liftova-icon.svg" width="43" height="43" alt=""><span class="menu-brand-copy"><strong>MYLIFTCOACH</strong><small>Train · Track · Progress</small></span></div><button type="button" class="menu-close" onclick="closeMenu()" aria-label="Close menu">×</button></div>
 <section class="drawer-section" aria-label="Home"><div class="menu-group">HOME</div><button type="button" class="menu-link active" id="navHome" onclick="goHome()" aria-current="page"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-home"/></svg>Home</button></section>
 <section class="drawer-section" aria-label="Training"><button type="button" class="menu-group-toggle" aria-expanded="true" aria-controls="menuTrainingItems" onclick="toggleMenuSection('Training')">TRAINING <svg class="drawer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button><div class="drawer-section-body" id="menuTrainingItems"><div class="drawer-section-inner">
-<button type="button" class="menu-link" id="navWorkout" onclick="showWorkouts()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-workout"/></svg>Workouts</button>
+<button type="button" class="menu-link" id="navWorkout" onclick="showWorkoutsBrowserRoot()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-workout"/></svg>Workouts</button>
 <button type="button" class="menu-link" id="navLibrary" onclick="showLibrary()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-book"/></svg>Exercise Library</button>
 <button type="button" class="menu-link" id="navManage" onclick="showManageWorkouts()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-manage"/></svg>Manage Workouts</button>
 <button type="button" class="menu-link" id="navTimer" onclick="showGlobalTimer()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-timer"/></svg>Timer</button>
@@ -2508,7 +2508,8 @@ function renderCustomWorkoutSchedule(){
  remove.addEventListener("click",()=>{tracking.customRecurringSchedule=rules().filter(r=>r.start!==date.value);saveTracking();status.textContent="Weekly repeat removed";refresh();renderHome()});
  area.append(date,select,frequency,prompt,end,button,remove,status);refresh();
 }
-function showWorkouts(){showScreen("workoutsScreen");setBottomNav("Workouts");renderWorkoutBrowser();renderCustomWorkoutSchedule()}
+function showWorkoutsBrowserRoot(){showScreen("workoutsScreen");setBottomNav("Workouts");renderWorkoutBrowser();renderCustomWorkoutSchedule()}
+function showWorkouts(){showWorkoutsBrowserRoot()}
 function showProfile(){showScreen("profileScreen");setBottomNav("Profile");renderPrismAccessState();renderPrismLocalProfile()}
 function showSettings(){showProfile();setBottomNav("Settings");document.getElementById("profileSettings").scrollIntoView({block:"start"})}
 function showHelp(){showScreen("helpScreen");setBottomNav("Help")}
