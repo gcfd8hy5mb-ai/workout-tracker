@@ -55,7 +55,7 @@ const server=http.createServer((req,res)=>{
   await page.locator('#savedMealServings').fill('0.5');
   await page.locator('#savedMealFood').selectOption('egg');
   await page.getByRole('button',{name:'Add ingredient'}).click();
-  await page.getByRole('button',{name:'Save changes'}).click();
+  await page.locator('#saveCustomMealButton').click();
   assert.equal(await page.evaluate(()=>tracking.savedMeals.length),1,'Editing must not duplicate saved meals');
   assert.equal(await page.evaluate(()=>tracking.savedMeals[0].name),'QA Dinner','Edited meal name saved');
   assert.equal(await page.evaluate(()=>tracking.savedMeals[0].ingredients.length),3,'New ingredient persisted in edited meal');
