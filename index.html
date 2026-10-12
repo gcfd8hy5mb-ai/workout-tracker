@@ -849,6 +849,7 @@ body:has(#workoutScreen:not(.hidden)) .prism-bottom-nav,body:has(#prismRestScree
 .prism-segments{display:flex;gap:8px;margin:13px 0 18px}
 .prism-segments button{flex:1;background:#100d16;border:1px solid var(--line);border-radius:12px;min-height:42px;font-size:13px}
 .prism-segments button[aria-pressed=true]{background:#7023ef;border-color:#b56cff;color:#fff}
+#workoutsScreen{min-width:0;max-width:100%;box-sizing:border-box}
 .prism-browser-row{width:100%;display:grid;grid-template-columns:50px minmax(0,1fr) 18px;text-align:left;align-items:center;gap:12px;margin:0 0 12px;padding:10px 13px;background:var(--card);border:1px solid var(--line);border-radius:16px;min-height:78px}
 .prism-browser-row:focus-visible{border-color:var(--blue)}
 .prism-browser-thumb{display:block;width:50px;height:54px;overflow:hidden;border-radius:10px;background:#18121f}
@@ -1166,7 +1167,7 @@ Exercise Library
 <div class="prism-section-head"><div><span class="prism-eyebrow">YOUR TRAINING</span><h2>Workouts</h2></div><button type="button" class="prism-icon-button" onclick="showManageWorkouts()" aria-label="Manage workouts">•••</button></div>
 <label class="prism-search-label" for="workoutBrowserSearch">Search workouts</label><input id="workoutBrowserSearch" type="search" placeholder="Search workouts or exercises" oninput="renderWorkoutBrowser()">
 <div class="prism-segments" aria-label="Workout types"><button type="button" data-browser-filter="all" aria-pressed="true" onclick="setWorkoutBrowserFilter('all')">All</button><button type="button" data-browser-filter="plans" aria-pressed="false" onclick="setWorkoutBrowserFilter('plans')">Plans</button><button type="button" data-browser-filter="mine" aria-pressed="false" onclick="setWorkoutBrowserFilter('mine')">My workouts</button></div>
-<div id="workoutBrowserList"></div>
+<div id="customScheduleControls" class="card"></div><div id="workoutBrowserList"></div>
 <button class="prism-text-link" onclick="showGoalsSetup()">Change training plan</button>
 <button class="prism-primary prism-wide" onclick="showBuilder()">＋ Create Workout</button>
 <button class="prism-text-link" onclick="showLibrary()">Browse exercise library →</button>
@@ -1347,11 +1348,11 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 </section>
 
 <section id="foodScreen" class="hidden">
-<h2>Food</h2><div class="card"><p class="small">Choose a common food and enter how many servings you had. Calories are estimated automatically; brands and preparation can differ.</p><label for="foodDay">Date</label><input id="foodDay" type="date" onchange="renderFood()"><div id="foodSummary" class="tracker-value"></div>
-<form class="tracker-form" onsubmit="addFood(event)"><label for="foodChoice">Food</label><select id="foodChoice" onchange="updateFoodEstimate()" required><option value="">Select a food</option><option value="custom">Other food (use label calories)</option></select>
-<div id="servingFields" class="hidden"><label for="foodServings" id="servingLabel">Number of servings</label><input id="foodServings" type="number" min="0.25" max="100" step="0.25" inputmode="decimal" value="1" oninput="updateFoodEstimate()"><p id="foodEstimate" role="status" class="small"></p></div>
+<h2>Food & Nutrition</h2><p class="small">Free food logging and calorie tracking. Pro adds automatic weekly meal plans.</p><div class="card"><h3>Quick food log · FREE</h3><p class="small">Choose a common food and enter how many servings you had. Calories are estimated automatically; brands and preparation can differ.</p><label for="foodDay">Date</label><input id="foodDay" type="date" onchange="renderFood()"><div id="foodSummary" class="tracker-value"></div>
+<form class="tracker-form" onsubmit="addFood(event)"><label for="foodSearch">Search common foods</label><input id="foodSearch" type="search" placeholder="Search foods…" oninput="filterFoodChoices()"><label for="foodChoice">Food</label><select id="foodChoice" onchange="updateFoodEstimate()" required><option value="">Select a food</option><option value="custom">Other food (use label calories)</option></select>
+<div id="servingFields" class="hidden"><label for="foodServings" id="servingLabel">Number of servings</label><div class="tracker-shortcuts" aria-label="Quick portions"><button type="button" onclick="setFoodServings(.5)">½</button><button type="button" onclick="setFoodServings(1)">1</button><button type="button" onclick="setFoodServings(1.5)">1½</button><button type="button" onclick="setFoodServings(2)">2</button></div><input id="foodServings" type="number" min="0.25" max="100" step="0.25" inputmode="decimal" value="1" oninput="updateFoodEstimate()"><p id="foodEstimate" role="status" class="small"></p></div>
 <div id="customFoodFields" class="hidden"><label for="foodName">Food or meal</label><input id="foodName" maxlength="100" placeholder="For example, lunch"><label for="foodCalories">Calories from label or recipe</label><input id="foodCalories" type="number" min="0" max="10000" inputmode="numeric"></div>
-<button type="submit">Add food</button></form><p class="small">For packaged foods, the label is more accurate. For other foods, use the label or <a href="https://fdc.nal.usda.gov/" target="_blank" rel="noopener">look them up</a>.</p></div>
+<button type="submit">Log food</button></form><p id="foodLogFeedback" role="status" aria-live="polite" class="small"></p><p class="small">For packaged foods, the label is more accurate. For other foods, use the label or <a href="https://fdc.nal.usda.gov/" target="_blank" rel="noopener">look them up</a>.</p></div>
 <h3 id="foodListTitle">Food logged</h3><div id="foodList"></div><h3>Favorites</h3><div id="foodFavorites" class="tracker-shortcuts"></div><h3>Recent foods</h3><div id="foodRecent" class="tracker-shortcuts"></div>
 </section>
 
@@ -1385,7 +1386,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 <nav id="prismBottomNav" class="prism-bottom-nav" aria-label="Primary navigation">
 <button type="button" data-prism-tab="Home" onclick="goHome()" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></svg><span>Home</span></button>
-<button type="button" data-prism-tab="Workouts" onclick="showWorkouts()" aria-label="Workouts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9v6m3-8v10m12-10v10m3-8v6M6 12h12"/></svg><span>Workouts</span></button>
+<button type="button" data-prism-tab="Workouts" onclick="showWorkoutsBrowserRoot()" aria-label="Workouts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9v6m3-8v10m12-10v10m3-8v6M6 12h12"/></svg><span>Workouts</span></button>
 <button type="button" data-prism-tab="Progress" onclick="showOverallProgress()" aria-label="Progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20V12m6 8V8m6 12V4m4 16H2"/></svg><span>Progress</span></button>
 <button type="button" data-prism-tab="History" onclick="showGlobalHistory()" aria-label="History"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>History</span></button>
 <button type="button" data-prism-tab="Profile" onclick="showProfile()" aria-label="Profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 21c0-4 3-6 7-6s7 2 7 6"/></svg><span>Profile</span></button>
@@ -1416,7 +1417,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <div class="menu-head"><div class="menu-brand"><img src="images/liftova-icon.svg" width="43" height="43" alt=""><span class="menu-brand-copy"><strong>MYLIFTCOACH</strong><small>Train · Track · Progress</small></span></div><button type="button" class="menu-close" onclick="closeMenu()" aria-label="Close menu">×</button></div>
 <section class="drawer-section" aria-label="Home"><div class="menu-group">HOME</div><button type="button" class="menu-link active" id="navHome" onclick="goHome()" aria-current="page"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-home"/></svg>Home</button></section>
 <section class="drawer-section" aria-label="Training"><button type="button" class="menu-group-toggle" aria-expanded="true" aria-controls="menuTrainingItems" onclick="toggleMenuSection('Training')">TRAINING <svg class="drawer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button><div class="drawer-section-body" id="menuTrainingItems"><div class="drawer-section-inner">
-<button type="button" class="menu-link" id="navWorkout" onclick="showWorkouts()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-workout"/></svg>Workouts</button>
+<button type="button" class="menu-link" id="navWorkout" onclick="showWorkoutsBrowserRoot()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-workout"/></svg>Workouts</button>
 <button type="button" class="menu-link" id="navLibrary" onclick="showLibrary()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-book"/></svg>Exercise Library</button>
 <button type="button" class="menu-link" id="navManage" onclick="showManageWorkouts()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-manage"/></svg>Manage Workouts</button>
 <button type="button" class="menu-link" id="navTimer" onclick="showGlobalTimer()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-timer"/></svg>Timer</button>
@@ -1916,10 +1917,10 @@ basic_workout_tracking:"free",set_logging:"free",preset_workouts:"free",
 exercise_library:"free",exercise_instructions:"free",rest_timer:"free",
 basic_history:"free",basic_progress:"free",basic_progress_trends:"free",
 water_tracking:"free",weight_tracking:"free",basic_goals:"free",
-body_goal_setup:"free",calorie_estimate:"free",local_profile:"free",
+body_goal_setup:"free",calorie_estimate:"free",manual_food_logging:"free",local_profile:"free",
 custom_workouts:"free",manual_substitutions:"free",basic_records:"free",
 measurement_logging:"free",local_backup:"free",
-smart_progression:"pro",smart_substitutions:"pro",advanced_analytics:"pro",
+meal_planner:"pro",smart_progression:"pro",smart_substitutions:"pro",advanced_analytics:"pro",
 full_time_trends:"pro",muscle_volume_analytics:"pro",advanced_pr_insights:"pro",
 plateau_detection:"pro",weekly_prism_summary:"pro",phase_analysis:"pro",
 photo_comparison:"pro",advanced_measurement_trends:"pro",
@@ -2057,8 +2058,8 @@ let workoutGoals=JSON.parse(localStorage.getItem("workoutGoalsV1")||"null");
 function readTrackingData(){
 try{
 const saved=JSON.parse(localStorage.getItem("dailyTrackingV1")||"{}");
-return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],foodFavorites:Array.isArray(saved.foodFavorites)?saved.foodFavorites:[],waterUnit:saved.waterUnit==="oz"?"oz":"ml",waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null,calorieMode:["auto","manual"].includes(saved.calorieMode)?saved.calorieMode:null,calorieWorkout:saved.calorieWorkout&&typeof saved.calorieWorkout==="object"&&!Array.isArray(saved.calorieWorkout)?saved.calorieWorkout:null,restSeconds:[60,90,120,180].includes(saved.restSeconds)?saved.restSeconds:90,readiness:saved.readiness&&typeof saved.readiness==="object"?saved.readiness:{},manualTargets:saved.manualTargets&&typeof saved.manualTargets==="object"?saved.manualTargets:{},substitutions:saved.substitutions&&typeof saved.substitutions==="object"?saved.substitutions:{},measurements:Array.isArray(saved.measurements)?saved.measurements:[],calendarNotes:saved.calendarNotes&&typeof saved.calendarNotes==="object"&&!Array.isArray(saved.calendarNotes)?saved.calendarNotes:{},calorieAge:saved.calorieAge||"",calorieFeet:saved.calorieFeet||"",calorieInches:saved.calorieInches??"",calorieEquation:saved.calorieEquation||"",calorieActivity:saved.calorieActivity||"1.4",preferredWeightUnit:saved.preferredWeightUnit==="kg"?"kg":"lb",trainingLevel:["Beginner","Intermediate","Advanced"].includes(saved.trainingLevel)?saved.trainingLevel:"Beginner"};
-}catch{return {water:[],food:[],weight:[],foodFavorites:[],waterUnit:"ml",waterGoal:2000,calorieGoal:null,calorieMode:null,calorieWorkout:null,restSeconds:90,readiness:{},manualTargets:{},substitutions:{},measurements:[],calendarNotes:{},calorieAge:"",calorieFeet:"",calorieInches:"",calorieEquation:"",calorieActivity:"1.4",preferredWeightUnit:"lb",trainingLevel:"Beginner"}}
+return {water:Array.isArray(saved.water)?saved.water:[],food:Array.isArray(saved.food)?saved.food:[],weight:Array.isArray(saved.weight)?saved.weight:[],foodFavorites:Array.isArray(saved.foodFavorites)?saved.foodFavorites:[],waterUnit:saved.waterUnit==="oz"?"oz":"ml",waterGoal:Number(saved.waterGoal)>0?Number(saved.waterGoal):2000,calorieGoal:Number(saved.calorieGoal)>0?Number(saved.calorieGoal):null,calorieMode:["auto","manual"].includes(saved.calorieMode)?saved.calorieMode:null,calorieWorkout:saved.calorieWorkout&&typeof saved.calorieWorkout==="object"&&!Array.isArray(saved.calorieWorkout)?saved.calorieWorkout:null,restSeconds:[60,90,120,180].includes(saved.restSeconds)?saved.restSeconds:90,readiness:saved.readiness&&typeof saved.readiness==="object"?saved.readiness:{},manualTargets:saved.manualTargets&&typeof saved.manualTargets==="object"?saved.manualTargets:{},substitutions:saved.substitutions&&typeof saved.substitutions==="object"?saved.substitutions:{},measurements:Array.isArray(saved.measurements)?saved.measurements:[],calendarNotes:saved.calendarNotes&&typeof saved.calendarNotes==="object"&&!Array.isArray(saved.calendarNotes)?saved.calendarNotes:{},calorieAge:saved.calorieAge||"",calorieFeet:saved.calorieFeet||"",calorieInches:saved.calorieInches??"",calorieEquation:saved.calorieEquation||"",calorieActivity:saved.calorieActivity||"1.4",preferredWeightUnit:saved.preferredWeightUnit==="kg"?"kg":"lb",trainingLevel:["Beginner","Intermediate","Advanced"].includes(saved.trainingLevel)?saved.trainingLevel:"Beginner",customSchedule:saved.customSchedule&&typeof saved.customSchedule==="object"&&!Array.isArray(saved.customSchedule)?saved.customSchedule:{},customRecurringSchedule:Array.isArray(saved.customRecurringSchedule)?saved.customRecurringSchedule:[],mealPlanner:saved.mealPlanner&&typeof saved.mealPlanner==="object"&&!Array.isArray(saved.mealPlanner)?saved.mealPlanner:null};
+}catch{return {water:[],food:[],weight:[],foodFavorites:[],waterUnit:"ml",waterGoal:2000,calorieGoal:null,calorieMode:null,calorieWorkout:null,restSeconds:90,readiness:{},manualTargets:{},substitutions:{},measurements:[],calendarNotes:{},calorieAge:"",calorieFeet:"",calorieInches:"",calorieEquation:"",calorieActivity:"1.4",preferredWeightUnit:"lb",trainingLevel:"Beginner",customSchedule:{},customRecurringSchedule:[],mealPlanner:null}}
 }
 let tracking=readTrackingData();
 function saveTracking(){localStorage.setItem("dailyTrackingV1",JSON.stringify(tracking))}
@@ -2445,7 +2446,70 @@ suggestedWorkouts(workoutGoals).forEach((day,index)=>plans.push({kind:"suggested
 Object.entries(presetWorkouts).forEach(([key,day])=>plans.push({kind:"preset",key,title:day.title,ids:day.exercises}));
 return plans;
 }
-function showWorkouts(){showScreen("workoutsScreen");setBottomNav("Workouts");renderWorkoutBrowser()}
+function scheduledCustomWorkout(day=localDay()){
+ const oneTime=tracking.customSchedule?.[day];
+ const rules=Array.isArray(tracking.customRecurringSchedule)?tracking.customRecurringSchedule:[];
+ const match=rules.filter(rule=>rule&&rule.start<=day&&(!rule.end||day<=rule.end)&&/^\d{4}-\d{2}-\d{2}$/.test(rule.start)&&((Date.parse(day+"T00:00:00Z")-Date.parse(rule.start+"T00:00:00Z"))/86400000)%7===0).sort((a,b)=>b.start.localeCompare(a.start))[0];
+ const entry=oneTime||match;if(!entry)return null;
+ const index=customWorkouts.findIndex(w=>w?.name===entry.name&&Array.isArray(w.exercises)&&w.exercises.length&&JSON.stringify(w.exercises)===JSON.stringify(entry.exercises));
+ if(index<0)return null;const workout=customWorkouts[index];
+ return {kind:"custom",index,title:workout.name,ids:workout.exercises,workoutKey:"custom-"+index};
+}
+function renderCustomWorkoutSchedule(){
+ const area=document.getElementById("customScheduleControls");if(!area)return;area.replaceChildren();
+ const heading=document.createElement("h3");heading.textContent="Schedule a custom workout";area.append(heading);
+ const date=document.createElement("input");date.type="date";date.value=localDay();date.setAttribute("aria-label","Custom workout date");
+ const select=document.createElement("select");select.setAttribute("aria-label","Custom workout");
+ const frequency=document.createElement("select");frequency.setAttribute("aria-label","Repeat custom workout");
+ for(const [value,label] of [["weekly","Repeat every week"],["once","Just this day"]]){const opt=document.createElement("option");opt.value=value;opt.textContent=label;frequency.append(opt)}
+ const duration=document.createElement("select");duration.setAttribute("aria-label","How long should this workout repeat?");
+ for(const [value,label] of [["4","For 4 weeks"],["8","For 8 weeks"],["12","For 12 weeks"],["26","For 6 months (26 weeks)"],["52","For 1 year (52 weeks)"],["forever","Until I turn it off"],["custom","Until a date I choose"]]){const opt=document.createElement("option");opt.value=value;opt.textContent=label;duration.append(opt)}
+ duration.value="12";
+ const end=document.createElement("input");end.type="date";end.setAttribute("aria-label","Repeat until date");
+ const prompt=document.createElement("label");prompt.textContent="How long should it repeat?";prompt.append(duration);
+ const button=document.createElement("button");button.type="button";button.textContent="Save schedule";
+ const remove=document.createElement("button");remove.type="button";remove.textContent="Remove repeat starting this day";remove.className="prism-text-link";
+ const status=document.createElement("p");status.className="small";status.setAttribute("role","status");
+ const rules=()=>Array.isArray(tracking.customRecurringSchedule)?tracking.customRecurringSchedule:[];
+ function refresh(){
+  const once=tracking.customSchedule?.[date.value],repeat=rules().find(r=>r.start===date.value);
+  select.replaceChildren();const none=document.createElement("option");none.value="";none.textContent="Use programmed workout or rest day";select.append(none);
+  customWorkouts.forEach((w,index)=>{if(!w?.name||!w.exercises?.length)return;const option=document.createElement("option");option.value=String(index);option.textContent=w.name;select.append(option)});
+  const entry=once||repeat;const index=customWorkouts.findIndex(w=>w.name===entry?.name&&JSON.stringify(w.exercises)===JSON.stringify(entry?.exercises));
+  select.value=index>=0?String(index):"";frequency.value=repeat?"weekly":once?"once":"weekly";
+  duration.value=repeat?.weeks?String(repeat.weeks):repeat?"forever":"12";
+  if(![...duration.options].some(opt=>opt.value===duration.value))duration.value="custom";
+  end.value=repeat?.end||"";
+  toggle();
+ }
+ function toggle(){prompt.hidden=frequency.value!=="weekly";end.hidden=prompt.hidden||duration.value!=="custom";remove.hidden=!rules().some(r=>r.start===date.value)}
+ function store(){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date.value))return;
+  if(!tracking.customSchedule)tracking.customSchedule={};
+  const selected=select.value===""?null:customWorkouts[Number(select.value)];
+  if(selected&&frequency.value==="weekly"&&duration.value==="custom"&&(!end.value||end.value<date.value)){status.textContent="Choose an end date on or after the starting date.";return}
+  tracking.customRecurringSchedule=rules().filter(r=>r.start!==date.value);
+  delete tracking.customSchedule[date.value];
+  if(selected){
+   const entry={name:selected.name,exercises:[...selected.exercises]};
+   if(frequency.value==="once")tracking.customSchedule[date.value]=entry;
+   else{
+    let endDate=null;const weeks=Number(duration.value);
+    if(duration.value==="custom"){endDate=end.value}
+    else if(Number.isInteger(weeks)&&weeks>0){const d=new Date(date.value+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+weeks*7-1);endDate=d.toISOString().slice(0,10)}
+    tracking.customRecurringSchedule.push({...entry,start:date.value,end:endDate,weeks:Number.isInteger(weeks)&&weeks>0?weeks:null});
+   }
+  }
+  saveTracking();status.textContent=selected?(frequency.value==="once"?"Scheduled just for "+date.value:"Repeating weekly from "+date.value+(duration.value==="forever"?" until turned off":"")):"Removed schedule for "+date.value;
+  refresh();renderHome();
+ }
+ date.addEventListener("change",refresh);frequency.addEventListener("change",toggle);duration.addEventListener("change",toggle);
+ button.addEventListener("click",store);
+ remove.addEventListener("click",()=>{tracking.customRecurringSchedule=rules().filter(r=>r.start!==date.value);saveTracking();status.textContent="Weekly repeat removed";refresh();renderHome()});
+ area.append(date,select,frequency,prompt,end,button,remove,status);refresh();
+}
+function showWorkoutsBrowserRoot(){showScreen("workoutsScreen");setBottomNav("Workouts");renderWorkoutBrowser();renderCustomWorkoutSchedule()}
+function showWorkouts(){showWorkoutsBrowserRoot()}
 function showProfile(){showScreen("profileScreen");setBottomNav("Profile");renderPrismAccessState();renderPrismLocalProfile()}
 function showSettings(){showProfile();setBottomNav("Settings");document.getElementById("profileSettings").scrollIntoView({block:"start"})}
 function showHelp(){showScreen("helpScreen");setBottomNav("Help")}
@@ -2652,10 +2716,10 @@ const plans=workoutGoals&&!workoutGoals.skipped?
 suggestedWorkouts(workoutGoals).map((day,index)=>({kind:"suggested",index,title:day.title,ids:day.exercises,workoutKey:suggestedWorkoutKey(index)}))):[];
 const last=workoutHistory.find(session=>plans.some(plan=>plan.workoutKey===session.workoutKey));
 const lastIndex=plans.findIndex(plan=>plan.workoutKey===last?.workoutKey);
-const next=plans.length?plans[(lastIndex+1)%plans.length]:null;
+const next=scheduledCustomWorkout()||(plans.length?plans[(lastIndex+1)%plans.length]:null);
 const hero=document.createElement("div");hero.className="prism-today-hero";
 const eyebrow=document.createElement("span");eyebrow.className="eyebrow";eyebrow.textContent="TODAY'S WORKOUT";hero.appendChild(eyebrow);
-const name=document.createElement("h3");name.textContent=next?.title||"Make today count";hero.appendChild(name);
+const name=document.createElement("h3");name.textContent=next?.title||"Make today count";hero.appendChild(name);if(next?.kind==="custom"){const tag=document.createElement("p");tag.className="small";tag.textContent="Your scheduled custom workout";hero.appendChild(tag)}
 const detail=document.createElement("p");detail.textContent=next?`${next.ids.length} ${next.ids.length===1?"exercise":"exercises"} · about ${Math.max(20,next.ids.length*10)} min`:"Choose a plan or build your own workout.";hero.appendChild(detail);
 const start=document.createElement("button");start.className="prism-primary prism-wide";start.textContent=next?"Start Workout":"Explore Workouts";start.onclick=next?()=>startPrismWorkout(next):showWorkouts;hero.appendChild(start);area.appendChild(hero);
 const active=readPrismActiveWorkout();
@@ -4331,15 +4395,23 @@ const commonFoods=[
 {id:"potato",name:"Potato, baked",serving:"1 medium (173 g)",grams:173,kcal100:93},
 {id:"broccoli",name:"Broccoli, cooked",serving:"1 cup (156 g)",grams:156,kcal100:35},
 {id:"beans",name:"Black beans, cooked",serving:"1 cup (172 g)",grams:172,kcal100:132}
+,{"id":"orange","name":"Orange","serving":"1 medium (131 g)","grams":131,"kcal100":47},{"id":"strawberries","name":"Strawberries","serving":"1 cup (152 g)","grams":152,"kcal100":32},{"id":"blueberries","name":"Blueberries","serving":"1 cup (148 g)","grams":148,"kcal100":57},{"id":"grapes","name":"Grapes","serving":"1 cup (151 g)","grams":151,"kcal100":69},{"id":"watermelon","name":"Watermelon","serving":"1 cup (152 g)","grams":152,"kcal100":30},{"id":"avocado","name":"Avocado","serving":"½ medium (75 g)","grams":75,"kcal100":160},{"id":"pineapple","name":"Pineapple","serving":"1 cup (165 g)","grams":165,"kcal100":50},{"id":"pear","name":"Pear","serving":"1 medium (178 g)","grams":178,"kcal100":57},{"id":"turkey","name":"Turkey breast, cooked","serving":"100 g","grams":100,"kcal100":135},{"id":"beef","name":"Ground beef, cooked (85% lean)","serving":"100 g","grams":100,"kcal100":250},{"id":"pork","name":"Pork loin, cooked","serving":"100 g","grams":100,"kcal100":196},{"id":"shrimp","name":"Shrimp, cooked","serving":"100 g","grams":100,"kcal100":99},{"id":"tuna","name":"Tuna, canned in water, drained","serving":"100 g","grams":100,"kcal100":116},{"id":"tofu","name":"Tofu, firm","serving":"100 g","grams":100,"kcal100":144},{"id":"chickpeas","name":"Chickpeas, cooked","serving":"½ cup (82 g)","grams":82,"kcal100":164},{"id":"lentils","name":"Lentils, cooked","serving":"½ cup (99 g)","grams":99,"kcal100":116},{"id":"pasta","name":"Pasta, cooked","serving":"1 cup (140 g)","grams":140,"kcal100":157},{"id":"quinoa","name":"Quinoa, cooked","serving":"1 cup (185 g)","grams":185,"kcal100":120},{"id":"sweet-potato","name":"Sweet potato, baked","serving":"1 medium (130 g)","grams":130,"kcal100":90},{"id":"tortilla","name":"Flour tortilla","serving":"1 medium (45 g)","grams":45,"kcal100":312},{"id":"corn-tortilla","name":"Corn tortilla","serving":"1 small (26 g)","grams":26,"kcal100":218},{"id":"bagel","name":"Plain bagel","serving":"1 medium (95 g)","grams":95,"kcal100":270},{"id":"cereal","name":"Corn flakes cereal","serving":"1 cup (28 g)","grams":28,"kcal100":357},{"id":"popcorn","name":"Air-popped popcorn","serving":"3 cups (24 g)","grams":24,"kcal100":387},{"id":"spinach","name":"Spinach, raw","serving":"1 cup (30 g)","grams":30,"kcal100":23},{"id":"carrots","name":"Carrots, raw","serving":"1 medium (61 g)","grams":61,"kcal100":41},{"id":"green-beans","name":"Green beans, cooked","serving":"1 cup (125 g)","grams":125,"kcal100":35},{"id":"bell-pepper","name":"Bell pepper, raw","serving":"1 medium (119 g)","grams":119,"kcal100":31},{"id":"tomatoes","name":"Tomatoes, raw","serving":"1 medium (123 g)","grams":123,"kcal100":18},{"id":"cucumber","name":"Cucumber, raw","serving":"1 cup (104 g)","grams":104,"kcal100":15},{"id":"corn","name":"Sweet corn, cooked","serving":"1 cup (164 g)","grams":164,"kcal100":96},{"id":"cauliflower","name":"Cauliflower, raw","serving":"1 cup (107 g)","grams":107,"kcal100":25},{"id":"cheddar","name":"Cheddar cheese","serving":"1 oz (28 g)","grams":28,"kcal100":403},{"id":"cottage-cheese","name":"Cottage cheese (2%)","serving":"½ cup (113 g)","grams":113,"kcal100":81},{"id":"skim-milk","name":"Skim milk","serving":"1 cup (244 g)","grams":244,"kcal100":35},{"id":"soy-milk","name":"Soy milk, unsweetened","serving":"1 cup (240 mL)","grams":240,"kcal100":33},{"id":"mozzarella","name":"Mozzarella, part skim","serving":"1 oz (28 g)","grams":28,"kcal100":254},{"id":"butter","name":"Butter","serving":"1 tbsp (14 g)","grams":14,"kcal100":717},{"id":"olive-oil","name":"Olive oil","serving":"1 tbsp (14 g)","grams":14,"kcal100":884},{"id":"hummus","name":"Hummus","serving":"2 tbsp (30 g)","grams":30,"kcal100":166},{"id":"walnuts","name":"Walnuts","serving":"1 oz (28 g)","grams":28,"kcal100":654},{"id":"cashews","name":"Cashews","serving":"1 oz (28 g)","grams":28,"kcal100":553},{"id":"dark-chocolate","name":"Dark chocolate (70–85%)","serving":"1 oz (28 g)","grams":28,"kcal100":598},{"id":"honey","name":"Honey","serving":"1 tbsp (21 g)","grams":21,"kcal100":304},{"id":"sugar","name":"Sugar","serving":"1 tsp (4 g)","grams":4,"kcal100":387},{"id":"orange-juice","name":"Orange juice","serving":"1 cup (248 g)","grams":248,"kcal100":45},{"id":"cola","name":"Regular cola","serving":"12 fl oz (355 mL)","grams":355,"kcal100":42},{"id":"soda-diet","name":"Diet cola","serving":"12 fl oz (355 mL)","grams":355,"kcal100":0},{"id":"coffee-black","name":"Black coffee","serving":"1 cup (237 mL)","grams":237,"kcal100":1},{"id":"salad-dressing","name":"Ranch dressing","serving":"2 tbsp (30 g)","grams":30,"kcal100":430}
 ];
 function estimateFoodCalories(food,servings){return Math.round(food.grams*food.kcal100/100*servings)}
-function populateFoodChoices(){
-const select=document.getElementById("foodChoice");if(select.options.length>2)return;
-commonFoods.forEach(food=>{
-const option=document.createElement("option");option.value=food.id;
-option.textContent=`${food.name} · ${food.serving}`;
-select.insertBefore(option,select.lastElementChild);
-});
+function setFoodServings(value){document.getElementById("foodServings").value=String(value);updateFoodEstimate()}
+function filterFoodChoices(){populateFoodChoices(true)}
+function populateFoodChoices(force=false){
+const select=document.getElementById("foodChoice");if(!force&&select.options.length>2)return;
+const query=(document.getElementById("foodSearch")?.value||"").trim().toLocaleLowerCase();
+const previous=select.value;select.replaceChildren();
+const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent="Select a food";select.append(placeholder);
+for(const food of commonFoods){
+if(query&&!((food.name+" "+food.serving).toLocaleLowerCase().includes(query)))continue;
+const option=document.createElement("option");option.value=food.id;option.textContent=food.name+" · "+food.serving;select.append(option)
+}
+const custom=document.createElement("option");custom.value="custom";custom.textContent="Other food (use label calories)";select.append(custom);
+if([...select.options].some(option=>option.value===previous))select.value=previous;else select.value="";
+updateFoodEstimate();
 }
 function updateFoodEstimate(){
 const choice=document.getElementById("foodChoice").value;
@@ -4368,7 +4440,7 @@ renderWater();
 function newTrackingId(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function weightEntriesNewestFirst(){return tracking.weight.slice().reverse().sort((a,b)=>b.day.localeCompare(a.day))}
 function showWater(){showScreen("waterScreen");setBottomNav("Water");document.getElementById("waterDay").value=localDay();document.getElementById("waterUnit").value=tracking.waterUnit;renderWater()}
-function showFood(){showScreen("foodScreen");setBottomNav("Food");document.getElementById("foodDay").value=localDay();populateFoodChoices();updateFoodEstimate();renderFood()}
+function showFood(){showScreen("foodScreen");setBottomNav("Food");document.getElementById("foodDay").value=localDay();populateFoodChoices();updateFoodEstimate();renderFood();if(typeof window.mlcRefreshMealPlanner==="function")window.mlcRefreshMealPlanner()}
 function showWeight(){showScreen("weightScreen");setBottomNav("Weight");renderWeight()}
 function showTrackingGoals(){
 showScreen("goalsScreen");setBottomNav("Goals");
@@ -4485,10 +4557,10 @@ const name=food?`${food.name} · ${servings} × ${food.serving}`:document.getEle
 const calories=food?estimateFoodCalories(food,servings):Number(document.getElementById("foodCalories").value);
 if(!food&&choice!=="custom"||food&&(!Number.isFinite(servings)||servings<.25||servings>100))return;
 if(!name||!Number.isInteger(calories)||calories<0||calories>10000)return;
-tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name,calories});saveTracking();event.target.reset();updateFoodEstimate();renderFood();
+tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name,calories});saveTracking();event.target.reset();updateFoodEstimate();renderFood();const notice=document.getElementById("foodLogFeedback");if(notice)notice.textContent="Food added to your log.";
 }
 function repeatFood(name,calories){
-tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name,calories});saveTracking();renderFood();
+tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name,calories});saveTracking();renderFood();const notice=document.getElementById("foodLogFeedback");if(notice)notice.textContent="Food added to your log.";
 }
 function foodFavoriteKey(entry){return `${entry.name}|${entry.calories}`}
 function toggleFoodFavorite(entry){
@@ -4608,6 +4680,8 @@ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{u
 <script src="persistence/photo-sync.js"></script>
 <script src="persistence/account-ui.js"></script>
 
+<script src="meal-planner.js?v=1"></script>
+<script src="online-food-lookup.js?v=1"></script>
 </body>
 
 </html>

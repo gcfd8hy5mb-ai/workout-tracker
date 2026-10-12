@@ -22,6 +22,10 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Exercise each Liftova screen twice
         run: node tests/liftova-browser-smoke.cjs
+      - name: Verify meal cloud snapshots and account ownership guards
+        run: node tests/myliftcoach-meal-cloud-serialization.cjs
+      - name: Exercise Food Planner and Custom Schedule Release
+        run: node tests/myliftcoach-food-schedule-release.cjs
       - name: Exercise MYLIFTCOACH workout lifecycle
         run: node tests/myliftcoach-workout-lifecycle.cjs
       - name: Exercise goal to program changes and reload
