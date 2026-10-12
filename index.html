@@ -1348,10 +1348,10 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 </section>
 
 <section id="foodScreen" class="hidden">
-<h2>Food & Nutrition</h2><p class="small">Free food logging and calorie tracking. Pro adds automatic weekly meal plans.</p><div class="card"><h3>Quick food log · FREE</h3><p class="small">Choose a common food and enter how many servings you had. Calories are estimated automatically; brands and preparation can differ.</p><label for="foodDay">Date</label><input id="foodDay" type="date" onchange="renderFood()"><div id="foodSummary" class="tracker-value"></div>
+<h2>Food & Nutrition</h2><p class="small">Free food logging and calorie tracking. Pro adds automatic weekly meal plans.</p><div class="card"><h3>Quick food log · FREE</h3><p class="small">Choose a common food and enter how many servings you had. Calories are estimated automatically; brands and preparation can differ.</p><label for="foodDay">Date</label><input id="foodDay" type="date" onchange="renderFood()"><div id="foodSummary" class="tracker-value"></div><p id="foodMacroSummary" class="small" role="status"></p>
 <form class="tracker-form" onsubmit="addFood(event)"><label for="foodSearch">Search common foods</label><input id="foodSearch" type="search" placeholder="Search foods…" oninput="filterFoodChoices()"><label for="foodCategory">Browse food category</label><select id="foodCategory" onchange="filterFoodChoices()" aria-label="Browse food category"><option value="">All foods</option><option value="Breakfast">Breakfast</option><option value="Protein">Meat, fish & protein</option><option value="Fruit">Fruit</option><option value="Vegetables">Vegetables</option><option value="Grains">Grains & bread</option><option value="Dairy">Dairy</option><option value="Snacks">Snacks</option><option value="Meals">Meals</option><option value="Beverages">Beverages</option><option value="Other">Other foods</option></select><div id="foodQuickPicks" class="tracker-shortcuts" aria-label="One-tap common foods"></div><label for="foodChoice">Food</label><select id="foodChoice" onchange="updateFoodEstimate()" required><option value="">Select a food</option><option value="custom">Other food (use label calories)</option></select>
 <div id="servingFields" class="hidden"><label for="foodServings" id="servingLabel">Number of servings</label><div class="tracker-shortcuts" aria-label="Quick portions"><button type="button" onclick="setFoodServings(.5)">½</button><button type="button" onclick="setFoodServings(1)">1</button><button type="button" onclick="setFoodServings(1.5)">1½</button><button type="button" onclick="setFoodServings(2)">2</button></div><input id="foodServings" type="number" min="0.25" max="100" step="0.25" inputmode="decimal" value="1" oninput="updateFoodEstimate()"><p id="foodEstimate" role="status" class="small"></p></div>
-<div id="customFoodFields" class="hidden"><label for="foodName">Food or meal</label><input id="foodName" maxlength="100" placeholder="For example, lunch"><label for="foodCalories">Calories from label or recipe</label><input id="foodCalories" type="number" min="0" max="10000" inputmode="numeric"></div>
+<div id="customFoodFields" class="hidden"><label for="foodName">Food or meal</label><input id="foodName" maxlength="100" placeholder="For example, lunch"><label for="foodCalories">Calories from label or recipe</label><input id="foodCalories" type="number" min="0" max="10000" inputmode="numeric"><p class="small">Optional macros from the food label (grams). Leave blank if unknown.</p><label for="foodProtein">Protein (g)</label><input id="foodProtein" type="number" min="0" max="1000" step=".1" inputmode="decimal"><label for="foodCarbs">Carbohydrates (g)</label><input id="foodCarbs" type="number" min="0" max="1000" step=".1" inputmode="decimal"><label for="foodFat">Fat (g)</label><input id="foodFat" type="number" min="0" max="1000" step=".1" inputmode="decimal"></div>
 <button type="submit">Log food</button></form><p id="foodLogFeedback" role="status" aria-live="polite" class="small"></p><p class="small">For packaged foods, the label is more accurate. For other foods, use the label or <a href="https://fdc.nal.usda.gov/" target="_blank" rel="noopener">look them up</a>.</p></div>
 <div class="card" id="savedMealsCard"><h3>My saved meals · FREE</h3><p class="small">Create a meal from common foods, choose servings, and log the whole meal in one tap.</p><label for="savedMealName">Meal name</label><input id="savedMealName" maxlength="80" placeholder="Example: My usual lunch"><label for="savedMealFood">Add an ingredient</label><select id="savedMealFood" aria-label="Ingredient for saved meal"></select><label for="savedMealServings">Servings of ingredient</label><input id="savedMealServings" type="number" min=".25" max="20" step=".25" value="1" inputmode="decimal"><button type="button" onclick="addSavedMealIngredient()">Add ingredient</button><div id="savedMealIngredients" aria-live="polite"></div><button type="button" onclick="saveCustomMeal()" id="saveCustomMealButton">Save this meal</button><button type="button" id="cancelSavedMealEdit" class="hidden" onclick="cancelSavedMealEdit()">Cancel editing</button><p id="savedMealFeedback" class="small" role="status"></p><h4>Saved meals</h4><div id="savedMealsList"></div></div><h3 id="foodListTitle">Food logged</h3><div id="foodList"></div><h3>Favorites</h3><div id="foodFavorites" class="tracker-shortcuts"></div><h3>Recent foods</h3><div id="foodRecent" class="tracker-shortcuts"></div>
 </section>
@@ -4533,6 +4533,33 @@ const commonFoods=[
 {"id":"extra-macaroni-and-cheese","name":"Macaroni and cheese","serving":"200 g reference serving","grams":200,"kcal100":164,"category":"Meals"},
 {"id":"extra-mashed-potatoes-with-milk","name":"Mashed potatoes with milk","serving":"200 g reference serving","grams":200,"kcal100":110,"category":"Meals"},
 {"id":"extra-baked-beans","name":"Baked beans","serving":"150 g reference serving","grams":150,"kcal100":94,"category":"Meals"}];
+
+// Approximate grams per 100g for familiar staples. Unknown foods are not assigned invented macros.
+const foodMacroReference={
+ apple:[.3,13.8,.2],banana:[1.1,22.8,.3],egg:[12.6,.7,9.5],
+ chicken:[31,0,3.6],rice:[2.7,28.2,.3],"brown-rice":[2.6,23,.9],
+ oats:[16.9,66.3,6.9],bread:[9,49,3.2],pb:[25,20,50],
+ yogurt:[10,3.6,.4],milk:[3.2,4.8,3.3],almonds:[21.2,21.6,49.9],
+ salmon:[20,0,13],potato:[2.5,21.2,.1],broccoli:[2.4,7.2,.4],beans:[8.9,23.7,.5]
+};
+function foodMacros(food,servings){
+ const ref=food&&foodMacroReference[food.id];if(!ref)return null;
+ const factor=food.grams*servings/100;
+ return {protein:Math.round(ref[0]*factor*10)/10,carbs:Math.round(ref[1]*factor*10)/10,fat:Math.round(ref[2]*factor*10)/10};
+}
+function entryMacros(entry){
+ if(!["protein","carbs","fat"].every(k=>Number.isFinite(entry?.[k])&&entry[k]>=0))return null;
+ return {protein:entry.protein,carbs:entry.carbs,fat:entry.fat};
+}
+function savedMealMacros(meal){
+ let totals={protein:0,carbs:0,fat:0};
+ for(const ingredient of meal.ingredients||[]){
+  const food=commonFoods.find(f=>f.id===ingredient.id),value=foodMacros(food,Number(ingredient.servings));
+  if(!value)return null;
+  for(const key of Object.keys(totals))totals[key]+=value[key];
+ }
+ return Object.fromEntries(Object.entries(totals).map(([k,v])=>[k,Math.round(v*10)/10]));
+}
 function estimateFoodCalories(food,servings){return Math.round(food.grams*food.kcal100/100*servings)}
 function setFoodServings(value){document.getElementById("foodServings").value=String(value);updateFoodEstimate()}
 function foodCategoryOf(food){
@@ -4561,7 +4588,7 @@ function renderFoodQuickPicks(){
   button.setAttribute("aria-label","Quick log one serving of "+food.name);
   button.onclick=()=>{
    const calories=estimateFoodCalories(food,1);
-   tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name:food.name+" · 1 × "+food.serving,calories});
+   tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name:food.name+" · 1 × "+food.serving,calories,...(foodMacros(food,1)||{})});
    saveTracking();renderFood();
    const notice=document.getElementById("foodLogFeedback");if(notice)notice.textContent=food.name+" added · "+calories+" calories.";
   };area.append(button);
@@ -4728,7 +4755,11 @@ const name=food?`${food.name} · ${servings} × ${food.serving}`:document.getEle
 const calories=food?estimateFoodCalories(food,servings):Number(document.getElementById("foodCalories").value);
 if(!food&&choice!=="custom"||food&&(!Number.isFinite(servings)||servings<.25||servings>100))return;
 if(!name||!Number.isInteger(calories)||calories<0||calories>10000)return;
-tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name,calories});saveTracking();event.target.reset();updateFoodEstimate();renderFood();const notice=document.getElementById("foodLogFeedback");if(notice)notice.textContent="Food added to your log.";
+const manualFields=["foodProtein","foodCarbs","foodFat"].map(id=>document.getElementById(id)?.value.trim()??"");
+const manualMacro=manualFields.every(v=>v!=="")?Object.fromEntries(["protein","carbs","fat"].map((k,i)=>[k,Number(manualFields[i])])):null;
+if(choice==="custom"&&manualMacro&&Object.values(manualMacro).some(x=>!Number.isFinite(x)||x<0||x>1000))return;
+const macro=food?foodMacros(food,servings):manualMacro;
+tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name,calories,...(macro||{})});saveTracking();event.target.reset();updateFoodEstimate();renderFood();const notice=document.getElementById("foodLogFeedback");if(notice)notice.textContent="Food added to your log.";
 }
 function repeatFood(name,calories){
 tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name,calories});saveTracking();renderFood();const notice=document.getElementById("foodLogFeedback");if(notice)notice.textContent="Food added to your log.";
@@ -4863,7 +4894,7 @@ function caloriesForSavedMeal(meal){
 function logSavedMeal(id){
  const meal=(tracking.savedMeals||[]).find(x=>x.id===id);if(!meal)return;
  const calories=caloriesForSavedMeal(meal);if(!Number.isInteger(calories)||calories<0||calories>10000)return;
- tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name:meal.name+" (saved meal)",calories});
+ tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name:meal.name+" (saved meal)",calories,...(savedMealMacros(meal)||{})});
  saveTracking();renderFood();
  const feedback=document.getElementById("savedMealFeedback");if(feedback)feedback.textContent=meal.name+" logged · "+calories+" calories.";
 }
@@ -4891,6 +4922,12 @@ const entries=tracking.food.filter(entry=>entry.day===day);
 const total=entries.reduce((sum,entry)=>sum+Number(entry.calories||0),0);
 const target=dailyCalorieTarget(day);
 document.getElementById("foodSummary").textContent=`${total} calories on ${day}${target?` · ${tracking.calorieMode==="auto"?"estimate":"target"} ${target}`:""}`;
+const withMacros=entries.map(entryMacros).filter(Boolean),sum={protein:0,carbs:0,fat:0};
+withMacros.forEach(m=>Object.keys(sum).forEach(k=>sum[k]+=m[k]));
+document.getElementById("foodMacroSummary").textContent=
+ "Macros from "+withMacros.length+" of "+entries.length+" logged foods · "+
+ Object.entries(sum).map(([k,v])=>k[0].toUpperCase()+k.slice(1)+" "+(Math.round(v*10)/10)+" g").join(" · ")+
+ (withMacros.length<entries.length?" · Some foods have no macro data":"");
 document.getElementById("foodListTitle").textContent=`Food logged · ${day}`;
 trackingRows("food",entries.slice().reverse(),entry=>`${entry.name} · ${entry.calories} cal`);
 renderFoodShortcuts();renderSavedMeals();
