@@ -4,10 +4,11 @@
 const HOST="https://world.openfoodfacts.org";
 let current=[],lastRequest=0;
 function node(tag,text){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e}
+function macro(value){if(value===undefined||value===null||value==="")return null;const n=Number(value);return Number.isFinite(n)&&n>=0&&n<=100?n:null}
 function valid(p){
  const n=p?.nutriments||{};const raw=n["energy-kcal_100g"];if(raw===undefined||raw===null||raw==="")return null;const c=Number(raw);
  if(!p?.product_name||!Number.isFinite(c)||c<0||c>900)return null;
- const product={id:String(p.code||""),name:String(p.product_name).slice(0,140),brand:String(p.brands||"").slice(0,100),calories:c,protein:Number(n.proteins_100g)||0,carbs:Number(n.carbohydrates_100g)||0,fat:Number(n.fat_100g)||0};
+ const product={id:String(p.code||""),name:String(p.product_name).slice(0,140),brand:String(p.brands||"").slice(0,100),calories:c,protein:macro(n.proteins_100g),carbs:macro(n.carbohydrates_100g),fat:macro(n.fat_100g)};
  return product;
 }
 function elements(){return {q:document.getElementById("onlineFoodQuery"),results:document.getElementById("onlineFoodResults"),status:document.getElementById("onlineFoodStatus"),amount:document.getElementById("onlineFoodGrams")}}
@@ -17,7 +18,9 @@ function render(items){const e=elements().results;if(!e)return;e.replaceChildren
  const b=node("button",item.name+(item.brand?" · "+item.brand:"")+" · "+Math.round(item.calories)+" kcal/100g");
  b.type="button";b.addEventListener("click",()=>{const grams=Number(elements().amount?.value);if(!Number.isFinite(grams)||grams<1||grams>2000){status("Enter 1–2000 grams.");return}if(typeof tracking==="undefined"||typeof saveTracking!=="function"||typeof newTrackingId!=="function"){status("Food logging is unavailable.");return}
  const calories=Math.round(item.calories*grams/100);
- tracking.food.push({id:newTrackingId(),day:typeof selectedDay==="function"?selectedDay("food"):new Date().toISOString().slice(0,10),name:item.name+" · "+grams+" g"+(item.brand?" · "+item.brand:""),calories});
+ const nutrients=[item.protein,item.carbs,item.fat];const known=nutrients.every(v=>v!==null&&Number.isFinite(v));
+ const scaled=known?{protein:Math.round(item.protein*grams/10)/10,carbs:Math.round(item.carbs*grams/10)/10,fat:Math.round(item.fat*grams/10)/10}:{};
+ tracking.food.push({id:newTrackingId(),day:typeof selectedDay==="function"?selectedDay("food"):new Date().toISOString().slice(0,10),name:item.name+" · "+grams+" g"+(item.brand?" · "+item.brand:""),calories,...scaled});
  try{saveTracking();if(typeof renderFood==="function")renderFood();status("Added "+item.name+" · "+calories+" calories to your food log.")}catch{tracking.food.pop();status("Could not save the food. Try again.")}});
  row.append(b);e.append(row)}
 }
