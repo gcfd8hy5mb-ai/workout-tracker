@@ -65,6 +65,23 @@ const server=http.createServer((req,res)=>{
   await page.getByRole('button',{name:'Cancel editing'}).click();
   assert.equal(await page.evaluate(()=>tracking.savedMeals[0].name),'QA Dinner','Cancel must not save draft edits');
 
+  await page.locator('#foodCategory').selectOption('');
+  await page.locator('#foodChoice').selectOption('chicken');
+  await page.locator('#foodServings').fill('1');
+  await page.locator('#foodScreen form.tracker-form').first().getByRole('button',{name:'Log food'}).click();
+  const trackedMacro=await page.evaluate(()=>tracking.food.at(-1));
+  assert.ok(trackedMacro.protein>25 && trackedMacro.carbs===0,'Known chicken macro values must be recorded');
+  assert.ok((await page.locator('#foodMacroSummary').innerText()).includes('Protein'),'Free daily macro summary renders');
+  await page.locator('#foodChoice').selectOption('custom');
+  await page.locator('#foodName').fill('QA Label');
+  await page.locator('#foodCalories').fill('150');
+  await page.locator('#foodProtein').fill('12');
+  await page.locator('#foodCarbs').fill('20');
+  await page.locator('#foodFat').fill('3');
+  await page.locator('#foodScreen form.tracker-form').first().getByRole('button',{name:'Log food'}).click();
+  assert.equal(await page.evaluate(()=>tracking.food.at(-1).protein),12,'Custom labeled protein persisted');
+  assert.equal(await page.evaluate(()=>tracking.food.at(-1).carbs),20,'Custom labeled carbohydrates persisted');
+  assert.equal(await page.evaluate(()=>tracking.food.at(-1).fat),3,'Custom labeled fat persisted');
   const planner=page.locator('#mlcMealPlanner');
   assert.equal(await planner.getByRole('button',{name:'Generate my week'}).count(),0,'Free users must not generate Pro plans');
   assert.equal(await page.locator('#onlineFoodLookup').count(),1,'Food search must be available to Free users');
