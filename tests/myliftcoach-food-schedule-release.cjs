@@ -124,6 +124,12 @@ const server=http.createServer((req,res)=>{
   assert.equal(planned.days.length,7,'Paid planner must generate exactly 7 days');
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('dailyTrackingV1')).mealPlanner.days.length),7,'Meal plan must enter account-scoped tracking sync snapshot');
   assert.ok(planned.days.every(d=>d.items.length===4),'Each day must contain four planned meals');
+  await planner.getByRole('spinbutton',{name:'Daily protein target in grams'}).fill('150');
+  await planner.getByRole('spinbutton',{name:'Daily protein target in grams'}).press('Tab');
+  await planner.getByRole('button',{name:'Regenerate 7 days'}).click();
+  planned=await page.evaluate(()=>JSON.parse(localStorage.getItem('myliftcoachMealPlannerV1:guest')));
+  assert.equal(planned.proteinGoal,150,'Pro protein goal persists in plan');
+  assert.ok(planned.days.every(d=>d.items.length===4),'Protein preference maintains complete days');
   assert.ok(await planner.getByText('Weekly ingredient list', {exact:false}).count()>0,'Grocery list must render');
   const shop=planner.locator('details');await shop.locator('summary').click();
   await shop.getByRole('checkbox',{name:/Got /}).first().check();
