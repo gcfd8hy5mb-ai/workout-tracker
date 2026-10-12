@@ -2,6 +2,23 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('playwright');
+const vm=require('node:vm');
+const plannerSource=fs.readFileSync(path.resolve(__dirname,'../meal-planner.js'),'utf8');
+const recipeSource=plannerSource.match(/const meals=(\[[\s\S]*?\])\.map\(/)?.[1];
+const quantitySource=plannerSource.match(/const recipeQuantities=(\{[\s\S]*?\});\s*function groceryTotals/)?.[1];
+assert.ok(recipeSource&&quantitySource,'Pro recipe catalog is parseable');
+const proRecipes=vm.runInNewContext('('+recipeSource+')');
+const proQuantities=vm.runInNewContext('('+quantitySource+')');
+assert.ok(proRecipes.length>=28,'Pro planner offers at least 28 reference meals');
+assert.equal(new Set(proRecipes.map(x=>x[0])).size,proRecipes.length,'Recipe names are unique');
+for(const recipe of proRecipes){
+ assert.ok(['Breakfast','Lunch','Dinner','Snack'].includes(recipe[5]),'Recipe has a meal type');
+ assert.ok(Number.isFinite(recipe[1])&&recipe[1]>0&&Number.isFinite(recipe[2])&&recipe[2]>0,'Recipe has estimated calories and protein');
+ assert.ok(proQuantities[recipe[0]]?.length>0,'Every recipe generates shopping quantities: '+recipe[0]);
+ assert.ok(proQuantities[recipe[0]].every(x=>Number.isFinite(x[1])&&x[1]>0),'Ingredient quantities are positive');
+}
+for(const type of ['Breakfast','Lunch','Dinner','Snack'])assert.ok(proRecipes.filter(x=>x[5]===type).length>=6,'Pro has at least six '+type+' options');
+
 const root=path.resolve(__dirname,'..');
 const mime={'.html':'text/html','.js':'application/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp'};
 const server=http.createServer((req,res)=>{
