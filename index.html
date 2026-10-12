@@ -4534,13 +4534,27 @@ const commonFoods=[
 {"id":"extra-mashed-potatoes-with-milk","name":"Mashed potatoes with milk","serving":"200 g reference serving","grams":200,"kcal100":110,"category":"Meals"},
 {"id":"extra-baked-beans","name":"Baked beans","serving":"150 g reference serving","grams":150,"kcal100":94,"category":"Meals"}];
 
-// Approximate grams per 100g for familiar staples. Unknown foods are not assigned invented macros.
+// Approximate nutrient grams per 100g; USDA FoodData Central SR Legacy reference values.\n// https://fdc.nal.usda.gov/ — preparation state matters; unavailable macros stay unknown.
 const foodMacroReference={
  apple:[.3,13.8,.2],banana:[1.1,22.8,.3],egg:[12.6,.7,9.5],
  chicken:[31,0,3.6],rice:[2.7,28.2,.3],"brown-rice":[2.6,23,.9],
  oats:[16.9,66.3,6.9],bread:[9,49,3.2],pb:[25,20,50],
  yogurt:[10,3.6,.4],milk:[3.2,4.8,3.3],almonds:[21.2,21.6,49.9],
- salmon:[20,0,13],potato:[2.5,21.2,.1],broccoli:[2.4,7.2,.4],beans:[8.9,23.7,.5]
+ salmon:[20,0,13],potato:[2.5,21.2,.1],broccoli:[2.4,7.2,.4],beans:[8.9,23.7,.5],
+ // Reference values per 100g of matching prepared/raw foods, sourced from USDA SR Legacy.
+ blueberries:[.7,14.5,.3],avocado:[2,8.5,14.7],
+ spinach:[2.9,3.6,.4],carrots:[.9,9.6,.2],
+ cheddar:[22.9,3.4,33.3],walnuts:[15.2,13.7,65.2],
+ "olive-oil":[0,0,100],"extra-olive-oil":[0,0,100],
+ "extra-egg-whites":[10.9,.7,.2],
+ "extra-tuna-canned-in-water-drained":[25.5,0,.8],
+ "extra-cheddar-cheese":[22.9,3.4,33.3],
+ "extra-cottage-cheese-low-fat":[10.4,4.8,2.3],
+ "extra-spinach-raw":[2.9,3.6,.4],
+ "extra-carrot-raw":[.9,9.6,.2],
+ "extra-avocado":[2,8.5,14.7],
+ "extra-walnuts":[15.2,13.7,65.2],
+ "extra-blueberries":[.7,14.5,.3]
 };
 function foodMacros(food,servings){
  const ref=food&&foodMacroReference[food.id];if(!ref)return null;
