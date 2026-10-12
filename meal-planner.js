@@ -55,7 +55,19 @@ function persist(){
 function datePlus(d,n){let x=new Date(d+"T12:00:00");x.setDate(x.getDate()+n);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")}
 function startDate(){return typeof localDay==="function"?localDay():new Date().toISOString().slice(0,10)}
 function target(){const v=typeof dailyCalorieTarget==="function"?Number(dailyCalorieTarget(startDate())):0;return Number.isFinite(v)&&v>=1200&&v<=5000?v:2200}
-function allowed(m){let excluded=state.excluded||[];return !m.allergens.some(x=>excluded.includes(x))&&!(excluded.includes("meat")&&/Chicken|Turkey/.test(m.name))&&!(excluded.includes("fish")&&/Salmon/.test(m.name))}
+function allowed(m){
+ const excluded=state.excluded||[];
+ const ingredients=m.ingredients.join(" ").toLowerCase();
+ const contains={
+  meat:/\b(chicken|turkey|beef|pork|bacon)\b/,
+  fish:/\b(salmon|tuna|fish|shrimp|cod)\b/,
+  dairy:/\b(yogurt|milk|cheese|butter|cream)\b/,
+  nuts:/\b(almonds|walnuts|cashews|nuts|peanuts)\b/,
+  gluten:/\b(bread|toast|pita|wheat|pasta)\b/,
+  soy:/\b(tofu|soy|tempeh)\b/
+ };
+ return !excluded.some(x=>m.allergens.includes(x)||contains[x]?.test(ingredients));
+}
 function mealEntry(m,p){return {name:m.name,type:m.type,kcal:Math.round(m.kcal*p),protein:Math.round(m.protein*p),servings:p,ingredients:m.ingredients}}
 function swapMeal(dayDate,index){refreshOwner();if(!paidAccess())return;const day=state.days?.find(d=>d.date===dayDate),old=day?.items[index];if(!old)return;const options=meals.filter(m=>m.type===old.type&&allowed(m)&&m.name!==old.name);if(!options.length)return;const next=options[(state.revision||0)%options.length];day.items[index]=mealEntry(next,Math.max(.5,Math.min(2.5,Math.round(old.kcal/next.kcal*4)/4)));state.revision=(state.revision||0)+1;persist();render()}
 function changePortion(date,index,p){refreshOwner();if(!paidAccess())return;const day=state.days?.find(d=>d.date===date),item=day?.items[index],m=meals.find(v=>v.name===item?.name);if(!m||!Number.isFinite(p)||p<.5||p>2.5)return;day.items[index]=mealEntry(m,p);persist();render()}
@@ -118,7 +130,18 @@ function render(){
  card.append(el("p","Day total: "+day.items.reduce((s,m)=>s+m.kcal,0)+" kcal · "+day.items.reduce((s,m)=>s+m.protein,0)+" g protein","small"));root.append(card);
  }
  const groceries=el("details");groceries.append(el("summary","Weekly ingredient list · tap to expand"));root.append(groceries);
- const list=el("ul");for(const entry of grocery)list.append(el("li",groceryLabel(entry)));
+ const list=el("ul");for(const entry of grocery){
+  const key=entry.name+"|"+entry.unit;
+  const row=el("li"),label=el("label"),check=document.createElement("input");
+  check.type="checkbox";check.checked=Boolean(state.groceryChecked?.[key]);
+  check.setAttribute("aria-label","Got "+entry.name);
+  check.addEventListener("change",()=>{if(!state.groceryChecked)state.groceryChecked={};if(check.checked)state.groceryChecked[key]=true;else delete state.groceryChecked[key];persist();label.style.textDecoration=check.checked?"line-through":"none"});
+  label.style.textDecoration=check.checked?"line-through":"none";
+  label.append(check,document.createTextNode(" "+groceryLabel(entry)));
+  row.append(label);list.append(row);
+ }
+ groceries.append(el("p","Check off items as you shop. Your checklist saves with your meal plan.","small"));
+ groceries.append(list,button("Reset shopping checklist",()=>{state.groceryChecked={};persist();render()}));
  groceries.append(list,button("Copy grocery list",()=>{let msg=[...grocery].map(entry=>groceryLabel(entry)).join("\n");if(navigator.clipboard?.writeText)navigator.clipboard.writeText(msg).catch(()=>prompt("Copy list",msg));else prompt("Copy list",msg)}));
  root.append(el("p","This is a starter recipe rotation, not a complete recipe library. Shopping amounts are estimates based on raw recipe ingredients. Check packaging, cooking yield and recipe details. Exclusion filters cover listed ingredients only; check packaging for cross-contact.","small"));
 }

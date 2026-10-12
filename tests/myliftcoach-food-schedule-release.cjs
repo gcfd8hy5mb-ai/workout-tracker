@@ -125,6 +125,17 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('dailyTrackingV1')).mealPlanner.days.length),7,'Meal plan must enter account-scoped tracking sync snapshot');
   assert.ok(planned.days.every(d=>d.items.length===4),'Each day must contain four planned meals');
   assert.ok(await planner.getByText('Weekly ingredient list', {exact:false}).count()>0,'Grocery list must render');
+  const shop=planner.locator('details');await shop.locator('summary').click();
+  await shop.getByRole('checkbox',{name:/Got /}).first().check();
+  assert.equal(await page.evaluate(()=>Object.values(tracking.mealPlanner.groceryChecked||{}).filter(Boolean).length),1,'Pro grocery checkoff persists');
+  await shop.getByRole('button',{name:'Reset shopping checklist'}).click();
+  assert.equal(await page.evaluate(()=>Object.values(tracking.mealPlanner.groceryChecked||{}).filter(Boolean).length),0,'Pro checklist reset persists');
+  await planner.locator('label').filter({hasText:'No meat'}).locator('input').check();
+  await planner.getByRole('button',{name:/Generate|Regenerate/}).click();
+  const noMeat=await page.evaluate(()=>tracking.mealPlanner.days.every(day=>day.items.every(item=>!/(Chicken|Turkey)/.test(item.name))));
+  assert.ok(noMeat,'Pro meat exclusion must remove chicken and turkey');
+  await planner.locator('label').filter({hasText:'No meat'}).locator('input').uncheck();
+  await planner.getByRole('button',{name:/Generate|Regenerate/}).click(); // Rebuild cleared plan after changing exclusions.
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof showFood==='function'&&typeof window.mlcRefreshMealPlanner==='function');
   await page.evaluate(()=>{document.documentElement.classList.remove('myliftcoach-starting');prismEntitlement={tier:'pro',source:'manual_grant'};goHome();showFood()});
