@@ -24,6 +24,16 @@ const server=http.createServer((req,res)=>{
   await page.evaluate(()=>{document.documentElement.classList.remove('myliftcoach-starting');goHome();showFood()});
   console.log('[food visibility diagnostic]',await page.evaluate(()=>{const el=document.getElementById('foodScreen');const chain=[];for(let e=el;e;e=e.parentElement){const st=getComputedStyle(e);chain.push({id:e.id,className:typeof e.className==='string'?e.className:'',display:st.display,visibility:st.visibility,rect:e.getBoundingClientRect().toJSON?.()})}return {chain,screenFns:{showFood:String(showFood).slice(0,400),showScreen:String(showScreen).slice(0,300)},bodyClass:document.body.className}}));
   await page.locator('#foodScreen:not(.hidden)').waitFor();
+  const allFoods=await page.locator('#foodChoice option').count();
+  assert.ok(allFoods>=200,'Free food selector should expose the expanded library');
+  await page.locator('#foodCategory').selectOption('Fruit');
+  assert.ok(await page.locator('#foodChoice option').count()<allFoods,'Fruit category must filter the list');
+  assert.ok(await page.locator('#foodChoice option').count()>5,'Fruit category should contain useful choices');
+  await page.locator('#foodCategory').selectOption('');
+  const beforeQuick=await page.evaluate(()=>tracking.food.length);
+  await page.getByRole('button',{name:'Quick log one serving of Banana'}).click();
+  assert.equal(await page.evaluate(()=>tracking.food.length),beforeQuick+1,'One-tap quick food must save exactly one entry');
+  assert.ok(await page.evaluate(()=>tracking.food.at(-1).name.includes('Banana')),'Quick food must log selected item');
   const planner=page.locator('#mlcMealPlanner');
   assert.equal(await planner.getByRole('button',{name:'Generate my week'}).count(),0,'Free users must not generate Pro plans');
   assert.equal(await page.locator('#onlineFoodLookup').count(),1,'Food search must be available to Free users');
