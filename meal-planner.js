@@ -18,7 +18,23 @@ const meals=[
 ["Chickpea veggie curry",690,27,["Chickpeas","Rice","Coconut milk"],[],"Dinner"],
 ["Cottage cheese & fruit",280,26,["Cottage cheese","Berries"],["dairy"],"Snack"],
 ["Hummus, carrots & pita",310,12,["Hummus","Carrots","Pita bread"],["gluten"],"Snack"],
-["Protein yogurt & banana",320,28,["Greek yogurt","Bananas"],["dairy"],"Snack"]
+["Protein yogurt & banana",320,28,["Greek yogurt","Bananas"],["dairy"],"Snack"],
+["Spinach egg breakfast wrap",470,32,["Eggs","Spinach","Corn tortillas","Salsa"],[],"Breakfast"],
+["Berry protein overnight oats",510,34,["Oats","Greek yogurt","Berries","Chia seeds"],["dairy"],"Breakfast"],
+["Turkey breakfast hash",540,43,["Ground turkey","Potatoes","Eggs","Bell peppers"],[],"Breakfast"],
+["Peanut butter banana oats",490,17,["Oats","Peanut butter","Bananas"],["nuts"],"Breakfast"],
+["Grilled chicken burrito bowl",680,53,["Chicken breast","Black beans","Rice","Salsa"],[],"Lunch"],
+["Tuna chickpea salad",580,47,["Tuna","Chickpeas","Cucumber","Olive oil"],["fish"],"Lunch"],
+["Tofu edamame rice bowl",620,37,["Tofu","Edamame","Rice","Carrots"],["soy"],"Lunch"],
+["Beef quinoa vegetable bowl",710,48,["Lean beef","Quinoa","Broccoli"],[],"Lunch"],
+["Turkey meatballs with pasta",730,52,["Ground turkey","Pasta","Tomato sauce","Spinach"],["gluten"],"Dinner"],
+["Shrimp vegetable stir fry",650,49,["Shrimp","Rice","Bell peppers","Broccoli"],["shellfish"],"Dinner"],
+["Beef taco bowl",720,48,["Lean beef","Black beans","Rice","Salsa"],[],"Dinner"],
+["Tofu peanut noodle bowl",690,32,["Tofu","Rice noodles","Peanut butter","Carrots"],["soy","nuts"],"Dinner"],
+["Baked chicken sweet potato plate",700,57,["Chicken breast","Sweet potatoes","Green beans","Olive oil"],[],"Dinner"],
+["Hard boiled eggs and fruit",300,19,["Eggs","Apples"],[],"Snack"],
+["Edamame and oranges",270,19,["Edamame","Oranges"],["soy"],"Snack"],
+["Tuna and rice cakes",320,28,["Tuna","Rice cakes"],["fish"],"Snack"]
 ].map(([name,kcal,protein,ingredients,allergens,type])=>({name,kcal,protein,ingredients,allergens,type}));
 // Approximate raw shopping amounts per reference recipe serving, not nutrition database measurements.
 const recipeQuantities={
@@ -33,7 +49,23 @@ const recipeQuantities={
 "Chickpea veggie curry":[["Chickpeas",180,"g drained"],["Rice",75,"g dry"],["Coconut milk",140,"mL"]],
 "Cottage cheese & fruit":[["Cottage cheese",220,"g"],["Berries",100,"g"]],
 "Hummus, carrots & pita":[["Hummus",100,"g"],["Carrots",140,"g"],["Pita bread",1,"each"]],
-"Protein yogurt & banana":[["Greek yogurt",250,"g"],["Bananas",1,"each"]]
+"Protein yogurt & banana":[["Greek yogurt",250,"g"],["Bananas",1,"each"]],
+"Spinach egg breakfast wrap":[["Eggs",3,"each"],["Spinach",60,"g"],["Corn tortillas",2,"each"],["Salsa",60,"g"]],
+"Berry protein overnight oats":[["Oats",65,"g"],["Greek yogurt",200,"g"],["Berries",120,"g"],["Chia seeds",15,"g"]],
+"Turkey breakfast hash":[["Ground turkey",130,"g"],["Potatoes",200,"g"],["Eggs",1,"each"],["Bell peppers",80,"g"]],
+"Peanut butter banana oats":[["Oats",75,"g"],["Peanut butter",30,"g"],["Bananas",1,"each"]],
+"Grilled chicken burrito bowl":[["Chicken breast",180,"g"],["Black beans",130,"g drained"],["Rice",65,"g dry"],["Salsa",60,"g"]],
+"Tuna chickpea salad":[["Tuna",150,"g"],["Chickpeas",140,"g drained"],["Cucumber",120,"g"],["Olive oil",15,"mL"]],
+"Tofu edamame rice bowl":[["Tofu",180,"g"],["Edamame",140,"g"],["Rice",60,"g dry"],["Carrots",100,"g"]],
+"Beef quinoa vegetable bowl":[["Lean beef",170,"g"],["Quinoa",80,"g dry"],["Broccoli",180,"g"]],
+"Turkey meatballs with pasta":[["Ground turkey",200,"g"],["Pasta",90,"g dry"],["Tomato sauce",140,"g"],["Spinach",60,"g"]],
+"Shrimp vegetable stir fry":[["Shrimp",210,"g"],["Rice",80,"g dry"],["Bell peppers",120,"g"],["Broccoli",120,"g"]],
+"Beef taco bowl":[["Lean beef",170,"g"],["Black beans",120,"g drained"],["Rice",60,"g dry"],["Salsa",70,"g"]],
+"Tofu peanut noodle bowl":[["Tofu",200,"g"],["Rice noodles",90,"g dry"],["Peanut butter",28,"g"],["Carrots",130,"g"]],
+"Baked chicken sweet potato plate":[["Chicken breast",200,"g"],["Sweet potatoes",280,"g"],["Green beans",170,"g"],["Olive oil",12,"mL"]],
+"Hard boiled eggs and fruit":[["Eggs",3,"each"],["Apples",1,"each"]],
+"Edamame and oranges":[["Edamame",180,"g"],["Oranges",1,"each"]],
+"Tuna and rice cakes":[["Tuna",120,"g"],["Rice cakes",3,"each"]]
 };
 function groceryTotals(days){const totals=new Map();for(const day of days||[])for(const item of day.items||[]){const p=Number(item.servings);if(!Number.isFinite(p)||p<=0)continue;for(const [name,amount,unit] of recipeQuantities[item.name]||[]){const key=name+"|"+unit;const previous=totals.get(key)||{name,unit,amount:0};previous.amount+=amount*p;totals.set(key,previous)}}return [...totals.values()].sort((a,b)=>a.name.localeCompare(b.name))}
 function groceryLabel(entry){const number=Math.ceil(entry.amount*4)/4;return entry.name+" — "+Number(number.toFixed(2))+" "+entry.unit}
@@ -61,9 +93,10 @@ function allowed(m){
  const ingredients=m.ingredients.join(" ").toLowerCase();
  const contains={
   meat:/\b(chicken|turkey|beef|pork|bacon)\b/,
-  fish:/\b(salmon|tuna|fish|shrimp|cod)\b/,
+  fish:/\b(salmon|tuna|fish|cod)\b/,
+  shellfish:/\b(shrimp|prawns|crab)\b/,
   dairy:/\b(yogurt|milk|cheese|butter|cream)\b/,
-  nuts:/\b(almonds|walnuts|cashews|nuts|peanuts)\b/,
+  nuts:/\b(almonds|walnuts|cashews|nuts|peanuts|peanut butter)\b/,
   gluten:/\b(bread|toast|pita|wheat|pasta)\b/,
   soy:/\b(tofu|soy|tempeh)\b/
  };
@@ -105,7 +138,7 @@ function render(){
  controls.append(date,button(state.days?.length?"Regenerate 7 days":"Generate my week",createPlan));root.append(controls);
  const proteinRow=el("div");proteinRow.style.cssText="margin:10px 0";const proteinLabel=el("label","Daily protein target (g) · optional");const proteinInput=el("input");proteinInput.type="number";proteinInput.min="60";proteinInput.max="250";proteinInput.step="5";proteinInput.placeholder="Example: 150";proteinInput.value=proteinTarget()||"";proteinInput.setAttribute("aria-label","Daily protein target in grams");proteinInput.addEventListener("change",()=>{const n=Number(proteinInput.value);state.proteinGoal=proteinInput.value!==""&&Number.isFinite(n)&&n>=60&&n<=250?n:null;persist();render()});proteinRow.append(proteinLabel,proteinInput,el("p","A planning preference, not a prescribed requirement. Regenerate to apply your target; recipe limits may prevent an exact match.","small"));root.append(proteinRow);
  let exclusions=el("div");exclusions.style.cssText="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0";
- for(const [value,label] of [["meat","No meat"],["fish","No fish"],["dairy","No dairy"],["nuts","No nuts"],["gluten","No gluten"],["soy","No soy"]]){
+ for(const [value,label] of [["meat","No meat"],["fish","No fish"],["shellfish","No shellfish"],["dairy","No dairy"],["nuts","No nuts"],["gluten","No gluten"],["soy","No soy"]]){
  let wrap=el("label"),cb=document.createElement("input");cb.type="checkbox";cb.checked=(state.excluded||[]).includes(value);
  cb.addEventListener("change",()=>{let s=new Set(state.excluded||[]);cb.checked?s.add(value):s.delete(value);state.excluded=[...s];state.days=[];persist();render()});wrap.append(cb,document.createTextNode(" "+label));exclusions.append(wrap);
  }root.append(exclusions);
@@ -147,7 +180,7 @@ function render(){
  groceries.append(el("p","Check off items as you shop. Your checklist saves with your meal plan.","small"));
  groceries.append(list,button("Reset shopping checklist",()=>{state.groceryChecked={};persist();render()}));
  groceries.append(list,button("Copy grocery list",()=>{let msg=[...grocery].map(entry=>groceryLabel(entry)).join("\n");if(navigator.clipboard?.writeText)navigator.clipboard.writeText(msg).catch(()=>prompt("Copy list",msg));else prompt("Copy list",msg)}));
- root.append(el("p","This is a starter recipe rotation, not a complete recipe library. Shopping amounts are estimates based on raw recipe ingredients. Check packaging, cooking yield and recipe details. Exclusion filters cover listed ingredients only; check packaging for cross-contact.","small"));
+ root.append(el("p","This is a rotating recipe library with illustrative nutrition values, not a verified recipe database. Shopping amounts are estimates based on raw recipe ingredients. Check packaging, cooking yield and recipe details. Exclusion filters cover listed ingredients only; check packaging for cross-contact.","small"));
 }
 window.mlcRefreshMealPlanner=render;
 function init(){const food=document.getElementById("foodScreen");if(!food||document.getElementById("mlcMealPlanner"))return;refreshOwner();let root=el("div",undefined,"card");root.id="mlcMealPlanner";food.insertBefore(root,food.children[1]);render()}
