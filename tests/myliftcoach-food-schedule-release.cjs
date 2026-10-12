@@ -43,6 +43,7 @@ const server=http.createServer((req,res)=>{
   await planner.getByRole('button',{name:'Generate my week'}).click();
   let planned=await page.evaluate(()=>JSON.parse(localStorage.getItem('myliftcoachMealPlannerV1:guest')));
   assert.equal(planned.days.length,7,'Paid planner must generate exactly 7 days');
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('dailyTrackingV1')).mealPlanner.days.length),7,'Meal plan must enter account-scoped tracking sync snapshot');
   assert.ok(planned.days.every(d=>d.items.length===4),'Each day must contain four planned meals');
   assert.ok(await planner.getByText('Weekly ingredient list', {exact:false}).count()>0,'Grocery list must render');
   await page.reload({waitUntil:'domcontentloaded'});
@@ -50,6 +51,7 @@ const server=http.createServer((req,res)=>{
   await page.evaluate(()=>{prismEntitlement={tier:'pro',source:'manual_grant'};goHome();showFood()});
   planned=await page.evaluate(()=>JSON.parse(localStorage.getItem('myliftcoachMealPlannerV1:guest')));
   assert.equal(planned.days.length,7,'Meal plan must survive a reload');
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('dailyTrackingV1')).mealPlanner.days.length),7,'Synced tracking source must restore the plan after reload');
 
   // Verify recurring workout priority, expiration, and one-off date overrides using real app state.
   const schedule=await page.evaluate(()=>{
