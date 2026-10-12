@@ -2928,7 +2928,7 @@ function renderWorkoutExerciseJump(selectedIndex){
   button.textContent=(index+1)+". "+(ex?.name||"Exercise");
   button.setAttribute("aria-label","Go to "+(ex?.name||"exercise"));
   button.setAttribute("aria-pressed",String(index===selectedIndex));
-  button.onclick=()=>focusWorkoutExercise(index);
+  button.onclick=()=>{focusWorkoutExercise(index);document.querySelectorAll("#exerciseList > .exercise")[index]?.scrollIntoView({behavior:"smooth",block:"start"})};
   list.append(button);
  });
  const all=document.createElement("button");all.type="button";all.textContent="Show all exercises";
@@ -2946,9 +2946,9 @@ index=Math.max(0,Math.min(activeWorkoutExerciseIds.length-1,Number(index)||0));
 const saved=readPrismActiveWorkout();if(saved?.key===activeWorkoutKey){saved.index=index;saved.ids=[...activeWorkoutExerciseIds];localStorage.setItem("prismActiveWorkoutV1",JSON.stringify(saved))}
 renderWorkoutExerciseJump(index);
 const cards=[...document.querySelectorAll("#exerciseList > .exercise")];
-cards.forEach((card,position)=>{card.classList.toggle("prism-out-of-focus",position!==index);const details=card.querySelector(".details");if(details){details.classList.toggle("open",position===index);card.querySelector(".exercise-header")?.setAttribute("aria-expanded",String(position===index))}});
+cards.forEach(card=>{card.classList.remove("prism-out-of-focus");const details=card.querySelector(".details");if(details){details.classList.add("open");card.querySelector(".exercise-header")?.setAttribute("aria-expanded","true")}});
 const ex=getExercise(activeWorkoutExerciseIds[index]);const heading=document.getElementById("prismWorkoutFocus");
-heading.classList.remove("hidden");heading.replaceChildren();
+heading.classList.add("hidden");heading.replaceChildren();
 const title=document.createElement("strong");title.textContent=`Exercise ${index+1} of ${activeWorkoutExerciseIds.length} · ${ex?.name||"Exercise"}`;
 const description=document.createElement("small");description.textContent=`${ex?.muscle||""}${ex?prismEquipment(ex)?` · ${prismEquipment(ex)}`:"":""} · ${workoutPrescription().sets} sets`;
 const controls=document.createElement("div");controls.className="prism-focus-controls";
