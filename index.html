@@ -1205,6 +1205,7 @@ Exercise Library
 <button class="back" onclick="showWorkouts()">← Workouts</button>
 
 <h2 id="workoutTitle"></h2>
+<div id="workoutExerciseJump" class="card" aria-label="Jump to any workout exercise"><strong>All exercises · choose any machine</strong><p class="small">Tap any exercise to work out of order. Your logged sets stay saved.</p><div id="workoutExerciseJumpList" class="tracker-shortcuts"></div></div>
 <div id="prismWorkoutFocus" class="prism-workout-focus hidden"></div>
 <div class="workout-progress"><strong id="workoutProgressHeading">Ready to start</strong><p id="workoutProgressText">Log your first set when you're ready.</p><div class="progress-bar"><div id="workoutProgressFill" class="progress-fill"></div></div></div>
 <div class="workout-readiness"><strong>How are you feeling today?</strong><p>This is saved with your workout.</p><div class="readiness-options" id="readinessOptions"></div></div>
@@ -2919,10 +2920,31 @@ const saved=readPrismActiveWorkout();if(!saved){showWorkouts();return}
 activeWorkoutKey=saved.key;activeWorkoutTitle=saved.title;activeWorkoutExerciseIds=[...saved.ids];activeCustomIndex=saved.context?.type==="custom"?saved.context.index:null;lastWorkoutContext=saved.context||null;activeWorkoutPrescription=saved.prescription||null;
 openWorkout(saved.title,saved.ids,Boolean(saved.isCustom));
 }
+function renderWorkoutExerciseJump(selectedIndex){
+ const list=document.getElementById("workoutExerciseJumpList");if(!list)return;list.replaceChildren();
+ activeWorkoutExerciseIds.forEach((id,index)=>{
+  const ex=getExercise(id);
+  const button=document.createElement("button");button.type="button";button.className="tracker-shortcut";
+  button.textContent=(index+1)+". "+(ex?.name||"Exercise");
+  button.setAttribute("aria-label","Go to "+(ex?.name||"exercise"));
+  button.setAttribute("aria-pressed",String(index===selectedIndex));
+  button.onclick=()=>focusWorkoutExercise(index);
+  list.append(button);
+ });
+ const all=document.createElement("button");all.type="button";all.textContent="Show all exercises";
+ all.onclick=showAllWorkoutExercises;list.append(all);
+}
+function showAllWorkoutExercises(){
+ document.querySelectorAll("#exerciseList > .exercise").forEach(card=>{card.classList.remove("prism-out-of-focus");card.querySelector(".details")?.classList.add("open");card.querySelector(".exercise-header")?.setAttribute("aria-expanded","true")});
+ document.getElementById("prismWorkoutFocus")?.classList.add("hidden");
+ document.getElementById("prismNextExercise")?.classList.add("hidden");
+ document.querySelectorAll("#workoutExerciseJumpList button[aria-pressed]").forEach(button=>button.setAttribute("aria-pressed","false"));
+}
 function focusWorkoutExercise(index){
 if(!activeWorkoutExerciseIds?.length||activeWorkoutKey==="library")return;
 index=Math.max(0,Math.min(activeWorkoutExerciseIds.length-1,Number(index)||0));
 const saved=readPrismActiveWorkout();if(saved?.key===activeWorkoutKey){saved.index=index;saved.ids=[...activeWorkoutExerciseIds];localStorage.setItem("prismActiveWorkoutV1",JSON.stringify(saved))}
+renderWorkoutExerciseJump(index);
 const cards=[...document.querySelectorAll("#exerciseList > .exercise")];
 cards.forEach((card,position)=>{card.classList.toggle("prism-out-of-focus",position!==index);const details=card.querySelector(".details");if(details){details.classList.toggle("open",position===index);card.querySelector(".exercise-header")?.setAttribute("aria-expanded",String(position===index))}});
 const ex=getExercise(activeWorkoutExerciseIds[index]);const heading=document.getElementById("prismWorkoutFocus");
@@ -2931,7 +2953,7 @@ const title=document.createElement("strong");title.textContent=`Exercise ${index
 const description=document.createElement("small");description.textContent=`${ex?.muscle||""}${ex?prismEquipment(ex)?` · ${prismEquipment(ex)}`:"":""} · ${workoutPrescription().sets} sets`;
 const controls=document.createElement("div");controls.className="prism-focus-controls";
 if(index>0){const prior=document.createElement("button");prior.textContent="← Previous";prior.onclick=()=>focusWorkoutExercise(index-1);controls.appendChild(prior)}
-const all=document.createElement("button");all.textContent="All exercises";all.onclick=()=>{cards.forEach(c=>c.classList.remove("prism-out-of-focus"));heading.classList.add("hidden");document.getElementById("prismNextExercise").classList.add("hidden")};controls.appendChild(all);
+const all=document.createElement("button");all.textContent="All exercises";all.onclick=showAllWorkoutExercises;controls.appendChild(all);
 heading.append(title,description,controls);
 const next=document.getElementById("prismNextExercise");
 if(index+1<activeWorkoutExerciseIds.length){next.classList.remove("hidden");next.innerHTML=`<small>NEXT EXERCISE</small><strong>${escapeHTML(getExercise(activeWorkoutExerciseIds[index+1])?.name||"Next")}</strong> →`;next.onclick=()=>{focusWorkoutExercise(index+1);window.scrollTo({top:0,behavior:"instant"})}}
