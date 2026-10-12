@@ -82,6 +82,17 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.evaluate(()=>tracking.food.at(-1).protein),12,'Custom labeled protein persisted');
   assert.equal(await page.evaluate(()=>tracking.food.at(-1).carbs),20,'Custom labeled carbohydrates persisted');
   assert.equal(await page.evaluate(()=>tracking.food.at(-1).fat),3,'Custom labeled fat persisted');
+  const checked=await page.evaluate(()=>{
+    const blueberry=commonFoods.find(x=>x.id==='blueberries');
+    const tuna=commonFoods.find(x=>x.id==='extra-tuna-canned-in-water-drained');
+    const oil=commonFoods.find(x=>x.id==='extra-olive-oil');
+    const unknown=commonFoods.find(x=>x.id==='extra-cheese-pizza');
+    return {blueberry:foodMacros(blueberry,1),tuna:foodMacros(tuna,1.5),oil:foodMacros(oil,1),unknown:foodMacros(unknown,1)};
+  });
+  assert.ok(checked.blueberry.carbs>20,'Blueberries have source-specific carbs');
+  assert.equal(checked.tuna.protein,38.3,'Tuna protein scales to 150g');
+  assert.equal(checked.oil.fat,14,'Olive oil fat scales to 14g');
+  assert.equal(checked.unknown,null,'Unsourced mixed meals remain unknown');
   const planner=page.locator('#mlcMealPlanner');
   assert.equal(await planner.getByRole('button',{name:'Generate my week'}).count(),0,'Free users must not generate Pro plans');
   assert.equal(await page.locator('#onlineFoodLookup').count(),1,'Food search must be available to Free users');
