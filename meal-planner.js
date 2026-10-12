@@ -59,12 +59,12 @@ function allowed(m){
  const excluded=state.excluded||[];
  const ingredients=m.ingredients.join(" ").toLowerCase();
  const contains={
-  meat:/\\b(chicken|turkey|beef|pork|bacon)\\b/,
-  fish:/\\b(salmon|tuna|fish|shrimp|cod)\\b/,
-  dairy:/\\b(yogurt|milk|cheese|butter|cream)\\b/,
-  nuts:/\\b(almonds|walnuts|cashews|nuts|peanuts)\\b/,
-  gluten:/\\b(bread|toast|pita|wheat|pasta)\\b/,
-  soy:/\\b(tofu|soy|tempeh)\\b/
+  meat:/\b(chicken|turkey|beef|pork|bacon)\b/,
+  fish:/\b(salmon|tuna|fish|shrimp|cod)\b/,
+  dairy:/\b(yogurt|milk|cheese|butter|cream)\b/,
+  nuts:/\b(almonds|walnuts|cashews|nuts|peanuts)\b/,
+  gluten:/\b(bread|toast|pita|wheat|pasta)\b/,
+  soy:/\b(tofu|soy|tempeh)\b/
  };
  return !excluded.some(x=>m.allergens.includes(x)||contains[x]?.test(ingredients));
 }
