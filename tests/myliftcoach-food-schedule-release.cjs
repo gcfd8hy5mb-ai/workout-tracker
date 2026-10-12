@@ -21,7 +21,7 @@ const server=http.createServer((req,res)=>{
   await page.route('https://world.openfoodfacts.org/**',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({products:[{code:'1234567890123',product_name:'QA Cereal',brands:'Test Brand',nutriments:{'energy-kcal_100g':400}}]})}));
   await page.goto('http://127.0.0.1:'+server.address().port+'/',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof showFood==='function'&&typeof showWorkoutsBrowserRoot==='function'&&typeof window.mlcRefreshMealPlanner==='function');
-  await page.evaluate(()=>showFood());
+  await page.evaluate(()=>{goHome();showFood()});
   await page.locator('#foodScreen:not(.hidden)').waitFor();
   const planner=page.locator('#mlcMealPlanner');
   assert.equal(await planner.getByRole('button',{name:'Generate my week'}).count(),0,'Free users must not generate Pro plans');
@@ -46,7 +46,7 @@ const server=http.createServer((req,res)=>{
   assert.ok(await planner.getByText('Weekly ingredient list', {exact:false}).count()>0,'Grocery list must render');
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof showFood==='function'&&typeof window.mlcRefreshMealPlanner==='function');
-  await page.evaluate(()=>{prismEntitlement={tier:'pro',source:'manual_grant'};showFood()});
+  await page.evaluate(()=>{prismEntitlement={tier:'pro',source:'manual_grant'};goHome();showFood()});
   planned=await page.evaluate(()=>JSON.parse(localStorage.getItem('myliftcoachMealPlannerV1:guest')));
   assert.equal(planned.days.length,7,'Meal plan must survive a reload');
 
