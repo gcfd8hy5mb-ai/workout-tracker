@@ -22,6 +22,7 @@ const server=http.createServer((req,res)=>{
   await page.goto('http://127.0.0.1:'+server.address().port+'/',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof showFood==='function'&&typeof showWorkoutsBrowserRoot==='function'&&typeof window.mlcRefreshMealPlanner==='function');
   await page.evaluate(()=>{goHome();showFood()});
+  console.log('[food visibility diagnostic]',await page.evaluate(()=>{const el=document.getElementById('foodScreen');const chain=[];for(let e=el;e;e=e.parentElement){const st=getComputedStyle(e);chain.push({id:e.id,className:typeof e.className==='string'?e.className:'',display:st.display,visibility:st.visibility,rect:e.getBoundingClientRect().toJSON?.()})}return {chain,screenFns:{showFood:String(showFood).slice(0,400),showScreen:String(showScreen).slice(0,300)},bodyClass:document.body.className}}));
   await page.locator('#foodScreen:not(.hidden)').waitFor();
   const planner=page.locator('#mlcMealPlanner');
   assert.equal(await planner.getByRole('button',{name:'Generate my week'}).count(),0,'Free users must not generate Pro plans');
