@@ -21,7 +21,8 @@ const server=http.createServer((req,res)=>{
   await page.route('https://world.openfoodfacts.org/**',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({products:[{code:'1234567890123',product_name:'QA Cereal',brands:'Test Brand',nutriments:{'energy-kcal_100g':400,proteins_100g:10,carbohydrates_100g:70,fat_100g:8}}]})}));
   await page.goto('http://127.0.0.1:'+server.address().port+'/',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof showFood==='function'&&typeof showWorkoutsBrowserRoot==='function'&&typeof window.mlcRefreshMealPlanner==='function');
-  await page.evaluate(()=>{document.documentElement.classList.remove('myliftcoach-starting');goHome();showFood()});
+  await page.addStyleTag({content:'html.myliftcoach-starting body, html.prism-account-booting body {visibility:visible!important}'}); // Isolated nutrition fixture; startup behavior has independent tests.
+   await page.evaluate(()=>{document.documentElement.classList.remove('myliftcoach-starting');goHome();showFood()});
   console.log('[food visibility diagnostic]',await page.evaluate(()=>{const el=document.getElementById('foodScreen');const chain=[];for(let e=el;e;e=e.parentElement){const st=getComputedStyle(e);chain.push({id:e.id,className:typeof e.className==='string'?e.className:'',display:st.display,visibility:st.visibility,rect:e.getBoundingClientRect().toJSON?.()})}return {chain,screenFns:{showFood:String(showFood).slice(0,400),showScreen:String(showScreen).slice(0,300)},bodyClass:document.body.className}}));
   await page.locator('#foodScreen:not(.hidden)').waitFor();
   const allFoods=await page.locator('#foodChoice option').count();
