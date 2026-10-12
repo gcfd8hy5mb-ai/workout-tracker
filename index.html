@@ -1349,7 +1349,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 <section id="foodScreen" class="hidden">
 <h2>Food & Nutrition</h2><p class="small">Free food logging and calorie tracking. Pro adds automatic weekly meal plans.</p><div class="card"><h3>Quick food log · FREE</h3><p class="small">Choose a common food and enter how many servings you had. Calories are estimated automatically; brands and preparation can differ.</p><label for="foodDay">Date</label><input id="foodDay" type="date" onchange="renderFood()"><div id="foodSummary" class="tracker-value"></div>
-<form class="tracker-form" onsubmit="addFood(event)"><label for="foodSearch">Search common foods</label><input id="foodSearch" type="search" placeholder="Search foods…" oninput="filterFoodChoices()"><label for="foodChoice">Food</label><select id="foodChoice" onchange="updateFoodEstimate()" required><option value="">Select a food</option><option value="custom">Other food (use label calories)</option></select>
+<form class="tracker-form" onsubmit="addFood(event)"><label for="foodSearch">Search common foods</label><input id="foodSearch" type="search" placeholder="Search foods…" oninput="filterFoodChoices()"><label for="foodCategory">Browse food category</label><select id="foodCategory" onchange="filterFoodChoices()" aria-label="Browse food category"><option value="">All foods</option><option value="Breakfast">Breakfast</option><option value="Protein">Meat, fish & protein</option><option value="Fruit">Fruit</option><option value="Vegetables">Vegetables</option><option value="Grains">Grains & bread</option><option value="Dairy">Dairy</option><option value="Snacks">Snacks</option><option value="Meals">Meals</option><option value="Beverages">Beverages</option><option value="Other">Other foods</option></select><div id="foodQuickPicks" class="tracker-shortcuts" aria-label="One-tap common foods"></div><label for="foodChoice">Food</label><select id="foodChoice" onchange="updateFoodEstimate()" required><option value="">Select a food</option><option value="custom">Other food (use label calories)</option></select>
 <div id="servingFields" class="hidden"><label for="foodServings" id="servingLabel">Number of servings</label><div class="tracker-shortcuts" aria-label="Quick portions"><button type="button" onclick="setFoodServings(.5)">½</button><button type="button" onclick="setFoodServings(1)">1</button><button type="button" onclick="setFoodServings(1.5)">1½</button><button type="button" onclick="setFoodServings(2)">2</button></div><input id="foodServings" type="number" min="0.25" max="100" step="0.25" inputmode="decimal" value="1" oninput="updateFoodEstimate()"><p id="foodEstimate" role="status" class="small"></p></div>
 <div id="customFoodFields" class="hidden"><label for="foodName">Food or meal</label><input id="foodName" maxlength="100" placeholder="For example, lunch"><label for="foodCalories">Calories from label or recipe</label><input id="foodCalories" type="number" min="0" max="10000" inputmode="numeric"></div>
 <button type="submit">Log food</button></form><p id="foodLogFeedback" role="status" aria-live="polite" class="small"></p><p class="small">For packaged foods, the label is more accurate. For other foods, use the label or <a href="https://fdc.nal.usda.gov/" target="_blank" rel="noopener">look them up</a>.</p></div>
@@ -4535,13 +4535,48 @@ const commonFoods=[
 {"id":"extra-baked-beans","name":"Baked beans","serving":"150 g reference serving","grams":150,"kcal100":94,"category":"Meals"}];
 function estimateFoodCalories(food,servings){return Math.round(food.grams*food.kcal100/100*servings)}
 function setFoodServings(value){document.getElementById("foodServings").value=String(value);updateFoodEstimate()}
+function foodCategoryOf(food){
+ if(food.category){
+  if(["Legumes","Protein"].includes(food.category))return "Protein";
+  if(["Condiments"].includes(food.category))return "Other";
+  return food.category;
+ }
+ const n=food.name.toLowerCase();
+ if(/apple|banana|orange|berries|grapes|melon|peach|mango|fruit/.test(n))return "Fruit";
+ if(/broccoli|potato|spinach|carrot|tomato|vegetable|lettuce|salad/.test(n))return "Vegetables";
+ if(/egg|chicken|turkey|beef|fish|salmon|tuna|shrimp|beans/.test(n))return "Protein";
+ if(/rice|bread|oat|pasta|tortilla|quinoa/.test(n))return "Grains";
+ if(/yogurt|milk|cheese/.test(n))return "Dairy";
+ if(/coffee|juice|cola|tea/.test(n))return "Beverages";
+ if(/nut|peanut|chocolate|hummus/.test(n))return "Snacks";
+ return "Other";
+}
+function renderFoodQuickPicks(){
+ const area=document.getElementById("foodQuickPicks");if(!area)return;
+ area.replaceChildren();
+ for(const id of ["banana","egg","chicken","rice","apple","yogurt"]){
+  const food=commonFoods.find(x=>x.id===id);if(!food)continue;
+  const button=document.createElement("button");button.type="button";
+  button.textContent="+ "+food.name;
+  button.setAttribute("aria-label","Quick log one serving of "+food.name);
+  button.onclick=()=>{
+   const calories=estimateFoodCalories(food,1);
+   tracking.food.push({id:newTrackingId(),day:selectedDay("food"),name:food.name+" · 1 × "+food.serving,calories});
+   saveTracking();renderFood();
+   const notice=document.getElementById("foodLogFeedback");if(notice)notice.textContent=food.name+" added · "+calories+" calories.";
+  };area.append(button);
+ }
+}
 function filterFoodChoices(){populateFoodChoices(true)}
 function populateFoodChoices(force=false){
+renderFoodQuickPicks();
 const select=document.getElementById("foodChoice");if(!force&&select.options.length>2)return;
 const query=(document.getElementById("foodSearch")?.value||"").trim().toLocaleLowerCase();
+const category=document.getElementById("foodCategory")?.value||"";
 const previous=select.value;select.replaceChildren();
 const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent="Select a food";select.append(placeholder);
 for(const food of commonFoods){
+if(category&&foodCategoryOf(food)!==category)continue;
 if(query&&!((food.name+" "+food.serving+" "+(food.category||"")).toLocaleLowerCase().includes(query)))continue;
 const option=document.createElement("option");option.value=food.id;option.textContent=food.name+" · "+food.serving;select.append(option)
 }
