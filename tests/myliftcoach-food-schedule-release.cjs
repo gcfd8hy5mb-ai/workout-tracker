@@ -93,6 +93,12 @@ const server=http.createServer((req,res)=>{
   assert.equal(checked.tuna.protein,38.3,'Tuna protein scales to 150g');
   assert.equal(checked.oil.fat,14,'Olive oil fat scales to 14g');
   assert.equal(checked.unknown,null,'Unsourced mixed meals remain unknown');
+  await page.locator('#foodChoice').selectOption('blueberries');
+  assert.match(await page.locator('#foodEstimate').innerText(),/Protein .*reference estimates/,'Known foods show reference macro estimates');
+  await page.locator('#foodChoice').selectOption('extra-cheese-pizza');
+  assert.match(await page.locator('#foodEstimate').innerText(),/Macros unavailable/,'Unmapped foods show honest missing-macro status');
+  await page.locator('#foodChoice').selectOption('');
+  assert.match(await page.locator('#savedMealsList').innerText(),/Some ingredient macros unavailable|Macros estimated/,'Saved meals explain macro coverage');
   const planner=page.locator('#mlcMealPlanner');
   assert.equal(await planner.getByRole('button',{name:'Generate my week'}).count(),0,'Free users must not generate Pro plans');
   assert.equal(await page.locator('#onlineFoodLookup').count(),1,'Food search must be available to Free users');
