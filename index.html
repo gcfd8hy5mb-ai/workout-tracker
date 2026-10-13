@@ -1096,6 +1096,25 @@ body.prism-onboarding-active .container{max-width:560px;min-height:100vh;min-hei
 #workoutScreen #finishWorkoutButton{position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:9;margin-top:12px}
 @media(max-width:600px){#workoutScreen{padding-bottom:75px}#workoutScreen .exercise-preview{padding:8px}#workoutScreen .exercise-header{min-height:0}}
 </style>
+<style id="prism-zero-scroll-training">
+/* Put logging above optional information; keep coaching accessible on demand. */
+#workoutScreen #workoutTabContent > :not(#exerciseList):not(#prismNextExercise):not(#finishWorkoutButton){display:none!important}
+#workoutScreen.prism-options-open #workoutTabContent > :not(#exerciseList):not(#prismNextExercise):not(#finishWorkoutButton){display:block!important}
+#workoutScreen .prism-goal-disclosure{margin:6px 0 10px}
+#workoutScreen .prism-goal-disclosure > summary{cursor:pointer;padding:10px 12px;border-radius:10px;background:#211831;color:#cdb4ff;font-weight:650;list-style:none}
+#workoutScreen .prism-goal-disclosure > summary::after{content:" +";float:right}
+#workoutScreen .prism-goal-disclosure[open] > summary::after{content:" −"}
+#workoutScreen .prism-goal-disclosure .overload-guide{margin:6px 0}
+#workoutScreen #exerciseList > .exercise .exercise-header{padding:7px 10px}
+#workoutScreen #exerciseList > .exercise .exercise-preview{min-height:0}
+#workoutScreen #exerciseList > .exercise .goal-preview,
+#workoutScreen #exerciseList > .exercise .exercise-text > .small{display:none}
+#workoutScreen #workoutExerciseJumpList{max-height:52px}
+#workoutScreen #prismNextExercise{padding:9px 12px;margin:6px 0}
+#workoutScreen #exerciseList .tracking{margin-top:6px}
+#workoutScreen .workout-tabs{margin:2px 0}
+#workoutScreen .workout-progress{margin:3px 0;padding:6px 10px}
+</style>
 </head>
 
 <body>
@@ -3106,6 +3125,15 @@ onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
 
 </div>`;
 
+if(showGoal){
+/* Keep progression available without forcing it before the set logger. */
+const guide=card.querySelector(".overload-guide");
+if(guide){
+ const disclosure=document.createElement("details");disclosure.className="prism-goal-disclosure";
+ const summary=document.createElement("summary");summary.textContent=`${workoutPrescription().reps} reps · Weight target & coaching`;disclosure.appendChild(summary);
+ guide.parentNode.insertBefore(disclosure,guide);disclosure.appendChild(guide);
+}
+}
 if(showGoal){
 card.querySelector(".prism-info-toggle").onclick=()=>showExerciseInfo(ex.id,"workoutScreen");
 const input=card.querySelector(".goal-weight");
