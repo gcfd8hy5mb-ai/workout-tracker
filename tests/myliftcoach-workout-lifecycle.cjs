@@ -48,6 +48,8 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await jumpButtons.first().click();
 
 
+  assert.equal(await page.locator('#exerciseList > .exercise:visible').count(),1,'compact workout must show only one exercise');
+  await page.locator('#prismWorkoutOptionsToggle').click();
   await page.getByRole('button',{name:'Tired',exact:true}).click();
   assert.equal(await page.getByRole('button',{name:'Tired',exact:true}).getAttribute('aria-pressed'),'true');
   await page.getByRole('button',{name:'1 min',exact:true}).click();
@@ -72,6 +74,8 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   assert.ok(Number(await page.evaluate(()=>localStorage.getItem('prismRestEndsAtV1')||0))>Date.now(),'rest end time must persist');
   await page.getByRole('button',{name:'Skip',exact:true}).click();
   assert.equal(await page.evaluate(()=>localStorage.getItem('prismRestEndsAtV1')),null,'Skip must clear persisted rest timer');
+  await page.locator('#prismWorkoutOptionsToggle').click();
+  assert.equal(await page.locator('#exerciseList > .exercise:visible').count(),1,'collapsing options must retain only selected exercise');
 
   if(state.ids.length>1)await page.evaluate(()=>focusWorkoutExercise(1));
   state=await page.evaluate(()=>JSON.parse(localStorage.getItem('prismActiveWorkoutV1')));const savedIndex=state.index;
