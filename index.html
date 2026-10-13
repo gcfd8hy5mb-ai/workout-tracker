@@ -3130,7 +3130,7 @@ if(showGoal){
 const guide=card.querySelector(".overload-guide");
 if(guide){
  const disclosure=document.createElement("details");disclosure.className="prism-goal-disclosure";
- const summary=document.createElement("summary");summary.textContent="Weight target & coaching";disclosure.appendChild(summary);
+ const summary=document.createElement("summary");summary.textContent=`${workoutPrescription().reps} reps · Weight target & coaching`;disclosure.appendChild(summary);
  guide.parentNode.insertBefore(disclosure,guide);disclosure.appendChild(guide);
 }
 }
