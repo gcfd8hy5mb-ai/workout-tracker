@@ -1076,6 +1076,26 @@ body.prism-onboarding-active .container{max-width:560px;min-height:100vh;min-hei
 
 </style>
 
+<style id="prism-compact-workout-style">
+/* Compact live training: show only the selected machine, while preserving all cards and logged data. */
+#workoutScreen #exerciseList > .exercise.prism-out-of-focus{display:none!important}
+#workoutScreen #workoutExerciseJump{padding:12px;margin:8px 0 10px}
+#workoutScreen #workoutExerciseJump > p{display:none}
+#workoutScreen #workoutExerciseJumpList{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;scroll-snap-type:x proximity;padding:8px 0 2px;-webkit-overflow-scrolling:touch}
+#workoutScreen #workoutExerciseJumpList button{flex:0 0 auto;max-width:75vw;scroll-snap-align:start;white-space:nowrap}
+#workoutScreen #workoutExerciseJumpList button[aria-pressed="true"]{border-color:#aa81ff;box-shadow:0 0 0 1px #aa81ff}
+#workoutScreen .prism-workout-focus{display:none!important}
+#workoutScreen .workout-progress{padding:8px 12px;margin:6px 0}
+#workoutScreen .workout-progress p{display:none}
+#workoutScreen .workout-readiness,#workoutScreen #workoutRestPresets,#workoutScreen .rest-strip,#workoutScreen #workoutCalorieCard{display:none!important}
+#workoutScreen.prism-options-open .workout-readiness:not(.hidden),#workoutScreen.prism-options-open #workoutRestPresets:not(.hidden),#workoutScreen.prism-options-open .rest-strip:not(.hidden),#workoutScreen.prism-options-open #workoutCalorieCard:not(.hidden){display:block!important}
+#workoutScreen .prism-workout-options-toggle{width:100%;text-align:left;margin:6px 0 8px;padding:10px 13px;border:1px solid #51436d;border-radius:12px;background:#151522;color:#dfd3ff;font-weight:600}
+#workoutScreen .workout-tabs{margin:4px 0}
+#workoutScreen .exercise{margin:6px 0}
+#workoutScreen .exercise .details.open{display:block}
+#workoutScreen #finishWorkoutButton{position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:9;margin-top:12px}
+@media(max-width:600px){#workoutScreen{padding-bottom:75px}#workoutScreen .exercise-preview{padding:8px}#workoutScreen .exercise-header{min-height:0}}
+</style>
 </head>
 
 <body>
@@ -1208,6 +1228,7 @@ Exercise Library
 <div id="workoutExerciseJump" class="card" aria-label="Jump to any workout exercise"><strong>All exercises · choose any machine</strong><p class="small">Tap any exercise to work out of order. Your logged sets stay saved.</p><div id="workoutExerciseJumpList" class="tracker-shortcuts"></div></div>
 <div id="prismWorkoutFocus" class="prism-workout-focus hidden"></div>
 <div class="workout-progress"><strong id="workoutProgressHeading">Ready to start</strong><p id="workoutProgressText">Log your first set when you're ready.</p><div class="progress-bar"><div id="workoutProgressFill" class="progress-fill"></div></div></div>
+<button type="button" id="prismWorkoutOptionsToggle" class="prism-workout-options-toggle" aria-expanded="false" onclick="togglePrismWorkoutOptions()">Workout options &amp; coaching <span>⌄</span></button>
 <div class="workout-readiness"><strong>How are you feeling today?</strong><p>This is saved with your workout.</p><div class="readiness-options" id="readinessOptions"></div></div>
 <div class="rest-presets" id="workoutRestPresets" aria-label="Rest duration"></div>
 <div class="rest-strip"><div><strong>Rest between sets</strong><p id="workoutRestStatus" role="status" aria-live="polite">Starts when you mark a set done. Keep this page open for the alert.</p><button onclick="enableRestAlerts()" id="enableRestAlerts">Enable alerts</button></div><div><button class="prism-rest-expand" onclick="showPrismRestTimer()" aria-label="Expand rest timer"><span id="workoutRestDisplay" class="rest-display" role="timer" aria-label="Rest time remaining">1:30</span><small>View timer</small></button><button onclick="skipWorkoutRest()">Skip</button></div></div>
@@ -2878,7 +2899,7 @@ const existing=readPrismActiveWorkout();
 const index=existing?.key===activeWorkoutKey?existing.index||0:0;
 localStorage.setItem("prismActiveWorkoutV1",JSON.stringify({key:activeWorkoutKey,title,ids:[...activeWorkoutExerciseIds],isCustom,index,context:lastWorkoutContext,prescription:activeWorkoutPrescription,startedAt:existing?.key===activeWorkoutKey?existing.startedAt:Date.now()}));
 }
-showScreen("workoutScreen");setBottomNav("Workout");
+showScreen("workoutScreen");setBottomNav("Workout");document.getElementById("workoutScreen")?.classList.remove("prism-options-open");document.getElementById("prismWorkoutOptionsToggle")?.setAttribute("aria-expanded","false");
 const savedIds=tracking.substitutions?.[activeWorkoutKey];
 if(Array.isArray(savedIds)&&savedIds.length&&savedIds.every(id=>getExercise(id))&&new Set(savedIds).size===savedIds.length)activeWorkoutExerciseIds=[...savedIds];
 
@@ -2928,7 +2949,7 @@ function renderWorkoutExerciseJump(selectedIndex){
   button.textContent=(index+1)+". "+(ex?.name||"Exercise");
   button.setAttribute("aria-label","Go to "+(ex?.name||"exercise"));
   button.setAttribute("aria-pressed",String(index===selectedIndex));
-  button.onclick=()=>{focusWorkoutExercise(index);document.querySelectorAll("#exerciseList > .exercise")[index]?.scrollIntoView({behavior:"smooth",block:"start"})};
+  button.onclick=()=>{focusWorkoutExercise(index);document.getElementById("workoutExerciseJump")?.scrollIntoView({behavior:"instant",block:"start"})};
   list.append(button);
  });
  const all=document.createElement("button");all.type="button";all.textContent="Show all exercises";
@@ -2946,7 +2967,7 @@ index=Math.max(0,Math.min(activeWorkoutExerciseIds.length-1,Number(index)||0));
 const saved=readPrismActiveWorkout();if(saved?.key===activeWorkoutKey){saved.index=index;saved.ids=[...activeWorkoutExerciseIds];localStorage.setItem("prismActiveWorkoutV1",JSON.stringify(saved))}
 renderWorkoutExerciseJump(index);
 const cards=[...document.querySelectorAll("#exerciseList > .exercise")];
-cards.forEach(card=>{card.classList.remove("prism-out-of-focus");const details=card.querySelector(".details");if(details){details.classList.add("open");card.querySelector(".exercise-header")?.setAttribute("aria-expanded","true")}});
+cards.forEach((card,i)=>{card.classList.toggle("prism-out-of-focus",i!==index);const details=card.querySelector(".details");if(details){details.classList.toggle("open",i===index);card.querySelector(".exercise-header")?.setAttribute("aria-expanded",String(i===index))}});
 const ex=getExercise(activeWorkoutExerciseIds[index]);const heading=document.getElementById("prismWorkoutFocus");
 heading.classList.add("hidden");heading.replaceChildren();
 const title=document.createElement("strong");title.textContent=`Exercise ${index+1} of ${activeWorkoutExerciseIds.length} · ${ex?.name||"Exercise"}`;
@@ -2959,6 +2980,7 @@ const next=document.getElementById("prismNextExercise");
 if(index+1<activeWorkoutExerciseIds.length){next.classList.remove("hidden");next.innerHTML=`<small>NEXT EXERCISE</small><strong>${escapeHTML(getExercise(activeWorkoutExerciseIds[index+1])?.name||"Next")}</strong> →`;next.onclick=()=>{focusWorkoutExercise(index+1);window.scrollTo({top:0,behavior:"instant"})}}
 else next.classList.add("hidden");
 }
+function togglePrismWorkoutOptions(){const panel=document.getElementById("workoutScreen");const expanded=panel.classList.toggle("prism-options-open");document.getElementById("prismWorkoutOptionsToggle")?.setAttribute("aria-expanded",String(expanded));}
 function focusNextExercise(){const current=readPrismActiveWorkout()?.index||0;focusWorkoutExercise(current+1)}
 function renderWorkoutProgress(){
 const planned=activeWorkoutExerciseIds.length*workoutPrescription().sets;
