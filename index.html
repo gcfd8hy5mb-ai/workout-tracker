@@ -2989,7 +2989,7 @@ function renderWorkoutExerciseJump(selectedIndex){
   button.textContent=(index+1)+". "+(ex?.name||"Exercise");
   button.setAttribute("aria-label","Go to "+(ex?.name||"exercise"));
   button.setAttribute("aria-pressed",String(index===selectedIndex));
-  button.onclick=()=>{focusWorkoutExercise(index);document.getElementById("workoutExerciseJump")?.scrollIntoView({behavior:"instant",block:"start"})};
+  button.onclick=()=>focusWorkoutExercise(index);
   list.append(button);
  });
  const all=document.createElement("button");all.type="button";all.textContent="Show all exercises";
