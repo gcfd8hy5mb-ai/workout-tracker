@@ -1115,6 +1115,27 @@ body.prism-onboarding-active .container{max-width:560px;min-height:100vh;min-hei
 #workoutScreen .workout-tabs{margin:2px 0}
 #workoutScreen .workout-progress{margin:3px 0;padding:6px 10px}
 </style>
+<style id="prism-compact-set-rows">
+/* Reduce set logging to one tappable row per set without changing saved values. */
+#workoutScreen .tracking{padding:8px!important;margin-top:6px!important}
+#workoutScreen .tracking>strong{display:block;margin:4px 0!important;font-size:12px!important}
+#workoutScreen .tracking>.small{display:none!important}
+#workoutScreen .set-block{display:grid!important;grid-template-columns:minmax(0,1fr) 46px!important;column-gap:6px!important;row-gap:1px!important;align-items:center!important;padding:7px 0!important;margin:0!important;border-radius:0!important;border-left:0!important;border-right:0!important;border-top:0!important;box-shadow:none!important;background:transparent!important;min-height:0!important}
+#workoutScreen .set-row{grid-column:1!important;display:grid!important;grid-template-columns:45px minmax(0,1fr) minmax(0,1fr)!important;gap:5px!important;min-width:0!important;margin:0!important;padding:0!important}
+#workoutScreen .set-label{font-size:12px!important}
+#workoutScreen .set-row .picker-button{min-height:44px!important;padding:6px 3px!important;margin:0!important;font-size:14px!important;line-height:1.15!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#workoutScreen .set-block>.set-done{grid-column:2!important;grid-row:1!important;min-width:44px!important;width:44px!important;height:44px!important;min-height:44px!important;padding:3px!important;margin:0!important;border-radius:11px!important;font-size:0!important;color:transparent!important;background:#8d35f3!important;border-color:#ab66ff!important}
+#workoutScreen .set-block>.set-done::after{content:"✓";font-size:24px;color:white}
+#workoutScreen .set-block>.set-done[aria-pressed="true"]{background:#194d38!important;border-color:#2c895c!important}
+#workoutScreen .set-block>.previous{grid-column:1!important;grid-row:2!important;margin:0 0 0 45px!important;font-size:11px!important;line-height:1.1!important}
+#workoutScreen .set-block>.compare{grid-column:1!important;grid-row:3!important;margin:0 0 0 45px!important;padding:2px 5px!important;font-size:10px!important;width:max-content}
+#workoutScreen .set-block>.set-clear{grid-column:2!important;grid-row:2!important;padding:0!important;min-height:24px!important;margin:0!important;font-size:10px!important}
+#workoutScreen .exercise-tools{display:flex!important;gap:6px!important;margin:3px 0!important}
+#workoutScreen .exercise-tools>button{padding:7px 9px!important;min-height:38px!important}
+#workoutScreen .exercise .exercise-preview{min-height:0!important;padding:5px!important}
+#workoutScreen .exercise .details{padding-top:4px!important}
+@media(max-width:380px){#workoutScreen .set-row{grid-template-columns:38px minmax(0,1fr) minmax(0,1fr)!important}#workoutScreen .set-block>.previous{margin-left:38px!important}}
+</style>
 </head>
 
 <body>
@@ -2968,7 +2989,7 @@ function renderWorkoutExerciseJump(selectedIndex){
   button.textContent=(index+1)+". "+(ex?.name||"Exercise");
   button.setAttribute("aria-label","Go to "+(ex?.name||"exercise"));
   button.setAttribute("aria-pressed",String(index===selectedIndex));
-  button.onclick=()=>{focusWorkoutExercise(index);document.getElementById("workoutExerciseJump")?.scrollIntoView({behavior:"instant",block:"start"})};
+  button.onclick=()=>focusWorkoutExercise(index);
   list.append(button);
  });
  const all=document.createElement("button");all.type="button";all.textContent="Show all exercises";
