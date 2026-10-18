@@ -206,7 +206,12 @@
     const schedule=weeklySchedule();
     const workout=schedule[index];
     editingWeekday=index;
-    editingCustomWorkoutId=workout?.kind==='custom' ? customWorkouts()[workout.customIndex]?.id ?? null : null;
+    // A previously saved weekday override can still be linked to its custom workout.
+    // Preserve that association when the user reopens the editor without changing it.
+    const savedOverride=dayOverrides()[index];
+    editingCustomWorkoutId=savedOverride?.customWorkoutId!=null
+      ? savedOverride.customWorkoutId
+      : workout?.kind==='custom' ? customWorkouts()[workout.customIndex]?.id ?? null : null;
     try{builderSelected=workout?.ids?[...workout.ids]:[]}catch{}
     const name=document.getElementById('customWorkoutName');
     const search=document.getElementById('builderSearch');
