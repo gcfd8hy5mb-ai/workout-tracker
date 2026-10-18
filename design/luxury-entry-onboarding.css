@@ -1,0 +1,15 @@
+/* Luxury entry/onboarding visual foundation. Scoped to existing account and journey states.
+   No auth logic, stored keys or workout data are changed. */
+:root{--lux-ink:#092b38;--lux-teal:#004b57;--lux-aqua:#13d6de;--lux-ivory:#fbf8f0;--lux-gold:#c8a77a;--lux-line:rgba(153,121,81,.22)}
+body.liftova-auth-locked,body.prism-onboarding-active{background-color:var(--lux-ivory)!important;background-image:radial-gradient(circle at 8% 5%,rgba(19,214,222,.12),transparent 35%),repeating-linear-gradient(115deg,transparent 0 145px,rgba(194,157,107,.09) 146px,transparent 148px 310px),linear-gradient(135deg,#fffefa,#f0eae0)!important;color:var(--lux-ink)!important}
+#liftovaAuthGate{background:radial-gradient(circle at 95% 0%,rgba(19,214,222,.25),transparent 32%),repeating-linear-gradient(115deg,transparent 0 145px,rgba(194,157,107,.1) 146px,transparent 148px 310px),linear-gradient(135deg,#fffefa,#eee8dc)!important;color:var(--lux-ink)!important}
+#liftovaAuthGate .liftova-auth-shell,body.prism-onboarding-active .journey-shell{color:var(--lux-ink)!important}
+#liftovaAuthGate .liftova-brand h1,body.prism-onboarding-active .journey-brand,body.prism-onboarding-active .journey-shell h1,body.prism-onboarding-active .journey-shell h2{color:var(--lux-ink)!important}
+#liftovaAuthGate :is(.liftova-auth-card,.liftova-auth-panel),body.prism-onboarding-active :is(.journey-card,.journey-option,.journey-form){background:rgba(255,254,250,.96)!important;color:var(--lux-ink)!important;border-color:var(--lux-line)!important;box-shadow:0 14px 36px rgba(10,44,52,.08)!important}
+#liftovaAuthGate :is(input,select),body.prism-onboarding-active :is(input,select){background:#fff!important;color:var(--lux-ink)!important;border:1px solid #d7d4ca!important;font-size:16px!important;max-width:100%;min-width:0}
+#liftovaAuthGate :is(button[type=submit],.primary),body.prism-onboarding-active :is(.journey-next,.journey-primary,button.primary){background:linear-gradient(130deg,#003b48,#006778)!important;color:#fff!important;border:1px solid var(--lux-gold)!important;box-shadow:0 6px 16px rgba(0,70,84,.17)!important}
+#liftovaAuthGate :is(a,.liftova-auth-link),body.prism-onboarding-active :is(a,.journey-eyebrow){color:#007f91!important}
+#liftovaAuthGate .myliftcoach-auth-logo{filter:drop-shadow(0 6px 12px rgba(0,101,114,.15))!important}
+body.prism-onboarding-active .journey-option[aria-pressed=true],body.prism-onboarding-active .journey-option.selected{border-color:#04aabb!important;background:#e8faf9!important}
+@media(max-width:430px){#liftovaAuthGate,body.prism-onboarding-active .container{padding-left:16px!important;padding-right:16px!important}}
+@media(prefers-reduced-motion:reduce){#liftovaAuthGate *,body.prism-onboarding-active *{animation:none!important;transition:none!important}}
