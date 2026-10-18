@@ -218,7 +218,7 @@
     try{builderSelected=workout?.ids?[...workout.ids]:[]}catch{}
     const name=document.getElementById('customWorkoutName');
     const search=document.getElementById('builderSearch');
-    if(name){name.value=workout?.name||`${dayNames[index]} Workout`;name.placeholder='Tap to rename this workout';name.setAttribute('aria-label',`Rename ${dayNames[index]} workout`);name.setAttribute('title',`Change ${dayNames[index]} workout name here`);}
+    if(name){name.value=workout?.name||`${dayNames[index]} Workout`;name.placeholder='Tap to rename this workout';name.setAttribute('aria-label',`Rename ${dayNames[index]} workout`);name.setAttribute('title',`Change ${dayNames[index]} workout name here`);name.setAttribute('autocomplete','off');name.setAttribute('enterkeyhint','done');}
     if(search)search.value='';
     if(typeof showScreen==='function')showScreen('builderScreen');
     if(typeof setBottomNav==='function')setBottomNav('Workouts');
