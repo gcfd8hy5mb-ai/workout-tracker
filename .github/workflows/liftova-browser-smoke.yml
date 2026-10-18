@@ -50,3 +50,12 @@ jobs:
         run: node tests/myliftcoach-startup-recovery.cjs
       - name: Exercise MYLIFTCOACH iPhone Home startup
         run: node tests/myliftcoach-home-startup.cjs
+      - name: Capture luxury first-launch iPhone screenshot
+        run: node tests/luxury-first-paint.cjs
+      - name: Upload luxury first-launch screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: luxury-iphone-first-launch
+          path: artifacts/luxury-preview/*.png
+          if-no-files-found: warn
