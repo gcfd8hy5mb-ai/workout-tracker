@@ -36,3 +36,9 @@ This branch is isolated from main and intentionally does not modify the producti
 - Legacy selectors and image URLs remain in earlier stylesheets (including a chest-press image in the entry stylesheet and leg-press image in onboarding CSS). The new scoped CSS overrides their backgrounds in target states, but that is **not** evidence that legacy visuals cannot flash.
 - The current design CSS targets #liftovaAuthGate and body.liftova-auth-locked; verify that those selectors actually exist on the sign-in route at runtime before relying on them.
 - Required follow-up: inspect actual auth gate mounting, stylesheet loading order, first paint, and service-worker cache behavior; capture iPhone cold-start and account-restore recordings. Do not merge on green CI alone.
+
+## CI validation checkpoint — 2026-10-18
+- Commit bce8cdc passed all five workflows: Test and Deploy to GitHub Pages, PR174 Required Validation, PRISM Tests, MYLIFTCOACH Single Root, and LIFTOVA Browser Smoke.
+- Fixed the stale favicon assertion in tests/test_liftova_redesign.js, which was the cause of the preceding regression failure.
+- Static first-paint inspection: index.html has early account-scope bootstrap in the head, an inline legacy stylesheet, and the new luxury CSS at the end of head. The account gate itself is dynamically inserted later. Automated green tests do not prove the visual first frame or restored PWA state.
+- Outstanding release blocker: collect real iPhone cold-start, return-session, offline/resume and sign-in/onboarding screenshots or recordings; check no legacy visuals flash and that auth/onboarding flows preserve account data. Do not merge based solely on CI.
