@@ -227,7 +227,12 @@
       const name=document.getElementById('customWorkoutName')?.value.trim()||`${dayNames[editingWeekday]} Workout`;
       let ids=[];try{ids=[...(builderSelected||[])]}catch{}
       if(!ids.length){alert('Add at least one exercise, or choose Make Rest Day.');return}
-      const overrides=dayOverrides();overrides[editingWeekday]={name,ids,...(editingCustomWorkoutId!=null?{customWorkoutId:editingCustomWorkoutId}:{})};saveOverrides(overrides);editingWeekday=null;editingCustomWorkoutId=null;
+      const linked=editingCustomWorkoutId!=null?customWorkouts().find(w=>String(w.id)===String(editingCustomWorkoutId)):null;
+      // Keep the link only when the weekday remains identical to its source workout.
+      // Changing a single day creates an independent override, rather than silently
+      // discarding the user's edits or modifying every repeat of the custom workout.
+      const unchanged=linked&&name===linked.name&&ids.length===linked.exercises.length&&ids.every((id,i)=>String(id)===String(linked.exercises[i]));
+      const overrides=dayOverrides();overrides[editingWeekday]={name,ids,...(unchanged?{customWorkoutId:editingCustomWorkoutId}:{})};saveOverrides(overrides);editingWeekday=null;editingCustomWorkoutId=null;
       const save=document.querySelector('#builderScreen .save-button');if(save)save.textContent='Save Workout';
       ensureEditorActions();
       if(typeof goHome==='function')goHome();else if(typeof showScreen==='function')showScreen('home');
