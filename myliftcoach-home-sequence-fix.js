@@ -102,7 +102,11 @@
       const override=overrides[i];
       if(!override)continue;
       if(override.rest){week[i]=null;continue}
-      if(Array.isArray(override.ids))week[i]={workoutKey:`weekday-${i}`,name:override.name||`${dayNames[i]} Workout`,ids:[...override.ids],rows:rowsForIds(override.ids),kind:'override'};
+      if(Array.isArray(override.ids)){
+        // Overrides explicitly linked to a deleted custom workout must not survive deletion.
+        if(override.customWorkoutId != null && !customWorkouts().some(w=>String(w.id)===String(override.customWorkoutId)))continue;
+        week[i]={workoutKey:`weekday-${i}`,name:override.name||`${dayNames[i]} Workout`,ids:[...override.ids],rows:rowsForIds(override.ids),kind:'override'};
+      }
     }
     return week;
   }
