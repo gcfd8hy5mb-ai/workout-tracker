@@ -28,6 +28,8 @@ jobs:
         run: node tests/myliftcoach-meal-cloud-serialization.cjs
       - name: Exercise Food Planner and Custom Schedule Release
         run: node tests/myliftcoach-food-schedule-release.cjs
+      - name: Verify linked custom workout edit and deletion schedule
+        run: node tests/myliftcoach-weekly-custom-sync.cjs
       - name: Exercise MYLIFTCOACH workout lifecycle
         run: node tests/myliftcoach-workout-lifecycle.cjs
       - name: Exercise goal to program changes and reload
