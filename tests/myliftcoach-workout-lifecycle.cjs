@@ -43,7 +43,14 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await page.locator('#home:not(.hidden)').waitFor();
 
   const diagnostic=await page.evaluate(()=>({goal:typeof workoutGoals==='undefined'?null:workoutGoals,program:typeof ensureGeneratedProgram==='function'?ensureGeneratedProgram():null,home:document.getElementById('todayDashboard')?.innerText,buttons:[...document.querySelectorAll('#home button')].filter(el=>el.getClientRects().length).map(el=>({text:el.innerText,klass:el.className})).slice(0,16)}));console.log('[workout-lifecycle diagnostic]',JSON.stringify(diagnostic).slice(0,3500));
-  await page.waitForFunction(()=>{const today=(new Date().getDay()+6)%7;const scheduled=window.myliftcoachWeeklySchedule?.()?.[today];const heading=document.querySelector('#home .liftova-home-shell .lh-workout h2')?.textContent||'';return scheduled&&heading.trim().toUpperCase()===String(scheduled.name).trim().toUpperCase()},{},{timeout:12000});
+  const syncDiagnostic=await page.evaluate(()=>{
+    const today=(new Date().getDay()+6)%7;
+    const scheduled=window.myliftcoachWeeklySchedule?.()?.[today];
+    const card=document.querySelector('#home .liftova-home-shell .lh-workout');
+    return {today,scheduled:scheduled?{name:scheduled.name,kind:scheduled.kind,ids:scheduled.ids}:null,heading:card?.querySelector('h2')?.textContent,cardKey:card?.dataset.scheduledWorkoutKey,cardKind:card?.dataset.scheduledWorkoutKind,override:localStorage.getItem('myliftcoachWeeklyDayOverridesV1'),refreshType:typeof window.myliftcoachRefreshHomeSchedule,homeClass:document.getElementById('home')?.className};
+  });
+  console.log('[weekly Home synchronization diagnostic]',JSON.stringify(syncDiagnostic));
+  await page.waitForFunction(()=>{const today=(new Date().getDay()+6)%7;const scheduled=window.myliftcoachWeeklySchedule?.()?.[today];const card=document.querySelector('#home .liftova-home-shell .lh-workout');return scheduled&&card?.dataset.scheduledWorkoutKey===scheduled.workoutKey},null,{timeout:12000});
   const start=page.locator('#home .myliftcoach-home-workout-action');await start.waitFor();
   await page.waitForFunction(()=>document.querySelector('#home .myliftcoach-home-workout-action')?.textContent.trim()==='Start Workout',null,{timeout:12000});
   assert.equal((await start.innerText()).trim(),'Start Workout','canonical Home must expose Start Workout for a scheduled session');
