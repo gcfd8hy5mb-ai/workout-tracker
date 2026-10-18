@@ -197,6 +197,9 @@
         if(typeof goHome==='function')goHome();else if(typeof showScreen==='function')showScreen('home');
         queue();
       };
+      rest.textContent='Remove From Day';
+      rest.setAttribute('aria-label','Remove workout from this day and make it a rest day');
+      rest.title='Removes only this day\'s workout; workout history is kept';
       actions.append(rest,reset);save.after(actions);
     }
     actions.hidden=editingWeekday===null;
