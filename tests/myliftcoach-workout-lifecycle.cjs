@@ -25,7 +25,21 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   });
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof goHome==='function'&&typeof resumePrismWorkout==='function'&&typeof finishWorkout==='function');
-  await page.evaluate(()=>goHome());
+  // Keep the lifecycle fixture on a known training day, independent of CI run date.
+  await page.evaluate(()=>{
+    const today=(new Date().getDay()+6)%7;
+    const week=window.myliftcoachWeeklySchedule?.()||[];
+    if(!week[today]){
+      const training=week.find(Boolean);
+      if(training){
+        const overrides=JSON.parse(localStorage.getItem('myliftcoachWeeklyDayOverridesV1')||'{}');
+        overrides[today]={name:training.name,ids:[...training.ids]};
+        localStorage.setItem('myliftcoachWeeklyDayOverridesV1',JSON.stringify(overrides));
+        window.myliftcoachRefreshHomeSchedule?.();
+      }
+    }
+    goHome();
+  });
   await page.locator('#home:not(.hidden)').waitFor();
 
   const diagnostic=await page.evaluate(()=>({goal:typeof workoutGoals==='undefined'?null:workoutGoals,program:typeof ensureGeneratedProgram==='function'?ensureGeneratedProgram():null,home:document.getElementById('todayDashboard')?.innerText,buttons:[...document.querySelectorAll('#home button')].filter(el=>el.getClientRects().length).map(el=>({text:el.innerText,klass:el.className})).slice(0,16)}));console.log('[workout-lifecycle diagnostic]',JSON.stringify(diagnostic).slice(0,3500));
