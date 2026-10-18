@@ -1,12 +1,12 @@
 /* MYLIFTCOACH launch presentation. */
-html.myliftcoach-starting{background:#050409!important}
+html.myliftcoach-starting{background:#003b49!important}
 html.myliftcoach-starting body>*:not(#myliftcoachStartupCover):not(#liftovaAuthGate){visibility:hidden!important}
-html.myliftcoach-starting::before{content:"";position:fixed;inset:0;z-index:2147482998;background:#050409;pointer-events:none}
-#myliftcoachStartupCover{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#050409;opacity:1;pointer-events:none;transition:opacity .22s cubic-bezier(.22,1,.36,1)}
+html.myliftcoach-starting::before{content:"";position:fixed;inset:0;z-index:2147482998;background:#003b49;pointer-events:none}
+#myliftcoachStartupCover{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#003b49;opacity:1;pointer-events:none;transition:opacity .22s cubic-bezier(.22,1,.36,1)}
 #myliftcoachStartupCover .mlc-startup-mark{display:flex;flex-direction:column;align-items:center;gap:12px;transform:translateY(-2vh);opacity:1;transition:transform .22s cubic-bezier(.22,1,.36,1),opacity .22s ease}
 #myliftcoachStartupCover img{width:72px;height:72px;display:block;object-fit:contain}
-#myliftcoachStartupCover strong{color:#f9f7ff;font:800 15px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;letter-spacing:.18em}
-#myliftcoachStartupCover span{color:#aaa3b4;font:600 10px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;letter-spacing:.24em}
+#myliftcoachStartupCover strong{color:#fffdf8;font:800 15px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;letter-spacing:.18em}
+#myliftcoachStartupCover span{color:#c8dcd9;font:600 10px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;letter-spacing:.24em}
 html.myliftcoach-ready #myliftcoachStartupCover{opacity:0}
 html.myliftcoach-ready #myliftcoachStartupCover .mlc-startup-mark{transform:translateY(-1vh) scale(.985);opacity:.94}
 html.myliftcoach-ready::before{opacity:0;transition:opacity .22s cubic-bezier(.22,1,.36,1)}
