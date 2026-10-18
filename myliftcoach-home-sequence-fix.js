@@ -250,6 +250,13 @@
     day.dataset.myliftcoachDayEditor='1';day.setAttribute('role','button');day.setAttribute('tabindex','0');day.setAttribute('aria-label',`Edit ${dayNames[index]} scheduled workout`);
     day.setAttribute('title',`Tap to edit ${dayNames[index]}`);
     day.style.cursor='pointer';
+    // Keep the weekday itself as the only tap target; the hint is visual only.
+    if(!day.querySelector('.myliftcoach-edit-hint')){
+      const hint=document.createElement('span');hint.className='myliftcoach-edit-hint';hint.textContent='Edit';
+      hint.setAttribute('aria-hidden','true');
+      hint.style.cssText='display:block;font-size:10px;line-height:1.2;font-weight:500;opacity:.68;margin-top:3px;pointer-events:none';
+      day.appendChild(hint);
+    }
     day.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openDayEditor(index)});
     day.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openDayEditor(index)}});
   }
