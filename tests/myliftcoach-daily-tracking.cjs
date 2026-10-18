@@ -14,6 +14,9 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   const page=await context.newPage();page.setDefaultTimeout(12000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/persistence/account-ui.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:'/* guest daily-tracking fixture */'}));
   await page.goto(`http://127.0.0.1:${server.address().port}/`,{waitUntil:'domcontentloaded'});
+  // The app shell starts hidden during account bootstrap in the guest fixture.
+  // Reveal it here so Playwright can interact with actual daily-tracking forms.
+  await page.addStyleTag({content:'.container, #waterScreen, #foodScreen, #weightScreen, #goalsScreen, #measurementsScreen {visibility:visible !important;}'});
   await page.waitForFunction(()=>typeof showWater==='function'&&typeof showFood==='function'&&typeof showWeight==='function'&&typeof showTrackingGoals==='function'&&typeof showMeasurements==='function'&&typeof showProgressPhotos==='function');
   const day=await page.evaluate(()=>localDay());
 
