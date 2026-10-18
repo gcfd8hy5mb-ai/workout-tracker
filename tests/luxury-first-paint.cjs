@@ -1,0 +1,29 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const http=require('node:http');
+const {chromium}=require('playwright');
+const root=path.resolve(__dirname,'..');
+const mime={'.html':'text/html','.css':'text/css','.js':'application/javascript','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.json':'application/json'};
+const server=http.createServer((req,res)=>{
+ const file=path.resolve(root,decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\\//,'')||'index.html');
+ if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
+ fs.readFile(file,(e,data)=>{if(e){res.writeHead(404).end();return;}res.writeHead(200,{'content-type':mime[path.extname(file)]||'application/octet-stream'}).end(data);});
+});
+(async()=>{
+ await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ try{
+  const context=await browser.newContext({viewport:{width:390,height:844},screen:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2,serviceWorkers:'block'});
+  const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('http://127.0.0.1:'+server.address().port+'/',{waitUntil:'domcontentloaded',timeout:30000});
+  await page.waitForTimeout(1500);
+  fs.mkdirSync(path.join(root,'artifacts','luxury-preview'),{recursive:true});
+  await page.screenshot({path:path.join(root,'artifacts','luxury-preview','iphone-first-launch.png'),fullPage:false});
+  const theme=await page.locator('meta[name="theme-color"]').getAttribute('content');
+  const icon=await page.locator('link[rel="icon"]').getAttribute('href');
+  assert.equal(theme,'#003b49');
+  assert.match(icon,/myliftcoach-icon\\.svg/);
+  console.log(JSON.stringify({theme,icon,visibleText:(await page.locator('body').innerText()).slice(0,400),errors:errors.slice(0,8)}));
+ }finally{await browser.close();server.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});
