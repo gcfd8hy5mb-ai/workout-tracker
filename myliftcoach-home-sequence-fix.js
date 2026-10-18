@@ -247,7 +247,8 @@
 
   function bindDay(day,index){
     if(day.dataset.myliftcoachDayEditor==='1')return;
-    day.dataset.myliftcoachDayEditor='1';day.setAttribute('role','button');day.setAttribute('tabindex','0');day.setAttribute('aria-label',`View or edit ${dayNames[index]} workout`);
+    day.dataset.myliftcoachDayEditor='1';day.setAttribute('role','button');day.setAttribute('tabindex','0');day.setAttribute('aria-label',`Edit ${dayNames[index]} scheduled workout`);
+    day.setAttribute('title',`Tap to edit ${dayNames[index]}`);
     day.style.cursor='pointer';
     day.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openDayEditor(index)});
     day.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openDayEditor(index)}});
