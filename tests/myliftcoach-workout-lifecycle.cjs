@@ -43,7 +43,9 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   await page.locator('#home:not(.hidden)').waitFor();
 
   const diagnostic=await page.evaluate(()=>({goal:typeof workoutGoals==='undefined'?null:workoutGoals,program:typeof ensureGeneratedProgram==='function'?ensureGeneratedProgram():null,home:document.getElementById('todayDashboard')?.innerText,buttons:[...document.querySelectorAll('#home button')].filter(el=>el.getClientRects().length).map(el=>({text:el.innerText,klass:el.className})).slice(0,16)}));console.log('[workout-lifecycle diagnostic]',JSON.stringify(diagnostic).slice(0,3500));
+  await page.waitForFunction(()=>{const today=(new Date().getDay()+6)%7;const scheduled=window.myliftcoachWeeklySchedule?.()?.[today];const heading=document.querySelector('#home .liftova-home-shell .lh-workout h2')?.textContent||'';return scheduled&&heading.trim().toUpperCase()===String(scheduled.name).trim().toUpperCase()},{},{timeout:12000});
   const start=page.locator('#home .myliftcoach-home-workout-action');await start.waitFor();
+  await page.waitForFunction(()=>document.querySelector('#home .myliftcoach-home-workout-action')?.textContent.trim()==='Start Workout',null,{timeout:12000});
   assert.equal((await start.innerText()).trim(),'Start Workout','canonical Home must expose Start Workout for a scheduled session');
   await start.click();await page.locator('#workoutScreen:not(.hidden)').waitFor();
   let state=await page.evaluate(()=>JSON.parse(localStorage.getItem('prismActiveWorkoutV1')||'null'));
