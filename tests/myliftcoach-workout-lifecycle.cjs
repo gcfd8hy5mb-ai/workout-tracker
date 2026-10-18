@@ -30,13 +30,15 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
     const today=(new Date().getDay()+6)%7;
     const week=window.myliftcoachWeeklySchedule?.()||[];
     if(!week[today]){
+      // During early boot the schedule may not have initialized yet.
+      // Use a stable known exercise fixture instead of silently skipping setup.
       const training=week.find(Boolean);
-      if(training){
-        const overrides=JSON.parse(localStorage.getItem('myliftcoachWeeklyDayOverridesV1')||'{}');
-        overrides[today]={name:training.name,ids:[...training.ids]};
-        localStorage.setItem('myliftcoachWeeklyDayOverridesV1',JSON.stringify(overrides));
-        window.myliftcoachRefreshHomeSchedule?.();
-      }
+      const name=training?.name||'Lifecycle Test Workout';
+      const ids=training?.ids?.length?[...training.ids]:['machine-chest-press','pec-deck','triceps-pushdown'];
+      const overrides=JSON.parse(localStorage.getItem('myliftcoachWeeklyDayOverridesV1')||'{}');
+      overrides[today]={name,ids};
+      localStorage.setItem('myliftcoachWeeklyDayOverridesV1',JSON.stringify(overrides));
+      window.myliftcoachRefreshHomeSchedule?.();
     }
     goHome();
   });
