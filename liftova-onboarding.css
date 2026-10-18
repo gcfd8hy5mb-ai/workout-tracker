@@ -1,6 +1,6 @@
 /* MYLIFTCOACH premium onboarding skin. Keeps existing onboarding data/logic intact. */
-:root{--liftova-purple:#7a28ff;--liftova-purple-2:#a45cff;--liftova-bg:#05050a;--liftova-panel:rgba(10,10,18,.88);--liftova-line:#3b2856;--liftova-muted:#9d98aa}
-body.prism-onboarding-active{background:#05050a!important;color:#fff!important;padding-top:0!important;min-height:100vh;background-image:radial-gradient(circle at 50% 13%,rgba(122,40,255,.24),transparent 30%),linear-gradient(rgba(5,5,10,.76),rgba(5,5,10,.94)),url('images/leg-press.png')!important;background-size:auto,auto,cover!important;background-position:center!important;background-attachment:fixed!important}
+:root{--liftova-purple:#006a77;--liftova-purple-2:#00aebb;--liftova-bg:#fbf8f0;--liftova-panel:#fffdf8;--liftova-line:#ddcdb4;--liftova-muted:#49666b}
+body.prism-onboarding-active{background:#fbf8f0!important;color:#092c38!important;padding-top:0!important;min-height:100vh;background-image:radial-gradient(circle at 85% 0%,rgba(19,214,222,.18),transparent 38%),repeating-linear-gradient(115deg,transparent 0 145px,rgba(194,157,107,.08) 146px,transparent 148px 310px),linear-gradient(135deg,#fffefa,#eee8dc)!important;background-size:auto!important;background-position:center!important;background-attachment:fixed!important}
 body.prism-onboarding-active>header{display:none!important}
 body.prism-onboarding-active .container{max-width:540px!important;padding:calc(26px + env(safe-area-inset-top)) 18px calc(38px + env(safe-area-inset-bottom))!important;margin:auto!important}
 body.prism-onboarding-active .journey-shell{min-height:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));padding:0!important;background:transparent!important;color:#fff!important}
@@ -37,3 +37,10 @@ body.prism-onboarding-active .journey-inline{display:grid!important;grid-templat
 body.prism-onboarding-active .myliftcoach-touch-target{min-height:48px!important}
 @media(max-width:380px){body.prism-onboarding-active .container{padding-left:14px!important;padding-right:14px!important}body.prism-onboarding-active #prismJourneyContent>h2{font-size:24px!important}body.prism-onboarding-active .journey-card{padding:14px!important}body.prism-onboarding-active .journey-option{min-height:70px!important;padding:12px!important}}
 @media(prefers-reduced-motion:reduce){body.prism-onboarding-active .journey-option,body.prism-onboarding-active .journey-progress span{transition:none!important}body.prism-onboarding-active .journey-option:active,body.prism-onboarding-active .journey-option.myliftcoach-option-tapped{transform:none!important}}
+
+/* Approved luxury journey surfaces, defined in the original onboarding skin. */
+body.prism-onboarding-active .journey-shell{color:#092c38!important}
+body.prism-onboarding-active .journey-card{background:#fffdf8!important;color:#092c38!important;border-color:#ddcdb4!important}
+body.prism-onboarding-active .journey-option{background:#fffdf8!important;color:#123743!important;border-color:#ddcdb4!important}
+body.prism-onboarding-active .journey-option.selected{background:#e7fbfa!important;border-color:#00aebc!important}
+body.prism-onboarding-active .journey-actions .journey-primary{background:linear-gradient(135deg,#003b49,#006a77)!important;color:#fff!important;border-color:#b99c70!important}
