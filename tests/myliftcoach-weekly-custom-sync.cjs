@@ -3,7 +3,8 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
 const server=http.createServer((req,res)=>{
- const file=path.resolve(root,decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\\//,'')||'index.html');
+ const name=decodeURIComponent(new URL(req.url,'http://localhost').pathname).slice(1)||'index.html';
+ const file=path.resolve(root,name);
  if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
  fs.readFile(file,(error,data)=>{if(error){res.writeHead(404).end();return;}res.writeHead(200,{'content-type':file.endsWith('.js')?'application/javascript':'text/html'}).end(data);});
 });
