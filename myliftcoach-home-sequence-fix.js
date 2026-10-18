@@ -105,8 +105,14 @@
       if(override.rest){week[i]=null;continue}
       if(Array.isArray(override.ids)){
         // Overrides explicitly linked to a deleted custom workout must not survive deletion.
-        if(override.customWorkoutId != null && !customWorkouts().some(w=>String(w.id)===String(override.customWorkoutId))){week[i]=null;continue;}
-        week[i]={workoutKey:`weekday-${i}`,name:override.name||`${dayNames[i]} Workout`,ids:[...override.ids],rows:rowsForIds(override.ids),kind:'override'};
+        const linked=override.customWorkoutId != null
+          ? customWorkouts().find(w=>String(w.id)===String(override.customWorkoutId))
+          : null;
+        if(override.customWorkoutId != null && !linked){week[i]=null;continue;}
+        // A weekday linked to a custom workout follows edits to that workout.
+        // Unlinked weekday overrides remain independently editable.
+        const ids=linked?[...linked.exercises]:[...override.ids];
+        week[i]={workoutKey:`weekday-${i}`,name:linked?linked.name:(override.name||`${dayNames[i]} Workout`),ids,rows:rowsForIds(ids),kind:'override'};
       }
     }
     return week;
