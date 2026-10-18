@@ -30,3 +30,9 @@ This branch is isolated from main and intentionally does not modify the producti
 - Audit text, accessible labels, image assets, CSS variables, service worker cache, manifest, page title, and PWA launch path for PRISM/LIFTOVA leftovers.
 - Test cold launch, warm launch, offline launch, stale service-worker cache, slow network, authenticated/guest sessions, and every screen transition on iPhone-sized viewports. Compare screenshots or recordings frame by frame for old-layout flashes.
 - Do not merge or deploy until zero legacy-rendering checks and existing functionality tests pass. Do not claim this requirement is verified based on CSS changes alone.
+
+## Rendering audit — first pass (2026-10-18)
+- The new luxury CSS is linked from index.html; the latest five GitHub workflows passed.
+- Legacy selectors and image URLs remain in earlier stylesheets (including a chest-press image in the entry stylesheet and leg-press image in onboarding CSS). The new scoped CSS overrides their backgrounds in target states, but that is **not** evidence that legacy visuals cannot flash.
+- The current design CSS targets #liftovaAuthGate and body.liftova-auth-locked; verify that those selectors actually exist on the sign-in route at runtime before relying on them.
+- Required follow-up: inspect actual auth gate mounting, stylesheet loading order, first paint, and service-worker cache behavior; capture iPhone cold-start and account-restore recordings. Do not merge on green CI alone.
