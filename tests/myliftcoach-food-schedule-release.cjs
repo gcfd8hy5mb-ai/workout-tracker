@@ -41,7 +41,7 @@ const server=http.createServer((req,res)=>{
   await page.addStyleTag({content:'html.myliftcoach-starting body, html.prism-account-booting body {visibility:visible!important}'}); // Isolated nutrition fixture; startup behavior has independent tests.
    await page.evaluate(()=>{document.documentElement.classList.remove('myliftcoach-starting');goHome();showFood()});
   console.log('[food visibility diagnostic]',await page.evaluate(()=>{const el=document.getElementById('foodScreen');const chain=[];for(let e=el;e;e=e.parentElement){const st=getComputedStyle(e);chain.push({id:e.id,className:typeof e.className==='string'?e.className:'',display:st.display,visibility:st.visibility,rect:e.getBoundingClientRect().toJSON?.()})}return {chain,screenFns:{showFood:String(showFood).slice(0,400),showScreen:String(showScreen).slice(0,300)},bodyClass:document.body.className}}));
-  await page.locator('#foodScreen:not(.hidden)').waitFor();
+  await page.waitForFunction(()=>{const el=document.getElementById('foodScreen');return el&&!el.classList.contains('hidden')&&getComputedStyle(el).display!=='none'},null,{timeout:15000});
   const allFoods=await page.locator('#foodChoice option').count();
   assert.ok(allFoods>=200,'Free food selector should expose the expanded library');
   await page.locator('#foodCategory').selectOption('Fruit');
