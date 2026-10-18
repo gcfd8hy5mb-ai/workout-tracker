@@ -6,7 +6,7 @@ body.prism-onboarding-active .container{max-width:540px!important;padding:calc(2
 body.prism-onboarding-active .journey-shell{min-height:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));padding:0!important;background:transparent!important;color:#fff!important}
 body.prism-onboarding-active .journey-brand{display:flex!important;flex-direction:column!important;align-items:center!important;margin:4px 0 22px!important;text-align:center!important}
 body.prism-onboarding-active .journey-brand img{display:none!important}
-body.prism-onboarding-active .journey-brand:before{content:'◇';display:grid;place-items:center;width:68px;height:62px;margin-bottom:7px;color:#b68aff;font-size:52px;font-weight:900;line-height:1;transform:rotate(45deg);text-shadow:0 0 26px rgba(142,73,255,.8)}
+body.prism-onboarding-active .journey-brand:before{content:'';display:block;width:62px;height:62px;margin:0 auto 12px;border-radius:18px;background:linear-gradient(145deg,#003c4b,#007786);border:1px solid #c7ad7d;box-shadow:0 8px 22px rgba(0,69,78,.18)}
 body.prism-onboarding-active .journey-brand strong{font-size:29px!important;letter-spacing:.2em!important;font-weight:850!important;background:linear-gradient(#fff,#aeb0bd);-webkit-background-clip:text;background-clip:text;color:transparent!important}
 body.prism-onboarding-active .journey-brand small{margin-top:5px!important;font-size:9px!important;letter-spacing:.3em!important;color:#b9b3c8!important;text-transform:uppercase!important}
 body.prism-onboarding-active .journey-progress{display:grid!important;grid-template-columns:repeat(7,1fr)!important;gap:5px!important;margin:0 0 8px!important;position:sticky!important;top:calc(env(safe-area-inset-top) + 5px)!important;z-index:5!important;padding:6px 0 8px!important;background:linear-gradient(180deg,rgba(5,5,10,.96),rgba(5,5,10,.74) 72%,transparent)!important;backdrop-filter:blur(8px)!important}
@@ -44,3 +44,14 @@ body.prism-onboarding-active .journey-card{background:#fffdf8!important;color:#0
 body.prism-onboarding-active .journey-option{background:#fffdf8!important;color:#123743!important;border-color:#ddcdb4!important}
 body.prism-onboarding-active .journey-option.selected{background:#e7fbfa!important;border-color:#00aebc!important}
 body.prism-onboarding-active .journey-actions .journey-primary{background:linear-gradient(135deg,#003b49,#006a77)!important;color:#fff!important;border-color:#b99c70!important}
+
+/* Source-level overrides for every onboarding step; avoid old purple first-paint surfaces. */
+body.prism-onboarding-active .journey-brand strong{background:none!important;color:#073846!important;font-family:Georgia,serif!important;font-weight:500!important;letter-spacing:.045em!important}
+body.prism-onboarding-active .journey-brand small{color:#557076!important}
+body.prism-onboarding-active .journey-progress{background:linear-gradient(180deg,rgba(251,248,240,.98),rgba(251,248,240,.88) 72%,transparent)!important}
+body.prism-onboarding-active .journey-progress span{background:#d9d1c4!important}
+body.prism-onboarding-active .journey-progress span.done{background:linear-gradient(90deg,#006a77,#00aebb)!important;box-shadow:none!important}
+body.prism-onboarding-active .journey-eyebrow{color:#47666b!important}
+body.prism-onboarding-active #prismJourneyContent>h2,body.prism-onboarding-active #prismGoalReviewContent>h2{color:#092c38!important;font-family:Georgia,serif!important;font-weight:500!important;text-transform:none!important;line-height:1.15!important}
+body.prism-onboarding-active #prismJourneyContent>p,body.prism-onboarding-active #prismGoalReviewContent>p{color:#47666b!important}
+body.prism-onboarding-active .journey-option[aria-pressed='true']{border-color:#00aebb!important;background:#e7fbfa!important;color:#073846!important}
