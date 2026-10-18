@@ -1145,11 +1145,15 @@ body.prism-onboarding-active .container{max-width:560px;min-height:100vh;min-hei
 #customScheduleControls .myliftcoach-schedule-form{min-width:0;width:100%;box-sizing:border-box}
 #customScheduleControls .myliftcoach-schedule-form[hidden]{display:none!important}
 #customScheduleControls input[type="date"],#customScheduleControls select,#customScheduleControls label{display:block;min-width:0;max-width:100%;width:100%;box-sizing:border-box}
-#customScheduleControls input[type="date"]{-webkit-appearance:none;appearance:none;min-height:48px;padding:10px 12px}
+#customScheduleControls input[type="date"]{display:block!important;inline-size:100%!important;max-inline-size:100%!important;min-inline-size:0!important;box-sizing:border-box!important;-webkit-appearance:none;appearance:none;min-height:48px;padding:10px 12px!important;margin-inline:0!important}
 #customScheduleControls input[type="date"]::-webkit-date-and-time-value{text-align:left;min-width:0}
 #workoutScreen .tracking,#workoutScreen .set-block,#workoutScreen .set-row{min-width:0;max-width:100%;box-sizing:border-box}
 #workoutScreen .set-row>*{min-width:0;max-width:100%;box-sizing:border-box}
 #workoutScreen .set-block>.set-done{max-width:100%}
+#workoutScreen .exercise,#workoutScreen .tracking,#workoutScreen .set-block{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+#workoutScreen .set-row{width:100%!important;min-width:0!important;grid-template-columns:40px minmax(0,1fr) minmax(0,1fr)!important}
+#workoutScreen .set-row .picker-button{width:100%!important;min-width:0!important;max-width:100%!important}
+#customScheduleControls .myliftcoach-schedule-form>*{min-width:0;max-width:100%;box-sizing:border-box}
 @media(max-width:480px){#workoutScreen .set-block{grid-template-columns:minmax(0,1fr) 44px!important}#workoutScreen .set-row{grid-template-columns:40px minmax(0,1fr) minmax(0,1fr)!important}}
 </style>
 </head>
