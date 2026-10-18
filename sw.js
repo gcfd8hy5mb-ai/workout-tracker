@@ -1,5 +1,5 @@
-const CACHE_NAME = "myliftcoach-home-v23-goal-program";
-const UPGRADE_VERSION = "23";
+const CACHE_NAME = "myliftcoach-home-v24-iphone-layout";
+const UPGRADE_VERSION = "24";
 
 // Keep the install shell deliberately small. Runtime/presentation modules are network-first below,
 // so an installed PWA cannot remain pinned to a stale presentation or scheduling bundle.
