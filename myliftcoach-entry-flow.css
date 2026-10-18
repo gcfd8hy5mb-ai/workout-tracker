@@ -1,9 +1,9 @@
 /* MYLIFTCOACH entry-flow UI/UX pass. Presentation only; no auth/onboarding logic. */
-:root{--entry-accent:#9d46ff;--entry-accent-2:#7b24d6;--entry-bg:#050409;--entry-panel:#0d0a12;--entry-raised:#15101d;--entry-line:rgba(255,255,255,.105);--entry-muted:#aaa3b4;--entry-danger:#ff8493;--entry-success:#8ee0b0}
+:root{--entry-accent:#00aebb;--entry-accent-2:#005c6a;--entry-bg:#fbf8f0;--entry-panel:#fffdf8;--entry-raised:#f6f1e7;--entry-line:rgba(185,156,112,.3);--entry-muted:#49666b;--entry-danger:#ff8493;--entry-success:#8ee0b0}
 
 /* ---------- Account gate: sign in / sign up ---------- */
 body.liftova-auth-locked{background:var(--entry-bg)!important;color:#fff!important}
-#liftovaAuthGate{background:radial-gradient(circle at 50% -6%,rgba(157,70,255,.23),transparent 34%),linear-gradient(180deg,rgba(5,4,9,.84),rgba(5,4,9,.97)),url('images/machine-chest-press.png') center/cover no-repeat!important;padding:calc(18px + env(safe-area-inset-top)) 18px calc(20px + env(safe-area-inset-bottom))!important}
+#liftovaAuthGate{background:radial-gradient(circle at 50% -6%,rgba(157,70,255,.23),transparent 34%),linear-gradient(180deg,rgba(5,4,9,.84),rgba(5,4,9,.97)),linear-gradient(135deg,#fffefa,#eee8dc)!important;padding:calc(18px + env(safe-area-inset-top)) 18px calc(20px + env(safe-area-inset-bottom))!important}
 #liftovaAuthGate .liftova-auth-shell{max-width:430px!important;min-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 38px)!important;justify-content:center!important}
 #liftovaAuthGate .liftova-brand{margin:0 0 22px!important}
 #liftovaAuthGate .myliftcoach-auth-logo{width:86px!important;height:86px!important;margin:0 auto 12px!important;border-radius:24px!important;filter:drop-shadow(0 12px 30px rgba(157,70,255,.28))!important}
