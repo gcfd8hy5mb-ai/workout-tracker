@@ -56,7 +56,21 @@
     const plan = nextCustomPlan();
     const home = document.getElementById('home');
     const card = home?.querySelector('.liftova-home-shell .lh-workout');
-    if (!plan || !card) return;
+    if (!card) return;
+    // The weekday schedule module is the canonical owner of this card.
+    // This legacy custom-home decorator must not overwrite scheduled/rest-day content.
+    if (typeof window.myliftcoachWeeklySchedule === 'function') {
+      delete card.dataset.customHomeFingerprint;
+      return;
+    }
+    if (!plan) {
+      delete card.dataset.customHomeFingerprint;
+      delete card.dataset.customWorkoutIndex;
+      card.removeAttribute('role');
+      card.removeAttribute('tabindex');
+      card.removeAttribute('aria-label');
+      return;
+    }
 
     const rows = plan.ids.map(exerciseInfo);
     const groups = {};

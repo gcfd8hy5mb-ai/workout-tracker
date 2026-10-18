@@ -50,6 +50,14 @@ function swipeRight(page){return page.evaluate(()=>{const make=(type,x)=>{const 
   // Log one replacement set through the visible compact control so the completion summary has real data.
   await page.evaluate(({replacementId,candidateIndex})=>{const active=JSON.parse(localStorage.getItem('prismActiveWorkoutV1'));const k=`${active.key}-${replacementId}-set1`;setHistory[k]={weight:100,reps:10,done:false};localStorage.setItem('setHistoryV5',JSON.stringify(setHistory));renderActiveWorkoutExercises();focusWorkoutExercise(candidateIndex);},{replacementId,candidateIndex});
   const log=page.locator('#exerciseList > .exercise').nth(candidateIndex).locator('.liftova-log-check').first();await log.waitFor();await log.click();
+  const logDiagnostic=await page.evaluate(({replacementId,candidateIndex})=>{
+    const active=JSON.parse(localStorage.getItem('prismActiveWorkoutV1')||'null');
+    const key=`${active?.key}-${replacementId}-set1`;
+    const button=document.querySelectorAll('#exerciseList > .exercise')[candidateIndex]?.querySelector('.liftova-log-check');
+    return {key,stored:JSON.parse(localStorage.getItem('setHistoryV5')||'{}')[key],memory:typeof setHistory!=='undefined'?setHistory[key]:null,button:button?.textContent,buttonHtml:button?.outerHTML?.slice(0,700),activeIds:active?.ids};
+  },{replacementId,candidateIndex});
+  console.log('[substitution log diagnostic]',JSON.stringify(logDiagnostic));
+  await page.waitForFunction(index=>document.querySelectorAll('#exerciseList > .exercise')[index]?.querySelector('.liftova-log-check')?.textContent.trim()==='✓',candidateIndex,{timeout:5000});
   assert.equal((await log.innerText()).trim(),'✓','replacement set must log through the visible control');
   if(await page.getByRole('button',{name:'Skip',exact:true}).count())await page.getByRole('button',{name:'Skip',exact:true}).click();
 

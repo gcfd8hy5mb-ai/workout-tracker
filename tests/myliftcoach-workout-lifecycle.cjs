@@ -25,11 +25,36 @@ const server=http.createServer((req,res)=>{const filename=decodeURIComponent(new
   });
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>typeof goHome==='function'&&typeof resumePrismWorkout==='function'&&typeof finishWorkout==='function');
-  await page.evaluate(()=>goHome());
+  // Keep the lifecycle fixture on a known training day, independent of CI run date.
+  await page.evaluate(()=>{
+    const today=(new Date().getDay()+6)%7;
+    const week=window.myliftcoachWeeklySchedule?.()||[];
+    if(!week[today]){
+      // During early boot the schedule may not have initialized yet.
+      // Use a stable known exercise fixture instead of silently skipping setup.
+      const training=week.find(Boolean);
+      const name=training?.name||'Lifecycle Test Workout';
+      const ids=training?.ids?.length?[...training.ids]:['machine-chest-press','pec-deck','triceps-pushdown'];
+      const overrides=JSON.parse(localStorage.getItem('myliftcoachWeeklyDayOverridesV1')||'{}');
+      overrides[today]={name,ids};
+      localStorage.setItem('myliftcoachWeeklyDayOverridesV1',JSON.stringify(overrides));
+      window.myliftcoachRefreshHomeSchedule?.();
+    }
+    goHome();
+  });
   await page.locator('#home:not(.hidden)').waitFor();
 
   const diagnostic=await page.evaluate(()=>({goal:typeof workoutGoals==='undefined'?null:workoutGoals,program:typeof ensureGeneratedProgram==='function'?ensureGeneratedProgram():null,home:document.getElementById('todayDashboard')?.innerText,buttons:[...document.querySelectorAll('#home button')].filter(el=>el.getClientRects().length).map(el=>({text:el.innerText,klass:el.className})).slice(0,16)}));console.log('[workout-lifecycle diagnostic]',JSON.stringify(diagnostic).slice(0,3500));
+  const syncDiagnostic=await page.evaluate(()=>{
+    const today=(new Date().getDay()+6)%7;
+    const scheduled=window.myliftcoachWeeklySchedule?.()?.[today];
+    const card=document.querySelector('#home .liftova-home-shell .lh-workout');
+    return {today,scheduled:scheduled?{name:scheduled.name,kind:scheduled.kind,ids:scheduled.ids}:null,heading:card?.querySelector('h2')?.textContent,cardKey:card?.dataset.scheduledWorkoutKey,cardKind:card?.dataset.scheduledWorkoutKind,override:localStorage.getItem('myliftcoachWeeklyDayOverridesV1'),refreshType:typeof window.myliftcoachRefreshHomeSchedule,homeClass:document.getElementById('home')?.className};
+  });
+  console.log('[weekly Home synchronization diagnostic]',JSON.stringify(syncDiagnostic));
+  await page.waitForFunction(()=>{const today=(new Date().getDay()+6)%7;const scheduled=window.myliftcoachWeeklySchedule?.()?.[today];const card=document.querySelector('#home .liftova-home-shell .lh-workout');return scheduled&&card?.dataset.scheduledWorkoutKey===scheduled.workoutKey},null,{timeout:12000});
   const start=page.locator('#home .myliftcoach-home-workout-action');await start.waitFor();
+  await page.waitForFunction(()=>document.querySelector('#home .myliftcoach-home-workout-action')?.textContent.trim()==='Start Workout',null,{timeout:12000});
   assert.equal((await start.innerText()).trim(),'Start Workout','canonical Home must expose Start Workout for a scheduled session');
   await start.click();await page.locator('#workoutScreen:not(.hidden)').waitFor();
   let state=await page.evaluate(()=>JSON.parse(localStorage.getItem('prismActiveWorkoutV1')||'null'));

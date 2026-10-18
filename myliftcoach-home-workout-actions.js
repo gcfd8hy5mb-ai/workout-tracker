@@ -21,6 +21,9 @@ function injectStyle(){if(document.querySelector('style[data-myliftcoach-home-wo
 `;document.head.appendChild(style)}
 function actionMode(){
  if(safeActive())return {mode:'resume',label:'Resume Workout'};
+ const today=(new Date().getDay()+6)%7;
+ const canonical=typeof window.myliftcoachWeeklySchedule==='function'?window.myliftcoachWeeklySchedule():null;
+ if(Array.isArray(canonical))return canonical[today]?{mode:'start',label:'Start Workout'}:{mode:'browse',label:'Browse Workouts'};
  const legacy=hiddenWorkoutAction(),label=(legacy?.textContent||'').trim();
  if(/explore workouts/i.test(label))return {mode:'browse',label:'Explore Workouts',legacy};
  const rest=/\brest\s*day\b/i.test(shell()?.querySelector('.lh-workout h2')?.textContent||'');

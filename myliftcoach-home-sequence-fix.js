@@ -6,6 +6,7 @@
   const OVERRIDES_KEY='myliftcoachWeeklyDayOverridesV1';
   const dayNames=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   let editingWeekday=null;
+  let editingCustomWorkoutId=null;
 
   const readJson=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
   const customWorkouts=()=>{const v=readJson('customWorkoutsV5',[]);return Array.isArray(v)?v.filter(w=>w&&w.name&&Array.isArray(w.exercises)&&w.exercises.length):[]};
@@ -102,7 +103,17 @@
       const override=overrides[i];
       if(!override)continue;
       if(override.rest){week[i]=null;continue}
-      if(Array.isArray(override.ids))week[i]={workoutKey:`weekday-${i}`,name:override.name||`${dayNames[i]} Workout`,ids:[...override.ids],rows:rowsForIds(override.ids),kind:'override'};
+      if(Array.isArray(override.ids)){
+        // Overrides explicitly linked to a deleted custom workout must not survive deletion.
+        const linked=override.customWorkoutId != null
+          ? customWorkouts().find(w=>String(w.id)===String(override.customWorkoutId))
+          : null;
+        if(override.customWorkoutId != null && !linked){week[i]=null;continue;}
+        // A weekday linked to a custom workout follows edits to that workout.
+        // Unlinked weekday overrides remain independently editable.
+        const ids=linked?[...linked.exercises]:[...override.ids];
+        week[i]={workoutKey:`weekday-${i}`,name:linked?linked.name:(override.name||`${dayNames[i]} Workout`),ids,rows:rowsForIds(ids),kind:'override'};
+      }
     }
     return week;
   }
@@ -195,6 +206,7 @@
     const schedule=weeklySchedule();
     const workout=schedule[index];
     editingWeekday=index;
+    editingCustomWorkoutId=workout?.kind==='custom' ? customWorkouts()[workout.customIndex]?.id ?? null : null;
     try{builderSelected=workout?.ids?[...workout.ids]:[]}catch{}
     const name=document.getElementById('customWorkoutName');
     const search=document.getElementById('builderSearch');
@@ -215,7 +227,7 @@
       const name=document.getElementById('customWorkoutName')?.value.trim()||`${dayNames[editingWeekday]} Workout`;
       let ids=[];try{ids=[...(builderSelected||[])]}catch{}
       if(!ids.length){alert('Add at least one exercise, or choose Make Rest Day.');return}
-      const overrides=dayOverrides();overrides[editingWeekday]={name,ids};saveOverrides(overrides);editingWeekday=null;
+      const overrides=dayOverrides();overrides[editingWeekday]={name,ids,...(editingCustomWorkoutId!=null?{customWorkoutId:editingCustomWorkoutId}:{})};saveOverrides(overrides);editingWeekday=null;editingCustomWorkoutId=null;
       const save=document.querySelector('#builderScreen .save-button');if(save)save.textContent='Save Workout';
       ensureEditorActions();
       if(typeof goHome==='function')goHome();else if(typeof showScreen==='function')showScreen('home');
