@@ -38,7 +38,7 @@ const html = read('index.html');
 for (const screen of ['workoutsScreen','workoutScreen','libraryScreen','overallProgressScreen','profileScreen']) assert.match(html, new RegExp(`id=["']${screen}["']`));
 assert.match(html, /apple-mobile-web-app-title" content="MYLIFTCOACH"/, 'iOS install title must be MYLIFTCOACH at source');
 assert.match(html, /apple-touch-icon[^>]+apple-touch-icon-180\.png\?v=10/, 'HTML Apple icon must use current v10 asset');
-assert.match(html, /rel="icon"[^>]+liftova-icon\.svg\?v=10/, 'HTML source favicon remains a compatibility fallback until source asset migration');
+assert.match(html, /rel="icon"[^>]+myliftcoach-icon\.svg\?v=22/, 'HTML source favicon must use the MYLIFTCOACH identity');
 assert.match(html, /<title>MYLIFTCOACH · Train · Track · Progress<\/title>/);
 
 const manifest = JSON.parse(read('manifest.json'));
