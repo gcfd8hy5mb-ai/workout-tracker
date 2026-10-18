@@ -13,3 +13,15 @@ body.liftova-auth-locked,body.prism-onboarding-active{background-color:var(--lux
 body.prism-onboarding-active .journey-option[aria-pressed=true],body.prism-onboarding-active .journey-option.selected{border-color:#04aabb!important;background:#e8faf9!important}
 @media(max-width:430px){#liftovaAuthGate,body.prism-onboarding-active .container{padding-left:16px!important;padding-right:16px!important}}
 @media(prefers-reduced-motion:reduce){#liftovaAuthGate *,body.prism-onboarding-active *{animation:none!important;transition:none!important}}
+
+/* Approved sign-in and onboarding typography and interaction styling. */
+#liftovaAuthGate .liftova-brand h1,body.prism-onboarding-active #prismJourneyContent h2{font-family:Georgia,serif!important;font-weight:500!important;color:#092c38!important;letter-spacing:-.025em!important}
+#liftovaAuthGate .liftova-auth-card{background:#fffdf8!important;border:1px solid #ddcdb4!important;border-radius:22px!important;box-shadow:0 16px 36px rgba(3,49,62,.09)!important}
+body.prism-onboarding-active .journey-card{background:#fffdf8!important;border:1px solid #ddcdb4!important;border-radius:20px!important}
+body.prism-onboarding-active .journey-option{background:#fffdf8!important;color:#123743!important;border:1px solid #e1d4c1!important;border-radius:16px!important;min-height:64px!important}
+body.prism-onboarding-active .journey-option.selected{background:#e7fbfa!important;border-color:#00aebc!important;color:#073846!important}
+body.prism-onboarding-active .journey-actions .journey-primary{background:linear-gradient(135deg,#003a49,#006a77)!important;color:white!important;border:1px solid #b99c70!important;border-radius:26px!important;min-height:54px!important}
+body.prism-onboarding-active .journey-actions button:not(.journey-primary){background:#fffdf8!important;color:#17434d!important;border:1px solid #d8c9b1!important}
+body.prism-onboarding-active .journey-progress span.active{background:#06c8d3!important}
+body.prism-onboarding-active #journey-date-preview{background:#f6f2e9!important;color:#244854!important}
+body.prism-onboarding-active[data-mlc-onboarding-step='7'] .journey-card{background:#fffdf8!important;border-color:#ddcdb4!important}
