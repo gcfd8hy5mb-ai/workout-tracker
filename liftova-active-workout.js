@@ -72,6 +72,46 @@
     cards.forEach(card=>card.classList.toggle('myliftcoach-current-exercise',card===next));
   };
 
+  // A lightweight exercise picker: navigate existing cards without recreating
+  // workout inputs or modifying session progress.
+  const ensureExerciseJump = workout => {
+    const cards=[...workout.querySelectorAll('.exercise')];
+    let panel=workout.querySelector('.myliftcoach-exercise-jump');
+    if(!cards.length){if(panel)panel.remove();return;}
+    if(!panel){
+      panel=document.createElement('section');panel.className='myliftcoach-exercise-jump';
+      panel.style.cssText='margin:10px 0 14px;border:1px solid #4b345f;border-radius:14px;padding:10px;background:#15101d;color:#eee';
+      const toggle=document.createElement('button');toggle.type='button';toggle.textContent='All Exercises ▾';
+      toggle.setAttribute('aria-expanded','false');toggle.style.cssText='width:100%;min-height:44px;text-align:left;border:0;background:transparent;color:inherit;font-weight:700;font-size:15px';
+      const list=document.createElement('div');list.hidden=true;list.className='myliftcoach-exercise-jump-list';
+      list.style.cssText='display:grid;gap:6px;margin-top:8px';
+      toggle.addEventListener('click',()=>{list.hidden=!list.hidden;list.style.display=list.hidden?'none':'grid';toggle.setAttribute('aria-expanded',String(!list.hidden));toggle.textContent=list.hidden?'All Exercises ▾':'All Exercises ▴';});
+      list.style.display='none';panel.append(toggle,list);
+      const hud=workout.querySelector('.myliftcoach-session-hud');if(hud)hud.after(panel);else workout.prepend(panel);
+    }
+    const list=panel.querySelector('.myliftcoach-exercise-jump-list');
+    const signature=cards.map((card,i)=>card.querySelector('.exercise-title')?.textContent?.trim()||'Exercise '+(i+1)).join('|');
+    if(panel.dataset.exerciseSignature!==signature){
+      panel.dataset.exerciseSignature=signature;list.replaceChildren();
+      cards.forEach((card,i)=>{
+        const btn=document.createElement('button');btn.type='button';btn.dataset.exerciseIndex=String(i);
+        btn.style.cssText='min-height:44px;text-align:left;padding:9px 12px;border:1px solid #403249;border-radius:10px;background:#21192a;color:#f2eaf8;font-size:14px';
+        btn.addEventListener('click',()=>{
+          card.scrollIntoView({behavior:'smooth',block:'start'});
+          list.hidden=true;list.style.display='none';const toggle=panel.querySelector('button');toggle.setAttribute('aria-expanded','false');toggle.textContent='All Exercises ▾';
+        });list.append(btn);
+      });
+    }
+    cards.forEach((card,i)=>{
+      const btn=list.querySelector('[data-exercise-index="'+i+'"]');if(!btn)return;
+      const state=cardState(card);
+      const label=card.querySelector('.exercise-title')?.textContent?.trim()||'Exercise '+(i+1);
+      const status=state.complete?'Completed':state.started?'In progress':'Not started';
+      const text=(i+1)+'. '+label+' · '+status;
+      if(btn.textContent!==text)btn.textContent=text;
+    });
+  };
+
   const polish = () => {
     const info = document.getElementById('prismExerciseInfo');
     const infoScreen = document.getElementById('exerciseInfoScreen');
@@ -82,6 +122,7 @@
       workout.classList.add('liftova-live-session');
       workout.querySelectorAll('.exercise').forEach(markExerciseState);
       updateSessionHud(workout);
+      ensureExerciseJump(workout);
     }
   };
 
