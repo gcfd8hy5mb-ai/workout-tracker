@@ -260,6 +260,14 @@
     forgot.addEventListener('click',async()=>{if(inFlight)return;const email=form.elements.email.value.trim();if(!email||!form.elements.email.checkValidity()){accountStatus('Enter your email first, then tap Forgot password.',true);form.elements.email.focus();return;}inFlight=true;forgot.disabled=true;try{await cloud.recoverPassword(email);accountStatus('Password reset email sent. Check your inbox.');}catch(error){accountStatus(friendlyAuthError(error,'Could not send the reset email. Try again.'),true);}finally{inFlight=false;forgot.disabled=false;}});
     form.addEventListener('submit',async event=>{event.preventDefault();if(inFlight)return;const email=form.elements.email.value.trim(),password=form.elements.password.value;if(!email||!form.elements.email.checkValidity()||password.length<6){accountStatus('Enter a valid email and a password of at least 6 characters.',true);return;}if(mode==='signup'&&password!==form.elements.confirm.value){accountStatus('Passwords do not match.',true);return;}const label=mode==='signup'?'CREATING ACCOUNT…':'SIGNING IN…';setBusy(true,label);
     loginStarted=Date.now();stage('request starting');
+    // Observe the network request without ever logging passwords or tokens.
+    // A timeout that fails to tick points to main-thread starvation, not a slow API.
+    const startStamp=Date.now();
+    const networkObserver=(event)=>{
+      if(!inFlight)return;
+      if(event?.detail?.phase)stage(event.detail.phase+' ('+Math.round((Date.now()-startStamp)/1000)+'s)');
+    };
+    window.addEventListener('mlc-auth-network',networkObserver,{once:false});
     if(loginWatchdog)clearInterval(loginWatchdog);
     loginWatchdog=setInterval(()=>{
       if(!inFlight){clearInterval(loginWatchdog);loginWatchdog=null;return;}
@@ -304,7 +312,7 @@
       // A full bootstrap is still needed to load the correct account-scoped
       // training data. Force a new document navigation after the gate is gone.
       window.setTimeout(()=>{location.href=next;},80);
-      return;}else{const result=await cloud.signUp(email,password);if(result.access_token)location.reload();else showVerification(email);}}catch(error){stage('error: '+String(error?.message||'unknown').slice(0,100));accountStatus(friendlyAuthError(error,mode==='signin'?'Could not sign in. Check your details and try again.':'Could not create the account. Check your details and try again.'),true);}finally{setBusy(false,mode==='signup'?'CREATE ACCOUNT →':'SIGN IN →');}});
+      return;}else{const result=await cloud.signUp(email,password);if(result.access_token)location.reload();else showVerification(email);}}catch(error){stage('error: '+String(error?.message||'unknown').slice(0,100));accountStatus(friendlyAuthError(error,mode==='signin'?'Could not sign in. Check your details and try again.':'Could not create the account. Check your details and try again.'),true);}finally{window.removeEventListener('mlc-auth-network',networkObserver);setBusy(false,mode==='signup'?'CREATE ACCOUNT →':'SIGN IN →');}});
   }
   function renderAccountPanel(){host.innerHTML=`<div class="card"><h3>MYLIFTCOACH account</h3><p id="prismAccountIdentity" class="small"></p><p id="prismAccountStatus" class="small" role="status">Checking your account…</p><div id="prismGuestClaim" hidden><p class="small">This account is empty. Move the workout, profile, goal and Coach data already on this device into this account?</p><button type="button" id="prismClaimGuest">Move my device data</button><button type="button" id="prismKeepSeparate">Keep guest data separate</button><button type="button" id="prismImportLegacy" hidden>Import older cloud backup</button></div><div id="prismGuestPhotos" hidden><p class="small">Photos saved before sign-in are still on this device. Choose to copy them into this account and its private photo storage.</p><button type="button" id="prismClaimPhotos">Move my device photos</button></div><button type="button" id="prismAccountSignOut">Sign out</button></div>`;host.querySelector('#prismAccountIdentity').textContent=accountEmail?`Signed in as ${accountEmail}`:'Signed in to MYLIFTCOACH';
     host.querySelector('#prismAccountSignOut').addEventListener('click',async()=>{if(inFlight)return;inFlight=true;try{await controller?.flush();}catch{}controller?.stop();window.PRISMAccountLiveFlush=null;try{await cloud.signOut();}catch{}try{new BroadcastChannel('prism-account-session').postMessage({type:'auth-changed'});}catch{}location.reload();});
