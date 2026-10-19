@@ -1166,6 +1166,19 @@ body.prism-onboarding-active .container{max-width:560px;min-height:100vh;min-hei
 #workoutScreen .set-row .picker-button{font-size:12px!important}
 }
 </style>
+<style id="mlc-set-action-layout-root">
+/* A single flow for all set controls; no off-screen grid column or absolute positioning. */
+#workoutScreen .set-block{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:5px!important;min-width:0!important;max-width:100%!important;overflow:visible!important}
+#workoutScreen .set-block>.set-row{display:grid!important;grid-template-columns:minmax(44px,.45fr) minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important}
+#workoutScreen .set-block>.set-row .picker-button{min-width:0!important;width:100%!important;max-width:100%!important}
+#workoutScreen .set-block>.previous,#workoutScreen .set-block>.compare{margin:0!important;min-width:0!important}
+#workoutScreen .set-block>.set-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:12px!important;width:100%!important;min-width:0!important;box-sizing:border-box!important}
+#workoutScreen .set-block>.set-actions>.set-done{position:static!important;display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 44px!important;width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;margin:0!important;padding:0!important;font-size:0!important;color:transparent!important;border-radius:11px!important;background:#8d35f3!important;border:1px solid #ab66ff!important}
+#workoutScreen .set-block>.set-actions>.set-done::after{content:"✓";font-size:24px;color:#fff}
+#workoutScreen .set-block>.set-actions>.set-done[aria-pressed="true"]{background:#194d38!important;border-color:#2c895c!important}
+#workoutScreen .set-block>.set-actions>.set-clear{position:static!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;min-width:66px!important;min-height:44px!important;width:auto!important;margin:0!important;padding:8px 12px!important;font-size:13px!important;line-height:1.2!important;color:var(--sub)!important;opacity:1!important;visibility:visible!important;white-space:nowrap!important}
+@media(max-width:380px){#workoutScreen .set-block>.set-row{grid-template-columns:42px minmax(0,1fr) minmax(0,1fr)!important;gap:5px!important}}
+</style>
 </head>
 
 <body>
@@ -3347,8 +3360,10 @@ onclick="openPicker('${escapeAttribute(key)}','reps')">${cr}</button>
 <div class="previous">${prev}</div>
 
 ${comparison?`<div class="compare ${comparison.cls}" id="${safeId(key+"-compare")}">${comparison.text}</div>`:""}
-<button class="set-done" type="button" aria-pressed="${Boolean(current.done)}" id="${safeId(key+"-done")}" onclick="toggleSetDone('${escapeAttribute(key)}')">${current.done?"Done ✓":"Complete Set"}</button>
+<div class="set-actions">
+<button class="set-done" type="button" aria-pressed="${Boolean(current.done)}" id="${safeId(key+"-done")}" aria-label="Complete Set ${set}" onclick="toggleSetDone('${escapeAttribute(key)}')">${current.done?"Done ✓":"Complete Set"}</button>
 <button class="set-clear" type="button" onclick="clearSet('${escapeAttribute(key)}')">Clear</button>
+</div>
 
 </div>`;
 
