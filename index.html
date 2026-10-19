@@ -1165,6 +1165,53 @@ body.prism-onboarding-active .container{max-width:560px;min-height:100vh;min-hei
 #workoutScreen .set-row{grid-template-columns:36px repeat(2,minmax(0,1fr))!important;gap:4px!important}
 #workoutScreen .set-row .picker-button{font-size:12px!important}
 }
+<style id="myliftcoach-set-actions-grid-fix">
+/* One predictable mobile grid: selectors on first row, controls on second. */
+#workoutScreen .set-block{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 48px 68px!important;
+  column-gap:6px!important;
+  row-gap:5px!important;
+  width:100%!important;
+  min-width:0!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+#workoutScreen .set-block>.set-row{
+  grid-column:1/-1!important;
+  grid-row:1!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#workoutScreen .set-block>.previous{
+  grid-column:1!important;
+  grid-row:2!important;
+  margin:0!important;
+  min-width:0!important;
+  align-self:center!important;
+}
+#workoutScreen .set-block>.set-done{
+  grid-column:2!important;
+  grid-row:2!important;
+  justify-self:stretch!important;
+  width:48px!important;
+  max-width:48px!important;
+}
+#workoutScreen .set-block>.set-clear{
+  grid-column:3!important;
+  grid-row:2!important;
+  justify-self:stretch!important;
+  width:68px!important;
+  max-width:68px!important;
+}
+#workoutScreen .set-block>.compare{
+  grid-column:1/-1!important;
+  grid-row:3!important;
+  margin:0!important;
+  max-width:100%!important;
+  white-space:normal!important;
+}
+</style>
 </style>
 </head>
 
