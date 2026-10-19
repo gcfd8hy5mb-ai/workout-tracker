@@ -16,6 +16,7 @@ const server=http.createServer((req,res)=>{
  try{
   const context=await browser.newContext({viewport:{width:390,height:844},screen:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2,serviceWorkers:'block'});
   const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.addInitScript(()=>{window.__themeChanges=[];const original=Element.prototype.setAttribute;Element.prototype.setAttribute=function(name,value){if(this.tagName==='META'&&this.getAttribute('name')==='theme-color'&&name==='content'){window.__themeChanges.push({value,stack:new Error().stack});}return original.apply(this,arguments);};});
   await page.goto('http://127.0.0.1:'+server.address().port+'/',{waitUntil:'domcontentloaded',timeout:30000});
   await page.waitForTimeout(1500);
   fs.mkdirSync(path.join(root,'artifacts','luxury-preview'),{recursive:true});
@@ -23,6 +24,8 @@ const server=http.createServer((req,res)=>{
   const theme=await page.locator('meta[name="theme-color"]').getAttribute('content');
   const initialTheme=fs.readFileSync(path.join(root,'index.html'),'utf8').match(/<meta name="theme-color" content="([^"]+)"/)[1];
   const icon=await page.locator('link[rel="icon"]').getAttribute('href');
+  const themeChanges=await page.evaluate(()=>window.__themeChanges||[]);
+  console.log('THEME_DIAGNOSTIC',JSON.stringify({initialTheme,theme,themeChanges}));
   assert.equal(initialTheme,'#003b49','initial HTML theme must match luxury palette');
   assert.equal(theme,'#003b49','runtime must not restore the legacy theme');
   assert.match(icon,/myliftcoach-icon\\.svg/);
