@@ -58,6 +58,32 @@
     #liftovaAuthGate .liftova-auth-note{font-weight:400!important}
     #liftovaAuthGate .liftova-verify-actions .primary{color:#fff!important}
     #liftovaAuthGate [hidden]{display:none!important}
+
+    /* Approved teal / ivory marble direction: replace the generic pale login layout. */
+    #liftovaAuthGate{
+      background:
+        radial-gradient(ellipse at 5% 86%,rgba(255,255,255,.98) 0%,rgba(250,246,236,.96) 17%,transparent 43%),
+        repeating-linear-gradient(126deg,transparent 0 112px,rgba(205,159,90,.5) 113px,rgba(255,240,189,.82) 114px,transparent 116px,transparent 225px),
+        radial-gradient(ellipse at 90% 8%,rgba(16,125,135,.85),transparent 52%),
+        radial-gradient(ellipse at 12% 45%,rgba(3,33,47,.94),transparent 66%),
+        linear-gradient(153deg,#00303b 0%,#004c58 49%,#f5f0e6 82%,#fffaf1 100%)!important;
+      color:#fdfbf4!important;
+    }
+    #liftovaAuthGate .liftova-auth-shell{justify-content:flex-start!important;padding-top:clamp(20px,5vh,65px)!important}
+    #liftovaAuthGate .liftova-brand{margin-bottom:26px!important}
+    #liftovaAuthGate .liftova-brand h1{color:#fffdf6!important;text-shadow:0 2px 14px rgba(0,23,34,.5)!important;font-size:clamp(28px,7vw,38px)!important;text-transform:lowercase!important;letter-spacing:-.045em!important}
+    #liftovaAuthGate .liftova-brand p{color:#e7e3d7!important;letter-spacing:.2em!important;text-shadow:0 2px 9px rgba(0,23,34,.55)!important}
+    #liftovaAuthGate .liftova-brand p b{color:#37d4dc!important}
+    #liftovaAuthGate .liftova-auth-card{background:rgba(255,252,245,.96)!important;border:1px solid rgba(207,171,111,.78)!important;box-shadow:0 22px 65px rgba(0,23,33,.28)!important;border-radius:23px!important}
+    #liftovaAuthGate .liftova-auth-card h2{color:#062c3a!important}
+    #liftovaAuthGate .liftova-auth-tabs{background:#edf0e9!important;border-color:#cbb991!important}
+    #liftovaAuthGate .liftova-auth-tab{background:transparent!important;color:#37555c!important}
+    #liftovaAuthGate .liftova-auth-tab.active{background:linear-gradient(130deg,#003b4a,#007887)!important;color:#fff!important}
+    #liftovaAuthGate .liftova-field input{background:#fffefa!important;color:#062c3a!important;border:1px solid #cfc9b9!important}
+    #liftovaAuthGate .liftova-field input::placeholder{color:#8c9998!important}
+    #liftovaAuthGate .liftova-submit{background:linear-gradient(120deg,#003a48,#007482)!important;color:#fff!important;border:1px solid #c7a66f!important}
+    #liftovaAuthGate .liftova-auth-note{color:#49636b!important}
+    @media(max-width:430px){#liftovaAuthGate .liftova-auth-shell{padding-top:14px!important}#liftovaAuthGate .liftova-brand{margin-bottom:18px!important}#liftovaAuthGate .liftova-auth-card{padding:22px 19px!important}}
 `;document.head.appendChild(style);}
   function showAuthGate(){injectAuthStyles();document.body.classList.add('liftova-auth-locked');host.innerHTML='';document.getElementById('liftovaAuthGate')?.remove();const gate=document.createElement('section');gate.id='liftovaAuthGate';gate.innerHTML=`<div class="liftova-auth-shell"><div class="liftova-brand"><img class="myliftcoach-auth-logo" src="images/myliftcoach-icon.svg?v=22" alt="MYLIFTCOACH"><h1>MYLIFTCOACH</h1><p>TRAIN <b>•</b> TRACK <b>•</b> PROGRESS</p></div><div class="liftova-auth-card"><h2 id="liftovaAuthHeading">Welcome back</h2><p class="sub" id="liftovaAuthSub">Sign in to continue your training.</p><div class="liftova-auth-tabs" id="liftovaAuthTabs" role="tablist" aria-label="Account action"><button type="button" class="liftova-auth-tab active" id="liftovaSignInTab">Sign In</button><button type="button" class="liftova-auth-tab" id="liftovaSignUpTab">Sign Up</button></div><form id="liftovaAuthForm"><div class="liftova-field"><label for="liftovaEmail">EMAIL</label><input id="liftovaEmail" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="you@example.com" required></div><div class="liftova-field"><label for="liftovaPassword">PASSWORD</label><div class="liftova-password-wrap"><input id="liftovaPassword" name="password" type="password" autocomplete="current-password" placeholder="••••••••" minlength="6" required><button type="button" class="liftova-password-toggle" id="liftovaPasswordToggle" aria-label="Show password">Show</button></div></div><div class="liftova-field" id="liftovaConfirmWrap" hidden><label for="liftovaConfirm">CONFIRM PASSWORD</label><div class="liftova-password-wrap"><input id="liftovaConfirm" name="confirm" type="password" autocomplete="new-password" placeholder="••••••••" minlength="6"><button type="button" class="liftova-password-toggle" id="liftovaConfirmToggle" aria-label="Show confirm password">Show</button></div></div><button class="liftova-submit" type="submit" id="liftovaSubmit">SIGN IN →</button><button class="liftova-auth-link" type="button" id="liftovaForgot">Forgot password?</button></form><div id="liftovaVerify" hidden><p class="sub">We sent a confirmation link to <strong id="liftovaVerifyEmail"></strong>. Open it, then come back and sign in.</p><div class="liftova-verify-actions"><button class="primary" type="button" id="liftovaVerifySignIn">I confirmed my email · Sign in</button><button class="secondary" type="button" id="liftovaResend">Resend confirmation email</button></div></div><p id="liftovaAuthStatus" class="liftova-auth-status" role="status" aria-live="polite"></p><p class="liftova-auth-note">Your MYLIFTCOACH account keeps your training data tied to you across supported devices.</p></div></div>`;document.body.appendChild(gate);
     const form=gate.querySelector('#liftovaAuthForm'),tabs=gate.querySelector('#liftovaAuthTabs'),signInTab=gate.querySelector('#liftovaSignInTab'),signUpTab=gate.querySelector('#liftovaSignUpTab'),confirmWrap=gate.querySelector('#liftovaConfirmWrap'),confirmInput=gate.querySelector('#liftovaConfirm'),heading=gate.querySelector('#liftovaAuthHeading'),sub=gate.querySelector('#liftovaAuthSub'),submit=gate.querySelector('#liftovaSubmit'),forgot=gate.querySelector('#liftovaForgot'),verify=gate.querySelector('#liftovaVerify'),verifyEmail=gate.querySelector('#liftovaVerifyEmail'),verifySignIn=gate.querySelector('#liftovaVerifySignIn'),resend=gate.querySelector('#liftovaResend');let mode='signin',pendingEmail='';
