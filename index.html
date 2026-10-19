@@ -650,6 +650,7 @@ font-size:17px;font-weight:700;min-width:44px;min-height:44px
 
 .wheel{
 
+touch-action:pan-y;overscroll-behavior:contain;
 height:260px;overflow-y:scroll;scroll-snap-type:y mandatory;
 
 -webkit-overflow-scrolling:touch;padding:104px 0
@@ -1152,6 +1153,19 @@ body.prism-onboarding-active .container{max-width:560px;min-height:100vh;min-hei
 #workoutScreen .set-block>.set-done{max-width:100%}
 @media(max-width:480px){#workoutScreen .set-block{grid-template-columns:minmax(0,1fr) 44px!important}#workoutScreen .set-row{grid-template-columns:40px minmax(0,1fr) minmax(0,1fr)!important}}
 </style>
+<style id="myliftcoach-custom-workout-set-overflow-fix">
+/* Mobile workout logging: contain all set actions inside their own card. */
+#workoutScreen .tracking,#workoutScreen .set-block,#workoutScreen .set-row{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+#workoutScreen .set-block{overflow:hidden!important;grid-template-columns:minmax(0,1fr) 44px!important}
+#workoutScreen .set-row{min-width:0!important;grid-template-columns:minmax(38px,44px) repeat(2,minmax(0,1fr))!important}
+#workoutScreen .set-row .picker-button{width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere}
+#workoutScreen .set-block>.set-done{width:44px!important;max-width:44px!important;justify-self:end!important}
+#workoutScreen .set-block>.set-clear{justify-self:end!important}
+@media(max-width:360px){
+#workoutScreen .set-row{grid-template-columns:36px repeat(2,minmax(0,1fr))!important;gap:4px!important}
+#workoutScreen .set-row .picker-button{font-size:12px!important}
+}
+</style>
 </head>
 
 <body>
@@ -1530,7 +1544,8 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 
 <strong id="pickerTitle">Select</strong>
 
-<button class="picker-done" onclick="confirmPicker()">Done</button>
+<button class="picker-done" type="button" onclick="closePicker()">Cancel</button>
+<button class="picker-done" type="button" onclick="confirmPicker()">Done</button>
 
 </div>
 
@@ -3425,6 +3440,8 @@ let pickerKey=null,pickerType=null,pickerValues=[],pickerSelectedIndex=0;
 
 function openPicker(key,type){
 
+// Reset the previous exercise’s modal state before opening a new selection.
+closePicker();
 pickerKey=key;pickerType=type;
 
 const wheel=document.getElementById("wheel");wheel.innerHTML="";
@@ -3482,12 +3499,14 @@ requestAnimationFrame(()=>wheel.scrollTop=index*52);
 }
 
 function closePicker(){
-
 document.getElementById("pickerOverlay").classList.add("hidden");
-
 document.getElementById("pickerSheet").classList.add("hidden");
-
+document.getElementById("pickerDirectValue").blur();
+pickerKey=null;pickerType=null;pickerValues=[];pickerSelectedIndex=0;
 }
+document.addEventListener("keydown",event=>{
+if(event.key==="Escape"&&!document.getElementById("pickerSheet").classList.contains("hidden"))closePicker();
+});
 
 document.getElementById("wheel").addEventListener("scroll",()=>{
 
@@ -3507,7 +3526,14 @@ if(!Number.isFinite(value)||value<(pickerType==="weight"?2.5:1)||value>(pickerTy
 document.getElementById("pickerDirectValue").focus();return
 }
 
+try {
 saveSet(pickerKey,pickerType,value);
+} catch(error) {
+console.error("Unable to save selected set value",error);
+alert("Could not save this set. Please try again.");
+closePicker();
+return;
+}
 
 const b=document.getElementById(safeId(pickerKey+"-"+pickerType+"-button"));
 
