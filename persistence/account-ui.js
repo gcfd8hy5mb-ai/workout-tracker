@@ -263,7 +263,22 @@
         gate.querySelector('#liftovaAuthStatus').insertAdjacentElement('afterend',continueLink);
       }
       continueLink.href=next;
-      location.assign(next);
+      // Transition in the current document immediately: avoid relying on a
+      // navigation the iOS embedded browser may silently decline.
+      try {
+        manager.select(signedIn.user.id);
+        gate.remove();
+        document.body.classList.remove('liftova-auth-locked');
+        document.documentElement.classList.remove('prism-account-booting');
+        accountEmail=signedIn.user.email||email;
+        renderAccountPanel();
+        accountStatus('Account verified. Loading your saved training data…');
+      } catch (transitionError) {
+        accountStatus('Account verified, but opening the app needs a refresh. Tap Continue to my account.',true);
+      }
+      // A full bootstrap is still needed to load the correct account-scoped
+      // training data. Force a new document navigation after the gate is gone.
+      window.setTimeout(()=>{location.href=next;},80);
       return;}else{const result=await cloud.signUp(email,password);if(result.access_token)location.reload();else showVerification(email);}}catch(error){accountStatus(friendlyAuthError(error,mode==='signin'?'Could not sign in. Check your details and try again.':'Could not create the account. Check your details and try again.'),true);}finally{setBusy(false,mode==='signup'?'CREATE ACCOUNT →':'SIGN IN →');}});
   }
   function renderAccountPanel(){host.innerHTML=`<div class="card"><h3>MYLIFTCOACH account</h3><p id="prismAccountIdentity" class="small"></p><p id="prismAccountStatus" class="small" role="status">Checking your account…</p><div id="prismGuestClaim" hidden><p class="small">This account is empty. Move the workout, profile, goal and Coach data already on this device into this account?</p><button type="button" id="prismClaimGuest">Move my device data</button><button type="button" id="prismKeepSeparate">Keep guest data separate</button><button type="button" id="prismImportLegacy" hidden>Import older cloud backup</button></div><div id="prismGuestPhotos" hidden><p class="small">Photos saved before sign-in are still on this device. Choose to copy them into this account and its private photo storage.</p><button type="button" id="prismClaimPhotos">Move my device photos</button></div><button type="button" id="prismAccountSignOut">Sign out</button></div>`;host.querySelector('#prismAccountIdentity').textContent=accountEmail?`Signed in as ${accountEmail}`:'Signed in to MYLIFTCOACH';
