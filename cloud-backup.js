@@ -87,16 +87,22 @@
       throw new Error("Could not connect to the account service. Please check your connection and retry.");
     }
     diagnostic("HTTP response received: "+response.status);
+    // Distinguish a stalled body stream from JSON parsing and session storage.
+    // Never include response contents or account credentials in diagnostics.
     let json;
     try {
-      json = await response.json();
+      diagnostic("reading response body");
+      const raw = await response.text();
+      diagnostic("response bytes received");
+      json = JSON.parse(raw);
+      diagnostic("response JSON parsed");
     } catch (error) {
+      diagnostic(controller.signal.aborted ? "response body timeout" : "response parsing failed");
       if (controller.signal.aborted || error?.name === "AbortError") throw new Error("Sign-in timed out while reading the server response. Please try again.");
       throw new Error("The account service returned an unreadable response. Please try again.");
     } finally {
       clearTimeout(timeout);
     }
-    diagnostic("response body read");
     if (!response.ok) {
       const error = new Error(json.msg || json.message || json.error_description || "Authentication failed.");
       error.status = response.status;
@@ -114,7 +120,13 @@
 
   async function signIn(email, password) {
     const json = await authRequest("token?grant_type=password", { email, password });
-    writeSession(json);
+    try {
+      window.dispatchEvent(new CustomEvent('mlc-auth-network',{detail:{phase:'saving verified session'}}));
+      writeSession(json);
+      window.dispatchEvent(new CustomEvent('mlc-auth-network',{detail:{phase:'verified session saved'}}));
+    } catch(error) {
+      throw new Error('The browser could not save the account session. Check Safari storage settings and retry.');
+    }
     return json;
   }
 
