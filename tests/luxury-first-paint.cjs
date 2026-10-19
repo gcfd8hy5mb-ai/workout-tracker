@@ -21,9 +21,11 @@ const server=http.createServer((req,res)=>{
   fs.mkdirSync(path.join(root,'artifacts','luxury-preview'),{recursive:true});
   await page.screenshot({path:path.join(root,'artifacts','luxury-preview','iphone-first-launch.png'),fullPage:false});
   const theme=await page.locator('meta[name="theme-color"]').getAttribute('content');
+  const initialTheme=fs.readFileSync(path.join(root,'index.html'),'utf8').match(/<meta name="theme-color" content="([^"]+)"/)[1];
   const icon=await page.locator('link[rel="icon"]').getAttribute('href');
-  assert.equal(theme,'#003b49');
+  assert.equal(initialTheme,'#003b49','initial HTML theme must match luxury palette');
+  assert.equal(theme,'#003b49','runtime must not restore the legacy theme');
   assert.match(icon,/myliftcoach-icon\\.svg/);
-  console.log(JSON.stringify({theme,icon,visibleText:(await page.locator('body').innerText()).slice(0,400),errors:errors.slice(0,8)}));
+  console.log(JSON.stringify({initialTheme,theme,icon,visibleText:(await page.locator('body').innerText()).slice(0,400),errors:errors.slice(0,8)}));
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
