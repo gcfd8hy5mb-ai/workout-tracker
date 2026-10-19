@@ -129,7 +129,7 @@
     /* Seamless photographic brand treatment; remove the pasted-on rectangular image. */
     #liftovaAuthGate{background-color:#001e2b!important;background-image:
       linear-gradient(180deg,rgba(0,13,20,.15),rgba(0,13,20,.02) 45%,rgba(0,13,20,.08)),
-      url('images/luxury-teal-marble.svg?v=2')!important;background-position:center top!important;background-size:cover!important}
+      url('images/luxury-teal-marble.svg?v=2')!important;background-position:center top!important;background-size:100% 100%!important;background-attachment:local!important;background-repeat:no-repeat!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important}
     #liftovaAuthGate .liftova-brand{isolation:isolate;position:relative;margin-bottom:4px!important}
     #liftovaAuthGate .myliftcoach-auth-logo{
       width:min(100%,410px)!important;
