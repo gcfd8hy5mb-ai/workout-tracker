@@ -82,9 +82,17 @@
       if (error?.name === "AbortError") throw new Error("The account service took too long to respond. Check your connection and try again.");
       throw error;
     } finally {
+      // Keep the abort timer alive through response body consumption below.
+    }
+    let json;
+    try {
+      json = await response.json();
+    } catch (error) {
+      if (controller.signal.aborted || error?.name === "AbortError") throw new Error("Sign-in timed out while reading the server response. Please try again.");
+      throw new Error("The account service returned an unreadable response. Please try again.");
+    } finally {
       clearTimeout(timeout);
     }
-    const json = await response.json().catch(() => ({}));
     if (!response.ok) {
       const error = new Error(json.msg || json.message || json.error_description || "Authentication failed.");
       error.status = response.status;
