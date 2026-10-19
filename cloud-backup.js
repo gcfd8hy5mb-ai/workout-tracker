@@ -70,6 +70,8 @@
     // A stalled mobile connection must not leave Sign In spinning indefinitely.
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 18000);
+    const diagnostic=(phase)=>{try{window.dispatchEvent(new CustomEvent('mlc-auth-network',{detail:{phase}}));}catch(_){/* optional diagnostic */}};
+    diagnostic('fetch dispatched');
     let response;
     try {
       response = await fetch(`${AUTH}/${path}`, {
@@ -84,6 +86,7 @@
     } finally {
       // Keep the abort timer alive through response body consumption below.
     }
+    diagnostic("HTTP response received: "+response.status);
     let json;
     try {
       json = await response.json();
@@ -93,6 +96,7 @@
     } finally {
       clearTimeout(timeout);
     }
+    diagnostic("response body read");
     if (!response.ok) {
       const error = new Error(json.msg || json.message || json.error_description || "Authentication failed.");
       error.status = response.status;
