@@ -1,0 +1,51 @@
+name: Import approved photorealistic login scene
+on:
+  push:
+    branches: [design/luxury-marble-teal-20261018]
+    paths: ['.github/workflows/import-approved-login-scene.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: design/luxury-marble-teal-20261018
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pillow
+      - name: Import actual approved high-resolution design artwork
+        run: |
+          curl --fail --location --retry 3 "https://9bfbc956-4679-43fe-88d4-220af901697c.sandbox.floot.app/_cdn/static/dca7ad72-480c-42ae-b81d-99afc3fe8a5f-approved-luxury-login-v2.png" -o /tmp/approved.png
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          im=Image.open('/tmp/approved.png').convert('RGB')
+          w,h=im.size
+          assert w>=800 and h>=1700,(w,h)
+          Path('images').mkdir(exist_ok=True)
+          # The actual photographic marble and logo from the approved render.
+          # The rendered form is deliberately excluded; controls remain live HTML.
+          im.crop((0,0,w,round(h*.408))).save('images/luxury-login-top.webp','WEBP',quality=93,method=6)
+          # Lower continuous stone is sampled from left/right edges, not the baked form.
+          edge=Image.new('RGB',(w,1000))
+          left=im.crop((0,round(h*.46),round(w*.085),round(h*.96)))
+          right=im.crop((round(w*.93),round(h*.46),w,round(h*.96)))
+          for x in range(w):
+            strip=left if x<w//2 else right
+            sx=round((x if x<w//2 else w-x-1)%strip.width)
+            for y in range(1000):
+              sy=round(y/1000*(strip.height-1))
+              edge.putpixel((x,y),strip.getpixel((sx,sy)))
+          edge.save('images/luxury-login-stone.webp','WEBP',quality=85,method=6)
+          print('Created artwork:',[(p.name,p.stat().st_size) for p in Path('images').glob('luxury-login-*.webp')])
+          PY
+      - name: Commit only to redesign branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add images/luxury-login-top.webp images/luxury-login-stone.webp
+          if ! git diff --cached --quiet; then git commit -m "Import approved photorealistic login artwork"; git push origin HEAD:design/luxury-marble-teal-20261018; fi
