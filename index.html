@@ -5082,10 +5082,18 @@ updateProgress();
 
 // onboarding.js handles first-run and goal review without changing existing saved plans.
 
-if("serviceWorker" in navigator){
-
-window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}));
-
+if ("serviceWorker" in navigator) {
+  // Vercel hosts the unmerged design preview. Never let the production
+  // offline shell claim or navigate this preview during account sign-in.
+  if (location.hostname.endsWith(".vercel.app")) {
+    navigator.serviceWorker.getRegistrations().then(registrations =>
+      Promise.all(registrations.filter(reg => reg.scope.startsWith(location.origin))
+        .map(reg => reg.unregister()))
+    ).catch(() => {});
+  } else {
+    window.addEventListener("load", () =>
+      navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }));
+  }
 }
 
 </script>
