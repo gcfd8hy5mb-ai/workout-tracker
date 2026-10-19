@@ -1,24 +1,24 @@
 /* MYLIFTCOACH premium onboarding skin. Keeps existing onboarding data/logic intact. */
-:root{--liftova-purple:#7a28ff;--liftova-purple-2:#a45cff;--liftova-bg:#05050a;--liftova-panel:rgba(10,10,18,.88);--liftova-line:#3b2856;--liftova-muted:#9d98aa}
-body.prism-onboarding-active{background:#05050a!important;color:#fff!important;padding-top:0!important;min-height:100vh;background-image:radial-gradient(circle at 50% 13%,rgba(122,40,255,.24),transparent 30%),linear-gradient(rgba(5,5,10,.76),rgba(5,5,10,.94)),url('images/leg-press.png')!important;background-size:auto,auto,cover!important;background-position:center!important;background-attachment:fixed!important}
+:root{--liftova-purple:#006a77;--liftova-purple-2:#00aebb;--liftova-bg:#fbf8f0;--liftova-panel:#fffdf8;--liftova-line:#ddcdb4;--liftova-muted:#49666b}
+body.prism-onboarding-active{background:#fbf8f0!important;color:#092c38!important;padding-top:0!important;min-height:100vh;background-image:radial-gradient(circle at 85% 0%,rgba(19,214,222,.18),transparent 38%),repeating-linear-gradient(115deg,transparent 0 145px,rgba(194,157,107,.08) 146px,transparent 148px 310px),linear-gradient(135deg,#fffefa,#eee8dc)!important;background-size:auto!important;background-position:center!important;background-attachment:fixed!important}
 body.prism-onboarding-active>header{display:none!important}
 body.prism-onboarding-active .container{max-width:540px!important;padding:calc(26px + env(safe-area-inset-top)) 18px calc(38px + env(safe-area-inset-bottom))!important;margin:auto!important}
 body.prism-onboarding-active .journey-shell{min-height:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));padding:0!important;background:transparent!important;color:#fff!important}
 body.prism-onboarding-active .journey-brand{display:flex!important;flex-direction:column!important;align-items:center!important;margin:4px 0 22px!important;text-align:center!important}
 body.prism-onboarding-active .journey-brand img{display:none!important}
-body.prism-onboarding-active .journey-brand:before{content:'◇';display:grid;place-items:center;width:68px;height:62px;margin-bottom:7px;color:#b68aff;font-size:52px;font-weight:900;line-height:1;transform:rotate(45deg);text-shadow:0 0 26px rgba(142,73,255,.8)}
+body.prism-onboarding-active .journey-brand:before{content:'';display:block;width:62px;height:62px;margin:0 auto 12px;border-radius:18px;background:linear-gradient(145deg,#003c4b,#007786);border:1px solid #c7ad7d;box-shadow:0 8px 22px rgba(0,69,78,.18)}
 body.prism-onboarding-active .journey-brand strong{font-size:29px!important;letter-spacing:.2em!important;font-weight:850!important;background:linear-gradient(#fff,#aeb0bd);-webkit-background-clip:text;background-clip:text;color:transparent!important}
-body.prism-onboarding-active .journey-brand small{margin-top:5px!important;font-size:9px!important;letter-spacing:.3em!important;color:#b9b3c8!important;text-transform:uppercase!important}
+body.prism-onboarding-active .journey-brand small{margin-top:5px!important;font-size:9px!important;letter-spacing:.3em!important;color:#557076!important;text-transform:uppercase!important}
 body.prism-onboarding-active .journey-progress{display:grid!important;grid-template-columns:repeat(7,1fr)!important;gap:5px!important;margin:0 0 8px!important;position:sticky!important;top:calc(env(safe-area-inset-top) + 5px)!important;z-index:5!important;padding:6px 0 8px!important;background:linear-gradient(180deg,rgba(5,5,10,.96),rgba(5,5,10,.74) 72%,transparent)!important;backdrop-filter:blur(8px)!important}
-body.prism-onboarding-active .journey-progress span{height:4px!important;border-radius:10px!important;background:#2d2935!important;transition:background .16s ease,box-shadow .16s ease,transform .16s ease!important}
-body.prism-onboarding-active .journey-progress span.done{background:linear-gradient(90deg,#6e20e9,#b05cff)!important;box-shadow:0 0 9px rgba(131,63,255,.55)!important}
-body.prism-onboarding-active .journey-eyebrow{display:block!important;text-align:center!important;color:#918a9e!important;font-size:10px!important;letter-spacing:.16em!important;font-weight:750!important;margin-bottom:18px!important}
+body.prism-onboarding-active .journey-progress span{height:4px!important;border-radius:10px!important;background:#d9d1c4!important;transition:background .16s ease,box-shadow .16s ease,transform .16s ease!important}
+body.prism-onboarding-active .journey-progress span.done{background:linear-gradient(90deg,#006a77,#00aebb)!important;box-shadow:0 0 9px rgba(131,63,255,.55)!important}
+body.prism-onboarding-active .journey-eyebrow{display:block!important;text-align:center!important;color:#47666b!important;font-size:10px!important;letter-spacing:.16em!important;font-weight:750!important;margin-bottom:18px!important}
 body.prism-onboarding-active #prismJourneyContent>h2,body.prism-onboarding-active #prismGoalReviewContent>h2{margin:8px 0 7px!important;text-align:center!important;color:#fff!important;font-size:28px!important;line-height:1.05!important;letter-spacing:-.02em!important;text-transform:uppercase!important;outline:none!important}
-body.prism-onboarding-active #prismJourneyContent>p,body.prism-onboarding-active #prismGoalReviewContent>p{text-align:center!important;color:#aaa4b5!important;font-size:13px!important;line-height:1.45!important;margin:0 auto 18px!important;max-width:420px!important}
+body.prism-onboarding-active #prismJourneyContent>p,body.prism-onboarding-active #prismGoalReviewContent>p{text-align:center!important;color:#47666b!important;font-size:13px!important;line-height:1.45!important;margin:0 auto 18px!important;max-width:420px!important}
 body.prism-onboarding-active .journey-card{background:linear-gradient(145deg,rgba(17,17,27,.94),rgba(8,8,14,.92))!important;border:1px solid rgba(148,78,255,.42)!important;border-radius:20px!important;padding:17px!important;margin:12px 0!important;box-shadow:0 18px 60px rgba(0,0,0,.36),inset 0 0 0 1px rgba(255,255,255,.018)!important;backdrop-filter:blur(15px)!important;color:#fff!important}
-body.prism-onboarding-active .journey-option{width:100%!important;min-height:76px!important;margin:9px 0!important;padding:14px 15px!important;border:1px solid #2e2938!important;border-radius:16px!important;background:linear-gradient(100deg,rgba(24,23,31,.96),rgba(9,9,14,.96))!important;color:#fff!important;text-align:left!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;box-shadow:none!important;touch-action:manipulation!important;transition:transform .12s ease,border-color .12s ease,background .12s ease!important}
+body.prism-onboarding-active .journey-option{width:100%!important;min-height:76px!important;margin:9px 0!important;padding:14px 15px!important;border:1px solid #ddcdb4!important;border-radius:16px!important;background:linear-gradient(100deg,rgba(24,23,31,.96),rgba(9,9,14,.96))!important;color:#fff!important;text-align:left!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;box-shadow:none!important;touch-action:manipulation!important;transition:transform .12s ease,border-color .12s ease,background .12s ease!important}
 body.prism-onboarding-active .journey-option:active,body.prism-onboarding-active .journey-option.myliftcoach-option-tapped{transform:scale(.985)!important}
-body.prism-onboarding-active .journey-option[aria-pressed='true']{border-color:#9c4dff!important;background:linear-gradient(100deg,rgba(55,21,102,.96),rgba(19,11,34,.97))!important;box-shadow:0 0 22px rgba(126,46,255,.24),inset 3px 0 #8e3fff!important}
+body.prism-onboarding-active .journey-option[aria-pressed='true']{border-color:#00aebb!important;background:linear-gradient(100deg,rgba(55,21,102,.96),rgba(19,11,34,.97))!important;box-shadow:0 0 22px rgba(126,46,255,.24),inset 3px 0 #8e3fff!important}
 body.prism-onboarding-active .journey-option[aria-pressed='true']::after{content:'✓';flex:0 0 28px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#7f2cf0;color:#fff;font-size:14px;font-weight:900;box-shadow:0 0 0 1px #b66cff}
 body.prism-onboarding-active .journey-option strong{font-size:15px!important;letter-spacing:.02em!important;color:#fff!important}body.prism-onboarding-active .journey-option small{color:#9b95a8!important;font-size:11px!important;line-height:1.3!important}
 body.prism-onboarding-active .journey-option:focus-visible,body.prism-onboarding-active button:focus-visible,body.prism-onboarding-active input:focus-visible,body.prism-onboarding-active select:focus-visible{outline:2px solid #c486ff!important;outline-offset:3px!important}
@@ -37,3 +37,32 @@ body.prism-onboarding-active .journey-inline{display:grid!important;grid-templat
 body.prism-onboarding-active .myliftcoach-touch-target{min-height:48px!important}
 @media(max-width:380px){body.prism-onboarding-active .container{padding-left:14px!important;padding-right:14px!important}body.prism-onboarding-active #prismJourneyContent>h2{font-size:24px!important}body.prism-onboarding-active .journey-card{padding:14px!important}body.prism-onboarding-active .journey-option{min-height:70px!important;padding:12px!important}}
 @media(prefers-reduced-motion:reduce){body.prism-onboarding-active .journey-option,body.prism-onboarding-active .journey-progress span{transition:none!important}body.prism-onboarding-active .journey-option:active,body.prism-onboarding-active .journey-option.myliftcoach-option-tapped{transform:none!important}}
+
+/* Approved luxury journey surfaces, defined in the original onboarding skin. */
+body.prism-onboarding-active .journey-shell{color:#092c38!important}
+body.prism-onboarding-active .journey-card{background:#fffdf8!important;color:#092c38!important;border-color:#ddcdb4!important}
+body.prism-onboarding-active .journey-option{background:#fffdf8!important;color:#123743!important;border-color:#ddcdb4!important}
+body.prism-onboarding-active .journey-option.selected{background:#e7fbfa!important;border-color:#00aebc!important}
+body.prism-onboarding-active .journey-actions .journey-primary{background:linear-gradient(135deg,#003b49,#006a77)!important;color:#fff!important;border-color:#b99c70!important}
+
+/* Source-level overrides for every onboarding step; avoid old purple first-paint surfaces. */
+body.prism-onboarding-active .journey-brand strong{background:none!important;color:#073846!important;font-family:Georgia,serif!important;font-weight:500!important;letter-spacing:.045em!important}
+body.prism-onboarding-active .journey-brand small{color:#557076!important}
+body.prism-onboarding-active .journey-progress{background:linear-gradient(180deg,rgba(251,248,240,.98),rgba(251,248,240,.88) 72%,transparent)!important}
+body.prism-onboarding-active .journey-progress span{background:#d9d1c4!important}
+body.prism-onboarding-active .journey-progress span.done{background:linear-gradient(90deg,#006a77,#00aebb)!important;box-shadow:none!important}
+body.prism-onboarding-active .journey-eyebrow{color:#47666b!important}
+body.prism-onboarding-active #prismJourneyContent>h2,body.prism-onboarding-active #prismGoalReviewContent>h2{color:#092c38!important;font-family:Georgia,serif!important;font-weight:500!important;text-transform:none!important;line-height:1.15!important}
+body.prism-onboarding-active #prismJourneyContent>p,body.prism-onboarding-active #prismGoalReviewContent>p{color:#47666b!important}
+body.prism-onboarding-active .journey-option[aria-pressed='true']{border-color:#00aebb!important;background:#e7fbfa!important;color:#073846!important}
+
+/* Compact mobile layout keeps the current step understandable without a long scroll. */
+@media(max-width:430px){
+ body.prism-onboarding-active .container{padding-top:calc(12px + env(safe-area-inset-top))!important}
+ body.prism-onboarding-active .journey-brand{margin:0 0 12px!important}
+ body.prism-onboarding-active .journey-brand:before{width:44px!important;height:44px!important;margin-bottom:7px!important;border-radius:13px!important}
+ body.prism-onboarding-active .journey-brand strong{font-size:23px!important}
+ body.prism-onboarding-active .journey-progress{margin-bottom:4px!important}
+ body.prism-onboarding-active .journey-card{padding:14px!important;margin:9px 0!important}
+ body.prism-onboarding-active .journey-option{min-height:62px!important;margin:7px 0!important;padding:11px 13px!important}
+}

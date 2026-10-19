@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 1848" preserveAspectRatio="xMidYMid slice"><defs>
+<radialGradient id="base" cx=".62" cy=".2" r=".9"><stop stop-color="#0a7785"/><stop offset=".27" stop-color="#004857"/><stop offset=".65" stop-color="#001e2a"/><stop offset="1" stop-color="#000f18"/></radialGradient>
+<linearGradient id="ivory" x1=".15" y1=".1" x2=".8" y2=".9"><stop stop-color="#fffefa"/><stop offset=".38" stop-color="#f3e8d6"/><stop offset=".65" stop-color="#d4c9b6"/><stop offset=".83" stop-color="#fff8e9"/><stop offset="1" stop-color="#a89f91"/></linearGradient>
+<linearGradient id="gold"><stop stop-color="#75401a"/><stop offset=".24" stop-color="#f5d28a"/><stop offset=".5" stop-color="#fff6c8"/><stop offset=".8" stop-color="#c18c42"/><stop offset="1" stop-color="#764119"/></linearGradient>
+<filter id="rock" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency=".018 .027" numOctaves="6" seed="23" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="95" xChannelSelector="R" yChannelSelector="G"/></filter>
+<filter id="vein" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency=".027 .017" numOctaves="5" seed="19" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="34"/></filter>
+<filter id="micro"><feTurbulence type="fractalNoise" baseFrequency=".14 .2" numOctaves="4" seed="9"/><feColorMatrix type="matrix" values=".1 0 0 0 0 0 .45 0 0 0 0 0 .5 0 0 0 0 0 .3 0"/></filter>
+<filter id="shine"><feGaussianBlur stdDeviation="12"/></filter>
+</defs>
+<rect width="850" height="1848" fill="url(#base)"/>
+<path d="M-130 140C70 120 35 340 172 385C295 426 164 571 248 665C362 795 179 967 295 1130C433 1324 589 1228 901 1460L932 1970H-120Z" fill="#b8996d" opacity=".55" filter="url(#rock)"/>
+<path d="M-170 150C75 116 14 338 148 395C272 445 157 557 235 677C351 814 182 971 305 1134C461 1344 609 1227 928 1464L930 1970H-140Z" fill="url(#ivory)" filter="url(#rock)"/>
+<path d="M-190 148C75 108 20 335 160 398C278 454 149 563 249 677C356 811 188 974 310 1129C457 1325 603 1225 928 1458" fill="none" stroke="#8e5627" stroke-width="29" filter="url(#rock)" opacity=".85"/>
+<path d="M-190 148C75 108 20 335 160 398C278 454 149 563 249 677C356 811 188 974 310 1129C457 1325 603 1225 928 1458" fill="none" stroke="url(#gold)" stroke-width="11" filter="url(#vein)"/>
+<path d="M-190 148C75 108 20 335 160 398C278 454 149 563 249 677C356 811 188 974 310 1129C457 1325 603 1225 928 1458" fill="none" stroke="#fff0bd" stroke-width="2" filter="url(#vein)"/>
+<g fill="none" stroke-linecap="round" filter="url(#vein)">
+<path d="M-30 240C120 290 175 405 145 535S210 760 355 805" stroke="#a96b2b" stroke-width="3"/>
+<path d="M30 360C112 425 96 496 205 572S280 668 273 743" stroke="#dfb56d" stroke-width="2"/>
+<path d="M-30 760C145 730 171 925 317 1030S520 1200 520 1360" stroke="#d5a158" stroke-width="4"/>
+<path d="M125 885C224 914 197 1000 300 1095S440 1190 447 1325" stroke="#fff0bf" stroke-width="2"/>
+<path d="M70 1485C200 1422 309 1502 413 1535S580 1635 765 1610" stroke="#a06c3b" stroke-width="4"/>
+<path d="M82 1480C201 1410 319 1510 410 1530S580 1638 780 1600" stroke="#ffe1a0" stroke-width="1.8"/>
+<path d="M770-50C635 230 774 325 619 468S565 644 697 790" stroke="#a77939" stroke-width="5"/>
+<path d="M767-50C635 230 774 325 619 468S565 644 697 790" stroke="#f6d08b" stroke-width="2"/>
+<path d="M460 0C521 165 393 255 472 380S588 516 492 620" stroke="#bb8645" stroke-width="3"/>
+<path d="M370 25C432 150 355 220 397 340S503 425 448 520" stroke="#e4b16c" stroke-width="1.8"/>
+<path d="M842 975C683 1000 712 1145 587 1240" stroke="#edbb6a" stroke-width="2.5"/>
+</g>
+<rect width="850" height="1848" filter="url(#micro)" opacity=".58"/>
+<path d="M650 20C760 300 540 490 785 800" fill="none" stroke="#37d6db" stroke-width="90" opacity=".075" filter="url(#shine)"/>
+<path d="M-20 1270C300 1250 420 1490 760 1520" fill="none" stroke="#fff9e5" stroke-width="85" opacity=".10" filter="url(#shine)"/>
+</svg>

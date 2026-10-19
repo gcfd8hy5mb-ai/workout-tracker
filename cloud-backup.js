@@ -67,12 +67,42 @@
   }
 
   async function authRequest(path, body) {
-    const response = await fetch(`${AUTH}/${path}`, {
-      method: "POST",
-      headers: { apikey: cfg.publishableKey, "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-    const json = await response.json().catch(() => ({}));
+    // A stalled mobile connection must not leave Sign In spinning indefinitely.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 18000);
+    const diagnostic=(phase)=>{try{window.dispatchEvent(new CustomEvent('mlc-auth-network',{detail:{phase}}));}catch(_){/* optional diagnostic */}};
+    diagnostic('fetch dispatched');
+    let response;
+    try {
+      response = await fetch(`${AUTH}/${path}`, {
+        method: "POST",
+        headers: { apikey: cfg.publishableKey, "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+    } catch (error) {
+      clearTimeout(timeout);
+      diagnostic(error?.name === "AbortError" ? "request timed out" : "network request failed");
+      if (error?.name === "AbortError") throw new Error("The account service took too long to respond. Check your connection and try again.");
+      throw new Error("Could not connect to the account service. Please check your connection and retry.");
+    }
+    diagnostic("HTTP response received: "+response.status);
+    // Distinguish a stalled body stream from JSON parsing and session storage.
+    // Never include response contents or account credentials in diagnostics.
+    let json;
+    try {
+      diagnostic("reading response body");
+      const raw = await response.text();
+      diagnostic("response bytes received");
+      json = JSON.parse(raw);
+      diagnostic("response JSON parsed");
+    } catch (error) {
+      diagnostic(controller.signal.aborted ? "response body timeout" : "response parsing failed");
+      if (controller.signal.aborted || error?.name === "AbortError") throw new Error("Sign-in timed out while reading the server response. Please try again.");
+      throw new Error("The account service returned an unreadable response. Please try again.");
+    } finally {
+      clearTimeout(timeout);
+    }
     if (!response.ok) {
       const error = new Error(json.msg || json.message || json.error_description || "Authentication failed.");
       error.status = response.status;
@@ -90,7 +120,13 @@
 
   async function signIn(email, password) {
     const json = await authRequest("token?grant_type=password", { email, password });
-    writeSession(json);
+    try {
+      window.dispatchEvent(new CustomEvent('mlc-auth-network',{detail:{phase:'saving verified session'}}));
+      writeSession(json);
+      window.dispatchEvent(new CustomEvent('mlc-auth-network',{detail:{phase:'verified session saved'}}));
+    } catch(error) {
+      throw new Error('The browser could not save the account session. Check Safari storage settings and retry.');
+    }
     return json;
   }
 

@@ -13,12 +13,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <meta name="apple-mobile-web-app-title" content="MYLIFTCOACH">
-<meta name="theme-color" content="#0b111b">
+<meta name="theme-color" content="#003b49">
 
 <link rel="manifest" href="manifest.json">
 
 <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon-180.png?v=10">
-<link rel="icon" type="image/svg+xml" href="images/liftova-icon.svg?v=10">
+<link rel="icon" type="image/svg+xml" href="images/myliftcoach-icon.svg?v=22">
 <link rel="preload" as="image" href="images/myliftcoach-icon.svg?v=22">
 
 <title>MYLIFTCOACH · Train · Track · Progress</title>
@@ -1152,6 +1152,7 @@ body.prism-onboarding-active .container{max-width:560px;min-height:100vh;min-hei
 #workoutScreen .set-block>.set-done{max-width:100%}
 @media(max-width:480px){#workoutScreen .set-block{grid-template-columns:minmax(0,1fr) 44px!important}#workoutScreen .set-row{grid-template-columns:40px minmax(0,1fr) minmax(0,1fr)!important}}
 </style>
+<link rel="stylesheet" href="design/luxury-entry-onboarding.css?v=1">
 </head>
 
 <body>
@@ -5081,10 +5082,18 @@ updateProgress();
 
 // onboarding.js handles first-run and goal review without changing existing saved plans.
 
-if("serviceWorker" in navigator){
-
-window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}));
-
+if ("serviceWorker" in navigator) {
+  // Vercel hosts the unmerged design preview. Never let the production
+  // offline shell claim or navigate this preview during account sign-in.
+  if (location.hostname.endsWith(".vercel.app")) {
+    navigator.serviceWorker.getRegistrations().then(registrations =>
+      Promise.all(registrations.filter(reg => reg.scope.startsWith(location.origin))
+        .map(reg => reg.unregister()))
+    ).catch(() => {});
+  } else {
+    window.addEventListener("load", () =>
+      navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }));
+  }
 }
 
 </script>
