@@ -81,10 +81,10 @@
         signal: controller.signal
       });
     } catch (error) {
+      clearTimeout(timeout);
+      diagnostic(error?.name === "AbortError" ? "request timed out" : "network request failed");
       if (error?.name === "AbortError") throw new Error("The account service took too long to respond. Check your connection and try again.");
-      throw error;
-    } finally {
-      // Keep the abort timer alive through response body consumption below.
+      throw new Error("Could not connect to the account service. Please check your connection and retry.");
     }
     diagnostic("HTTP response received: "+response.status);
     let json;
