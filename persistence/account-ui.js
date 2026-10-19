@@ -207,6 +207,36 @@
     }
     @media(max-width:430px){body.liftova-auth-locked #liftovaAuthGate .liftova-brand.luxury-approved-hero{background-position:center -32px!important;height:clamp(250px,79vw,338px)!important}}
     @media(max-width:360px){body.liftova-auth-locked #liftovaAuthGate .liftova-brand.luxury-approved-hero{height:245px!important;background-position:center -26px!important}}
+
+    /* Single-scrolling-canvas fix: marble belongs to the full-height content wrapper.
+       No background is painted onto the fixed scrolling viewport. */
+    body.liftova-auth-locked #liftovaAuthGate{
+      background:#002b36!important;
+      background-image:none!important;
+      background-attachment:scroll!important;
+      padding-left:16px!important;padding-right:16px!important;
+    }
+    body.liftova-auth-locked #liftovaAuthGate .liftova-auth-shell{
+      box-sizing:border-box!important;
+      position:relative!important;
+      width:calc(100% + 32px)!important;
+      max-width:462px!important;
+      min-height:100%!important;
+      margin:0 auto!important;
+      padding:0 16px 34px!important;
+      background-color:#002b36!important;
+      background-image:linear-gradient(180deg,rgba(0,13,20,.03),rgba(0,13,20,.11)),url('images/luxury-login-stone.webp?v=1')!important;
+      background-size:100% 100%,100% 100%!important;
+      background-position:center top!important;
+      background-repeat:no-repeat!important;
+      background-attachment:scroll!important;
+    }
+    body.liftova-auth-locked #liftovaAuthGate .liftova-brand.luxury-approved-hero{
+      background-attachment:scroll!important;
+    }
+    @media(max-width:462px){
+      body.liftova-auth-locked #liftovaAuthGate .liftova-auth-shell{margin-left:-16px!important;margin-right:-16px!important}
+    }
 `;document.head.appendChild(style);}
   function showAuthGate(){injectAuthStyles();document.body.classList.add('liftova-auth-locked');host.innerHTML='';document.getElementById('liftovaAuthGate')?.remove();const gate=document.createElement('section');gate.id='liftovaAuthGate';gate.innerHTML=`<div class="liftova-auth-shell"><div class="liftova-brand luxury-approved-hero" role="img" aria-label="MYLIFTCOACH luxury metallic M barbell logo, myliftcoach wordmark and Train Track Progress"></div><div class="liftova-auth-card"><h2 id="liftovaAuthHeading">Welcome back</h2><p class="sub" id="liftovaAuthSub">Sign in to continue your training.</p><div class="liftova-auth-tabs" id="liftovaAuthTabs" role="tablist" aria-label="Account action"><button type="button" class="liftova-auth-tab active" id="liftovaSignInTab">Sign In</button><button type="button" class="liftova-auth-tab" id="liftovaSignUpTab">Sign Up</button></div><form id="liftovaAuthForm"><div class="liftova-field"><label for="liftovaEmail">EMAIL</label><input id="liftovaEmail" name="email" type="email" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="you@example.com" required></div><div class="liftova-field"><label for="liftovaPassword">PASSWORD</label><div class="liftova-password-wrap"><input id="liftovaPassword" name="password" type="password" autocomplete="current-password" placeholder="••••••••" minlength="6" required><button type="button" class="liftova-password-toggle" id="liftovaPasswordToggle" aria-label="Show password">Show</button></div></div><div class="liftova-field" id="liftovaConfirmWrap" hidden><label for="liftovaConfirm">CONFIRM PASSWORD</label><div class="liftova-password-wrap"><input id="liftovaConfirm" name="confirm" type="password" autocomplete="new-password" placeholder="••••••••" minlength="6"><button type="button" class="liftova-password-toggle" id="liftovaConfirmToggle" aria-label="Show confirm password">Show</button></div></div><button class="liftova-submit" type="submit" id="liftovaSubmit">SIGN IN →</button><button class="liftova-auth-link" type="button" id="liftovaForgot">Forgot password?</button></form><div id="liftovaVerify" hidden><p class="sub">We sent a confirmation link to <strong id="liftovaVerifyEmail"></strong>. Open it, then come back and sign in.</p><div class="liftova-verify-actions"><button class="primary" type="button" id="liftovaVerifySignIn">I confirmed my email · Sign in</button><button class="secondary" type="button" id="liftovaResend">Resend confirmation email</button></div></div><p id="liftovaAuthStatus" class="liftova-auth-status" role="status" aria-live="polite"></p><p class="liftova-auth-note">Your MYLIFTCOACH account keeps your training data tied to you across supported devices.</p></div></div>`;document.body.appendChild(gate);
     const form=gate.querySelector('#liftovaAuthForm'),tabs=gate.querySelector('#liftovaAuthTabs'),signInTab=gate.querySelector('#liftovaSignInTab'),signUpTab=gate.querySelector('#liftovaSignUpTab'),confirmWrap=gate.querySelector('#liftovaConfirmWrap'),confirmInput=gate.querySelector('#liftovaConfirm'),heading=gate.querySelector('#liftovaAuthHeading'),sub=gate.querySelector('#liftovaAuthSub'),submit=gate.querySelector('#liftovaSubmit'),forgot=gate.querySelector('#liftovaForgot'),verify=gate.querySelector('#liftovaVerify'),verifyEmail=gate.querySelector('#liftovaVerifyEmail'),verifySignIn=gate.querySelector('#liftovaVerifySignIn'),resend=gate.querySelector('#liftovaResend');let mode='signin',pendingEmail='';
