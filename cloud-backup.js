@@ -67,11 +67,23 @@
   }
 
   async function authRequest(path, body) {
-    const response = await fetch(`${AUTH}/${path}`, {
-      method: "POST",
-      headers: { apikey: cfg.publishableKey, "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
+    // A stalled mobile connection must not leave Sign In spinning indefinitely.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 18000);
+    let response;
+    try {
+      response = await fetch(`${AUTH}/${path}`, {
+        method: "POST",
+        headers: { apikey: cfg.publishableKey, "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+    } catch (error) {
+      if (error?.name === "AbortError") throw new Error("The account service took too long to respond. Check your connection and try again.");
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+    }
     const json = await response.json().catch(() => ({}));
     if (!response.ok) {
       const error = new Error(json.msg || json.message || json.error_description || "Authentication failed.");
