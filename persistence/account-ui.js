@@ -306,6 +306,14 @@
         stage('restarting into verified account');
         // A real navigation reloads all workout state under the verified owner.
         // Leave the visible Continue link as a fallback for iOS webviews.
+        // Some embedded iOS browsers silently ignore navigation attempts.
+        // The original gate stays mounted, with a manual recovery link.
+        window.setTimeout(()=>{
+          if(!document.contains(gate))return;
+          stage('automatic navigation did not complete');
+          accountStatus('Signed in. Tap Continue to my account if this screen has not changed.',true);
+          continueLink.focus({preventScroll:true});
+        },2500);
         location.replace(next);
       } catch (transitionError) {
         stage('navigation failed');
