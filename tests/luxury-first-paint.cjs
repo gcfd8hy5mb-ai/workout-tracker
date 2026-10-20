@@ -21,6 +21,10 @@ const server=http.createServer((req,res)=>{
   await page.waitForTimeout(1500);
   fs.mkdirSync(path.join(root,'artifacts','luxury-preview'),{recursive:true});
   await page.screenshot({path:path.join(root,'artifacts','luxury-preview','iphone-first-launch.png'),fullPage:false});
+  // Do not load large coach/workout runtimes while sign-in is visible.
+  const configScript=fs.readFileSync(path.join(root,'supabase-config.js'),'utf8');
+  assert.ok(configScript.includes('if (!window.PRISMDeviceStore?.owner) return;'),
+    'the sign-in screen must defer heavyweight workout and coach scripts');
   // Login regression: a verified sign-in must bootstrap scoped data on a new
   // document, not strip the gate and expose uninitialized legacy app state.
   const accountUi=fs.readFileSync(path.join(root,'persistence/account-ui.js'),'utf8');
