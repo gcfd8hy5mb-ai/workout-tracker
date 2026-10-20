@@ -30,6 +30,8 @@ const server=http.createServer((req,res)=>{
   assert.ok(!loginPath.includes('gate.remove()'), 'login gate must remain during navigation');
   assert.ok(loginPath.includes('automatic navigation did not complete'), 'iPhone navigation must expose a recovery status');
   assert.ok(loginPath.includes('continueLink.focus'), 'iPhone navigation fallback must remain actionable');
+  assert.ok(html.includes("recovery.id='mlcBootRecovery'"), 'startup must offer a recovery screen on boot timeout');
+  assert.ok(html.includes('MYLIFTCOACH could not finish opening'), 'startup recovery must explain failure');
   assert.ok(!loginPath.includes("classList.remove('liftova-auth-locked')"), 'do not expose legacy shell before reload');
     const theme=await page.locator('meta[name="theme-color"]').getAttribute('content');
   const initialTheme=fs.readFileSync(path.join(root,'index.html'),'utf8').match(/<meta name="theme-color" content="([^"]+)"/)[1];
