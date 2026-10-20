@@ -1,6 +1,6 @@
 /* MYLIFTCOACH launch presentation. */
 html.myliftcoach-starting{background:#003b49!important}
-html.myliftcoach-starting body>*:not(#myliftcoachStartupCover):not(#liftovaAuthGate){visibility:hidden!important}
+html.myliftcoach-starting body>*:not(#myliftcoachStartupCover):not(#liftovaAuthGate):not(#mlcStartupFailure){visibility:hidden!important}
 html.myliftcoach-starting::before{content:"";position:fixed;inset:0;z-index:2147482998;background:#003b49;pointer-events:none}
 #myliftcoachStartupCover{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#003b49;opacity:1;pointer-events:none;transition:opacity .22s cubic-bezier(.22,1,.36,1)}
 #myliftcoachStartupCover .mlc-startup-mark{display:flex;flex-direction:column;align-items:center;gap:12px;transform:translateY(-2vh);opacity:1;transition:transform .22s cubic-bezier(.22,1,.36,1),opacity .22s ease}
