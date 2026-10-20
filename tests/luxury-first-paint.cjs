@@ -38,7 +38,7 @@ const server=http.createServer((req,res)=>{
   assert.equal(theme,'#003b49','runtime must not restore the legacy theme');
   assert.deepEqual(themeChanges.filter(change=>change.value!=='#003b49'),[],
     'no runtime theme-color mutation may flash a legacy palette');
-  assert.match(icon,/myliftcoach-icon\\.svg/);
+  assert.ok(icon.includes('myliftcoach-icon.svg'), 'favicon must use the MYLIFTCOACH brand icon');
   console.log(JSON.stringify({initialTheme,theme,icon,visibleText:(await page.locator('body').innerText()).slice(0,400),errors:errors.slice(0,8)}));
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
