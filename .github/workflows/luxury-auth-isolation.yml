@@ -17,6 +17,8 @@ jobs:
           node-version: '22'
       - name: Validate saved-session redirect behavior
         run: node tests/luxury-session-redirect.cjs
+      - name: Verify private account gate requires identity confirmation
+        run: node tests/luxury-account-gate.cjs
       - run: npm install --no-save --ignore-scripts playwright@1.62.1
       - run: npx playwright install --with-deps chromium
       - name: Verify login-to-account handoff without heavyweight startup
