@@ -21,7 +21,15 @@ const server=http.createServer((req,res)=>{
   await page.waitForTimeout(1500);
   fs.mkdirSync(path.join(root,'artifacts','luxury-preview'),{recursive:true});
   await page.screenshot({path:path.join(root,'artifacts','luxury-preview','iphone-first-launch.png'),fullPage:false});
-  const theme=await page.locator('meta[name="theme-color"]').getAttribute('content');
+  // Login regression: a verified sign-in must bootstrap scoped data on a new
+  // document, not strip the gate and expose uninitialized legacy app state.
+  const accountUi=fs.readFileSync(path.join(root,'persistence/account-ui.js'),'utf8');
+  const loginPath=accountUi.slice(accountUi.indexOf("if(mode==='signin'){stage("),accountUi.indexOf("return;}else{const result=await cloud.signUp"));
+  assert.ok(loginPath.includes('manager.select(signedIn.user.id)'), 'verified user must select scoped storage');
+  assert.ok(loginPath.includes('location.replace(next)'), 'verified sign-in must reload account-scoped state');
+  assert.ok(!loginPath.includes('gate.remove()'), 'login gate must remain during navigation');
+  assert.ok(!loginPath.includes("classList.remove('liftova-auth-locked')"), 'do not expose legacy shell before reload');
+    const theme=await page.locator('meta[name="theme-color"]').getAttribute('content');
   const initialTheme=fs.readFileSync(path.join(root,'index.html'),'utf8').match(/<meta name="theme-color" content="([^"]+)"/)[1];
   const icon=await page.locator('link[rel="icon"]').getAttribute('href');
   const themeChanges=await page.evaluate(()=>window.__themeChanges||[]);
