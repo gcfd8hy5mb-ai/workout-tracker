@@ -9,7 +9,7 @@ var get=function(id){return document.getElementById(id)},form=get('form'),status
 function note(x){status.textContent=x}
 function loading(on){busy=on;button.disabled=on;button.textContent=on?'PLEASE WAIT…':mode==='signin'?'SIGN IN':'CREATE ACCOUNT'}
 function destination(){var u=new URL('app.html',location.href);u.search=location.search;return u.href}
-try{var old=JSON.parse(window.localStorage.getItem('prismSupabaseSessionV1')||'null');if(old&&old.access_token&&old.user&&old.user.id)location.replace(destination())}catch(e){}
+try{var old=JSON.parse(window.localStorage.getItem('prismSupabaseSessionV1')||'null');var valid=old&&old.access_token&&old.user&&old.user.id&&Number(old.expires_at)>Math.floor(Date.now()/1000)+60;if(valid)location.replace(destination())}catch(e){}
 function tab(which){if(busy)return;mode=which;get('tabIn').classList.toggle('active',which==='signin');get('tabUp').classList.toggle('active',which!=='signin');get('confirmBox').hidden=which==='signin';get('confirm').required=which!=='signin';get('heading').textContent=which==='signin'?'Welcome back':'Create your account';get('sub').textContent=which==='signin'?'Sign in to continue your training.':'Start your training journey.';get('forgot').hidden=which!=='signin';note('');loading(false)}
 get('tabIn').onclick=function(){tab('signin')};get('tabUp').onclick=function(){tab('signup')};
 get('show').onclick=function(){var input=get('password'),visible=input.type==='password';input.type=visible?'text':'password';get('show').textContent=visible?'Hide':'Show'};
