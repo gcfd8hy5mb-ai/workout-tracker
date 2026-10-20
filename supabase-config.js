@@ -9,6 +9,10 @@ window.PRISM_SUPABASE_CONFIG = MYLIFTCOACH_SUPABASE_CONFIG;
 (() => { const touchIcon=document.querySelector('link[rel="apple-touch-icon"]')||document.createElement('link');touchIcon.rel='apple-touch-icon';touchIcon.href='images/apple-touch-icon-180.png?v=10';if(!touchIcon.parentNode)document.head.appendChild(touchIcon);})();
 (() => { if(!document.querySelector('link[data-myliftcoach-startup-smooth]')){const link=document.createElement('link');link.rel='stylesheet';link.href='myliftcoach-startup-smooth.css?v=2';link.setAttribute('data-myliftcoach-startup-smooth','true');document.head.appendChild(link);}})();
 (() => {
+  // Authentication needs only the core account scripts. Do not boot dozens of
+  // workout/coach modules while the first-run sign-in gate is active.
+  // After a verified sign-in the account reload selects an owner before this file.
+  if (!window.PRISMDeviceStore?.owner) return;
   /* Keep dependencies sequential, but put the first visible app surface at the
      front of the chain. Home polish establishes the presentation root before
      the single schedule authority updates its calendar/workout content. */
