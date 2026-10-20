@@ -26,12 +26,16 @@ const TEST_ID='4aa8e0a7-1dd2-4679-a9e6-70f1ae43ba32';
   // Simulate Supabase CORS preflight and responses exactly enough for a real
   // cross-origin browser fetch. Without these headers the test can false-fail.
   const cors={'access-control-allow-origin':base,'access-control-allow-headers':'apikey, content-type, authorization, x-client-info','access-control-allow-methods':'POST, GET, OPTIONS'};
+  let passwordAttempts=0;
   await page.route('https://*/auth/v1/**',async route=>{
    const request=route.request();
    if(request.method()==='OPTIONS')return route.fulfill({status:204,headers:cors,body:''});
    const url=new URL(request.url());
-   if(url.pathname.endsWith('/token')&&url.searchParams.get('grant_type')==='password')
+   if(url.pathname.endsWith('/token')&&url.searchParams.get('grant_type')==='password'){
+    passwordAttempts++;
+    if(passwordAttempts===1)return route.fulfill({status:400,contentType:'application/json',headers:cors,body:JSON.stringify({error:'invalid_grant',message:'Invalid login credentials'})});
     return route.fulfill({status:200,contentType:'application/json',headers:cors,body:JSON.stringify({access_token:'mock-access',refresh_token:'mock-refresh',expires_in:3600,token_type:'bearer',user:{id:TEST_ID,email:'tester@example.com'}})});
+   }
    if(url.pathname.endsWith('/user'))
     return route.fulfill({status:200,contentType:'application/json',headers:cors,body:JSON.stringify({id:TEST_ID,email:'tester@example.com'})});
    return route.fulfill({status:404,contentType:'application/json',headers:cors,body:'{}'});
@@ -43,11 +47,16 @@ const TEST_ID='4aa8e0a7-1dd2-4679-a9e6-70f1ae43ba32';
   await page.locator('#email').fill('tester@example.com');
   await page.locator('#password').fill('password123');
   await page.locator('#submit').click();
+  await page.locator('#status').getByText('Invalid email or password').waitFor({timeout:8000});
+  assert.equal(await page.locator('#submit').isEnabled(),true,'a rejected sign-in must allow another attempt');
+  assert.equal(await page.locator('#heading').innerText(),'Welcome back','bad password must never freeze or hide login');
+  await page.locator('#submit').click();
   await page.waitForURL('**/app.html',{timeout:12000});
   await page.waitForFunction(id=>window.PRISMDeviceStore?.owner===id,TEST_ID,{timeout:15000});
   const state=await page.evaluate(()=>({session:JSON.parse(window.localStorage.getItem('prismSupabaseSessionV1')||'null'),owner:window.PRISMDeviceStore?.owner||null}));
   assert.equal(state.session?.user?.id,TEST_ID,'verified session must survive navigation');
   assert.equal(state.owner,TEST_ID,'full app must bootstrap correct scoped account');
-  console.log('PASS isolated luxury login and verified handoff',JSON.stringify({owner:state.owner,errors:errors.slice(0,8)}));
+  assert.equal(passwordAttempts,2,'test must exercise rejected and successful authentication');
+  console.log('PASS isolated luxury rejected login, retry and verified handoff',JSON.stringify({owner:state.owner,errors:errors.slice(0,8)}));
  }finally{await browser.close();server.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
