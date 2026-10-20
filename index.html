@@ -1149,12 +1149,15 @@ body.prism-onboarding-active .container{max-width:560px;min-height:100vh;min-hei
 }
 #workoutScreen .set-block>.set-done::after{content:"✓";font-size:24px;color:white}
 #workoutScreen .set-block>.set-done[aria-pressed="true"]{background:#194d38;border-color:#2c895c}
-#workoutScreen .set-block>.set-clear{
- grid-column:1;grid-row:2;justify-self:center;
- width:96px;min-width:96px;max-width:100%;min-height:44px;
- margin:0;padding:7px 10px;font-size:14px;line-height:1.2;
- border:1px solid #6e4a86;border-radius:10px;
- background:#21172c;color:#e9d8f9
+#workoutScreen .set-block>.set-row>.set-clear{
+ grid-column:2/4!important;grid-row:2!important;justify-self:center!important;
+ display:block!important;position:static!important;transform:none!important;
+ width:112px!important;min-width:112px!important;max-width:100%!important;
+ min-height:44px!important;height:44px!important;
+ margin:4px 0 0!important;padding:8px 12px!important;
+ font-size:14px!important;line-height:1.2!important;text-align:center!important;
+ border:1px solid #6e4a86!important;border-radius:10px!important;
+ background:#21172c!important;color:#e9d8f9!important
 }
 #workoutScreen .set-block>.previous{
  grid-column:1/-1;grid-row:3;
@@ -3365,6 +3368,7 @@ onclick="openPicker('${escapeAttribute(key)}','weight')">${cw}</button>
 <button class="picker-button" id="${safeId(key+"-reps-button")}"
 
 onclick="openPicker('${escapeAttribute(key)}','reps')">${cr}</button>
+<button class="set-clear" type="button" onclick="clearSet('${escapeAttribute(key)}')">Clear</button>
 
 </div>
 
@@ -3372,8 +3376,6 @@ onclick="openPicker('${escapeAttribute(key)}','reps')">${cr}</button>
 
 ${comparison?`<div class="compare ${comparison.cls}" id="${safeId(key+"-compare")}">${comparison.text}</div>`:""}
 <button class="set-done" type="button" aria-pressed="${Boolean(current.done)}" id="${safeId(key+"-done")}" onclick="toggleSetDone('${escapeAttribute(key)}')">${current.done?"Done ✓":"Complete Set"}</button>
-<button class="set-clear" type="button" onclick="clearSet('${escapeAttribute(key)}')">Clear</button>
-
 </div>`;
 
 }
