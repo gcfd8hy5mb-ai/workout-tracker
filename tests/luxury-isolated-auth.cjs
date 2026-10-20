@@ -30,6 +30,7 @@ const TEST_ID='4aa8e0a7-1dd2-4679-a9e6-70f1ae43ba32';
   await page.locator('#password').fill('password123');
   await page.locator('#submit').click();
   await page.waitForURL('**/app.html',{timeout:12000});
+  await page.waitForFunction(id=>window.PRISMDeviceStore?.owner===id,TEST_ID,{timeout:15000});
   const state=await page.evaluate(()=>({session:JSON.parse(window.localStorage.getItem('prismSupabaseSessionV1')||'null'),owner:window.PRISMDeviceStore?.owner||null}));
   assert.equal(state.session?.user?.id,TEST_ID,'verified session must survive navigation');
   assert.equal(state.owner,TEST_ID,'full app must bootstrap correct scoped account');
