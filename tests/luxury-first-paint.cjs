@@ -25,6 +25,11 @@ const server=http.createServer((req,res)=>{
   const configScript=fs.readFileSync(path.join(root,'supabase-config.js'),'utf8');
   assert.ok(configScript.includes('if (!window.PRISMDeviceStore?.owner) return;'),
     'the sign-in screen must defer heavyweight workout and coach scripts');
+  const startupScript=fs.readFileSync(path.join(root,'myliftcoach-startup-smooth.js'),'utf8');
+  const startupCss=fs.readFileSync(path.join(root,'myliftcoach-startup-smooth.css'),'utf8');
+  assert.ok(startupScript.includes('setTimeout(showBootFailure,12000)'), 'stalled startup must expose a recovery surface');
+  assert.ok(startupCss.includes(':not(#mlcStartupFailure)'), 'the startup mask must not hide its recovery surface');
+  assert.ok(startupScript.includes("!document.getElementById('liftovaAuthGate')"), 'do not load owner admin tools while signing in');
   // Login regression: a verified sign-in must bootstrap scoped data on a new
   // document, not strip the gate and expose uninitialized legacy app state.
   const accountUi=fs.readFileSync(path.join(root,'persistence/account-ui.js'),'utf8');
