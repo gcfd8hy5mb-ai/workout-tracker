@@ -30,35 +30,31 @@
 <script>
 window.MYLIFTCOACHStartupTrace={events:[],mark(name){const at=performance.now();this.events.push({name,at});performance.mark('myliftcoach:'+name);}};
 window.MYLIFTCOACHStartupTrace.mark('scope-start');
+// Install the recovery watchdog before reading any saved account data.
+// It is intentionally independent of the scoped-storage snapshot.
+let mlcBootFinished=false;
+const mlcBootWatchdog=()=>{
+  if(mlcBootFinished)return;
+  document.documentElement.classList.remove('prism-account-booting');
+  if(document.getElementById('mlcBootRecovery'))return;
+  const recovery=document.createElement('div');
+  recovery.id='mlcBootRecovery';recovery.setAttribute('role','alert');
+  recovery.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#003b49;color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px;padding:28px;font:16px -apple-system,sans-serif';
+  const title=document.createElement('strong');title.textContent='MYLIFTCOACH could not finish opening';
+  const detail=document.createElement('p');detail.textContent='Your saved workouts have not been deleted. Try reopening the app.';
+  const retry=document.createElement('button');retry.type='button';retry.textContent='Try again';retry.style.cssText='padding:15px 26px;border:0;border-radius:12px;background:#d7f8ee;color:#003b49;font:600 16px -apple-system,sans-serif';retry.addEventListener('click',()=>location.reload());
+  recovery.append(title,detail,retry);(document.body||document.documentElement).appendChild(recovery);
+};
+window.setTimeout(mlcBootWatchdog,15000);
 window.PRISMDeviceStore=window.PRISMScopedStorage.create(window.localStorage);
 try{
   const session=JSON.parse(window.localStorage.getItem('prismSupabaseSessionV1')||'null');
   if(session?.user?.id)window.PRISMDeviceStore.select(session.user.id);
-}catch{}
-window.PRISMAccountInitialSnapshot=window.PRISMDeviceStore.snapshot();
-if(window.PRISMDeviceStore.owner){
-  document.documentElement.classList.add('prism-account-booting');
-  // Boot watchdog runs before the rest of the app scripts. If a script fails,
-  // do not leave an installed iPhone app permanently covered by a blank screen.
-  window.setTimeout(()=>{
-    if(!document.documentElement.classList.contains('prism-account-booting'))return;
-    document.documentElement.classList.remove('prism-account-booting');
-    const recovery=document.createElement('div');
-    recovery.id='mlcBootRecovery';
-    recovery.setAttribute('role','alert');
-    recovery.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#003b49;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px;padding:28px;font:16px -apple-system,BlinkMacSystemFont,sans-serif';
-    const title=document.createElement('strong');
-    title.textContent='MYLIFTCOACH could not finish opening';
-    const detail=document.createElement('p');
-    detail.textContent='Your saved workouts have not been deleted. Try reopening the app.';
-    const retry=document.createElement('button');
-    retry.type='button';retry.textContent='Try again';
-    retry.style.cssText='background:#d7f8ee;color:#003b49;border:0;border-radius:12px;padding:15px 26px;font:600 16px -apple-system,sans-serif';
-    retry.addEventListener('click',()=>location.reload());
-    recovery.append(title,detail,retry);
-    document.body.appendChild(recovery);
-  },15000);
-}
+}catch(error){window.MYLIFTCOACHStartupTrace.mark('session-read-error');}
+try{window.PRISMAccountInitialSnapshot=window.PRISMDeviceStore.snapshot();}
+catch(error){window.PRISMAccountInitialSnapshot={};window.MYLIFTCOACHStartupTrace.mark('snapshot-error');}
+if(window.PRISMDeviceStore.owner)document.documentElement.classList.add('prism-account-booting');
+window.addEventListener('load',()=>{if(!document.documentElement.classList.contains('prism-account-booting'))mlcBootFinished=true;},{once:true});
 window.MYLIFTCOACHStartupTrace.mark(window.PRISMDeviceStore.owner?'account-gate':'guest-scope-ready');
 const localStorage=window.PRISMDeviceStore.storage;
 </script>
