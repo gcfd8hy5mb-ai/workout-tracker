@@ -1,0 +1,11 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const ui=fs.readFileSync(path.join(__dirname,'..','persistence/account-ui.js'),'utf8');
+assert.match(ui,/let identityVerified=false/,'account gate must begin unverified');
+assert.match(ui,/const unlock=\(\)=>\{if\(identityVerified\)/,'never unlock without verified identity');
+assert.match(ui,/identityVerified=true;unlock\(\);accountEmail=/,'verify before unlocking account scope');
+assert.doesNotMatch(ui,/setTimeout\(\(\)=>\{unlock\(\)/,'no timer can reveal unverified account data');
+assert.match(ui,/manager\.invalidate\(\);window\.localStorage\.removeItem\('prismSupabaseSessionV1'\)/,'invalid session must be removed');
+assert.match(ui,/location\.replace\(loginUrl\.href\)/,'verification failure must return to login');
+console.log('PASS privacy gate cannot unlock on verification timeout or rejection');
