@@ -28,6 +28,8 @@ const server=http.createServer((req,res)=>{
   console.log('THEME_DIAGNOSTIC',JSON.stringify({initialTheme,theme,themeChanges}));
   assert.equal(initialTheme,'#003b49','initial HTML theme must match luxury palette');
   assert.equal(theme,'#003b49','runtime must not restore the legacy theme');
+  assert.deepEqual(themeChanges.filter(change=>change.value!=='#003b49'),[],
+    'no runtime theme-color mutation may flash a legacy palette');
   assert.match(icon,/myliftcoach-icon\\.svg/);
   console.log(JSON.stringify({initialTheme,theme,icon,visibleText:(await page.locator('body').innerText()).slice(0,400),errors:errors.slice(0,8)}));
  }finally{await browser.close();server.close();}
