@@ -47,7 +47,7 @@ const TEST_ID='4aa8e0a7-1dd2-4679-a9e6-70f1ae43ba32';
   await page.locator('#email').fill('tester@example.com');
   await page.locator('#password').fill('password123');
   await page.locator('#submit').click();
-  await page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('Invalid email or password'),{timeout:8000});
+  await page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('Invalid email or password'),undefined,{timeout:8000});
   assert.equal(await page.locator('#submit').isEnabled(),true,'a rejected sign-in must allow another attempt');
   assert.equal(await page.locator('#heading').innerText(),'Welcome back','bad password must never freeze or hide login');
   await page.locator('#submit').click();
