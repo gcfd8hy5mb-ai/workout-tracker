@@ -23,9 +23,23 @@ const TEST_ID='4aa8e0a7-1dd2-4679-a9e6-70f1ae43ba32';
   await assert.equal(await page.locator('#heading').innerText(),'Welcome back');
   assert.equal(await page.locator('script[src="persistence/account-ui.js"]').count(),0,'full auth UI must not boot during lightweight sign-in');
   assert.equal(await page.locator('script[src="myliftcoach-startup-smooth.js"]').count(),0,'legacy startup cover must not boot');
-  await page.route('https://*/auth/v1/token?grant_type=password',async route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({access_token:'mock-access',refresh_token:'mock-refresh',expires_in:3600,token_type:'bearer',user:{id:TEST_ID,email:'tester@example.com'}})}));
-  await page.route('https://*/auth/v1/user',async route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:TEST_ID,email:'tester@example.com'})}));
-  await page.route('https://*/rest/v1/**',async route=>route.fulfill({status:200,contentType:'application/json',body:'[]'}));
+  // Simulate Supabase CORS preflight and responses exactly enough for a real
+  // cross-origin browser fetch. Without these headers the test can false-fail.
+  const cors={'access-control-allow-origin':base,'access-control-allow-headers':'apikey, content-type, authorization, x-client-info','access-control-allow-methods':'POST, GET, OPTIONS'};
+  await page.route('https://*/auth/v1/**',async route=>{
+   const request=route.request();
+   if(request.method()==='OPTIONS')return route.fulfill({status:204,headers:cors,body:''});
+   const url=new URL(request.url());
+   if(url.pathname.endsWith('/token')&&url.searchParams.get('grant_type')==='password')
+    return route.fulfill({status:200,contentType:'application/json',headers:cors,body:JSON.stringify({access_token:'mock-access',refresh_token:'mock-refresh',expires_in:3600,token_type:'bearer',user:{id:TEST_ID,email:'tester@example.com'}})});
+   if(url.pathname.endsWith('/user'))
+    return route.fulfill({status:200,contentType:'application/json',headers:cors,body:JSON.stringify({id:TEST_ID,email:'tester@example.com'})});
+   return route.fulfill({status:404,contentType:'application/json',headers:cors,body:'{}'});
+  });
+  await page.route('https://*/rest/v1/**',async route=>{
+   if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers:cors,body:''});
+   return route.fulfill({status:200,contentType:'application/json',headers:cors,body:'[]'});
+  });
   await page.locator('#email').fill('tester@example.com');
   await page.locator('#password').fill('password123');
   await page.locator('#submit').click();
