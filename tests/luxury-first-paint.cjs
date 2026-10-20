@@ -28,6 +28,8 @@ const server=http.createServer((req,res)=>{
   assert.ok(loginPath.includes('manager.select(signedIn.user.id)'), 'verified user must select scoped storage');
   assert.ok(loginPath.includes('location.replace(next)'), 'verified sign-in must reload account-scoped state');
   assert.ok(!loginPath.includes('gate.remove()'), 'login gate must remain during navigation');
+  assert.ok(loginPath.includes('automatic navigation did not complete'), 'iPhone navigation must expose a recovery status');
+  assert.ok(loginPath.includes('continueLink.focus'), 'iPhone navigation fallback must remain actionable');
   assert.ok(!loginPath.includes("classList.remove('liftova-auth-locked')"), 'do not expose legacy shell before reload');
     const theme=await page.locator('meta[name="theme-color"]').getAttribute('content');
   const initialTheme=fs.readFileSync(path.join(root,'index.html'),'utf8').match(/<meta name="theme-color" content="([^"]+)"/)[1];
