@@ -58,5 +58,30 @@ const TEST_ID='4aa8e0a7-1dd2-4679-a9e6-70f1ae43ba32';
   assert.equal(state.owner,TEST_ID,'full app must bootstrap correct scoped account');
   assert.equal(passwordAttempts,2,'test must exercise rejected and successful authentication');
   console.log('PASS isolated luxury rejected login, retry and verified handoff',JSON.stringify({owner:state.owner,errors:errors.slice(0,8)}));
+  // An expired/revoked account session must return to login without waiting
+  // for network logout, clearing workouts, or looping back into app.html.
+  const revokedContext=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
+  try{
+   const revokedPage=await revokedContext.newPage();
+   await revokedPage.goto(base+'/',{waitUntil:'domcontentloaded'});
+   await revokedPage.evaluate(id=>window.localStorage.setItem('prismSupabaseSessionV1',JSON.stringify({
+    access_token:'expired-mock',refresh_token:'expired-refresh',
+    expires_at:Math.floor(Date.now()/1000)+3600,user:{id,email:'revoked@example.com'}
+   })),TEST_ID);
+   await revokedPage.route('https://*/auth/v1/**',async route=>{
+    const method=route.request().method();
+    if(method==='OPTIONS')return route.fulfill({status:204,headers:cors,body:''});
+    if(new URL(route.request().url()).pathname.endsWith('/user'))
+     return route.fulfill({status:401,contentType:'application/json',headers:cors,body:'{}'});
+    return route.fulfill({status:404,contentType:'application/json',headers:cors,body:'{}'});
+   });
+   await revokedPage.goto(base+'/app.html',{waitUntil:'domcontentloaded',timeout:20000});
+   await revokedPage.waitForURL('**/index.html',{timeout:20000});
+   const remaining=await revokedPage.evaluate(()=>window.localStorage.getItem('prismSupabaseSessionV1'));
+   assert.equal(remaining,null,'revoked session must be cleared without deleting workouts');
+   assert.equal(await revokedPage.locator('#heading').innerText(),'Welcome back');
+   console.log('PASS revoked session returns to isolated login');
+  }finally{await revokedContext.close();}
+
  }finally{await browser.close();server.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
