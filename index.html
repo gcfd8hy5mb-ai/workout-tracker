@@ -20,9 +20,13 @@ async function enter(data){
  var saved=Object.assign({},data,{expires_at:data.expires_at||Math.floor(Date.now()/1000)+(data.expires_in||3600)});
  window.localStorage.setItem('prismSupabaseSessionV1',JSON.stringify(saved));
  var target=destination(),link=document.createElement('a');
- link.href=target;link.textContent='Continue to MYLIFTCOACH →';
- link.style.cssText='display:block;color:#ffdfb5;margin:12px 0';
- status.after(link);
+ link.href=target;link.textContent='OPEN MY WORKOUTS →';
+ link.style.cssText='display:block;color:#fffef7;background:#006675;padding:15px 12px;border:1px solid #bb9c6b;border-radius:12px;margin:14px 0;font:600 16px Georgia,serif;text-decoration:none';
+ var newTab=document.createElement('a');
+ newTab.href=target;newTab.target='_blank';newTab.rel='noopener';
+ newTab.textContent='If it stays here, open workouts in a new tab ↗';
+ newTab.style.cssText='display:block;color:#ffdfb5;margin:10px 0 4px;font:14px Georgia,serif';
+ status.after(link,newTab);
  note('Login verified. Checking workout page…');
  var controller=new AbortController(),timer=setTimeout(function(){controller.abort()},12000);
  try{
@@ -33,8 +37,10 @@ async function enter(data){
   if(response.body&&response.body.cancel)response.body.cancel().catch(function(){});
   note('Workout page reachable. Opening MYLIFTCOACH…');
   try{window.sessionStorage.setItem('mlc-navigation-stage','workout-page-ok')}catch(_){}
-  window.location.assign(target);
-  setTimeout(function(){if(document.visibilityState==='visible')note('Workout page responded, but Safari has not completed navigation. Try Continue above.');},8500);
+  // iOS Safari can leave this protected preview stuck on the login document
+  // after a scripted navigation. A user-activated native anchor is reliable
+  // and preserves a clear, diagnostic fallback without changing the session.
+  note('Sign-in complete. Tap OPEN MY WORKOUTS above to continue.');
  }catch(error){
   note(error.name==='AbortError'?'Workout page did not respond within 12 seconds. The issue is loading app.html, not your password.':error.message);
  }finally{clearTimeout(timer)}
