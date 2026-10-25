@@ -30,19 +30,18 @@ const server=http.createServer((req,res)=>{
   assert.ok(startupScript.includes('setTimeout(showBootFailure,12000)'), 'stalled startup must expose a recovery surface');
   assert.ok(startupCss.includes(':not(#mlcStartupFailure)'), 'the startup mask must not hide its recovery surface');
   assert.ok(startupScript.includes("!document.getElementById('liftovaAuthGate')"), 'do not load owner admin tools while signing in');
-  // Login regression: a verified sign-in must bootstrap scoped data on a new
-  // document, not strip the gate and expose uninitialized legacy app state.
-  const accountUi=fs.readFileSync(path.join(root,'persistence/account-ui.js'),'utf8');
-  const loginPath=accountUi.slice(accountUi.indexOf("if(mode==='signin'){stage("),accountUi.indexOf("return;}else{const result=await cloud.signUp"));
-  assert.ok(loginPath.includes('manager.select(signedIn.user.id)'), 'verified user must select scoped storage');
-  assert.ok(loginPath.includes('location.replace(next)'), 'verified sign-in must reload account-scoped state');
-  assert.ok(!loginPath.includes('gate.remove()'), 'login gate must remain during navigation');
-  assert.ok(loginPath.includes('automatic navigation did not complete'), 'iPhone navigation must expose a recovery status');
-  assert.ok(loginPath.includes('continueLink.focus'), 'iPhone navigation fallback must remain actionable');
+  // The isolated login document must not load the legacy account gate.
+  const loginHtml=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.ok(loginHtml.includes("await verifyAccount("), 'sign-in must verify the account before opening workouts');
+  assert.ok(loginHtml.includes("OPEN MY WORKOUTS"), 'provide an actionable iPhone navigation fallback');
+  assert.ok(!loginHtml.includes('persistence/account-ui.js'), 'login must not boot the full workout account gate');
+  // The full app restores identity after load: recovery must stop when the
+  // account gate clears, not just when the document load event fires.
   const html=fs.readFileSync(path.join(root,'app.html'),'utf8');
-  assert.ok(html.includes("recovery.id='mlcBootRecovery'"), 'startup must offer a recovery screen on boot timeout');
-  assert.ok(html.includes('MYLIFTCOACH could not finish opening'), 'startup recovery must explain failure');
-  assert.ok(!loginPath.includes("classList.remove('liftova-auth-locked')"), 'do not expose legacy shell before reload');
+  assert.ok(html.includes("recovery.id='mlcBootRecovery'"), 'startup must offer recovery on genuine timeout');
+  assert.ok(html.includes("const mlcBootGateObserver=new MutationObserver("), 'observe asynchronous account boot completion');
+  assert.ok(html.includes('mlcBootGateObserver.disconnect()'), 'disconnect boot observer after verification');
+  assert.ok(html.includes('mlcBootFinished=true'), 'cancel false startup failure after successful boot');
     const theme=await page.locator('meta[name="theme-color"]').getAttribute('content');
   const initialTheme=fs.readFileSync(path.join(root,'index.html'),'utf8').match(/<meta name="theme-color" content="([^"]+)"/)[1];
   const icon=await page.locator('link[rel="icon"]').getAttribute('href');
