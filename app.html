@@ -54,7 +54,25 @@ try{
 try{window.PRISMAccountInitialSnapshot=window.PRISMDeviceStore.snapshot();}
 catch(error){window.PRISMAccountInitialSnapshot={};window.MYLIFTCOACHStartupTrace.mark('snapshot-error');}
 if(window.PRISMDeviceStore.owner)document.documentElement.classList.add('prism-account-booting');
-window.addEventListener('load',()=>{if(!document.documentElement.classList.contains('prism-account-booting'))mlcBootFinished=true;},{once:true});
+// Account verification may complete AFTER the load event. Observe that transition
+// so the recovery watchdog cannot obscure a successfully opened workout screen.
+const mlcBootGateObserver=new MutationObserver(()=>{
+  if(!document.documentElement.classList.contains('prism-account-booting')){
+    mlcBootFinished=true;
+    mlcBootGateObserver.disconnect();
+  }
+});
+if(document.documentElement.classList.contains('prism-account-booting')){
+  mlcBootGateObserver.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+}else{
+  mlcBootFinished=true;
+}
+window.addEventListener('load',()=>{
+  if(!document.documentElement.classList.contains('prism-account-booting')){
+    mlcBootFinished=true;
+    mlcBootGateObserver.disconnect();
+  }
+},{once:true});
 window.MYLIFTCOACHStartupTrace.mark(window.PRISMDeviceStore.owner?'account-gate':'guest-scope-ready');
 const localStorage=window.PRISMDeviceStore.storage;
 </script>
