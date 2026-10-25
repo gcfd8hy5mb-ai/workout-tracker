@@ -37,10 +37,11 @@ async function enter(data){
   if(response.body&&response.body.cancel)response.body.cancel().catch(function(){});
   note('Workout page reachable. Opening MYLIFTCOACH…');
   try{window.sessionStorage.setItem('mlc-navigation-stage','workout-page-ok')}catch(_){}
-  // iOS Safari can leave this protected preview stuck on the login document
-  // after a scripted navigation. A user-activated native anchor is reliable
-  // and preserves a clear, diagnostic fallback without changing the session.
-  note('Sign-in complete. Tap OPEN MY WORKOUTS above to continue.');
+  // Navigate automatically when the destination is verified. Keep the
+  // native links above as a fallback for protected iPhone previews that
+  // block scripted navigation.
+  note('Sign-in complete. Opening MYLIFTCOACH…');
+  window.location.replace(target);
  }catch(error){
   note(error.name==='AbortError'?'Workout page did not respond within 12 seconds. The issue is loading app.html, not your password.':error.message);
  }finally{clearTimeout(timer)}
