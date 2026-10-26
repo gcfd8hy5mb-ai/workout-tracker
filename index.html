@@ -34,8 +34,12 @@ async function enter(data){
   var contentType=response.headers.get('content-type')||'';
   if(!response.ok)throw Error('Workout page unavailable (HTTP '+response.status+'). The Vercel preview may require access for app.html.');
   if(!contentType.includes('text/html'))throw Error('Workout page returned an unexpected file type: '+contentType);
-  if(response.body&&response.body.cancel)response.body.cancel().catch(function(){});
-  note('Workout page reachable. Opening MYLIFTCOACH…');
+  // A preview rewrite can return the sign-in HTML with HTTP 200 for
+  // /app.html. Content type alone cannot distinguish that from the app.
+  var documentText=await response.text();
+  if(!documentText.includes('PRISMScopedStorage.create(window.localStorage)'))
+    throw Error('The preview is serving the login page instead of the workout app. This is a deployment routing issue.');
+  note('Workout page verified. Opening MYLIFTCOACH…');
   try{window.sessionStorage.setItem('mlc-navigation-stage','workout-page-ok')}catch(_){}
   // Navigate automatically when the destination is verified. Keep the
   // native links above as a fallback for protected iPhone previews that
