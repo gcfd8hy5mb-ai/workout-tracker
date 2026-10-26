@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.join(__dirname,'..');
+const entry=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const account=fs.readFileSync(path.join(root,'persistence/account-ui.js'),'utf8');
+const app=fs.readFileSync(path.join(root,'app.html'),'utf8');
+assert.match(entry,/new URL\('app\.html',location\.href\)/,'preview entry must use the integrated app');
+assert.match(account,/window\.localStorage\.removeItem\('prismSupabaseSessionV1'\)/,'invalid session must be cleared');
+assert.match(account,/new URL\('app\.html',location\.href\);loginUrl\.searchParams\.set\('mlc_session_reset','1'\)/,'revoked sessions must reenter the integrated account gate');
+assert.doesNotMatch(account,/new URL\('index\.html',location\.href\)/,'revoked session must never redirect to entry which redirects back to app');
+assert.match(app,/if\(session\?\.user\?\.id\)window\.PRISMDeviceStore\.select\(session\.user\.id\)/,'account-scoping remains intact');
+assert.match(account,/if\(!manager\.owner\)\{showAuthGate\(\)/,'no-session entry must show sign-in');
+console.log('PASS no auth redirect loop; invalid session clears and next load opens integrated sign-in gate');
