@@ -16,8 +16,9 @@ const server=http.createServer((req,res)=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try{
   const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
-  const page=await ctx.newPage(),errors=[];
+  const page=await ctx.newPage(),errors=[],failedRequests=[];
   page.on('pageerror',error=>errors.push(error.message));
+  page.on('requestfailed',req=>failedRequests.push({url:req.url(),failure:req.failure()?.errorText}));
   const base='http://127.0.0.1:'+server.address().port;
   await page.route('https://*/**',route=>route.abort());
   await page.goto(base+'/launch-check.html',{waitUntil:'domcontentloaded'});
@@ -36,5 +37,6 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.locator('#liftovaAuthGate').isVisible(),true,'login must be visible on iPhone');
   assert.deepEqual(errors,[],'startup must not throw JS exceptions');
   console.log('PASS integrated iPhone guest startup',JSON.stringify(snapshot));
+  console.log('BROWSER_DIAGNOSTICS',JSON.stringify({errors,failedRequests}));
  }finally{await browser.close();server.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
