@@ -35,7 +35,8 @@ window.MYLIFTCOACHStartupTrace.mark('scope-start');
 let mlcBootFinished=false;
 const mlcBootWatchdog=()=>{
   if(mlcBootFinished)return;
-  document.documentElement.classList.remove('prism-account-booting');
+  // Preserve the account privacy gate; expose only the recovery surface.
+  document.documentElement.classList.add('prism-account-boot-failed');
   if(document.getElementById('mlcBootRecovery'))return;
   const recovery=document.createElement('div');
   recovery.id='mlcBootRecovery';recovery.setAttribute('role','alert');
@@ -88,7 +89,14 @@ const localStorage=window.PRISMDeviceStore.storage;
 <style>
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html.prism-account-booting body{visibility:hidden}
+/* Never hide the app's entire body: that made failed startup indistinguishable
+   from a blank screen, and could conceal the recovery UI. Keep private app
+   content hidden while preserving only the account gate or recovery surface. */
+html.prism-account-booting body>header,
+html.prism-account-booting body>.container,
+html.prism-account-booting body>.bottom-nav{visibility:hidden!important}
+html.prism-account-booting #liftovaAuthGate,
+html.prism-account-booting #mlcBootRecovery{visibility:visible!important}
 html.prism-account-booting::after{content:"Restoring your MYLIFTCOACH account…";position:fixed;inset:0;display:grid;place-items:center;background:#003b49;color:#fff;font:600 17px -apple-system,BlinkMacSystemFont,sans-serif;z-index:99999}
 #mlcBootRecovery{visibility:visible!important}
 
