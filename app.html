@@ -45,7 +45,15 @@ const mlcBootWatchdog=()=>{
   const retry=document.createElement('button');retry.type='button';retry.textContent='Try again';retry.style.cssText='padding:15px 26px;border:0;border-radius:12px;background:#d7f8ee;color:#003b49;font:600 16px -apple-system,sans-serif';retry.addEventListener('click',()=>location.reload());
   recovery.append(title,detail,retry);(document.body||document.documentElement).appendChild(recovery);
 };
-window.setTimeout(mlcBootWatchdog,15000);
+window.setTimeout(mlcBootWatchdog,9000);
+window.addEventListener('error',event=>{
+  if(mlcBootFinished)return;
+  try{window.sessionStorage.setItem('mlc-startup-error',String(event.message||'script error').slice(0,180));}catch(_){}
+});
+window.addEventListener('unhandledrejection',event=>{
+  if(mlcBootFinished)return;
+  try{window.sessionStorage.setItem('mlc-startup-error',String(event.reason?.message||event.reason||'startup error').slice(0,180));}catch(_){}
+});
 window.PRISMDeviceStore=window.PRISMScopedStorage.create(window.localStorage);
 try{
   const session=JSON.parse(window.localStorage.getItem('prismSupabaseSessionV1')||'null');
@@ -81,7 +89,8 @@ const localStorage=window.PRISMDeviceStore.storage;
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html.prism-account-booting body{visibility:hidden}
-html.prism-account-booting::after{content:"Restoring your MYLIFTCOACH account…";position:fixed;inset:0;display:grid;place-items:center;background:#0b111b;color:#fff;font:600 17px -apple-system,BlinkMacSystemFont,sans-serif;z-index:99999}
+html.prism-account-booting::after{content:"Restoring your MYLIFTCOACH account…";position:fixed;inset:0;display:grid;place-items:center;background:#003b49;color:#fff;font:600 17px -apple-system,BlinkMacSystemFont,sans-serif;z-index:99999}
+#mlcBootRecovery{visibility:visible!important}
 
 :root{
 
