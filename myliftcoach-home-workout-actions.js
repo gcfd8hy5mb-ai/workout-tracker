@@ -20,7 +20,9 @@ function injectStyle(){if(document.querySelector('style[data-myliftcoach-home-wo
 .myliftcoach-detail-actions button{min-height:48px;border:1px solid #49305d;border-radius:13px;background:#18121f;color:#f9f7ff;font:700 14px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif}
 `;document.head.appendChild(style)}
 function actionMode(){
- if(safeActive())return {mode:'resume',label:'Resume Workout'};
+ const selectedKey=shell()?.querySelector('.lh-workout')?.dataset.scheduledWorkoutKey;
+ if(selectedKey&&safeActive()?.key===selectedKey)return {mode:'resume',label:'Resume Workout'};
+ if(!selectedKey&&safeActive())return {mode:'resume',label:'Resume Workout'};
  const today=(new Date().getDay()+6)%7;
  const canonical=typeof window.myliftcoachWeeklySchedule==='function'?window.myliftcoachWeeklySchedule():null;
  if(Array.isArray(canonical))return canonical[today]?{mode:'start',label:'Start Workout'}:{mode:'browse',label:'Browse Workouts'};
@@ -30,11 +32,19 @@ function actionMode(){
  return {mode:rest?'browse':'start',label:rest?'Browse Workouts':'Start Workout',legacy};
 }
 function runAction(){
+ const card=shell()?.querySelector('.lh-workout');
+ const selectedKey=card?.dataset.scheduledWorkoutKey;
+ const saved=rawActive();
+ // Never resume an unrelated unfinished session over the workout shown on Home.
+ if(selectedKey){
+   if(saved?.key===selectedKey&&typeof window.resumePrismWorkout==='function'){window.resumePrismWorkout();return}
+   if(typeof window.myliftcoachOpenScheduledWorkout==='function'&&window.myliftcoachOpenScheduledWorkout(selectedKey))return;
+   // Fail closed rather than silently reopen Monday when Tuesday was selected.
+   if(typeof window.showWorkouts==='function')window.showWorkouts();
+   return;
+ }
  const progressed=safeActive();
  if(progressed&&typeof window.resumePrismWorkout==='function'){window.resumePrismWorkout();return}
- const saved=rawActive();
- /* An opened-but-unworked session is still the correct workout target; opening
-    it from a Start CTA is a fresh start semantically, not a Resume state. */
  if(saved&&typeof window.resumePrismWorkout==='function'){window.resumePrismWorkout();return}
  const legacy=hiddenWorkoutAction(),label=(legacy?.textContent||'').trim();
  if(legacy&&!/resume workout/i.test(label)){legacy.click();return}
@@ -53,7 +63,7 @@ let syncing=false;
 function sync(){
  if(syncing)return;syncing=true;requestAnimationFrame(()=>{
   syncing=false;wireGlobalSafeArea();injectStyle();syncDetailActions();const root=shell(),card=root?.querySelector('.lh-workout');if(!card)return;
-  let button=card.querySelector('.myliftcoach-home-workout-action');if(!button){button=document.createElement('button');button.type='button';button.className='myliftcoach-home-workout-action';button.addEventListener('click',runAction);card.appendChild(button)}
+  let button=card.querySelector('.myliftcoach-home-workout-action');if(!button){button=document.createElement('button');button.type='button';button.className='myliftcoach-home-workout-action';button.addEventListener('click',event=>{event.stopPropagation();runAction()});card.appendChild(button)}
   const state=actionMode();if(button.textContent!==state.label)button.textContent=state.label;if(button.dataset.mode!==state.mode)button.dataset.mode=state.mode;if(button.getAttribute('aria-label')!==state.label)button.setAttribute('aria-label',state.label);
  });
 }
