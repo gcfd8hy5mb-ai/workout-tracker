@@ -280,6 +280,37 @@
 
   let queued=false;
   const queue=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;apply()})};
+  // Open precisely the workout represented by the current Home card, not a global stale session.
+  function openScheduledWorkout(expectedKey){
+    const week=weeklySchedule();
+    const index=(new Date().getDay()+6)%7;
+    const workout=week[index];
+    if(!workout||workout.workoutKey!==expectedKey)return false;
+    if(workout.kind==='custom'&&Number.isInteger(workout.customIndex)){
+      if(typeof openCustomWorkout!=='function')return false;
+      openCustomWorkout(workout.customIndex);return true;
+    }
+    if(workout.kind==='plan'){
+      if(expectedKey.startsWith('preset-')&&typeof openPresetWorkout==='function'){
+        openPresetWorkout(expectedKey.slice('preset-'.length));return true;
+      }
+      if(expectedKey.startsWith('suggested-')&&typeof openSuggestedWorkout==='function'){
+        const suggestedIndex=Number(expectedKey.slice('suggested-'.length));
+        if(Number.isInteger(suggestedIndex)){openSuggestedWorkout(suggestedIndex);return true;}
+      }
+    }
+    if(workout.kind==='override'&&typeof openWorkout==='function'){
+      activeWorkoutKey=workout.workoutKey;
+      activeWorkoutTitle=workout.name;
+      activeWorkoutExerciseIds=[...workout.ids];
+      activeCustomIndex=null;
+      activeWorkoutPrescription=null;
+      lastWorkoutContext={type:'weekday',index};
+      openWorkout(workout.name,workout.ids,false);return true;
+    }
+    return false;
+  }
+  window.myliftcoachOpenScheduledWorkout=openScheduledWorkout;
   window.myliftcoachWeeklySchedule=weeklySchedule;
   window.myliftcoachRefreshHomeSchedule=queue;
   document.addEventListener('click',openDisplayedCustom);
