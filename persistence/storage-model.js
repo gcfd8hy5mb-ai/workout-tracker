@@ -6,7 +6,7 @@ const RULES=Object.freeze({
  prismLocalProfileV1:['profile','fields'],prismJourneyV1:['onboarding','fields'],
  workoutGoalsV1:['goals','fields'],prismGoalPhasesV1:['goal_phases','list'],
  prismAthleteProfileV1:['athlete_preferences','fields'],dailyTrackingV1:['tracking','tracking'],
- customWorkoutsV5:['workouts','workouts'],workoutHistoryV52:['sessions','sessions'],
+ customWorkoutsV5:['workouts','workouts'],myliftcoachWeeklyDayOverridesV1:['ui_preferences','fields'],workoutHistoryV52:['sessions','sessions'],
  setHistoryV5:['current_sets','fields'],previousHistoryV51:['previous_sets','fields'],
  overloadTargetsV1:['targets','fields'],completedExercisesV5:['completions','list'],
  prismActiveWorkoutV1:['active_workout','fields'],prismCoachActionsV1:['coach_actions','fields'],
