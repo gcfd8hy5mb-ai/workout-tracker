@@ -11,7 +11,18 @@
   const readJson=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
   const customWorkouts=()=>{const v=readJson('customWorkoutsV5',[]);return Array.isArray(v)?v.filter(w=>w&&w.name&&Array.isArray(w.exercises)&&w.exercises.length):[]};
   const dayOverrides=()=>{const v=readJson(OVERRIDES_KEY,{});return v&&typeof v==='object'?v:{}};
-  const saveOverrides=value=>localStorage.setItem(OVERRIDES_KEY,JSON.stringify(value));
+  const saveOverrides=value=>{
+    // The day editor is a user commit point: persist the complete weekly schedule
+    // and request an immediate account sync before iOS suspends the page.
+    const serialized=JSON.stringify(value);
+    localStorage.setItem(OVERRIDES_KEY,serialized);
+    if(localStorage.getItem(OVERRIDES_KEY)!==serialized)throw new Error('Weekly workout changes could not be saved');
+    if(typeof window.PRISMAccountLiveFlush==='function'){
+      Promise.resolve().then(()=>window.PRISMAccountLiveFlush()).catch(error=>{
+        console.warn('MYLIFTCOACH weekday update will retry cloud sync',error);
+      });
+    }
+  };
 
   const rowsForIds=ids=>{
     try{
