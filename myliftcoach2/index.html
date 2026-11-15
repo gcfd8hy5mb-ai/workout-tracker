@@ -80,6 +80,13 @@
 </div></div>
 <nav class="bottom-tabs" aria-label="Mobile navigation"><button data-page="home" class="active">⌂<small>Home</small></button><button data-page="workouts">♧<small>Workouts</small></button><button data-page="progress">▥<small>Progress</small></button><button data-page="nutrition">◉<small>Nutrition</small></button><button data-page="settings">☰<small>More</small></button></nav>
 <div id="modal" class="modal" hidden><div class="modal-panel"><button id="closeModal" class="modal-close" type="button" aria-label="Close dialog">×</button><div id="modalContent"></div></div></div>
+<div id="restScreen" class="rest-screen" hidden role="dialog" aria-modal="true" aria-label="Rest timer">
+ <div class="rest-top"><button id="restClose" type="button" aria-label="Close rest timer">‹</button><strong>Resting</strong><span></span></div>
+ <div class="rest-dial" id="restDial"><div class="rest-face"><span id="restTime">1:30</span><small>REST TIME</small></div></div>
+ <div class="rest-controls"><button type="button" id="restPause" aria-label="Pause rest timer">Ⅱ</button><button type="button" id="restSkip" aria-label="Skip rest timer">▶▏</button></div>
+ <div class="rest-next"><div class="eyebrow">UP NEXT</div><strong id="restNextName">Next exercise</strong><small id="restNextReps">3 sets · 8–12 reps</small></div>
+ <p class="rest-demo">Practice timer · no workout data is changed</p>
+</div>
 <div id="toast" role="status" class="toast" hidden></div>
 <script defer src="./app.js?v=1"></script>
 </body>
