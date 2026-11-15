@@ -86,13 +86,40 @@ function openWorkout(id){
 }
 function renderWorkoutLog(){
  if(!activePlan)return;
- $('workoutLog').innerHTML=activePlan.ids.map(id=>{const e=exercises.find(x=>x.id===id);const count=session.sets.filter(x=>x.exerciseId===id).length;return '<article class="log-card"><h4>'+escapeHTML(e.name)+'</h4><small>Suggested '+e.sets+' sets × '+escapeHTML(e.reps)+' reps · Recorded '+count+' sets</small><div class="inputs"><label>Weight (lb)<input type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">+ Set</button></div></article>'}).join('');
+ $('workoutLog').innerHTML=activePlan.ids.map(id=>{
+  const e=exercises.find(x=>x.id===id);
+  const count=session.sets.filter(x=>x.exerciseId===id).length;
+  return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small><div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
+ }).join('');
+}
+function updateExerciseFeedback(id){
+ const sets=session.sets.filter(x=>x.exerciseId===id);
+ const count=document.querySelector('[data-count="'+id+'"]');
+ const feedback=document.querySelector('[data-feedback="'+id+'"]');
+ const undo=document.querySelector('[data-undo="'+id+'"]');
+ if(count)count.textContent=sets.length+' logged';
+ if(feedback)feedback.textContent=sets.length?('Last set: '+sets[sets.length-1].weight+' lb × '+sets[sets.length-1].reps+' reps'):'';
+ if(undo)undo.hidden=sets.length===0;
 }
 function addSet(id){
  if(!session||!activePlan?.ids.includes(id))return;
- const weight=Number(document.querySelector('[data-weight="'+id+'"]').value),reps=Number(document.querySelector('[data-reps="'+id+'"]').value);
- if(!Number.isFinite(weight)||weight<0||weight>1500||!Number.isInteger(reps)||reps<1||reps>100){notice('Enter a valid weight and rep count.');return}
- session.sets.push({exerciseId:id,weight,reps});renderWorkoutLog();notice('Practice set recorded');
+ const weightField=document.querySelector('[data-weight="'+id+'"]');
+ const repsField=document.querySelector('[data-reps="'+id+'"]');
+ if(!weightField||!repsField)return;
+ const weight=Number(weightField.value),reps=Number(repsField.value);
+ if(weightField.value.trim()===''||repsField.value.trim()===''||!Number.isFinite(weight)||weight<0||weight>1500||!Number.isInteger(reps)||reps<1||reps>100){
+  notice('Enter a valid weight and rep count.');return;
+ }
+ session.sets.push({exerciseId:id,weight,reps});
+ // Update only this exercise: never erase inputs, keyboard focus, or scroll position.
+ updateExerciseFeedback(id);
+}
+function undoSet(id){
+ if(!session||!activePlan?.ids.includes(id))return;
+ const index=session.sets.findLastIndex(x=>x.exerciseId===id);
+ if(index<0)return;
+ session.sets.splice(index,1);
+ updateExerciseFeedback(id);
 }
 async function authRequest(path,body,token,method='POST'){
  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),12000);
@@ -146,7 +173,7 @@ function bind(){
  $('todayStart').addEventListener('click',()=>openWorkout(nextPlan().id));
  $('workoutGrid').addEventListener('click',e=>{const el=e.target.closest('[data-workout]');if(el)openWorkout(el.dataset.workout)});
  $('exerciseSearch').addEventListener('input',renderLibrary);
- $('modalContent').addEventListener('click',e=>{const el=e.target.closest('[data-addset]');if(el)addSet(el.dataset.addset)});
+ $('modalContent').addEventListener('click',e=>{const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
  $('closeModal').addEventListener('click',closeModal);
  $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').hidden)closeModal()});
