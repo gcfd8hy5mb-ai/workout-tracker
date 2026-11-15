@@ -151,10 +151,21 @@
   async function currentUser() {
     const session = await validSession();
     if (!session?.access_token) return null;
-    const response = await fetch(`${AUTH}/user`, { headers: headers(session.access_token), cache: "no-store" });
-    if (response.status === 401 || response.status === 403) { writeSession(null); return null; }
-    if (!response.ok) throw new Error("Could not verify the PRISM account. Device data was kept.");
-    return response.json();
+    // A GET /user can stall after Safari resumes or after Supabase restarts.
+    // Fail closed and provide a bounded error; never reveal another account's data.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    try {
+      const response = await fetch(`${AUTH}/user`, {
+        headers: headers(session.access_token), cache: "no-store", signal: controller.signal
+      });
+      if (response.status === 401 || response.status === 403) { writeSession(null); return null; }
+      if (!response.ok) throw new Error("Account verification returned HTTP " + response.status + ".");
+      return await response.json();
+    } catch(error) {
+      if (controller.signal.aborted) throw new Error("Account verification timed out after 10 seconds.");
+      throw error;
+    } finally { clearTimeout(timeout); }
   }
 
   async function backupNow() {
