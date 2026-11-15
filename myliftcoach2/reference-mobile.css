@@ -1,0 +1,151 @@
+/* MYLIFTCOACH 2.0 — reference-matched mobile skin.
+   All styling is additive; no authentication or workout data changes. */
+:root{--reference-gold:#f3cb80;--reference-ivory:#fff0ca;--reference-ink:#003e42}
+html,body{min-height:100%;background-color:#064e51}
+body{
+ background-image:
+  radial-gradient(ellipse 85% 55% at 60% 4%,rgba(101,198,183,.18),transparent 70%),
+  linear-gradient(123deg,transparent 0 11.5%,rgba(250,213,149,.29) 11.65%,rgba(255,239,189,.62) 11.82%,transparent 12%),
+  linear-gradient(155deg,transparent 0 58.2%,rgba(249,214,148,.23) 58.33%,rgba(255,230,176,.44) 58.43%,transparent 58.65%),
+  radial-gradient(ellipse at 25% 38%,#217f7c 0%,transparent 56%),
+  radial-gradient(ellipse at 93% 86%,#115e60 0%,transparent 62%),
+  linear-gradient(120deg,#084246,#136e6d 42%,#06474d 100%)!important
+}
+.hero,.metric,.panel,.workout-card,.library-card,.settings-panel,.quick-grid button,.coach-links button{
+ backdrop-filter:blur(2px);
+}
+.mobile-brand{display:none}
+.quick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:19px 0 10px}
+.quick-grid button{
+ display:flex;align-items:center;justify-content:center;flex-direction:column;gap:9px;
+ background:linear-gradient(135deg,#196c6d,#064247)!important;
+ border:1px solid rgba(246,221,166,.66);
+ border-radius:12px;min-height:106px;color:#fff9e9;
+ box-shadow:inset 0 1px 0 rgba(230,246,215,.13),0 5px 10px rgba(0,18,19,.2);
+ padding:14px 8px;
+}
+.quick-grid button:active{background:#236d6e!important;transform:scale(.99)}
+.quick-grid button strong{font-size:12px;font-weight:650;text-align:center}
+.shortcut-symbol{font-size:26px;line-height:1;color:var(--reference-gold);font-weight:500;text-shadow:0 2px 6px rgba(6,25,24,.3)}
+.home-welcome{font-size:13px;color:#fff7df}
+.home-welcome h1{font-family:'DM Sans',Arial,sans-serif;font-size:31px;letter-spacing:-.025em;line-height:1.15;margin:3px 0 18px;color:#fff}
+.home-welcome h1 span{font-size:23px}
+#home .hero{
+ min-height:0;
+ background:
+ linear-gradient(90deg,rgba(4,41,45,.16),rgba(7,42,47,.12)),
+ radial-gradient(ellipse at 95% 32%,rgba(115,185,174,.27),transparent 65%),
+ linear-gradient(125deg,#073f47,#196466 66%,#093b45);
+}
+#home .hero-copy{padding:22px 24px 21px;min-width:0;max-width:none;flex:1}
+#home .hero .hero-art{left:48%;opacity:.45}
+#home .hero h1{
+ font-family:'DM Sans',Arial,sans-serif;font-weight:750;
+ font-size:clamp(23px,2.6vw,33px);
+ margin:8px 0;color:#fff7e9;letter-spacing:-.018em
+}
+#home .hero .hero-kicker{font-family:'DM Sans',Arial,sans-serif;font-size:12px;color:#fff6df;letter-spacing:0;font-weight:550}
+#home .hero .hero-meta{font-size:12px;margin:9px 0 18px;color:#fff1d2}
+#home .hero .hero-actions{gap:10px}
+#home .hero .button-primary{
+ min-width:230px;font-size:14px;font-weight:800;
+ box-shadow:0 6px 16px rgba(0,22,25,.23);
+}
+#home .hero .button-ghost{border-radius:9px}
+#home .section-top{margin-top:29px}
+#home .section-top h2{margin-top:8px}
+#home .metric,.metric{border-radius:12px}
+#home .home-grid{margin-top:14px}
+#home .safety-note{font-size:11px;line-height:1.65;color:#e8e5d6}
+.page-heading h1{font-weight:550}
+.coach-emblem{
+ width:72px;height:72px;border-radius:50%;border:2px solid #f3d38d;
+ background:radial-gradient(circle at 50% 35%,#247d74,#06464d);
+ display:grid;place-items:center;margin:10px auto 20px;
+ font-size:39px;color:#ffe5a6;box-shadow:0 0 23px rgba(229,197,128,.22)
+}
+.coach-card{max-width:790px;margin:0 auto 16px}
+.coach-card h3{color:#fff0cd}
+.coach-links{display:grid;max-width:790px;margin:auto;gap:8px}
+.coach-links button{
+ width:100%;min-height:52px;text-align:left;padding:12px 17px;
+ border:1px solid rgba(244,208,140,.54);border-radius:10px;
+ color:#fff3d8;background:linear-gradient(115deg,#155e62,#064146)!important;
+ display:flex;align-items:center;font-size:13px;font-weight:600;
+}
+.coach-links button span{margin-left:auto;font-size:25px;color:#ffdb98}
+#progress .metrics{grid-template-columns:repeat(3,1fr)}
+#progress .metric strong{color:#ffe2a3}
+#progress .panel{margin-top:16px}
+.modal-panel .log-card .inputs{flex-wrap:wrap}
+.log-title{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.logged-count{font-size:11px;background:#0c696b;padding:6px 9px;border:1px solid #e7c486;border-radius:18px;color:#ffebbd}
+.set-feedback{font-size:12px;color:#ffedbc;margin-top:9px;min-height:12px}
+.undo-set{border:0;background:transparent;color:#ffe0a1;padding:10px 2px 2px;font-size:11px;text-decoration:underline}
+@media(min-width:761px){
+ #home .hero{max-width:100%}
+ .quick-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+ .quick-grid button{min-height:94px}
+}
+@media(max-width:760px){
+ html{scroll-behavior:auto}
+ .sidebar{width:245px}
+ .topbar{height:56px;background:linear-gradient(90deg,rgba(2,48,52,.98),rgba(7,66,68,.97))!important;border-bottom:1px solid rgba(244,209,146,.45)}
+ .topbar .top-location{display:none}
+ .topbar .stage-pill{display:none}
+ .topbar .avatar{height:32px;width:32px}
+ .top-actions{margin-left:auto}
+ .content{padding:12px 13px calc(92px + env(safe-area-inset-bottom))!important}
+ .mobile-brand{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  font:500 20px 'Playfair Display',Georgia,serif;
+  letter-spacing:.02em;color:#f7d29b;margin:-2px 0 24px;
+  text-shadow:0 1px 1px #03343b
+ }
+ .mobile-brand small{font-size:14px}
+ .brand-monogram{
+  display:grid;place-items:center;width:30px;height:30px;
+  border:1px solid #f7d48d;border-radius:50%;
+  font-size:22px;box-shadow:0 0 9px rgba(240,213,147,.18);
+ }
+ .home-welcome{padding-left:3px;font-size:13px}
+ .home-welcome h1{font-size:27px;margin:4px 0 16px}
+ #home .hero{margin:0;min-height:0;border-radius:13px;border:1px solid #eacc8e;background:linear-gradient(130deg,#0b4b52,#16676b)}
+ #home .hero-copy{padding:15px 16px 16px}
+ #home .hero .hero-kicker{font-size:12px}
+ #home .hero h1{font-size:24px;margin:6px 0}
+ #home .hero .hero-meta{font-size:11px;margin:6px 0 12px;line-height:1.45}
+ #home .hero .hero-art{opacity:.23;left:34%}
+ #home .hero .hero-actions{display:grid;grid-template-columns:1fr}
+ #home .hero .button-primary{width:100%;min-width:0;font-size:14px;min-height:43px}
+ #home .hero .button-ghost{display:none}
+ .quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:11px 0 22px}
+ .quick-grid button{min-height:83px;border-radius:10px;gap:5px;padding:11px}
+ .quick-grid button strong{font-size:12px}
+ .shortcut-symbol{font-size:24px}
+ #home .section-top{margin-top:20px}
+ #home .section-top h2{font-size:21px}
+ .metric{padding:12px}
+ .metric>strong{font-size:27px}
+ .page-heading{margin-top:10px}
+ .page-heading h1{font-size:30px}
+ .bottom-tabs{
+  border-top:1px solid #f4d39a!important;
+  background:linear-gradient(130deg,rgba(2,47,51,.98),rgba(5,59,61,.98))!important;
+  padding-top:8px
+ }
+ .bottom-tabs button{font-size:21px;color:#d6e5dc;gap:2px}
+ .bottom-tabs button small{font-size:9px;letter-spacing:.015em}
+ .bottom-tabs button.active{color:#f8d590}
+ .workout-grid{gap:10px}
+ .workout-card{padding:18px}
+ .library-grid{gap:10px}
+ .library-card>div:last-child{padding:12px}
+ .library-card h3{font-size:16px}
+ .search-bar input{min-height:47px}
+ #progress .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #progress .metrics .metric:nth-child(3){grid-column:1/-1}
+ .modal-panel{background:linear-gradient(145deg,#0f585b,#053e44)!important}
+ .modal-panel .log-card{border-radius:11px}
+ .coach-links button{min-height:49px}
+}
