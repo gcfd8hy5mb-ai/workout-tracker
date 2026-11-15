@@ -224,3 +224,40 @@ body{
  .topbar{height:48px}
  #home .hero h1{font-size:21px!important}
 }
+
+/* Reference login / welcome view. Available from Settings without interrupting
+ * the established preview workout flow or requiring a new account. */
+.welcome-view .bottom-tabs,.welcome-view .topbar{display:none!important}
+.welcome-view .content{padding-top:0!important}
+.welcome-panel{
+ background:#05363b url("./assets/emerald-marble.svg") center center /cover;
+ max-width:560px;min-height:min(850px,95dvh);width:100%;
+ margin:0 auto;padding:34px 25px 30px;display:flex;flex-direction:column;
+ align-items:center;text-align:center;
+ border:1px solid #f6d391;border-radius:24px;
+ box-shadow:0 18px 45px #001820a0;
+ color:#fff2de;
+}
+.welcome-panel>img{width:155px;height:155px;margin:10px 0 3px;filter:drop-shadow(0 6px 15px #00151b)}
+.welcome-panel h1{margin:2px 0 0;color:#ffe1a1;font:550 29px Georgia,'Times New Roman',serif;letter-spacing:.03em}
+.welcome-panel h1 span{font-size:25px}
+.welcome-panel .welcome-tagline{margin:13px 0 18px;font-size:12px;letter-spacing:.18em;color:#fff1d5}
+.welcome-features{width:min(100%,285px);text-align:left;margin:10px 0 25px;font-size:14px;line-height:1.45}
+.welcome-features p{margin:14px 0;color:#fff3df}
+.welcome-actions{display:grid;gap:10px;width:min(100%,320px);margin-top:auto}
+.welcome-actions button{min-height:48px;font-size:15px}
+.welcome-panel>small{margin:20px 0 0;color:#e1e5d9;font-size:10px;line-height:1.6}
+.welcome-preview-link{
+ width:100%;max-width:760px;margin:0 0 13px;
+ padding:12px 16px;text-align:center;
+ background:rgba(5,54,58,.88);border:1px solid #f3cf8f;
+ border-radius:10px;color:#ffeca9;font-size:13px;font-weight:650
+}
+@media(max-width:760px){
+ .welcome-view .content{padding:0!important;max-width:none!important}
+ .welcome-panel{min-height:100dvh;border-radius:0;border:0;padding:calc(40px + env(safe-area-inset-top)) 24px calc(28px + env(safe-area-inset-bottom))}
+ .welcome-panel>img{margin-top:5vh;width:155px;height:155px}
+ .welcome-panel h1{font-size:28px}
+ .welcome-features{margin-top:18px}
+ .welcome-actions{margin-top:auto}
+}
