@@ -109,7 +109,13 @@
     return true;
   }
 
-  function check(){if(revealed)return;mount();verifyScopedOwnerEarly();reveal();}
+  function check(){if(revealed)return;
+    // Never place a startup cover over the actual interactive sign-in screen.
+    if(document.getElementById('liftovaAuthGate')){
+      document.getElementById('myliftcoachStartupCover')?.remove();
+      root.classList.remove('myliftcoach-starting');
+    }else mount();
+    verifyScopedOwnerEarly();reveal();}
 
   function boot(){
     mount();
