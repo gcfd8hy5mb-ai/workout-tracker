@@ -60,5 +60,5 @@ document.getElementById('reset').addEventListener('click',async()=>{
  catch(error){message(describe(error),true);}
 });
 // Existing sessions go straight to the integrated app, which performs server verification.
-try{const s=JSON.parse(window.localStorage.getItem(sessionKey)||'null');if(s?.access_token&&s?.user?.id)location.replace(next.href);}catch(_){}
+try{const s=JSON.parse(window.localStorage.getItem(sessionKey)||'null');if(!new URL(location.href).searchParams.has('retry')&&s?.access_token&&s?.user?.id)location.replace(next.href);}catch(_){}
 })();
