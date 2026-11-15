@@ -44,7 +44,13 @@ const mlcBootWatchdog=()=>{
   const title=document.createElement('strong');title.textContent='MYLIFTCOACH could not finish opening';
   const detail=document.createElement('p');detail.textContent='Your saved workouts have not been deleted. Try reopening the app.';
   const retry=document.createElement('button');retry.type='button';retry.textContent='Try again';retry.style.cssText='padding:15px 26px;border:0;border-radius:12px;background:#d7f8ee;color:#003b49;font:600 16px -apple-system,sans-serif';retry.addEventListener('click',()=>location.reload());
-  recovery.append(title,detail,retry);(document.body||document.documentElement).appendChild(recovery);
+  const login=document.createElement('a');login.textContent='Return to sign-in';
+  login.href=new URL('preview-login.html?retry=1',location.href).href;
+  login.style.cssText='color:#f9e4bf;text-decoration:underline;padding:12px;font:600 15px -apple-system,sans-serif';
+  const stage=document.createElement('p');stage.style.cssText='font:12px -apple-system,sans-serif;color:#bed1d2;max-width:330px;overflow-wrap:anywhere';
+  const last=window.MYLIFTCOACHStartupTrace?.events?.slice(-1)?.[0]?.name||'No startup stage recorded';
+  stage.textContent='Startup stage: '+last;
+  recovery.append(title,detail,retry,login,stage);(document.body||document.documentElement).appendChild(recovery);
 };
 window.setTimeout(mlcBootWatchdog,9000);
 window.addEventListener('error',event=>{
@@ -66,7 +72,7 @@ if(window.PRISMDeviceStore.owner)document.documentElement.classList.add('prism-a
 // Account verification may complete AFTER the load event. Observe that transition
 // so the recovery watchdog cannot obscure a successfully opened workout screen.
 const mlcBootGateObserver=new MutationObserver(()=>{
-  if(!document.documentElement.classList.contains('prism-account-booting') && (document.getElementById('liftovaAuthGate') || document.querySelector('#home:not(.hidden) .liftova-home-shell'))){
+  if(!document.documentElement.classList.contains('prism-account-booting') && (document.getElementById('liftovaAuthGate') || document.querySelector('#home:not(.hidden) .liftova-home-shell, #welcomeScreen:not(.hidden), #onboardingScreen:not(.hidden), #goalReviewScreen:not(.hidden), #setupScreen:not(.hidden), #workoutsScreen:not(.hidden), #workoutScreen:not(.hidden), #workoutDetailScreen:not(.hidden), #overallProgressScreen:not(.hidden), #profileScreen:not(.hidden)'))){
     mlcBootFinished=true;
     mlcBootGateObserver.disconnect();
   }
@@ -77,7 +83,7 @@ if(document.documentElement.classList.contains('prism-account-booting')){
   mlcBootGateObserver.observe(document.documentElement,{attributes:true,attributeFilter:['class'],childList:true,subtree:true});
 }
 window.addEventListener('load',()=>{
-  if(!document.documentElement.classList.contains('prism-account-booting') && (document.getElementById('liftovaAuthGate') || document.querySelector('#home:not(.hidden) .liftova-home-shell'))){
+  if(!document.documentElement.classList.contains('prism-account-booting') && (document.getElementById('liftovaAuthGate') || document.querySelector('#home:not(.hidden) .liftova-home-shell, #welcomeScreen:not(.hidden), #onboardingScreen:not(.hidden), #goalReviewScreen:not(.hidden), #setupScreen:not(.hidden), #workoutsScreen:not(.hidden), #workoutScreen:not(.hidden), #workoutDetailScreen:not(.hidden), #overallProgressScreen:not(.hidden), #profileScreen:not(.hidden)'))){
     mlcBootFinished=true;
     mlcBootGateObserver.disconnect();
   }
