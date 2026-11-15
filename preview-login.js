@@ -59,6 +59,13 @@ document.getElementById('reset').addEventListener('click',async()=>{
  try{await request('recover?redirect_to='+encodeURIComponent(new URL('app.html',location.href).href),{email:email.value.trim()});message('If the address is registered, a password reset email will arrive.');}
  catch(error){message(describe(error),true);}
 });
-// Existing sessions go straight to the integrated app, which performs server verification.
-try{const s=JSON.parse(window.localStorage.getItem(sessionKey)||'null');if(!new URL(location.href).searchParams.has('retry')&&s?.access_token&&s?.user?.id)location.replace(next.href);}catch(_){}
+// Always render the lightweight sign-in page. A saved session may be expired
+// or unable to bootstrap the full app; silently forwarding it recreated the
+// broken integrated login screen and prevented manual recovery.
+try{
+ const session=JSON.parse(window.localStorage.getItem(sessionKey)||'null');
+ if(session?.access_token&&session?.user?.id){
+   message('A previous session is saved. Sign in to refresh it securely.');
+ }
+}catch(_){};
 })();
