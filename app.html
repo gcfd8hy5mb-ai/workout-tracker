@@ -23,6 +23,32 @@
 
 <title>MYLIFTCOACH · Train · Track · Progress</title>
 
+<!-- Visible even if the browser stalls before the app body is parsed. -->
+<style id="mlc-head-first-paint">
+html{background:#003b49}
+html.mlc-head-opening::before{
+ content:"MYLIFTCOACH — opening secure workout dashboard…";
+ position:fixed;inset:0;z-index:2147483600;display:grid;place-items:center;
+ padding:24px;text-align:center;white-space:pre-wrap;
+ background:#003b49;color:#fff2dd;font:500 17px/1.5 -apple-system,BlinkMacSystemFont,sans-serif;
+}
+html.mlc-head-opening.mlc-head-slow::before{
+ content:"MYLIFTCOACH startup has not completed.\\a Safari may be waiting for the full workout app to load.\\a You can return to the login page.";
+}
+html.mlc-head-opening.mlc-head-slow::after{
+ content:"Reload Safari or use the browser Back button.";
+ position:fixed;top:65%;left:8%;right:8%;z-index:2147483601;
+ color:#f6dbad;text-align:center;font:14px -apple-system,sans-serif
+}
+html:not(.mlc-head-opening)::before,html:not(.mlc-head-opening)::after{content:none}
+</style>
+<script>
+document.documentElement.classList.add('mlc-head-opening');
+window.__mlcHeadBootTimer=setTimeout(function(){
+ if(document.documentElement.classList.contains('mlc-head-opening'))
+ document.documentElement.classList.add('mlc-head-slow');
+},9000);
+</script>
 <!-- Installed before app state is read. The legacy guest keys remain untouched. -->
 <script src="persistence/storage-model.js"></script>
 <script src="persistence/scoped-storage.js"></script>
@@ -1232,6 +1258,8 @@ body.prism-onboarding-active .container{max-width:560px;min-height:100vh;min-hei
 </section>
 <script>
 (function(){
+ document.documentElement.classList.remove('mlc-head-opening','mlc-head-slow');
+ clearTimeout(window.__mlcHeadBootTimer);
  var root=document.getElementById('mlcPreviewBootStatus'),stage=document.getElementById('mlcPreviewStage'),detail=document.getElementById('mlcPreviewDetail');
  var retry=document.getElementById('mlcPreviewRetry'),login=document.getElementById('mlcPreviewLogin');
  if(!root)return;
