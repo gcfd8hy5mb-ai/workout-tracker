@@ -1212,9 +1212,49 @@ body.prism-onboarding-active .container{max-width:560px;min-height:100vh;min-hei
 @media(max-width:480px){#workoutScreen .set-block{grid-template-columns:minmax(0,1fr) 44px!important}#workoutScreen .set-row{grid-template-columns:40px minmax(0,1fr) minmax(0,1fr)!important}}
 </style>
 <link rel="stylesheet" href="design/luxury-entry-onboarding.css?v=2">
+<style id="mlc-preview-diagnostics-style">
+#mlcPreviewBootStatus{position:fixed;inset:0;z-index:2147483200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:30px;background:#003b49;color:#f9efdc;text-align:center;font:16px -apple-system,BlinkMacSystemFont,Arial,sans-serif;overflow:auto}
+#mlcPreviewBootStatus strong{font:400 28px Georgia,serif}
+#mlcPreviewBootStatus small{font-size:13px;color:#b8d8d5;line-height:1.5}
+#mlcPreviewBootStatus a{padding:12px;color:#f7dfb3;text-decoration:underline}
+#mlcPreviewBootStatus button{min-height:48px;border:1px solid #ceac79;border-radius:12px;padding:8px 24px;background:#006b78;color:#fff;font:600 15px -apple-system,sans-serif}
+#mlcPreviewBootStatus[hidden]{display:none!important}
+</style>
 </head>
 
 <body>
+<section id="mlcPreviewBootStatus" role="status" aria-live="polite">
+<strong>MYLIFTCOACH</strong>
+<div id="mlcPreviewStage">Opening your training dashboard…</div>
+<small id="mlcPreviewDetail">Preparing your account securely.</small>
+<button id="mlcPreviewRetry" type="button" hidden>Retry opening app</button>
+<a href="preview-login.html?retry=1" id="mlcPreviewLogin" hidden>Return to sign-in</a>
+</section>
+<script>
+(function(){
+ var root=document.getElementById('mlcPreviewBootStatus'),stage=document.getElementById('mlcPreviewStage'),detail=document.getElementById('mlcPreviewDetail');
+ var retry=document.getElementById('mlcPreviewRetry'),login=document.getElementById('mlcPreviewLogin');
+ if(!root)return;
+ var completed=false,failed=false,phase='HTML loaded';
+ window.MLCPreviewBootDiagnostic={
+  mark:function(next){phase=String(next);if(!failed&&stage)stage.textContent=phase;},
+  complete:function(){completed=true;root.hidden=true;},
+  fail:function(message){if(completed)return;failed=true;stage.textContent='MYLIFTCOACH could not finish opening';detail.textContent='Startup checkpoint: '+phase+(message?' · '+String(message).slice(0,120):'');retry.hidden=false;login.hidden=false;}
+ };
+ retry.onclick=function(){location.reload()};
+ window.addEventListener('error',function(event){if(!completed)window.MLCPreviewBootDiagnostic.fail(event.message||'JavaScript error')});
+ window.addEventListener('unhandledrejection',function(event){if(!completed)window.MLCPreviewBootDiagnostic.fail('Unexpected startup rejection')});
+ setTimeout(function(){if(!completed)window.MLCPreviewBootDiagnostic.fail('Startup did not complete')},12000);
+ var poll=setInterval(function(){
+  if(completed||failed){clearInterval(poll);return}
+  if(document.documentElement.classList.contains('prism-account-booting'))return;
+  var auth=document.getElementById('liftovaAuthGate');
+  var selectors=['#home:not(.hidden)','.liftova-home-shell','#onboardingScreen:not(.hidden)','#welcomeScreen:not(.hidden)','#workoutsScreen:not(.hidden)'];
+  var visible=selectors.some(function(q){var el=document.querySelector(q);return el&&getComputedStyle(el).display!=='none'&&getComputedStyle(el).visibility!=='hidden'});
+  if(auth||visible)window.MLCPreviewBootDiagnostic.complete();
+ },400);
+})();
+</script>
 
 <header>
 <button id="menuToggle" class="menu-toggle" onclick="openMenu()" aria-label="Open menu" aria-controls="sideMenu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h11"/></svg></button>
@@ -5135,7 +5175,9 @@ setTimeout(()=>{button.textContent="Save water goal"},1400);
 
 /* START */
 
+window.MLCPreviewBootDiagnostic?.mark('Rendering workout home');
 renderHome();
+window.MLCPreviewBootDiagnostic?.mark('Workout home rendered; verifying account');
 
 updateProgress();
 
