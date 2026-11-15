@@ -25,3 +25,81 @@ body.prism-onboarding-active .journey-actions button:not(.journey-primary){backg
 body.prism-onboarding-active .journey-progress span.active{background:#06c8d3!important}
 body.prism-onboarding-active #journey-date-preview{background:#f6f2e9!important;color:#244854!important}
 body.prism-onboarding-active[data-mlc-onboarding-step='7'] .journey-card{background:#fffdf8!important;border-color:#ddcdb4!important}
+
+
+/* November 2026 continuation: unified, accessible luxury entry surfaces.
+   Strictly visual; auth, navigation, persistence and student data untouched. */
+#liftovaAuthGate,
+body.prism-onboarding-active,
+body.prism-onboarding-active .journey-shell{
+  color:var(--lux-ink)!important;
+}
+#liftovaAuthGate .liftova-auth-card :is(h2,label,p,.sub,.liftova-auth-note),
+body.prism-onboarding-active :is(.journey-card,.journey-option,.journey-form,.journey-summary,.journey-note){
+  color:var(--lux-ink)!important;
+}
+#liftovaAuthGate :is(.liftova-auth-card .sub,.liftova-auth-note),
+body.prism-onboarding-active :is(.journey-option small,.journey-note,.journey-summary){
+  color:#42616a!important;
+}
+#liftovaAuthGate :is(input,select),
+body.prism-onboarding-active :is(.journey-form input,.journey-form select){
+  min-width:0!important;
+  width:100%;
+  max-width:100%!important;
+  min-height:48px!important;
+  background:#fffefa!important;
+  color:#092b38!important;
+  border:1px solid #a7b9b8!important;
+  border-radius:12px!important;
+  font-size:16px!important;
+}
+#liftovaAuthGate :is(input,select)::placeholder,
+body.prism-onboarding-active input::placeholder{color:#5e7378!important;opacity:1}
+#liftovaAuthGate :is(button,a,input,select):focus-visible,
+body.prism-onboarding-active :is(button,a,input,select,.journey-option):focus-visible{
+  outline:3px solid #008e9d!important;
+  outline-offset:3px!important;
+}
+#liftovaAuthGate .liftova-auth-tab{
+  min-height:44px!important;
+  border-radius:10px!important;
+  color:#234c55!important;
+}
+#liftovaAuthGate .liftova-auth-tab.active{
+  background:#005b69!important;
+  color:#fff!important;
+}
+#liftovaAuthGate .liftova-auth-status[data-error=true],
+body.prism-onboarding-active .journey-error{color:#8c263b!important}
+#liftovaAuthGate .liftova-auth-status[data-error=false]{color:#075e43!important}
+body.prism-onboarding-active .journey-option[aria-pressed=true],
+body.prism-onboarding-active .journey-option.selected{
+  color:#073846!important;
+  background:#e1f8f5!important;
+  border-color:#008b98!important;
+  box-shadow:inset 3px 0 #008b98!important;
+}
+body.prism-onboarding-active .journey-option[aria-pressed=true] :is(strong,small),
+body.prism-onboarding-active .journey-option.selected :is(strong,small){color:#073846!important}
+body.prism-onboarding-active .journey-actions{
+  background:linear-gradient(0deg,#fbf8f0 82%,rgba(251,248,240,.92))!important;
+  border-color:transparent!important;
+}
+body.prism-onboarding-active .journey-progress span.done,
+body.prism-onboarding-active .journey-progress span.active{background:#007d8a!important}
+#liftovaAuthGate .liftova-auth-shell,
+body.prism-onboarding-active .container,
+body.prism-onboarding-active .journey-shell{max-width:100%!important}
+#liftovaAuthGate .liftova-auth-card,
+body.prism-onboarding-active .journey-card,
+body.prism-onboarding-active .journey-option{min-width:0!important;overflow-wrap:anywhere}
+@media(max-width:430px){
+  #liftovaAuthGate .liftova-auth-shell{width:100%!important}
+  #liftovaAuthGate .liftova-auth-card{width:100%!important;padding:18px!important}
+  body.prism-onboarding-active .journey-actions button{min-height:48px!important}
+  body.prism-onboarding-active .journey-inline{max-width:100%!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #liftovaAuthGate *,body.prism-onboarding-active *{scroll-behavior:auto!important}
+}
