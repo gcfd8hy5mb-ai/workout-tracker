@@ -35,11 +35,11 @@ function loadDemo(){try{const a=JSON.parse(localStorage.getItem(DEMO_KEY)||'[]')
 function storeDemo(){localStorage.setItem(DEMO_KEY,JSON.stringify(demoSessions))}
 function escapeHTML(text){return String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function notice(message){const t=$('toast');t.textContent=message;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,3400)}
-function setPage(next){if(!['home','workouts','library','progress','settings','coaching','nutrition'].includes(next))return;page=next;
+function setPage(next){if(!['welcome','home','workouts','library','progress','settings','coaching','nutrition'].includes(next))return;page=next;
  document.querySelectorAll('.page').forEach(el=>el.hidden=el.id!==next);
  document.querySelectorAll('[data-page]').forEach(el=>{const is=el.dataset.page===next;el.classList.toggle('selected',is);el.classList.toggle('active',is);if(is)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current')});
- $('pageTitle').textContent=({home:'Home',workouts:'Workouts',library:'Exercise library',progress:'Progress',settings:'My Account',coaching:'Coaching',nutrition:'Nutrition'})[next];
- $('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'instant'});
+ $('pageTitle').textContent=({welcome:'Welcome',home:'Home',workouts:'Workouts',library:'Exercise library',progress:'Progress',settings:'My Account',coaching:'Coaching',nutrition:'Nutrition'})[next];
+ $('sidebar').classList.remove('open');document.body.classList.toggle('welcome-view',next==='welcome');window.scrollTo({top:0,behavior:'instant'});
  if(next==='home')renderHome();if(next==='workouts')renderWorkouts();if(next==='library')renderLibrary();
  if(next==='progress')renderProgress();if(next==='settings')renderSettings();
 }
@@ -215,6 +215,9 @@ function openSignIn(){
 function bind(){
  document.querySelectorAll('[data-page]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.page)));
  $('avatarBtn').addEventListener('click',()=>setPage('settings'));
+ $('previewWelcome').addEventListener('click',()=>setPage('welcome'));
+ $('welcomeExplore').addEventListener('click',()=>setPage('home'));
+ $('welcomeSignIn').addEventListener('click',openSignIn);
  document.querySelectorAll('[data-shortcut]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.shortcut)));
  document.querySelectorAll('[data-coach-link]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.coachLink)));
 
