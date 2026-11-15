@@ -1,0 +1,98 @@
+/* MYLIFTCOACH visual-only redesign — based on working main, Nov 15 2026.
+ * This file changes colors, surfaces, typography, borders, and responsive layout only.
+ * NO authentication, data persistence, startup, script, or navigation logic. */
+:root{
+ --bg:#052c36;--card:#073743;--text:#f9f5e9;--sub:#b4ccce;
+ --line:#456872;--blue:#11a6ae;--orange:#cda76e;
+ --lux-marble:#073743;--lux-gold:#d9b778;--lux-teal:#087480;
+}
+html{background:#052c36!important}
+body{
+ color:var(--text);
+ background:radial-gradient(ellipse at 85% 8%,rgba(20,139,146,.23),transparent 39%),
+ repeating-linear-gradient(119deg,transparent 0 170px,rgba(178,208,197,.045) 173px,transparent 176px 330px),
+ linear-gradient(158deg,#052631,#083e48 52%,#041d28 100%)!important;
+ background-attachment:fixed!important;
+}
+header{
+ background:linear-gradient(120deg,#062d38,#0a4450)!important;
+ border-bottom:1px solid rgba(217,183,120,.65)!important;
+ box-shadow:0 9px 24px rgba(0,16,22,.2)!important;
+}
+header h1{color:#fff3dc!important;letter-spacing:.035em}
+.container{max-width:1120px}
+.card,.today-card,.prism-card,.journey-card{
+ background:linear-gradient(142deg,rgba(9,60,70,.98),rgba(3,35,46,.97))!important;
+ border:1px solid rgba(213,176,112,.45)!important;
+ border-radius:18px!important;
+ box-shadow:0 12px 30px rgba(0,15,22,.22)!important;
+ color:var(--text);
+}
+.prism-greeting h2,.prism-section-head h2,.section-heading{
+ color:#f6e6c7!important;
+ font-family:Georgia,'Times New Roman',serif;
+ letter-spacing:.005em;
+}
+.small,.prism-greeting p,.action-button span,.day-button span{color:#b8cbcc!important}
+.action-button,.day-button,.prism-icon-button{
+ background:linear-gradient(135deg,#0c4350,#08303d)!important;
+ border:1px solid rgba(213,176,112,.4)!important;
+ border-radius:15px!important;
+ color:#f9f3e6!important;
+ box-shadow:0 6px 18px rgba(0,16,23,.16)!important;
+}
+.action-button.primary,.primary,.prism-primary{
+ background:linear-gradient(130deg,#005867,#078d95)!important;
+ color:#fff9e7!important;
+ border:1px solid #cfab71!important;
+}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{
+ outline:3px solid #48cdd0!important;outline-offset:3px!important;
+}
+.progress-bar{background:#164b53!important}
+.progress-fill{background:linear-gradient(90deg,#0ca1aa,#d5ae70)!important}
+.side-menu{
+ background:linear-gradient(180deg,#062c36,#082f3c)!important;
+ border-right:1px solid rgba(217,183,120,.65)!important;
+}
+.menu-link,.menu-group{color:#f0e6d5}
+.menu-link.active,.menu-link[aria-current="page"]{background:#0e5861!important;color:#fff8e8!important}
+nav.bottom-nav, .bottom-navigation, .bottom-nav{
+ background:#062e3a!important;border-top:1px solid rgba(217,183,120,.46)!important;
+}
+input,textarea,select{
+ background:#072d38!important;color:#fff7e8!important;
+ border-color:rgba(210,175,116,.65)!important;
+}
+input::placeholder,textarea::placeholder{color:#b2c7c8}
+:where(.card,.action-button,.day-button) strong{color:#fff0d1}
+body.liftova-auth-locked #liftovaAuthGate{
+ background:radial-gradient(ellipse at 20% 10%,rgba(19,125,135,.3),transparent 45%),
+ linear-gradient(140deg,#052c36,#021a25)!important;
+ color:#fff2d6!important;
+}
+body.liftova-auth-locked #liftovaAuthGate .liftova-auth-card{
+ background:linear-gradient(135deg,rgba(5,44,55,.96),rgba(1,26,36,.98))!important;
+ border:1px solid #d5b479!important;border-radius:23px!important;
+ box-shadow:0 18px 50px rgba(0,0,0,.28)!important;
+}
+body.liftova-auth-locked #liftovaAuthGate :is(h2,label,.sub){color:#f9ebd1!important}
+body.liftova-auth-locked #liftovaAuthGate :is(input){
+ background:#042b37!important;color:#fff9ed!important;border-color:#d0ac75!important;
+}
+body.prism-onboarding-active :is(.journey-option,.journey-card){
+ border-color:rgba(213,176,112,.55)!important;
+ color:#f8eee0!important;
+}
+@media (min-width:850px){
+ .container{padding:24px 30px!important}
+ #home{max-width:1120px;margin-inline:auto}
+ #home .today-card{min-height:165px}
+ .side-menu{width:min(310px,27vw)}
+}
+@media(max-width:560px){
+ .container{padding:12px!important}
+ .card{border-radius:15px!important}
+ .prism-greeting h2{font-size:24px!important}
+}
+@media(prefers-reduced-motion:reduce){.card,.action-button{transition:none!important}}
