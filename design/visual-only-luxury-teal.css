@@ -96,3 +96,46 @@ body.prism-onboarding-active :is(.journey-option,.journey-card){
  .prism-greeting h2{font-size:24px!important}
 }
 @media(prefers-reduced-motion:reduce){.card,.action-button{transition:none!important}}
+
+/* Login palette overrides: the working app injects its original purple auth
+   stylesheet after page load. Higher specificity ensures only color and
+   typography are restyled, without touching sign-in behavior. */
+body.liftova-auth-locked #liftovaAuthGate .liftova-auth-tabs{
+ background:#052934!important;
+ border-color:rgba(214,179,116,.67)!important;
+}
+body.liftova-auth-locked #liftovaAuthGate .liftova-auth-tab{
+ background:transparent!important;
+ color:#c2d5d1!important;
+}
+body.liftova-auth-locked #liftovaAuthGate .liftova-auth-tab.active{
+ background:linear-gradient(130deg,#006172,#0797a0)!important;
+ color:#fff2db!important;
+ box-shadow:inset 0 0 0 1px #d6b577!important;
+}
+body.liftova-auth-locked #liftovaAuthGate .liftova-submit,
+body.liftova-auth-locked #liftovaAuthGate .liftova-verify-actions .primary{
+ background:linear-gradient(130deg,#005a69,#07939c)!important;
+ color:#fff8e9!important;
+ border:1px solid #d4b071!important;
+ box-shadow:0 8px 22px rgba(0,10,17,.28)!important;
+}
+body.liftova-auth-locked #liftovaAuthGate .liftova-password-toggle{
+ background:#0c5662!important;
+ color:#fff1d6!important;
+ border-color:#bd9e70!important;
+}
+body.liftova-auth-locked #liftovaAuthGate .liftova-auth-link{
+ color:#ead1a6!important;
+}
+body.liftova-auth-locked #liftovaAuthGate .liftova-brand p b{
+ color:#d6b477!important;
+}
+body.liftova-auth-locked #liftovaAuthGate .myliftcoach-auth-logo{
+ filter:grayscale(1) sepia(.85) saturate(1.6) hue-rotate(345deg) brightness(1.2)
+   drop-shadow(0 8px 20px rgba(200,160,96,.24))!important;
+}
+body.liftova-auth-locked #liftovaAuthGate .liftova-field label,
+body.liftova-auth-locked #liftovaAuthGate .liftova-auth-note{
+ color:#d0d6ca!important;
+}
