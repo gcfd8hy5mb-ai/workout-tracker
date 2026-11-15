@@ -66,7 +66,7 @@ if(window.PRISMDeviceStore.owner)document.documentElement.classList.add('prism-a
 // Account verification may complete AFTER the load event. Observe that transition
 // so the recovery watchdog cannot obscure a successfully opened workout screen.
 const mlcBootGateObserver=new MutationObserver(()=>{
-  if(!document.documentElement.classList.contains('prism-account-booting')){
+  if(!document.documentElement.classList.contains('prism-account-booting') && (document.getElementById('liftovaAuthGate') || document.querySelector('#home:not(.hidden) .liftova-home-shell'))){
     mlcBootFinished=true;
     mlcBootGateObserver.disconnect();
   }
@@ -74,7 +74,7 @@ const mlcBootGateObserver=new MutationObserver(()=>{
 if(document.documentElement.classList.contains('prism-account-booting')){
   mlcBootGateObserver.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
 }else{
-  mlcBootFinished=true;
+  mlcBootGateObserver.observe(document.documentElement,{attributes:true,attributeFilter:['class'],childList:true,subtree:true});
 }
 window.addEventListener('load',()=>{
   if(!document.documentElement.classList.contains('prism-account-booting')){
