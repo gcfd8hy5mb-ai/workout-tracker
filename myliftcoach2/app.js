@@ -33,10 +33,10 @@ function loadDemo(){try{const a=JSON.parse(localStorage.getItem(DEMO_KEY)||'[]')
 function storeDemo(){localStorage.setItem(DEMO_KEY,JSON.stringify(demoSessions))}
 function escapeHTML(text){return String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function notice(message){const t=$('toast');t.textContent=message;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,3400)}
-function setPage(next){if(!['home','workouts','library','progress','settings'].includes(next))return;page=next;
+function setPage(next){if(!['home','workouts','library','progress','settings','coaching','nutrition'].includes(next))return;page=next;
  document.querySelectorAll('.page').forEach(el=>el.hidden=el.id!==next);
  document.querySelectorAll('[data-page]').forEach(el=>{const is=el.dataset.page===next;el.classList.toggle('selected',is);el.classList.toggle('active',is);if(is)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current')});
- $('pageTitle').textContent=({home:'Overview',workouts:'Workouts',library:'Exercise library',progress:'Progress',settings:'Settings'})[next];
+ $('pageTitle').textContent=({home:'Home',workouts:'Workouts',library:'Exercise library',progress:'Progress',settings:'My Account',coaching:'Coaching',nutrition:'Nutrition'})[next];
  $('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'instant'});
  if(next==='home')renderHome();if(next==='workouts')renderWorkouts();if(next==='library')renderLibrary();
  if(next==='progress')renderProgress();if(next==='settings')renderSettings();
@@ -46,7 +46,7 @@ function nextPlan(){return plans[demoSessions.length%plans.length]}
 function renderHome(){
  $('metricWorkouts').textContent=demoSessions.length;
  $('metricSets').textContent=totalSets();
- const plan=nextPlan();$('todayTitle').textContent=plan.title;$('todayDescription').textContent=plan.description;
+ const plan=nextPlan();$('todayTitle').textContent=plan.title;$('todayDescription').textContent=plan.ids.length+' exercises · '+(plan.ids.length*3)+' sets · ~45 min';
  $('todayExercises').innerHTML=plan.ids.map(id=>{const e=exercises.find(x=>x.id===id);return '<div class="preview-exercise"><strong>'+escapeHTML(e.name)+'</strong><small>'+e.sets+' × '+escapeHTML(e.reps)+'</small></div>'}).join('');
  $('recentActivity').innerHTML=demoSessions.length?demoSessions.slice(0,3).map(x=>'<div class="recent-item"><div><strong>'+escapeHTML(x.title)+'</strong><small>'+new Date(x.created).toLocaleDateString()+'</small></div><span>'+x.sets.length+' sets</span></div>').join(''):'<div class="empty-note">Your next session starts here. Practice workouts you complete in this demo will appear in this section.</div>';
 }
@@ -167,6 +167,9 @@ function openSignIn(){
 function bind(){
  document.querySelectorAll('[data-page]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.page)));
  $('avatarBtn').addEventListener('click',()=>setPage('settings'));
+ document.querySelectorAll('[data-shortcut]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.shortcut)));
+ document.querySelectorAll('[data-coach-link]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.coachLink)));
+
  $('menuBtn').addEventListener('click',()=>$('sidebar').classList.toggle('open'));
  $('heroStart').addEventListener('click',()=>openWorkout(nextPlan().id));
  $('heroViewPlan').addEventListener('click',()=>setPage('workouts'));
