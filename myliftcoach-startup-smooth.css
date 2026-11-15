@@ -15,3 +15,19 @@ html.myliftcoach-ready::before{opacity:0;transition:opacity .22s cubic-bezier(.2
 /* Recovery and sign-in must remain readable even if a cached startup overlay persists. */
 #mlcBootRecovery,#mlcStartupFailure{visibility:visible!important;opacity:1!important;pointer-events:auto!important;z-index:2147483647!important}
 html.myliftcoach-starting:has(#mlcBootRecovery)::before,html.myliftcoach-starting:has(#mlcStartupFailure)::before{display:none!important}
+
+/* iPhone auth hotfix: the keyboard could focus login while a higher z-index
+   startup cover painted over it. Auth and account recovery must win the stack. */
+html:has(#liftovaAuthGate) #myliftcoachStartupCover,
+html:has(#liftovaAuthGate).myliftcoach-starting::before{display:none!important}
+html #liftovaAuthGate{
+  position:fixed!important;
+  z-index:2147483100!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+html:has(#liftovaAuthGate) body.liftova-auth-locked #liftovaAuthGate{
+  z-index:2147483100!important;
+}
+html.prism-account-booting:has(#liftovaAuthGate)::after{display:none!important}
