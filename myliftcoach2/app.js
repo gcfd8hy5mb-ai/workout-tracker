@@ -30,6 +30,7 @@ let page='home',activePlan=null,session=null,guest=true,account=null,auth=null;
 let demoSessions=loadDemo();
 let toastTimer;
 let muscleFilter='';
+let restSeconds=90,restPaused=true,restClock=null;
 function loadDemo(){try{const a=JSON.parse(localStorage.getItem(DEMO_KEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&Array.isArray(x.sets)).slice(0,100):[]}catch{return []}}
 function storeDemo(){localStorage.setItem(DEMO_KEY,JSON.stringify(demoSessions))}
 function escapeHTML(text){return String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -84,13 +85,14 @@ function renderSettings(){
  $('authAction').textContent=account?'Sign out':'Sign in with existing account';
 }
 function openModal(content){$('modalContent').innerHTML=content;$('modal').hidden=false;document.body.style.overflow='hidden';$('closeModal').focus()}
-function closeModal(){$('modal').hidden=true;document.body.style.overflow='';activePlan=null;session=null}
+function closeModal(){closeRest();$('modal').hidden=true;document.body.style.overflow='';activePlan=null;session=null}
 function openWorkout(id){
  const plan=plans.find(x=>x.id===id);if(!plan)return;activePlan=plan;
  session={sets:[]};
- openModal('<div class="modal-eyebrow">PRACTICE SESSION · LOCAL ONLY</div><h2>'+escapeHTML(plan.title)+'</h2><p>'+escapeHTML(plan.description)+' All entries stay in the isolated demo workspace and will not be uploaded to Supabase.</p><div id="workoutLog" class="workout-log"></div><div class="modal-footer"><button type="button" class="button-outline" id="cancelWorkout">Cancel</button><button type="button" class="button-primary" id="finishWorkout">Finish session</button></div>');
+ openModal('<div class="modal-eyebrow">PRACTICE SESSION · LOCAL ONLY</div><h2>'+escapeHTML(plan.title)+'</h2><p>'+escapeHTML(plan.description)+' All entries stay in the isolated demo workspace and will not be uploaded to Supabase.</p><div id="workoutLog" class="workout-log"></div><div class="modal-footer"><button type="button" class="button-outline" id="cancelWorkout">Cancel</button><button type="button" class="button-outline" id="startRest">Rest 1:30</button><button type="button" class="button-primary" id="finishWorkout">Finish session</button></div>');
  renderWorkoutLog();
  $('cancelWorkout').addEventListener('click',closeModal);
+ $('startRest').addEventListener('click',openRest);
  $('finishWorkout').addEventListener('click',()=>{
   if(!session?.sets.length){notice('Add at least one practice set first.');return}
   const entry={id:'demo-'+Date.now(),created:new Date().toISOString(),title:plan.title,planId:plan.id,sets:session.sets};
@@ -134,6 +136,38 @@ function undoSet(id){
  if(index<0)return;
  session.sets.splice(index,1);
  updateExerciseFeedback(id);
+}
+function stopRestClock(){
+ if(restClock!==null){clearInterval(restClock);restClock=null;}
+}
+function updateRestClock(){
+ const mins=Math.floor(restSeconds/60),secs=restSeconds%60;
+ $('restTime').textContent=mins+':'+String(secs).padStart(2,'0');
+ $('restDial').style.setProperty('--rest-fraction',String(Math.min(1,Math.max(0,restSeconds/90))));
+ $('restPause').textContent=restPaused?'▶':'Ⅱ';
+ $('restPause').setAttribute('aria-label',restPaused?'Resume rest timer':'Pause rest timer');
+}
+function closeRest(){
+ stopRestClock();restPaused=true;$('restScreen').hidden=true;
+ document.body.style.overflow=$('modal').hidden?'':'hidden';
+}
+function openRest(){
+ restSeconds=90;restPaused=false;
+ let next=activePlan?.ids.find(id=>!session?.sets.some(set=>set.exerciseId===id))||activePlan?.ids[0];
+ const e=exercises.find(x=>x.id===next);
+ $('restNextName').textContent=e?.name||'Continue workout';
+ $('restNextReps').textContent=e?e.sets+' sets · '+e.reps+' reps':'';
+ $('restScreen').hidden=false;
+ document.body.style.overflow='hidden';
+ stopRestClock();updateRestClock();
+ // Use wall-clock elapsed time so an iPhone screen lock does not stretch the timer.
+ let tickAt=Date.now();
+ restClock=setInterval(()=>{
+  const now=Date.now();
+  if(!restPaused){restSeconds=Math.max(0,restSeconds-Math.round((now-tickAt)/1000));}
+  tickAt=now;updateRestClock();
+  if(restSeconds===0){closeRest();notice('Rest complete — ready for the next set.')}
+ },1000);
 }
 async function authRequest(path,body,token,method='POST'){
  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),12000);
@@ -195,6 +229,9 @@ function bind(){
 
  $('modalContent').addEventListener('click',e=>{const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
  $('closeModal').addEventListener('click',closeModal);
+ $('restClose').addEventListener('click',closeRest);
+ $('restSkip').addEventListener('click',closeRest);
+ $('restPause').addEventListener('click',()=>{restPaused=!restPaused;updateRestClock()});
  $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').hidden)closeModal()});
  $('clearDemo').addEventListener('click',()=>{if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;demoSessions=[];localStorage.removeItem(DEMO_KEY);renderProgress();renderHome();notice('Local demo history cleared. Production data untouched.')});
