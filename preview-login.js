@@ -9,7 +9,7 @@ const url='https://kirlpjflaoriiusfamsk.supabase.co';
 const key='sb_publishable_yYMnCM3k14zaEtpHo4-xkQ_Cd1Aty90';
 const sessionKey='prismSupabaseSessionV1';
 const message=(value,error=false)=>{status.textContent=value;status.dataset.error=String(error)};
-const next=new URL('app.html',location.href);
+const next=new URL('preview-launch.html',location.href);
 document.getElementById('toggle').addEventListener('click',()=>{
  const show=password.type==='password';password.type=show?'text':'password';
  document.getElementById('toggle').textContent=show?'Hide':'Show';
