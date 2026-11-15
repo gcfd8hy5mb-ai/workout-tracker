@@ -13,7 +13,7 @@ h1{font:400 32px Georgia,serif;margin:0 0 15px}
 #stage{color:#d5eee6;line-height:1.5;min-height:3em}
 p{font-size:13px;line-height:1.5;color:#c2d7d6}
 a,button{display:inline-flex;align-items:center;justify-content:center;min-height:48px;margin:8px;padding:10px 16px;border:1px solid #c9a16a;border-radius:13px;color:#fff0ce;background:#005e69;font:600 15px -apple-system,sans-serif;text-decoration:none}
-#actions{display:none}
+#actions{display:flex;flex-wrap:wrap;justify-content:center;margin-top:16px}
 #appFrame.ready{visibility:visible}
 #launch.done{display:none}
 </style></head><body>
@@ -21,7 +21,7 @@ a,button{display:inline-flex;align-items:center;justify-content:center;min-heigh
 <div id="launch" role="status" aria-live="polite"><div class="panel"><h1>MYLIFTCOACH</h1>
 <div id="stage">Opening your secure training dashboard…</div>
 <p id="detail">Checking that the workout page loads before showing it.</p>
-<div id="actions"><button id="retry" type="button">Try again</button><a href="preview-login.html?retry=1">Return to sign-in</a></div>
+<div id="actions"><button id="retry" type="button">Retry loading</button><a href="preview-login.html?retry=1">Return to sign-in</a></div>
 </div></div>
 <script>
 (function(){
@@ -29,7 +29,7 @@ a,button{display:inline-flex;align-items:center;justify-content:center;min-heigh
 const frame=document.getElementById('appFrame'),launch=document.getElementById('launch');
 const stage=document.getElementById('stage'),detail=document.getElementById('detail'),actions=document.getElementById('actions');
 let loaded=false,done=false,failed=false,last='Waiting for the workout document';
-const fail=(reason)=>{if(done||failed)return;failed=true;stage.textContent='The dashboard did not finish opening';detail.textContent=reason+' — Your saved workout data has not been cleared.';actions.style.display='block'};
+const fail=(reason)=>{if(done||failed)return;failed=true;stage.textContent='The dashboard did not finish opening';detail.textContent=reason+' — Your saved workout data has not been cleared.';actions.style.display='flex'};
 const retry=document.getElementById('retry');
 retry.onclick=()=>location.reload();
 frame.onload=()=>{loaded=true;last='Workout document loaded';if(!failed)stage.textContent='Workout document loaded. Verifying your account…'};
@@ -40,7 +40,9 @@ const timer=setInterval(()=>{
  try{doc=frame.contentDocument;win=frame.contentWindow;if(!doc||!win)return}catch(_){fail('The workout frame was blocked');return}
  if(doc.readyState==='complete'&&!loaded){loaded=true;last='Workout document parsed'}
  if(win.MYLIFTCOACHStartupTrace?.events?.length)last='Last startup event: '+win.MYLIFTCOACHStartupTrace.events.slice(-1)[0].name;
- if(doc.documentElement?.classList.contains('prism-account-booting')){last='Waiting for Supabase account verification';return}
+ if(win.MLCPreviewBootDiagnostic && !doc.documentElement?.classList.contains('prism-account-booting'))last='Workout boot diagnostic started';
+ if(!failed && !done) detail.textContent='Diagnostic: '+last;
+ if(doc.documentElement?.classList.contains('prism-account-booting')){last='Waiting for Supabase account verification';detail.textContent='Diagnostic: '+last;return}
  const gate=doc.getElementById('liftovaAuthGate');
  if(gate){fail('The workout app returned to its login gate instead of opening the dashboard');return}
  const selectors=['#home:not(.hidden) .liftova-home-shell','#welcomeScreen:not(.hidden)','#onboardingScreen:not(.hidden)','#goalReviewScreen:not(.hidden)','#workoutsScreen:not(.hidden)','#workoutScreen:not(.hidden)'];
