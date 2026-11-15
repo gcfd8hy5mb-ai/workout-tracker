@@ -42,7 +42,16 @@ const timer=setInterval(()=>{
  if(win.MYLIFTCOACHStartupTrace?.events?.length)last='Last startup event: '+win.MYLIFTCOACHStartupTrace.events.slice(-1)[0].name;
  if(win.MLCPreviewBootDiagnostic && !doc.documentElement?.classList.contains('prism-account-booting'))last='Workout boot diagnostic started';
  if(!failed && !done) detail.textContent='Diagnostic: '+last;
- if(doc.documentElement?.classList.contains('prism-account-booting')){last='Waiting for Supabase account verification';detail.textContent='Diagnostic: '+last;return}
+ if(doc.documentElement?.classList.contains('prism-account-booting')){
+  const accountScript=Array.from(doc.scripts||[]).find(s=>s.getAttribute('src')==='persistence/account-ui.js');
+  const cloudLoaded=!!win.PRISMCloud;
+  const bootError=doc.getElementById('prismAccountStatus')?.textContent||'';
+  last='Account verification gate active; document '+doc.readyState+
+    '; account script '+(accountScript?'present':'not reached')+
+    '; cloud '+(cloudLoaded?'ready':'missing');
+  if(bootError&&bootError!=='Checking your account…')last+='; account status: '+bootError.slice(0,95);
+  detail.textContent='Diagnostic: '+last;return
+ }
  const gate=doc.getElementById('liftovaAuthGate');
  if(gate){fail('The workout app returned to its login gate instead of opening the dashboard');return}
  const selectors=['#home:not(.hidden) .liftova-home-shell','#welcomeScreen:not(.hidden)','#onboardingScreen:not(.hidden)','#goalReviewScreen:not(.hidden)','#workoutsScreen:not(.hidden)','#workoutScreen:not(.hidden)'];
