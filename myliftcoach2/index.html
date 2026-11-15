@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#042b33">
+<meta name="description" content="MYLIFTCOACH 2.0 — premium training and progress">
+<title>MYLIFTCOACH 2.0</title>
+<link rel="stylesheet" href="./styles.css?v=1">
+</head>
+<body>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar">
+  <div class="wordmark"><span class="wordmark-icon" aria-hidden="true">M</span><div><strong>MYLIFTCOACH</strong><small>THE TRAINING CLUB</small></div></div>
+  <div class="side-label">YOUR TRAINING</div>
+  <nav class="side-nav" aria-label="Main navigation">
+    <button type="button" data-page="home" class="nav-item selected"><span>◫</span> Overview</button>
+    <button type="button" data-page="workouts" class="nav-item"><span>▤</span> Workouts</button>
+    <button type="button" data-page="library" class="nav-item"><span>▦</span> Exercise library</button>
+    <button type="button" data-page="progress" class="nav-item"><span>▥</span> Progress</button>
+    <button type="button" data-page="settings" class="nav-item"><span>⚙</span> Settings</button>
+  </nav>
+  <div class="side-spacer"></div>
+  <div class="side-support"><span class="pill-dot"></span><div><strong>Built for consistency</strong><small>Train · Track · Progress</small></div></div>
+  <div class="sidebar-foot">MYLIFTCOACH <span>2.0 · FOUNDATION</span></div>
+</aside>
+<div class="main-wrap">
+<header class="topbar">
+ <button id="menuBtn" type="button" class="mobile-menu" aria-label="Toggle navigation">☰</button>
+ <div class="top-location"><span>TRAINING STUDIO</span><strong id="pageTitle">Overview</strong></div>
+ <div class="top-actions"><span class="stage-pill" id="cloudPill">DEMO WORKSPACE</span><button type="button" class="avatar" id="avatarBtn" aria-label="Open settings">MC</button></div>
+</header>
+<main id="main" class="content">
+ <section id="home" class="page">
+  <div class="eyebrow">YOUR PRIVATE TRAINING STUDIO <span class="gold-rule"></span></div>
+  <div class="hero">
+    <div class="hero-art"><div class="hero-orbit orbit-a"></div><div class="hero-orbit orbit-b"></div><div class="hero-monogram">M<span>✦</span></div></div>
+    <div class="hero-copy"><div class="hero-kicker">THE PURSUIT OF PROGRESS</div><h1>Train with <em>purpose.</em><br>Progress with confidence.</h1><p>A considered space for strength, consistency, and becoming your strongest self.</p><div class="hero-actions"><button class="button-primary" id="heroStart">Start today's workout <span>↗</span></button><button class="button-ghost" id="heroViewPlan">View training plan</button></div></div>
+  </div>
+  <div class="section-top"><div><div class="eyebrow">THE WEEK AT A GLANCE</div><h2>Your training overview</h2></div><span class="muted">A clear view of what's next</span></div>
+  <div class="metrics"><article class="metric"><span>WORKOUTS LOGGED</span><strong id="metricWorkouts">0</strong><small>In this demo workspace</small></article><article class="metric"><span>SETS COMPLETED</span><strong id="metricSets">0</strong><small>Across saved sessions</small></article><article class="metric"><span>YOUR TRAINING PLAN</span><strong>4-day</strong><small>Strength-based split</small></article></div>
+  <div class="home-grid"><article class="panel next-panel"><div class="panel-heading"><div><div class="eyebrow">TODAY'S FOCUS</div><h3 id="todayTitle">Upper Body A</h3></div><span class="micro-tag">NEXT SESSION</span></div><p id="todayDescription">Build strength with a focused, machine-friendly session.</p><div id="todayExercises" class="exercise-preview"></div><button id="todayStart" class="text-action" type="button">Begin this session <span>↗</span></button></article><article class="panel activity-panel"><div class="eyebrow">YOUR MOMENTUM</div><h3>Recently completed</h3><div id="recentActivity" class="recent-list"></div></article></div>
+  <p class="safety-note"><strong>Development workspace.</strong> This preview stores practice workout entries only in this browser. Your original app and Supabase workout records are not changed.</p>
+ </section>
+ <section id="workouts" class="page" hidden><div class="page-heading"><div class="eyebrow">YOUR ROUTINE</div><h1>Training plan</h1><p>Four purposeful sessions. Select one to open its exercise list and record a practice workout.</p></div><div class="workout-grid" id="workoutGrid"></div></section>
+ <section id="library" class="page" hidden><div class="page-heading"><div class="eyebrow">MOVEMENT & MASTERY</div><h1>Exercise library</h1><p>A focused starter collection of machine-friendly movements.</p></div><label class="search-bar">⌕ <input id="exerciseSearch" type="search" placeholder="Search movements or muscle groups"></label><div class="library-grid" id="libraryGrid"></div></section>
+ <section id="progress" class="page" hidden><div class="page-heading"><div class="eyebrow">YOUR CONSISTENCY</div><h1>Progress</h1><p>See your saved practice sessions in this isolated preview workspace.</p></div><div class="metrics"><article class="metric"><span>SESSIONS</span><strong id="progressSessions">0</strong><small>Demo only</small></article><article class="metric"><span>SETS</span><strong id="progressSets">0</strong><small>Demo only</small></article><article class="metric"><span>MOVEMENTS</span><strong id="progressMovements">0</strong><small>Tracked in demo sessions</small></article></div><div class="panel"><div class="panel-heading"><h3>Session history</h3><span class="micro-tag">LOCAL DEMO</span></div><div id="sessionHistory" class="recent-list"></div></div></section>
+ <section id="settings" class="page" hidden><div class="page-heading"><div class="eyebrow">YOUR ACCOUNT</div><h1>Settings</h1><p>Sign in with your existing MYLIFTCOACH account. Training data import remains off until validated.</p></div><article class="panel settings-panel"><div class="setting-line"><div><strong>Supabase account</strong><p id="accountIdentity">Not signed in</p></div><span class="micro-tag" id="backendStatus">NOT CONNECTED</span></div><div class="setting-line"><div><strong>Data protection</strong><p>Existing workout records are read-only and are not yet imported into 2.0.</p></div><span class="micro-tag">ISOLATED</span></div><div class="setting-line"><div><strong>Demo session history</strong><p>Saved to this browser only, separate from your original workout app.</p></div><button id="clearDemo" type="button" class="button-outline">Clear demo</button></div><button id="authAction" type="button" class="button-primary">Sign in</button></article></section>
+</main>
+<footer class="site-footer"><span>MYLIFTCOACH 2.0</span><span>STRONGER BY DESIGN · PREVIEW</span></footer>
+</div></div>
+<nav class="bottom-tabs" aria-label="Mobile navigation"><button data-page="home" class="active">⌂<small>Home</small></button><button data-page="workouts">▤<small>Workouts</small></button><button data-page="library">▦<small>Library</small></button><button data-page="progress">▥<small>Progress</small></button><button data-page="settings">⚙<small>Settings</small></button></nav>
+<div id="modal" class="modal" hidden><div class="modal-panel"><button id="closeModal" class="modal-close" type="button" aria-label="Close dialog">×</button><div id="modalContent"></div></div></div>
+<div id="toast" role="status" class="toast" hidden></div>
+<script defer src="./app.js?v=1"></script>
+</body>
+</html>
