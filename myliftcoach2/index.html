@@ -34,6 +34,24 @@
  <div class="top-actions"><span class="stage-pill" id="cloudPill">DEMO WORKSPACE</span><button type="button" class="avatar" id="avatarBtn" aria-label="Open settings">MC</button></div>
 </header>
 <main id="main" class="content">
+ <section id="welcome" class="page" hidden>
+  <div class="welcome-panel">
+    <img src="./assets/myliftcoach-mark.svg" alt="MYLIFTCOACH mark">
+    <h1>MYLIFTCOACH <span>2.0</span></h1>
+    <p class="welcome-tagline">SMART STRENGTH TRAINING</p>
+    <div class="welcome-features">
+     <p>◈ &nbsp; Personalized Workouts</p>
+     <p>▥ &nbsp; Track Your Progress</p>
+     <p>◎ &nbsp; Expert Coaching</p>
+     <p>◉ &nbsp; Nutrition &amp; Recovery</p>
+    </div>
+    <div class="welcome-actions">
+     <button type="button" class="button-primary" id="welcomeSignIn">Sign In</button>
+     <button type="button" class="button-outline" id="welcomeExplore">Explore Demo</button>
+    </div>
+    <small>Existing MYLIFTCOACH accounts use the same Supabase backend.<br>Preview workout records remain separate.</small>
+  </div>
+ </section>
  <section id="home" class="page">
   <div class="mobile-brand"><img class="brand-mark" src="./assets/myliftcoach-mark.svg" alt=""><span>MYLIFTCOACH <small>2.0</small></span></div>
   <div class="home-welcome">Good Morning <h1>Let's Train <span>💪</span></h1></div>
@@ -74,7 +92,7 @@
   </div>
  </section>
  <section id="nutrition" class="page" hidden><div class="page-heading"><div class="eyebrow">FUEL & RECOVER</div><h1>Nutrition &amp; Hydration</h1><p>The full nutrition, water, weight, and macro-tracking features from your original app will return here after data compatibility testing.</p></div><article class="panel"><h3>Coming from your original app</h3><p>Daily water, food logs, calorie goals, saved meals, and weight history. No entries are being written to your production data.</p></article></section>
- <section id="settings" class="page" hidden><div class="account-brand"><img src="./assets/myliftcoach-mark.svg" alt=""><h2>My Account</h2><p>Manage your profile, training and settings</p></div><div class="account-menu"><button type="button" data-account-page="workouts"><span>▣</span> Workout Plans <b>›</b></button><button type="button" data-account-page="workouts"><span>♧</span> Custom Workouts <b>›</b></button><button type="button" data-account-page="nutrition"><span>◉</span> Nutrition &amp; Hydration <b>›</b></button><button type="button" data-account-page="progress"><span>▥</span> Measurements &amp; Progress <b>›</b></button><button type="button" data-account-page="progress"><span>▧</span> Progress Photos <b>›</b></button></div><div class="page-heading"><div class="eyebrow">YOUR ACCOUNT</div><h1>Settings</h1><p>Sign in with your existing MYLIFTCOACH account. Training data import remains off until validated.</p></div><article class="panel settings-panel"><div class="setting-line"><div><strong>Supabase account</strong><p id="accountIdentity">Not signed in</p></div><span class="micro-tag" id="backendStatus">NOT CONNECTED</span></div><div class="setting-line"><div><strong>Data protection</strong><p>Existing workout records are read-only and are not yet imported into 2.0.</p></div><span class="micro-tag">ISOLATED</span></div><div class="setting-line"><div><strong>Demo session history</strong><p>Saved to this browser only, separate from your original workout app.</p></div><button id="clearDemo" type="button" class="button-outline">Clear demo</button></div><button id="authAction" type="button" class="button-primary">Sign in</button></article></section>
+ <section id="settings" class="page" hidden><div class="account-brand"><img src="./assets/myliftcoach-mark.svg" alt=""><h2>My Account</h2><p>Manage your profile, training and settings</p></div><div class="account-menu"><button type="button" data-account-page="workouts"><span>▣</span> Workout Plans <b>›</b></button><button type="button" data-account-page="workouts"><span>♧</span> Custom Workouts <b>›</b></button><button type="button" data-account-page="nutrition"><span>◉</span> Nutrition &amp; Hydration <b>›</b></button><button type="button" data-account-page="progress"><span>▥</span> Measurements &amp; Progress <b>›</b></button><button type="button" data-account-page="progress"><span>▧</span> Progress Photos <b>›</b></button></div><div class="page-heading"><div class="eyebrow">YOUR ACCOUNT</div><h1>Settings</h1><p>Sign in with your existing MYLIFTCOACH account. Training data import remains off until validated.</p></div><button type="button" id="previewWelcome" class="welcome-preview-link">View welcome screen design ↗</button><article class="panel settings-panel"><div class="setting-line"><div><strong>Supabase account</strong><p id="accountIdentity">Not signed in</p></div><span class="micro-tag" id="backendStatus">NOT CONNECTED</span></div><div class="setting-line"><div><strong>Data protection</strong><p>Existing workout records are read-only and are not yet imported into 2.0.</p></div><span class="micro-tag">ISOLATED</span></div><div class="setting-line"><div><strong>Demo session history</strong><p>Saved to this browser only, separate from your original workout app.</p></div><button id="clearDemo" type="button" class="button-outline">Clear demo</button></div><button id="authAction" type="button" class="button-primary">Sign in</button></article></section>
 </main>
 <footer class="site-footer"><span>MYLIFTCOACH 2.0</span><span>STRONGER BY DESIGN · PREVIEW</span></footer>
 </div></div>
