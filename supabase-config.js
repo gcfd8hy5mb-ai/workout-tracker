@@ -19,7 +19,21 @@ window.PRISM_SUPABASE_CONFIG = MYLIFTCOACH_SUPABASE_CONFIG;
   // The extra startup-cover script is intentionally disabled for the preview.
   // app.html already has an account verification gate and recovery watchdog.
   const sources=['myliftcoach-anatomy-v2.js?v=1','liftova-home.js?v=13','liftova-polish.js?v=8','myliftcoach-home-sequence-fix.js?v=5','liftova-onboarding.js?v=7','liftova-workouts.js?v=7','liftova-active-workout.js?v=7','liftova-library.js?v=7','myliftcoach-library-ux.js?v=1','liftova-progress.js?v=7','myliftcoach-swipe-ux.js?v=1','liftova-profile.js?v=7','liftova-pro.js?v=7','liftova-native-navigation.js?v=1','myliftcoach-menu-return-swipe.js?v=1','liftova-native-forms.js?v=1','liftova-native-states.js?v=1','liftova-native-device.js?v=1','liftova-native-interactions.js?v=1','myliftcoach-daily-tracking-ux.js?v=1','liftova-workout-tab-v3.js?v=3','liftova-quick-log.js?v=1','liftova-functional-fixes.js?v=2','myliftcoach-profile-brand-lock.js?v=3','myliftcoach-visual-cleanup.js?v=1','myliftcoach-custom-workout-fix.js?v=2','myliftcoach-intelligence-core.js?v=1.8','myliftcoach-athlete-evidence-core.js?v=1','athlete-context-learning-v8.js?v=8.0.1','athlete-dose-response-v8_2.js?v=8.2.1','athlete-recovery-lag-v8_3.js?v=8.3.1','athlete-progression-response-v8_4.js?v=8.4','athlete-fatigue-deload-v8_5.js?v=8.5','athlete-program-adaptation-outcomes-v8_7.js?v=8.7','myliftcoach-coach-context-v8_1.js?v=8.1','myliftcoach-coach-dose-v8_2.js?v=8.2','myliftcoach-coach-recovery-v8_3.js?v=8.3','myliftcoach-coach-progression-v8_4.js?v=8.4','myliftcoach-coach-fatigue-v8_5.js?v=8.5','myliftcoach-coach-program-outcomes-v8_7.js?v=8.7','myliftcoach-predictive-readiness-v8_8.js?v=8.8','myliftcoach-prediction-self-evaluation-v9_1.js?v=9.1','myliftcoach-predictive-athlete-model-v9.js?v=9.0','myliftcoach-program-adaptation-planner-v8_6.js?v=8.6','myliftcoach-program-adaptation-planner-v8_7.js?v=8.7','myliftcoach-adaptive-arbitration-v8.js?v=8.0','myliftcoach-adaptive-context-v8_1.js?v=8.1','myliftcoach-adaptive-dose-v8_2.js?v=8.2','myliftcoach-adaptive-recovery-v8_3.js?v=8.3','myliftcoach-adaptive-progression-v8_4.js?v=8.4','myliftcoach-adaptive-fatigue-v8_5.js?v=8.5','myliftcoach-adaptive-program-planner-v8_6.js?v=8.6','myliftcoach-adaptive-program-outcomes-v8_7.js?v=8.7','myliftcoach-intelligence-contract-v1.js?v=2.0','myliftcoach-intelligence-account-boundary.js?v=1.7'];
-  const load=index=>{if(index>=sources.length)return;const script=document.createElement('script');script.src=sources[index];script.async=false;script.onload=script.onerror=()=>load(index+1);document.head.appendChild(script);};load(0);
+  const load=index=>{if(index>=sources.length)return;const script=document.createElement('script');script.src=sources[index];script.async=false;script.onload=script.onerror=()=>load(index+1);document.head.appendChild(script);};
+  // Do not start the large workout/Coach script chain while account identity
+  // is still being verified. This previously raced with account-ui startup
+  // and could starve the iPhone browser before the dashboard was ready.
+  let launched=false;
+  let observer;
+  const launchWhenVerified=()=>{
+    if(launched||document.documentElement.classList.contains('prism-account-booting'))return;
+    launched=true;observer?.disconnect();load(0);
+  };
+  if(document.documentElement.classList.contains('prism-account-booting')){
+    observer=new MutationObserver(launchWhenVerified);
+    observer.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+  }
+  launchWhenVerified();
 })();
 (() => {
   const styles=[['myliftcoach-core-ux-v1.css?v=1','myliftcoach-core-ux'],['myliftcoach-core-ux-v2.css?v=1','myliftcoach-core-ux-v2'],['myliftcoach-core-ux-v3.css?v=1','myliftcoach-core-ux-v3'],['myliftcoach-core-ux-v4.css?v=1','myliftcoach-core-ux-v4'],['myliftcoach-anatomy-polish.css?v=2','myliftcoach-anatomy-polish'],['myliftcoach-home-dashboard-ux.css?v=1','myliftcoach-home-dashboard-ux'],['myliftcoach-library-ux.css?v=1','myliftcoach-library-ux'],['myliftcoach-daily-tracking-ux.css?v=1','myliftcoach-daily-tracking-ux'],['myliftcoach-history-records-ux.css?v=1','myliftcoach-history-records-ux']];
