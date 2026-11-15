@@ -72,12 +72,12 @@ const mlcBootGateObserver=new MutationObserver(()=>{
   }
 });
 if(document.documentElement.classList.contains('prism-account-booting')){
-  mlcBootGateObserver.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+  mlcBootGateObserver.observe(document.documentElement,{attributes:true,attributeFilter:['class'],childList:true,subtree:true});
 }else{
   mlcBootGateObserver.observe(document.documentElement,{attributes:true,attributeFilter:['class'],childList:true,subtree:true});
 }
 window.addEventListener('load',()=>{
-  if(!document.documentElement.classList.contains('prism-account-booting')){
+  if(!document.documentElement.classList.contains('prism-account-booting') && (document.getElementById('liftovaAuthGate') || document.querySelector('#home:not(.hidden) .liftova-home-shell'))){
     mlcBootFinished=true;
     mlcBootGateObserver.disconnect();
   }
