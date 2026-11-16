@@ -413,7 +413,7 @@ function renderCoach(){
  $('coachSets').textContent=String(sets.length);
  $('coachMovements').textContent=String(movementCount);
  $('coachStatus').textContent=demoSessions.length?'Practice activity recorded':'No practice history yet';
- $('coachDescription').textContent=demoSessions.length?'This is a factual summary of local practice sessions, not an adaptive recommendation.':'Complete a practice workout to view a factual summary of your recent activity.';
+ $('coachDescription').textContent=demoSessions.length?'Your local workout activity powers your Coach training review and optional working-weight suggestions when enough qualifying sessions exist. No plan changes are automatic.':'Complete practice workouts or load verified original history to build your training review and optional suggestions.';
  const latest=demoSessions.find(x=>x&&x.created&&Number.isFinite(Date.parse(x.created)));
  $('coachRecent').textContent=latest?'Latest practice session: '+new Date(latest.created).toLocaleDateString()+' · '+String(latest.title||'Workout')+(latest.readiness?' · Readiness: '+latest.readiness:''):'No completed preview sessions have been saved.';
  renderOriginalCoachEvidence();
