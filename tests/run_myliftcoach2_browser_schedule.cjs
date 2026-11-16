@@ -32,7 +32,7 @@ const assert = require('node:assert/strict');
    await page.locator('.sidebar [data-page="library"]').first().evaluate(el=>el.click());
    assert.equal(await page.locator('#library').isVisible(),true);
    assert.ok(await page.locator('[data-library-detail]').count()>5);
-   assert.equal(await page.locator('[data-library-detail]').count(),60);
+   assert.equal(await page.locator('[data-library-detail]').count(),63); // 60 original + 3 starter-only IDs retained for existing plans
    const photoSources=await page.evaluate(()=>window.MLCOriginalExercises.filter(ex=>ex.image).map(ex=>ex.image));
    assert.equal(photoSources.length,14);
    for(const asset of [...photoSources,'images/myliftcoach-anatomy-realistic.webp','images/myliftcoach-anatomy-body-mask.png']){
