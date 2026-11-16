@@ -288,7 +288,7 @@ function setPage(next){if(!['welcome','home','workouts','library','progress','se
  $('pageTitle').textContent=({welcome:'Welcome',home:'Home',workouts:'Workouts',library:'Exercise library',progress:'Progress',settings:'My Account',coaching:'Coaching',nutrition:'Nutrition'})[next];
  $('sidebar').classList.remove('open');$('sidebarScrim').classList.remove('open');document.body.classList.remove('sidebar-is-open');$('menuBtn').setAttribute('aria-expanded','false');$('moreMenuBtn').setAttribute('aria-expanded','false');$('sidebar').inert=window.matchMedia('(max-width:760px)').matches;document.body.classList.toggle('welcome-view',next==='welcome');window.scrollTo({top:0,behavior:'instant'});
  if(next==='home')renderHome();if(next==='workouts')renderWorkouts();if(next==='library')renderLibrary();
- if(next==='progress')renderProgress();if(next==='coaching')renderCoach();if(next==='nutrition')renderOriginalTracking();if(next==='settings'){renderSettings();renderOriginalAccountSettings();}
+ if(next==='progress')renderProgress();if(next==='coaching')renderCoach();if(next==='nutrition'){renderLocalDailyTracking();renderOriginalTracking();}if(next==='settings'){renderSettings();renderOriginalAccountSettings();}
 }
 function totalSets(){return demoSessions.reduce((n,x)=>n+x.sets.length,0)}
 
@@ -549,6 +549,43 @@ async function loadOriginalHistory(){
 function clearOriginalTracking(){
  trackingLoadEpoch++;
  originalTracking=null;importedTrackingOwner=null;$('trackingMonth').value='';renderOriginalTracking();
+}
+function localTrackingDate(){
+ const today=new Date();
+ const current=[today.getFullYear(),String(today.getMonth()+1).padStart(2,'0'),String(today.getDate()).padStart(2,'0')].join('-');
+ if(!$('localTrackingDay').value)$('localTrackingDay').value=current;
+ return $('localTrackingDay').value;
+}
+function renderLocalDailyTracking(){
+ const api=window.MLCLocalDailyTracking,owner=account?.id||'guest';
+ const status=$('localTrackingStatus'),list=$('localTrackingEntries'),day=localTrackingDate();
+ try{
+  const doc=api.read(localStorage,owner),sum=api.summarize(doc,day);
+  const unit=$('localWaterUnit').value;
+  $('localWaterTotal').textContent=unit==='oz'?(sum.waterMl/29.5735).toFixed(1)+' oz':sum.waterMl.toLocaleString()+' mL';
+  $('localCaloriesTotal').textContent=sum.calories.toLocaleString();
+  $('localWeightLatest').textContent=sum.weight===null?'—':sum.weight+' lb';
+  const types=[['water','Water'],['food','Food'],['weight','Weight']];
+  const rows=types.flatMap(([type,label])=>doc[type].filter(x=>x.day===day).map(x=>({type,label,...x})));
+  list.innerHTML=rows.length?rows.map(x=>{
+   const value=x.type==='water'?x.amount+' mL':x.type==='weight'?x.value+' lb':x.name+' · '+x.calories+' cal';
+   return '<div class="recent-item"><div><strong>'+escapeHTML(x.label)+'</strong><small>'+escapeHTML(value)+'</small></div><button type="button" class="button-outline" data-local-remove="'+escapeHTML(x.id)+'" data-local-type="'+x.type+'">Remove</button></div>';
+  }).join(''):'<p class="small">No 2.0 local entries for this day.</p>';
+  status.textContent='Local entries for '+day+' · '+(account?'signed-in account':'guest')+' workspace. Original cloud history is separate.';
+ }catch(error){
+  list.replaceChildren();status.textContent='Stored local tracking could not be read. Existing records have not been overwritten: '+String(error.message||error).slice(0,110);
+  $('localWaterTotal').textContent='—';$('localCaloriesTotal').textContent='—';$('localWeightLatest').textContent='—';
+ }
+}
+function localTrackingAdd(type,entry,form){
+ const owner=account?.id||'guest';
+ try{
+  window.MLCLocalDailyTracking.add(localStorage,owner,type,{...entry,id:'local-'+crypto.randomUUID(),day:localTrackingDate()});
+  form.reset();renderLocalDailyTracking();notice('Saved to this browser only; original account records unchanged.');
+ }catch(error){notice('Could not save local tracking: '+String(error.message||error).slice(0,125))}
+}
+function localFoodMacro(id){
+ const raw=$(id).value.trim();return raw===''?null:Number(raw);
 }
 function renderOriginalTracking(){
  const status=$('trackingStatus'),button=$('loadOriginalTracking'),month=$('trackingMonth'),monthlyStatus=$('trackingMonthStatus'),monthlySummary=$('trackingMonthlySummary');
@@ -944,9 +981,9 @@ function saveAuth(data){
  // A session already in progress belongs to its original account.
  if(activePlan&&activeSessionOwner&&activeSessionOwner!==data.user?.id)closeModal();
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
- if(account?.id&&account.id!==data.user?.id){combinedLoadEpoch++;$('loadAllOriginalStatus').textContent='Account changed. Load records for the current account.';clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings();renderOriginalHistory();
+ if(account?.id&&account.id!==data.user?.id){combinedLoadEpoch++;$('loadAllOriginalStatus').textContent='Account changed. Load records for the current account.';clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings();renderOriginalHistory();
 }
-function clearAuth(){if(activePlan)closeModal();combinedLoadEpoch++;if($('loadAllOriginalStatus'))$('loadAllOriginalStatus').textContent='Sign in to load original account records.';if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings()}
+function clearAuth(){if(activePlan)closeModal();combinedLoadEpoch++;if($('loadAllOriginalStatus'))$('loadAllOriginalStatus').textContent='Sign in to load original account records.';if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;renderLocalDailyTracking();clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings()}
 async function validateStoredAuth(){
  try{
   const saved=JSON.parse(sessionStorage.getItem(AUTH_KEY)||'null');
@@ -955,7 +992,7 @@ async function validateStoredAuth(){
   if(saved.expires_at<Date.now()/1000+45&&saved.refresh_token){
     const refreshed=await authRequest('token?grant_type=refresh_token',{refresh_token:saved.refresh_token});
     saveAuth(refreshed);token=refreshed.access_token;
-  }else{auth=saved;account=saved.user;refreshWeeklyOwner();renderHome();renderWorkouts()}
+  }else{auth=saved;account=saved.user;renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts()}
   const user=await authRequest('user',null,token,'GET');
   if(!user?.id||user.id!==account.id)clearAuth();
  }catch{clearAuth()}
@@ -1059,6 +1096,30 @@ function bind(){
  $('originalExerciseTrendSelect').addEventListener('change',()=>renderOriginalExerciseTrend());
  $('loadOriginalTracking').addEventListener('click',loadOriginalTracking);
  $('trackingMonth').addEventListener('change',renderOriginalTracking);
+ $('localTrackingDay').addEventListener('change',renderLocalDailyTracking);
+ $('localWaterUnit').addEventListener('change',renderLocalDailyTracking);
+ $('localWaterForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const amount=window.MLCLocalDailyTracking.waterMl($('localWaterAmount').value,$('localWaterUnit').value);
+  if(amount===null){notice('Enter a valid water amount.');return;}
+  localTrackingAdd('water',{amount},e.target);
+ });
+ $('localFoodForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  localTrackingAdd('food',{name:$('localFoodName').value.trim(),calories:Number($('localFoodCalories').value),
+   protein:localFoodMacro('localFoodProtein'),carbs:localFoodMacro('localFoodCarbs'),fat:localFoodMacro('localFoodFat')},e.target);
+ });
+ $('localWeightForm').addEventListener('submit',e=>{
+  e.preventDefault();localTrackingAdd('weight',{value:Number($('localWeightValue').value)},e.target);
+ });
+ $('localTrackingEntries').addEventListener('click',e=>{
+  const button=e.target.closest('[data-local-remove]');if(!button)return;
+  if(!confirm('Remove this local 2.0 entry? Your original records will not change.'))return;
+  try{window.MLCLocalDailyTracking.remove(localStorage,account?.id||'guest',button.dataset.localType,button.dataset.localRemove);
+   renderLocalDailyTracking();notice('Local entry removed.');}
+  catch(error){notice('Could not remove local entry: '+String(error.message||error).slice(0,100))}
+ });
+
  $('loadOriginalCustom').addEventListener('click',loadOriginalCustomSchedule);
  $('toggleOriginalCustom').addEventListener('click',toggleOriginalCustomSchedule);
  $('copyOriginalCustom').addEventListener('click',copyOriginalToEditable);
@@ -1069,5 +1130,5 @@ function bind(){
  $('cloudReadinessButton').addEventListener('click',runCloudReadinessCheck);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
-refreshWeeklyOwner();bind();renderOriginalCustomSchedule();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderOriginalTracking();renderSettings();renderOriginalAccountSettings();validateStoredAuth();
+refreshWeeklyOwner();bind();renderOriginalCustomSchedule();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderLocalDailyTracking();renderOriginalTracking();renderSettings();renderOriginalAccountSettings();validateStoredAuth();
 })();
