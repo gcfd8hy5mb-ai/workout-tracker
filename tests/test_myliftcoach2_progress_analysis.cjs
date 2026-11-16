@@ -70,3 +70,29 @@ test('original training calendar groups distinct completed sessions by ISO month
  assert.equal(calendarDays(rows,'2026-12').length,1);
  assert.equal(JSON.stringify(rows),raw);
 });
+
+test('original exercise trend uses the selected exercise and completed sets only',()=>{
+ const {exerciseTrend}=require('../myliftcoach2/progress-analysis.js');
+ const history=[
+  {date:'2026-11-15T12:00:00Z',exercises:[{id:'press',sets:[{weight:110,reps:8},{weight:200,reps:10,completed:false}]},{id:'row',sets:[{weight:300,reps:8}]}]},
+  {date:'2026-11-12T12:00:00Z',exercises:[{id:'press',sets:[{weight:100,reps:10},{weight:105,reps:8}]}]},
+  {date:'2026-11-13T12:00:00Z',exercises:[{id:'press',sets:[{weight:0,reps:10},{weight:130,reps:5,completed:false}]}]},
+  {date:'bad',exercises:[{id:'press',sets:[{weight:500,reps:8}]}]}
+ ];
+ const before=JSON.stringify(history),trend=exerciseTrend(history,'press');
+ assert.deepEqual(trend.map(x=>x.date),['2026-11-12','2026-11-15']);
+ assert.deepEqual(trend.map(x=>x.bestWeight),[105,110]);
+ assert.deepEqual(trend.map(x=>x.volume),[1840,880]);
+ assert.equal(trend[0].sets,2);
+ assert.equal(exerciseTrend(history,'row').length,1);
+ assert.equal(exerciseTrend(history,'unknown').length,0);
+ assert.equal(JSON.stringify(history),before);
+});
+test('original exercise trend caps displayed workout count without modifying stored history',()=>{
+ const {exerciseTrend}=require('../myliftcoach2/progress-analysis.js');
+ const history=Array.from({length:15},(_,i)=>({date:new Date(Date.UTC(2026,9,i+1)).toISOString(),exercises:[{id:'press',sets:[{weight:i+10,reps:8}]}]}));
+ assert.equal(exerciseTrend(history,'press').length,12);
+ assert.equal(exerciseTrend(history,'press',3).length,3);
+ assert.equal(exerciseTrend(history,'press',3)[0].bestWeight,22);
+ assert.deepEqual(exerciseTrend(history,'',3),[]);
+});
