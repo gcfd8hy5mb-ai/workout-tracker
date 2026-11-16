@@ -482,11 +482,45 @@ async function loadOriginalAccountSettings(){
   status.textContent='Original settings could not be loaded: '+String(err.message||err).slice(0,160);
  }finally{button.disabled=!account}
 }
+async function runCloudReadinessCheck(){
+ const button=$('cloudReadinessButton'),status=$('cloudReadinessStatus');
+ if(!button||!status)return;
+ const owner=account?.id;
+ button.disabled=true;
+ status.textContent='Checking sign-in and cloud read capability. This does not upload or save any workout.';
+ try{
+  const checked=await window.MLCV2ReadOnlyPreflight.check({
+   owner,session:auth,getSession:async()=>auth,
+   verifyUser:token=>authRequest('user',null,token,'GET'),
+   localDocument:activeRecurring,validExerciseIds:allowedExerciseIds,
+   readCloud:async token=>{
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+    try{
+     // This RPC is read-only (SELECT). Its absence is a release blocker, not a save failure.
+     const response=await fetch(BACKEND+'/rest/v1/rpc/prism_v2_schedule_read',{
+      method:'POST',headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},
+      body:'{}',cache:'no-store',signal:controller.signal
+     });
+     return {status:response.status,data:await response.json().catch(()=>null)};
+    }finally{clearTimeout(timer)}
+   }
+  });
+  if(account?.id!==owner)throw Error('Account changed during check');
+  status.textContent=checked.summary.workouts+' local workouts, '+checked.summary.datedOverrides+
+   ' one-time dates and '+checked.summary.recurringRules+' repeating rules checked. '+
+   (checked.available?'V2 cloud read is available (revision '+checked.revision+').':
+    checked.reason+'.')+' Cloud saving remains disabled; no data was changed.';
+ }catch(error){
+  status.textContent='Read-only check incomplete: '+String(error.message||error).slice(0,180)+
+   '. No workouts were uploaded or overwritten.';
+ }finally{button.disabled=!account}
+}
 function renderSettings(){
  $('accountIdentity').textContent=account?.email?account.email+' · authenticated (production workout data is not loaded)':'Not signed in. You can still explore the demo.';
  $('backendStatus').textContent=account?'AUTHENTICATED':'NOT CONNECTED';
  $('cloudPill').textContent=account?'ACCOUNT CONNECTED · DEMO':'DEMO WORKSPACE';
  $('authAction').textContent=account?'Sign out':'Sign in with existing account';
+ $('cloudReadinessButton').disabled=!account||!activeRecurring;
 }
 function openModal(content){$('modalContent').innerHTML=content;$('modal').hidden=false;document.body.style.overflow='hidden';$('closeModal').focus()}
 function closeModal(){closeRest();$('modal').hidden=true;document.body.style.overflow='';activePlan=null;session=null}
@@ -588,7 +622,7 @@ function saveAuth(data){
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
  if(account?.id&&account.id!==data.user?.id){clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings();renderOriginalHistory();
 }
-function clearAuth(){sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings()}
+function clearAuth(){if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings()}
 async function validateStoredAuth(){
  try{
   const saved=JSON.parse(sessionStorage.getItem(AUTH_KEY)||'null');
@@ -688,6 +722,7 @@ function bind(){
  $('inspectRecurringMigration').addEventListener('click',inspectCompleteRecurringMigration);
  $('activateFullRecurring').addEventListener('click',activateCompleteRecurringLocally);
  $('loadOriginalSettings').addEventListener('click',loadOriginalAccountSettings);
+ $('cloudReadinessButton').addEventListener('click',runCloudReadinessCheck);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
 refreshWeeklyOwner();bind();renderOriginalCustomSchedule();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderOriginalTracking();renderSettings();renderOriginalAccountSettings();validateStoredAuth();
