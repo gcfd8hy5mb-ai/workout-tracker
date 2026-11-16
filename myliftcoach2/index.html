@@ -10,26 +10,62 @@
 <link rel="stylesheet" href="./theme-option-one.css?v=1">
 <link rel="stylesheet" href="./reference-mobile.css?v=1">
 <link rel="stylesheet" href="./premium-reference.css?v=1">
+<link rel="stylesheet" href="./sidebar-restoration.css?v=1">
 </head>
 <body>
 <div class="app-shell">
-<aside class="sidebar" id="sidebar">
-  <div class="wordmark"><img class="sidebar-logo" src="./assets/myliftcoach-mark.svg" alt=""><div><strong>MYLIFTCOACH</strong><small>THE TRAINING CLUB</small></div></div>
-  <div class="side-label">YOUR TRAINING</div>
+<aside class="sidebar" id="sidebar" aria-label="MYLIFTCOACH navigation">
+  <div class="sidebar-top">
+    <div class="wordmark"><img class="sidebar-logo" src="./assets/myliftcoach-mark.svg" alt=""><div><strong>MYLIFTCOACH</strong><small>THE TRAINING CLUB</small></div></div>
+    <button id="sidebarClose" type="button" class="sidebar-close" aria-label="Close navigation">×</button>
+  </div>
   <nav class="side-nav" aria-label="Main navigation">
-    <button type="button" data-page="home" class="nav-item selected"><span>◫</span> Overview</button>
-    <button type="button" data-page="workouts" class="nav-item"><span>▤</span> Workouts</button>
-    <button type="button" data-page="library" class="nav-item"><span>▦</span> Exercise library</button>
-    <button type="button" data-page="progress" class="nav-item"><span>▥</span> Progress</button>
-    <button type="button" data-page="settings" class="nav-item"><span>⚙</span> Settings</button>
+    <div class="side-label">HOME</div>
+    <button type="button" data-page="home" class="nav-item selected"><span aria-hidden="true">⌂</span> Overview</button>
+    <details class="nav-group" open>
+      <summary>TRAINING <span class="section-chevron" aria-hidden="true">⌄</span></summary>
+      <div class="nav-group-items">
+        <button type="button" data-page="workouts" class="nav-item"><span aria-hidden="true">▤</span> Workouts</button>
+        <button type="button" data-page="library" class="nav-item"><span aria-hidden="true">▦</span> Exercise library</button>
+        <span class="nav-item nav-unavailable" title="Being migrated from the original app"><span aria-hidden="true">▧</span> Manage workouts <small>Not yet restored</small></span>
+        <span class="nav-item nav-unavailable" title="Being migrated from the original app"><span aria-hidden="true">＋</span> Custom workouts <small>Not yet restored</small></span>
+        <span class="nav-item nav-unavailable" title="Available within practice workout sessions"><span aria-hidden="true">◷</span> Standalone timer <small>Not yet restored</small></span>
+      </div>
+    </details>
+    <details class="nav-group" open>
+      <summary>PROGRESS <span class="section-chevron" aria-hidden="true">⌄</span></summary>
+      <div class="nav-group-items">
+        <button type="button" data-page="progress" class="nav-item"><span aria-hidden="true">▥</span> Progress &amp; demo history</button>
+        <span class="nav-item nav-unavailable"><span aria-hidden="true">▦</span> Calendar &amp; records <small>Not yet restored</small></span>
+        <span class="nav-item nav-unavailable"><span aria-hidden="true">▤</span> Measurements <small>Not yet restored</small></span>
+        <span class="nav-item nav-unavailable"><span aria-hidden="true">▧</span> Progress photos <small>Not yet restored</small></span>
+      </div>
+    </details>
+    <details class="nav-group">
+      <summary>DAILY TRACKING <span class="section-chevron" aria-hidden="true">⌄</span></summary>
+      <div class="nav-group-items">
+        <button type="button" data-page="nutrition" class="nav-item"><span aria-hidden="true">◉</span> Nutrition overview</button>
+        <span class="nav-item nav-unavailable"><span aria-hidden="true">◈</span> Water &amp; food logs <small>Not yet restored</small></span>
+        <span class="nav-item nav-unavailable"><span aria-hidden="true">▥</span> Weight &amp; goals <small>Not yet restored</small></span>
+      </div>
+    </details>
+    <details class="nav-group" open>
+      <summary>ACCOUNT &amp; EXTRAS <span class="section-chevron" aria-hidden="true">⌄</span></summary>
+      <div class="nav-group-items">
+        <button type="button" data-page="coaching" class="nav-item"><span aria-hidden="true">◎</span> Coaching overview</button>
+        <button type="button" data-page="settings" class="nav-item"><span aria-hidden="true">⚙</span> Settings &amp; account</button>
+        <span class="nav-item nav-unavailable"><span aria-hidden="true">⇪</span> Data &amp; backup <small>Not yet restored</small></span>
+        <span class="nav-item nav-unavailable"><span aria-hidden="true">?</span> Help &amp; support <small>Not yet restored</small></span>
+      </div>
+    </details>
   </nav>
   <div class="side-spacer"></div>
-  <div class="side-support"><span class="pill-dot"></span><div><strong>Built for consistency</strong><small>Train · Track · Progress</small></div></div>
-  <div class="sidebar-foot">MYLIFTCOACH <span>2.0 · FOUNDATION</span></div>
+  <div class="sidebar-foot">MYLIFTCOACH <span>2.0 · PREVIEW</span></div>
 </aside>
+<div id="sidebarScrim" class="sidebar-scrim" aria-hidden="true"></div>
 <div class="main-wrap">
 <header class="topbar">
- <button id="menuBtn" type="button" class="mobile-menu" aria-label="Toggle navigation">☰</button>
+ <button id="menuBtn" type="button" class="mobile-menu" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">☰</button>
  <div class="top-location"><span>MYLIFTCOACH 2.0</span><strong id="pageTitle">Overview</strong></div>
  <div class="top-actions"><span class="stage-pill" id="cloudPill">DEMO WORKSPACE</span><button type="button" class="avatar" id="avatarBtn" aria-label="Open settings">MC</button></div>
 </header>
@@ -70,7 +106,7 @@
     <button type="button" data-shortcut="progress"><span class="shortcut-symbol">▥</span><strong>Progress</strong></button>
     <button type="button" data-shortcut="coaching"><span class="shortcut-symbol">◎</span><strong>Coaching</strong></button>
     <button type="button" data-shortcut="nutrition"><span class="shortcut-symbol">◉</span><strong>Nutrition</strong></button>
-    <button type="button" data-shortcut="settings"><span class="shortcut-symbol">▦</span><strong>More</strong></button>
+    <button type="button" data-sidebar-open="true"><span class="shortcut-symbol">▦</span><strong>More</strong></button>
   </div>
   <div class="section-top"><div><div class="eyebrow">YOUR TRAINING</div><h2>Your progress</h2></div><span class="muted">Demo workspace</span></div>
   <div class="metrics"><article class="metric"><span>WORKOUTS LOGGED</span><strong id="metricWorkouts">0</strong><small>In this demo workspace</small></article><article class="metric"><span>SETS COMPLETED</span><strong id="metricSets">0</strong><small>Across saved sessions</small></article><article class="metric"><span>YOUR TRAINING PLAN</span><strong>4-day</strong><small>Strength-based split</small></article></div>
@@ -96,7 +132,7 @@
 </main>
 <footer class="site-footer"><span>MYLIFTCOACH 2.0</span><span>STRONGER BY DESIGN · PREVIEW</span></footer>
 </div></div>
-<nav class="bottom-tabs" aria-label="Mobile navigation"><button data-page="home" class="active">⌂<small>Home</small></button><button data-page="workouts">♧<small>Workouts</small></button><button data-page="progress">▥<small>Progress</small></button><button data-page="nutrition">◉<small>Nutrition</small></button><button data-page="settings">☰<small>More</small></button></nav>
+<nav class="bottom-tabs" aria-label="Mobile navigation"><button data-page="home" class="active">⌂<small>Home</small></button><button data-page="workouts">♧<small>Workouts</small></button><button data-page="progress">▥<small>Progress</small></button><button data-page="nutrition">◉<small>Nutrition</small></button><button type="button" id="moreMenuBtn" aria-label="Open extra navigation" aria-controls="sidebar" aria-expanded="false">☰<small>More</small></button></nav>
 <div id="modal" class="modal" hidden><div class="modal-panel"><button id="closeModal" class="modal-close" type="button" aria-label="Close dialog">×</button><div id="modalContent"></div></div></div>
 <div id="restScreen" class="rest-screen" hidden role="dialog" aria-modal="true" aria-label="Rest timer">
  <div class="rest-top"><button id="restClose" type="button" aria-label="Close rest timer">‹</button><strong>Resting</strong><span></span></div>
