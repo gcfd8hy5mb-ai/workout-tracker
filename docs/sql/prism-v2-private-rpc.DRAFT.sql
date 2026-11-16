@@ -179,9 +179,12 @@ begin
    raise exception 'Invalid one-time workout overrides';
   end if;
   for date_key,selected in select key,value from pg_catalog.jsonb_each(new_document->'overrides') loop
+   -- A JSON null is a deliberate one-date rest day, not a missing plan.
+   -- Preserve the rule for later weeks and reject all other unknown values.
    if not prism_v2_private.valid_day(date_key)
-      or pg_catalog.jsonb_typeof(selected)<>'string'
-      or not ((selected #>> '{}')=any(names))
+      or (selected <> 'null'::jsonb and
+         (pg_catalog.jsonb_typeof(selected)<>'string'
+          or not ((selected #>> '{}')=any(names))))
    then raise exception 'Invalid dated workout override'; end if;
   end loop;
  end if;
