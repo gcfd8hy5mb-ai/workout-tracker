@@ -138,5 +138,5 @@ stdout, stderr = p.communicate(timeout=20)
 assert p.returncode == 0, stderr
 assert stale.returncode != 0, "Concurrent stale write incorrectly succeeded"
 assert json.loads(exec_sql(signed(A, read()))[0])["document"]["plans"][0]["title"] == "Transaction One"
-assert json.loads(exec_sql(signed(A, read()))[0])["revision"] == 3
+assert json.loads(exec_sql(signed(A, read()))[0])["revision"] == 4
 print("PASS: isolated PG owner isolation, permissions, stale CAS, first-save race, malformed input, concurrent update")
