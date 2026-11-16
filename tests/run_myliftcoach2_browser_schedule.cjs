@@ -158,7 +158,23 @@ const assert = require('node:assert/strict');
    await page.reload({waitUntil:'load'});
    assert.equal(await page.locator('#todayTitle').textContent(),'Updated Custom Session');
    assert.deepEqual(errors,[],device.label+' rest exception undo errors');
-   console.log('PASS '+device.label+': Home/board/Start agree; edit, sidebar create, and reload retain custom workout');
+   // Finish a practice workout, remove a mistaken set, and inspect original-style summary.
+   await page.locator('#heroStart').evaluate(el=>el.click());
+   await page.locator('[data-addset="leg-press"]').evaluate(el=>el.click());
+   await page.locator('[data-addset="leg-press"]').evaluate(el=>el.click());
+   assert.equal(await page.locator('[data-save-logged-set]').count(),2);
+   await page.locator('[data-delete-logged-set="0"]').evaluate(el=>el.click());
+   assert.equal(await page.locator('[data-save-logged-set]').count(),1);
+   await page.locator('#finishWorkout').evaluate(el=>el.click());
+   assert.equal(await page.locator('#sessionHistory details').count(),1);
+   const sessionText=await page.locator('#sessionHistory details').first().textContent();
+   assert.match(sessionText,/Updated Custom Session/);
+   assert.match(sessionText,/1 sets/);
+   assert.match(sessionText,/Local practice record/);
+   assert.equal(await page.evaluate(()=>localStorage.getItem('mlc2-unfinished-session-v1:guest')),null);
+   await page.reload({waitUntil:'load'});
+   assert.equal(await page.locator('#sessionHistory details').count(),1);
+   console.log('PASS '+device.label+': workout restore, edit, selected set removal and saved completion summary');
    await context.close();
   }
  }finally{await browser.close()}
