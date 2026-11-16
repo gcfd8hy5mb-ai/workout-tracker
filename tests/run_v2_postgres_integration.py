@@ -58,7 +58,13 @@ pg_catalog.has_table_privilege('prism_v2_executor','public.prism_v2_workout_sche
 pg_catalog.has_schema_privilege('prism_v2_executor','prism_v2_private','CREATE'),
 pg_catalog.pg_has_role('authenticated','prism_v2_executor','MEMBER');""")
 assert grants=='f|f|f|t|f|f',f'Unapproved grants: {grants}'
-exec_sql("SET ROLE authenticated; SET ROLE prism_v2_executor;",ok=False)
+# Test as a non-superuser login; SET ROLE from postgres would be meaningless.
+client_base = BASE.copy()
+client_base[client_base.index('postgres')] = 'v2_test_client' # -U argument
+client_env = dict(ENV, PGPASSWORD='temporary-ci-only')
+client = subprocess.run(client_base, input='SET ROLE prism_v2_executor;', text=True,
+                        capture_output=True, env=client_env, timeout=20)
+assert client.returncode != 0, 'Unprivileged client gained executor role'
 
 # Independent owner isolation and authenticated save/reload.
 out, _ = exec_sql(signed(A, save(0, "Legs")))
