@@ -91,3 +91,31 @@ test('invalid saved custom exercises must not be silently replaced by a default'
  assert.throws(()=>s.loadOwned({getItem:key=>memory.get(key)},'weekly',id,preset,allowed),/invalid/);
  assert.equal(memory.get(s.ownerKey('weekly',id)),JSON.stringify(raw));
 });
+
+test('unassigned invalid custom plans are preserved instead of silently dropped',()=>{
+ const owner='11111111-1111-4111-8111-111111111111';
+ const raw={version:1,plans:[{id:'custom-unassigned-1',title:'My Missing Exercise',ids:['removed-exercise']}],
+  assigned:['upper-a','lower-a',null,'upper-b','lower-b',null,null]};
+ const original=JSON.stringify(raw),key=s.ownerKey('weekly',owner);
+ const memory=new Map([[key,original]]);
+ assert.throws(()=>s.loadOwned({getItem:k=>memory.get(k)},'weekly',owner,preset,allowed),/unavailable or invalid/);
+ assert.equal(memory.get(key),original);
+});
+test('mixed valid and unavailable exercises never yield a truncated workout',()=>{
+ const owner='11111111-1111-4111-8111-111111111111';
+ const raw={version:1,plans:[{id:'custom-partial-1',title:'My Complete Session',ids:['press','removed-exercise']}],
+  assigned:['custom-partial-1',null,null,null,null,null,null]};
+ const source=JSON.stringify(raw),key=s.ownerKey('weekly',owner),memory=new Map([[key,source]]);
+ assert.throws(()=>s.loadOwned({getItem:k=>memory.get(k)},'weekly',owner,preset,allowed),/unavailable or invalid/);
+ assert.equal(memory.get(key),source);
+});
+test('valid unassigned custom workout remains available after reopening',()=>{
+ const owner='11111111-1111-4111-8111-111111111111';
+ const key=s.ownerKey('weekly',owner);
+ const raw={version:1,plans:[{id:'custom-later-1',title:'Weekend Routine',ids:['row']}],
+  assigned:['upper-a','lower-a',null,'upper-b','lower-b',null,null]};
+ const store=new Map([[key,JSON.stringify(raw)]]);
+ const result=s.loadOwned({getItem:k=>store.get(k)},'weekly',owner,preset,allowed);
+ assert.equal(result.plans.find(p=>p.id==='custom-later-1').title,'Weekend Routine');
+ assert.equal(s.resolve(result,'2026-11-16T12:00:00').plan.id,'upper-a');
+});
