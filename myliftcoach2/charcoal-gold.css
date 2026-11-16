@@ -1,0 +1,65 @@
+/* MYLIFTCOACH 2.0 — charcoal and bright gold finishing palette.
+ * Layered last to replace original purple/emerald treatments without
+ * changing layout, storage, or exercise media. */
+:root{
+ --bg:#101519;--nav:#11191e;--navdark:#0c1217;
+ --teal:#e4bb70;--aqua:#ead196;--cream:#fff1d2;
+ --gold:#f3cf86;--goldmuted:#d2a75d;--metal:#f5cf86;
+ --metal-highlight:#fff2c3;--metal-deep:#b47d30;
+ --deep:#141d22;--card-rich:#202b30;--glass:rgba(22,30,35,.95);
+ --ink:#f8eeda;--muted:#c5bba9;--border:rgba(239,195,111,.52);
+}
+html{background:#0e1418!important}
+body{
+ background:radial-gradient(ellipse at 86% 13%,rgba(141,113,61,.12),transparent 46%),linear-gradient(155deg,#151c21,#0e1418 70%) fixed!important;
+ color:#f8edda!important;
+}
+.sidebar{background:linear-gradient(155deg,#1c262b,#0e161b)!important;border-right:1px solid rgba(236,187,98,.55)!important}
+.topbar{background:rgba(19,27,32,.96)!important;border-bottom:1px solid rgba(233,184,100,.46)!important}
+.hero{background:linear-gradient(94deg,rgba(12,19,23,.97) 0%,rgba(16,24,28,.83) 57%,rgba(20,25,28,.27) 100%),url("./assets/hero-dumbbell.svg") center/cover no-repeat!important;border-color:rgba(250,210,136,.82)!important}
+.metric,.panel,.workout-card,.library-card,.settings-panel,.log-card,.recent-item,.quick-grid button,.coach-links button,.account-menu button{
+ background:linear-gradient(145deg,#263137,#192228)!important;
+ border-color:rgba(223,180,103,.54)!important;
+ color:#f9ebd0!important;
+ box-shadow:inset 0 1px 0 rgba(255,242,205,.07),0 6px 19px rgba(0,0,0,.28)!important;
+}
+.sidebar .nav-item,.sidebar .nav-item.selected,.sidebar .nav-item:hover{
+ background:linear-gradient(145deg,#252e33,#151d22)!important;
+ border-color:rgba(234,185,96,.38)!important;
+ color:#f6e7cf!important;
+}
+.sidebar .nav-item.selected{background:linear-gradient(145deg,#403a2d,#1b252a)!important;border-color:#ecc47e!important}
+.button-outline,.button-ghost,.modal-close,.sidebar-close{
+ background:linear-gradient(145deg,#2c3437,#171f25)!important;
+ border:1px solid rgba(237,188,102,.69)!important;color:#ffdf9d!important;
+}
+.button-primary{background:linear-gradient(180deg,#ffedb0,#e3b762 60%,#b98539)!important;color:#1b1a17!important;border-color:#ffe1a2!important}
+.stage-pill,.micro-tag{background:#272c2a!important;border-color:#d7a963!important;color:#f8d58c!important}
+:where(.panel,.log-card,.library-card,.metric,.recent-item) :where(p,small,span,label){color:#e7dac5}
+:where(.panel,.log-card,.library-card) :where(h2,h3,h4,strong){color:#fff0d2!important}
+input,select,textarea{
+ background:#141e23!important;
+ color:#fff4df!important;
+ border:1px solid rgba(213,172,102,.54)!important;
+}
+input::placeholder{color:#a9a294!important}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{
+ outline:2px solid #f8ce7f!important;outline-offset:2px;
+}
+.liftova-anatomy{
+ background:radial-gradient(ellipse at 50% 20%,rgba(208,164,83,.13),transparent 67%),#121a20!important;
+ border:1px solid rgba(240,193,108,.57)!important;
+ box-shadow:0 10px 28px rgba(0,0,0,.29)!important;
+}
+.library-anatomy{width:100%;max-width:300px;margin:0 auto 10px}
+.library-anatomy .liftova-anatomy{max-height:220px;overflow:hidden}
+.library-anatomy .liftova-anatomy svg{height:auto;max-height:212px;object-fit:contain}
+.exercise-detail-visuals{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start;margin:14px 0}
+.exercise-detail-visuals img{width:100%;max-height:300px;object-fit:contain;border:1px solid rgba(240,193,108,.48);border-radius:14px;background:#11191d}
+.exercise-detail-visuals .liftova-anatomy{max-width:100%}
+.library-card .exercise-open{margin-top:12px}
+.library-card .library-thumb{object-fit:contain}
+.exercise-detail-modal h2{margin:4px 0 12px}
+.exercise-detail-modal li{margin:5px 0}
+@media(max-width:640px){.exercise-detail-visuals{grid-template-columns:1fr}.library-anatomy .liftova-anatomy{max-height:165px}.library-anatomy .liftova-anatomy svg{max-height:160px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
