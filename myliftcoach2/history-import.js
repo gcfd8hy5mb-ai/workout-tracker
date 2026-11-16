@@ -14,7 +14,7 @@
    sets:ex.sets.filter(s=>s&&Number.isFinite(Number(s.weight))&&Number(s.weight)>0&&Number.isFinite(Number(s.reps))&&Number(s.reps)>0).map(s=>({set:s.set,weight:Number(s.weight),reps:Number(s.reps),completed:s.completed!==false}))
   })).filter(ex=>ex.sets.length);
   if(!exercises.length)return null;
-  return {id:item.id,date:item.date,workoutKey:String(item.workoutKey||''),workoutTitle:String(item.workoutTitle||'Workout'),durationMinutes:item.durationMinutes,recordIds:Array.isArray(item.recordIds)?item.recordIds:[],exercises};
+  return {id:item.id,date:item.date,workoutKey:String(item.workoutKey||''),workoutTitle:String(item.workoutTitle||'Workout'),durationMinutes:item.durationMinutes,readiness:['Great','Normal','Tired'].includes(item.readiness)?item.readiness:null,recordIds:Array.isArray(item.recordIds)?item.recordIds:[],exercises};
  }
  async function load({endpoint,publishableKey,accessToken,userId,fetcher=fetch,maxPages=100}){
   if(!model?.restoreSnapshot)throw Error('Original storage model unavailable');
