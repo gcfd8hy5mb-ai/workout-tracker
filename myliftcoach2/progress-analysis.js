@@ -56,7 +56,7 @@
   return points.slice(-count).map(({date,volume,sets})=>({date,volume,sets}));
  }
  function calendarDays(history,month){
-  if(!/^\\d{4}-(0[1-9]|1[0-2])$/.test(String(month||'')))return [];
+  if(!/^[0-9]{4}-(0[1-9]|1[0-2])$/.test(String(month||'')))return [];
   const groups=new Map();
   for(const item of Array.isArray(history)?history:[]){
    const stamp=Date.parse(item?.date||'');
