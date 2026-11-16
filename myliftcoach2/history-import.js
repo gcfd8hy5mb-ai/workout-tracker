@@ -71,5 +71,11 @@
   }
   return {sets,volume};
  }
- return Object.freeze({load,normalizedSession,filterSessions,sessionTotals});
+ function recentCompleted(sessions,limit=3){
+  if(!Array.isArray(sessions))return [];
+  const count=Number.isInteger(limit)&&limit>0&&limit<=100?limit:3;
+  return sessions.filter(item=>Number.isFinite(Date.parse(item?.date||''))&&sessionTotals(item).sets>0)
+   .slice().sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).slice(0,count);
+ }
+ return Object.freeze({load,normalizedSession,filterSessions,sessionTotals,recentCompleted});
 });
