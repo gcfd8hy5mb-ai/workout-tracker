@@ -13,7 +13,7 @@
   const groups=new Map(),oldBest=new Map();
   for(const s of Array.isArray(earlier)?earlier:[]){
    for(const set of Array.isArray(s?.sets)?s.sets:[]){
-    if(set?.exerciseId&&!String(s.id||'').startsWith(String(entry?.id||'!!'))&&Number(set.weight)>0&&Number(set.reps)>0){
+    if(set?.exerciseId&&s.id!==entry?.id&&Number(set.weight)>0&&Number(set.reps)>0){
      oldBest.set(set.exerciseId,Math.max(oldBest.get(set.exerciseId)||0,Number(set.weight)));
     }
    }
