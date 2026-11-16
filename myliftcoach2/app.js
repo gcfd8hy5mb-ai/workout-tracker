@@ -31,6 +31,12 @@ const RECURRING_KEY='mlc2-recurring-preview-v1';
 const recurringDraftAPI=window.MLCRecurringDraft;
 const weeklyAPI=window.MLCWeeklySchedule;
 const editorExercises=window.MLCV2ExerciseCatalog.merge(originalExercises,exercises);
+function prepareLibraryEquipment(){
+ const control=document.getElementById('libraryEquipment');
+ if(!control)return;
+ const gear=[...new Set(editorExercises.map(libraryEquipment))].filter(Boolean).sort((a,b)=>a.localeCompare(b));
+ control.innerHTML='<option value="">All equipment</option>'+gear.map(item=>'<option value="'+escapeHTML(item)+'">'+escapeHTML(item)+'</option>').join('');
+}
 const exerciseById=id=>editorExercises.find(ex=>ex.id===id);
 const allowedExerciseIds=editorExercises.map(ex=>ex.id);
 function scheduleOwner(){return account?.id||null}
@@ -342,9 +348,16 @@ function exerciseDetail(id){
  const list=(label,items)=>items.length?'<h3>'+label+'</h3><ul>'+items.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'';
  openModal('<div class="exercise-detail-modal"><div class="modal-eyebrow">EXERCISE LIBRARY · TECHNIQUE</div><h2>'+escapeHTML(ex.name)+'</h2><p class="small">Primary: '+escapeHTML(ex.muscle||ex.group||'Other')+(metadata.equipment?' · Equipment: '+escapeHTML(metadata.equipment):'')+'</p><div class="exercise-detail-visuals">'+(image?'<img src="'+escapeHTML(image)+'" alt="'+escapeHTML(ex.name)+' exercise reference" loading="lazy">':'<div class="panel"><p class="small">No original exercise photograph supplied.</p></div>')+'<div>'+anatomy+'</div></div><h3>How to perform</h3><p>'+escapeHTML(ex.how||ex.cue||'Detailed instructions not available for this exercise.')+'</p>'+list('Technique tips',tips)+list('Common mistakes',mistakes)+'<p class="small">Static exercise reference and highlighted muscles. Moving demonstrations are not yet available.</p></div>');
 }
+function libraryEquipment(ex){
+ return window.MLCExerciseMetadata.get(ex.id,ex.name)?.equipment||'Unspecified';
+}
 function renderLibrary(){
  const query=$('exerciseSearch').value.trim().toLowerCase();
- const matches=window.MLCV2ExerciseCatalog.filter(editorExercises,query,muscleFilter);
+ const equipment=$('libraryEquipment').value,photosOnly=$('libraryPhotosOnly').checked;
+ const matches=window.MLCV2ExerciseCatalog.filter(editorExercises,query,muscleFilter,{
+  equipment,photosOnly,equipmentFor:libraryEquipment
+ });
+ $('libraryResultCount').textContent=matches.length+' of '+editorExercises.length+' exercises'+(photosOnly?' · original photographs only':'')+'.';
  document.querySelectorAll('[data-muscle]').forEach(button=>button.classList.toggle('selected',button.dataset.muscle===muscleFilter));
  $('libraryGrid').innerHTML=matches.map(ex=>{
   const group=String(ex.muscle||ex.group||'Other');
@@ -1114,7 +1127,14 @@ function bind(){
  $('weekNewWorkout').addEventListener('click',createWeekWorkout);
  $('weekDuplicateWorkout').addEventListener('click',duplicateWeekWorkout);
 
+ prepareLibraryEquipment();
  $('exerciseSearch').addEventListener('input',renderLibrary);
+ $('libraryEquipment').addEventListener('change',renderLibrary);
+ $('libraryPhotosOnly').addEventListener('change',renderLibrary);
+ $('libraryReset').addEventListener('click',()=>{
+  $('exerciseSearch').value='';$('libraryEquipment').value='';$('libraryPhotosOnly').checked=false;
+  muscleFilter='';renderLibrary();
+ });
  $('libraryGrid').addEventListener('click',e=>{const button=e.target.closest('[data-library-detail]');if(button)exerciseDetail(button.dataset.libraryDetail)});
  $('libraryChips').addEventListener('click',event=>{const el=event.target.closest('[data-muscle]');if(!el)return;muscleFilter=el.dataset.muscle;renderLibrary()});
  document.querySelectorAll('[data-account-page]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.accountPage)));
