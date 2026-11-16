@@ -7,9 +7,13 @@
   const range=options.range||{min:8,max:10};
   const increment=options.increment===2.5?2.5:5;
   if(!exerciseId||!Number.isInteger(range.min)||!Number.isInteger(range.max)||range.min<1||range.max<range.min)return {status:'insufficient'};
-  const recent=(Array.isArray(history)?history:[]).slice().sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).map(session=>{
-   const entry=(session.exercises||[]).find(x=>x.id===exerciseId);
-   const logged=(entry?.sets||[]).filter(set=>Number(set.weight)>0&&Number(set.reps)>0&&set.completed!==false);
+  const now=options.now===undefined?Date.now():Number(options.now);
+  if(!Number.isFinite(now))return {status:'insufficient'};
+  const recent=(Array.isArray(history)?history:[])
+   .filter(session=>session&&Number.isFinite(Date.parse(session.date||''))&&Date.parse(session.date)<=now&&Array.isArray(session.exercises))
+   .slice().sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).map(session=>{
+   const entry=session.exercises.find(x=>x?.id===exerciseId&&Array.isArray(x.sets));
+   const logged=(entry?.sets||[]).filter(set=>set&&Number.isFinite(Number(set.weight))&&Number(set.weight)>0&&Number.isFinite(Number(set.reps))&&Number(set.reps)>0&&set.completed!==false);
    if(logged.length<2)return null;
    const weight=Math.max(...logged.map(set=>Number(set.weight)));
    const working=logged.filter(set=>Number(set.weight)===weight);
