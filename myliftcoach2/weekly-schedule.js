@@ -69,8 +69,25 @@ function loadOwned(storage,base,owner,presets,validExercises){
  let input;
  try{input=JSON.parse(serialized)}catch{throw Error('Saved account schedule is unreadable; refuse preset overwrite')}
  if(!input||input.version!==1||!Array.isArray(input.plans)||!Array.isArray(input.assigned)||input.assigned.length!==7)throw Error('Saved schedule format invalid');
- const allowed=new Set(presets.map(x=>x.id));
- for(const p of input.plans||[])if(p&&typeof p.id==='string')allowed.add(p.id);
+ // Every saved plan must survive exactly: never silently remove even an unassigned
+ // custom workout (or filter out an exercise) when the catalog changes.
+ const persistedIds=new Set();
+ const presetIds=new Set(presets.map(x=>x.id));
+ for(const raw of input.plans){
+  if(!raw||typeof raw.id!=='string'||persistedIds.has(raw.id)||
+     (!presetIds.has(raw.id)&&!/^custom-[a-zA-Z0-9-]{3,90}$/.test(raw.id)))
+   throw Error('Saved workout plan is invalid; original draft preserved');
+  persistedIds.add(raw.id);
+  if(!Array.isArray(raw.ids)||raw.ids.length===0||raw.ids.length>40||
+     raw.ids.some(id=>typeof id!=='string'||!validExercises.includes(id))||
+     new Set(raw.ids).size!==raw.ids.length)
+   throw Error('Saved workout exercises are unavailable or invalid; original draft preserved');
+  const clean=cleanPlan(raw,validExercises);
+  if(clean.ids.length!==raw.ids.length||!String(raw.title||'').trim()||
+     String(raw.title).trim().length>80)
+   throw Error('Saved workout content is invalid; original draft preserved');
+ }
+ const allowed=new Set([...presetIds,...persistedIds]);
  // Refuse silent replacement when a linked custom plan was removed/corrupted.
  for(const id of input.assigned)if(id!=null&&!allowed.has(id))throw Error('Saved workout assignment is missing');
  const restored=normalize(input,presets,validExercises);
