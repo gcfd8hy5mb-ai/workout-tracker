@@ -364,8 +364,9 @@ function renderOriginalRecovery(){
  readiness.textContent=total?'Original recorded session check-ins: Great '+counts.Great+' · Normal '+counts.Normal+' · Tired '+counts.Tired+'.':'No explicit session readiness labels found in imported completed workouts.';
 }
 function renderOriginalCoachEvidence(){
- const status=$('coachOriginalStatus'),movements=$('coachOriginalMovements');
- if(!status||!movements)return;
+ const status=$('coachOriginalStatus'),movements=$('coachOriginalMovements'),search=$('coachMovementSearch');
+ if(!status||!movements||!search)return;
+ search.disabled=!(account?.id&&importedHistoryOwner===account.id);
  for(const id of ['Sessions','Days','Sets','Volume'])$('coachOriginal'+id).textContent='—';
  movements.replaceChildren();
  if(!account?.id||importedHistoryOwner!==account.id){
@@ -380,7 +381,8 @@ function renderOriginalCoachEvidence(){
  $('coachOriginalSets').textContent=String(evidence.loggedSets);
  $('coachOriginalVolume').textContent=Math.round(evidence.totalVolume).toLocaleString();
  status.textContent=evidence.latestDate?'Latest completed workout: '+new Date(evidence.latestDate).toLocaleDateString()+' · '+evidence.latestTitle+'. Historical activity only, not coaching advice.':'No completed workouts in imported history.';
- movements.innerHTML=evidence.movements.slice(0,8).map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sessions+' workouts · '+ex.sets+' sets</small></div><span>Best '+ex.bestWeight.toLocaleString()+' lb</span></div>').join('');
+ const matching=window.MLCOriginalCoachEvidence.filterMovements(evidence.movements,search.value);
+ movements.innerHTML=matching.slice(0,50).map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sessions+' workouts · '+ex.sets+' sets</small></div><span>Best '+ex.bestWeight.toLocaleString()+' lb</span></div>').join('')||(evidence.movements.length?'<p class="small">No matching trained exercises.</p>':'<p class="small">No qualifying completed sets found.</p>');
  renderCoachProgression();
  renderOriginalRecovery();
 }
@@ -757,6 +759,7 @@ function bind(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').hidden)closeModal()});
  $('clearDemo').addEventListener('click',()=>{if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;demoSessions=[];localStorage.removeItem(DEMO_KEY);renderProgress();renderHome();notice('Local demo history cleared. Production data untouched.')});
  $('loadOriginalHistory').addEventListener('click',loadOriginalHistory);
+ $('coachMovementSearch').addEventListener('input',renderOriginalCoachEvidence);
  $('originalHistorySearch').addEventListener('input',renderOriginalHistory);
  $('loadOriginalTracking').addEventListener('click',loadOriginalTracking);
  $('loadOriginalCustom').addEventListener('click',loadOriginalCustomSchedule);
