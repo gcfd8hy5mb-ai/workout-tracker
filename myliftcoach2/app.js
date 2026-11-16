@@ -564,6 +564,7 @@ function renderLocalDailyTracking(){
   const unit=$('localWaterUnit').value;
   $('localWaterTotal').textContent=unit==='oz'?(sum.waterMl/29.5735).toFixed(1)+' oz':sum.waterMl.toLocaleString()+' mL';
   $('localCaloriesTotal').textContent=sum.calories.toLocaleString();
+  $('localMacroTotals').textContent=['protein','carbs','fat'].map(k=>k[0].toUpperCase()+k.slice(1)+': '+(sum.macros[k].knownEntries?sum.macros[k].total.toFixed(1)+' g from '+sum.macros[k].knownEntries+' logged foods':'not recorded')).join(' · ');
   $('localWeightLatest').textContent=sum.weight===null?'—':sum.weight+' lb';
   const types=[['water','Water'],['food','Food'],['weight','Weight']];
   const rows=types.flatMap(([type,label])=>doc[type].filter(x=>x.day===day).map(x=>({type,label,...x})));
@@ -574,7 +575,7 @@ function renderLocalDailyTracking(){
   status.textContent='Local entries for '+day+' · '+(account?'signed-in account':'guest')+' workspace. Original cloud history is separate.';
  }catch(error){
   list.replaceChildren();status.textContent='Stored local tracking could not be read. Existing records have not been overwritten: '+String(error.message||error).slice(0,110);
-  $('localWaterTotal').textContent='—';$('localCaloriesTotal').textContent='—';$('localWeightLatest').textContent='—';
+  $('localWaterTotal').textContent='—';$('localCaloriesTotal').textContent='—';$('localWeightLatest').textContent='—';$('localMacroTotals').textContent='Local records unavailable.';
  }
 }
 function localTrackingAdd(type,entry,form){
@@ -1103,6 +1104,9 @@ function bind(){
   const amount=window.MLCLocalDailyTracking.waterMl($('localWaterAmount').value,$('localWaterUnit').value);
   if(amount===null){notice('Enter a valid water amount.');return;}
   localTrackingAdd('water',{amount},e.target);
+ });
+ $('quickWaterButton').addEventListener('click',()=>{
+  localTrackingAdd('water',{amount:window.MLCLocalDailyTracking.waterMl(8,'oz')},$('localWaterForm'));
  });
  $('localFoodForm').addEventListener('submit',e=>{
   e.preventDefault();
