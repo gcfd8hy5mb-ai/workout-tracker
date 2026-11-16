@@ -13,3 +13,11 @@ test('ignores future sessions, empty sets, and absent readiness values',()=>{
  const result=summarize([{date:'2026-11-18',readiness:'Great',exercises:[]},{date:'2026-11-12',exercises:[{id:'press',sets:[{weight:0,reps:10}]}]}],[{id:'press',muscle:'Chest'}],now);
  assert.equal(result.sessionCount,1);assert.equal(result.muscles.length,0);assert.equal(result.recordedCheckins.Great,0);
 });
+
+test('unfinished working sets do not imply training recency for muscle groups',()=>{
+ const now=Date.parse('2026-11-16T12:00:00Z');
+ const original=[{date:'2026-11-15T12:00:00Z',exercises:[{id:'press',sets:[{weight:200,reps:10,completed:false}]}]}];
+ const before=JSON.stringify(original),result=summarize(original,[{id:'press',muscle:'Chest'}],now);
+ assert.equal(result.muscles.length,0);
+ assert.equal(JSON.stringify(original),before);
+});
