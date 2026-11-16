@@ -116,4 +116,23 @@ wrong_status, wrong = api("prism_v2_schedule_read", {}, signed(A, role="authenti
 checked(wrong_status == 200 and wrong["revision"] == 1,
         "Authenticated JWT round trip failed")
 
-print("PASS disposable PostgREST: JWT signature/expiry, anon denial, owner isolation, CAS, invalid dates and table REST denial")
+# Save a dated rest day (JSON null), preserving independent repeating rules.
+rest_doc = dict(doc_a, overrides={"2026-11-20": "custom-a", "2026-11-27": None})
+s, saved_rest = api("prism_v2_schedule_save",
+                    {"expected_revision": 1, "new_document": rest_doc}, token_a)
+checked(s == 200 and saved_rest["revision"] == 2,
+        f"One-date rest exception failed to save: {s} {saved_rest}")
+s, loaded_rest = api("prism_v2_schedule_read", {}, token_a)
+checked(s == 200 and loaded_rest["document"]["overrides"]["2026-11-27"] is None and
+        loaded_rest["document"]["recurring"] == doc_a["recurring"],
+        f"Rest-day override changed recurring rules: {s} {loaded_rest}")
+s, restored = api("prism_v2_schedule_save",
+                   {"expected_revision": 2, "new_document": doc_a}, token_a)
+checked(s == 200 and restored["revision"] == 3,
+        f"Removing one-date rest exception failed: {s} {restored}")
+checked("2026-11-27" not in api("prism_v2_schedule_read", {}, token_a)[1]["document"]["overrides"],
+        "Rest exception was not removed after restoration")
+checked(api("prism_v2_schedule_read", {}, token_b)[1]["revision"] == 1,
+        "Account B was modified by Account A rest-day updates")
+
+print("PASS disposable PostgREST: JWT signature/expiry, anon denial, owner isolation, CAS, invalid dates and table REST denial, rest-day round trip")
