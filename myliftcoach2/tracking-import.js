@@ -46,5 +46,14 @@
   if(typeof raw!=='string')throw Error('Incomplete original tracking snapshot');
   return normalize(JSON.parse(raw));
  }
- return Object.freeze({load,normalize});
+ function monthSummary(tracking,month){
+  if(!/^[0-9]{4}-(0[1-9]|1[0-2])$/.test(String(month||'')))return null;
+  const group=(rows)=>Array.isArray(rows)?rows.filter(x=>typeof x?.day==='string'&&x.day.startsWith(month+'-')):[];
+  const water=group(tracking?.water),food=group(tracking?.food),weight=group(tracking?.weight).slice().sort((a,b)=>b.day.localeCompare(a.day));
+  const totalWater=water.reduce((sum,row)=>sum+row.amount,0);
+  const calories=food.reduce((sum,row)=>sum+row.calories,0);
+  return {month,waterEntries:water.length,foodEntries:food.length,weightEntries:weight.length,totalWater,calories,
+   latestWeight:weight.length?{date:weight[0].day,value:weight[0].value}:null};
+ }
+ return Object.freeze({load,normalize,monthSummary});
 });
