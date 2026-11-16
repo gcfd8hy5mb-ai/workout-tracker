@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+"""Run role/GUC simulated authenticated integration tests against disposable PG only.
+
+This emulates Supabase auth.uid() in an ephemeral GitHub Actions database.
+It is not a real Supabase/JWT or independent security review.
+"""
+import json
+import os
+import subprocess
+import time
+
+A = "11111111-1111-4111-8111-111111111111"
+B = "22222222-2222-4222-8222-222222222222"
+D = {
+    "version": 1,
+    "plans": [{"id": "custom-a", "title": "Legs", "ids": ["leg-press"]}],
+    "assigned": ["custom-a", None, None, None, None, None, None],
+}
+BASE = ["psql", "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-h", "127.0.0.1", "-U", "postgres", "-d", "postgres"]
+ENV = dict(os.environ, PGPASSWORD="postgres")
+
+def exec_sql(sql, ok=True):
+    p = subprocess.run(BASE, input=sql, text=True, capture_output=True, env=ENV, timeout=30)
+    if ok and p.returncode:
+        raise AssertionError("Unexpected SQL failure: " + p.stderr + "\nSQL: " + sql)
+    if not ok and p.returncode == 0:
+        raise AssertionError("Unsafe SQL unexpectedly succeeded: " + sql)
+    return p.stdout.strip(), p.stderr
+
+def signed(user, sql, role="authenticated"):
+    return f"SET ROLE {role}; SET request.jwt.claim.sub = '{user}'; {sql}"
+
+def doc(title):
+    result = dict(D)
+    result["plans"] = [dict(D["plans"][0], title=title)]
+    return json.dumps(result, separators=(",", ":")).replace("'", "''")
+
+def save(expected, title):
+    return f"select public.prism_v2_schedule_save({expected}, '{doc(title)}'::jsonb);"
+
+def read():
+    return "select public.prism_v2_schedule_read();"
+
+# Independent owner isolation and authenticated save/reload.
+out, _ = exec_sql(signed(A, save(0, "Legs")))
+assert json.loads(out)["revision"] == 1
+assert json.loads(exec_sql(signed(A, read()))[0])["document"]["plans"][0]["title"] == "Legs"
+assert exec_sql(signed(B, read()))[0] == ""
+exec_sql(signed(B, save(0, "Upper")))
+assert json.loads(exec_sql(signed(B, read()))[0])["document"]["plans"][0]["title"] == "Upper"
+
+# No client table DML, even when signed in.
+exec_sql(signed(A, "update public.prism_v2_workout_schedules set revision=999;"), ok=False)
+exec_sql(signed(A, "delete from public.prism_v2_workout_schedules;"), ok=False)
+
+# No anonymous wrapper access even if attacker injects a claim.
+exec_sql(signed(A, read(), role="anon"), ok=False)
+exec_sql(signed(A, save(1, "Attack"), role="anon"), ok=False)
+
+# Rejected stale revision, and no modification of previously saved workout.
+exec_sql(signed(A, save(0, "Stale")), ok=False)
+assert json.loads(exec_sql(signed(A, read()))[0])["document"]["plans"][0]["title"] == "Legs"
+exec_sql(signed(A, save(1, "Legs and Core")))
+assert json.loads(exec_sql(signed(A, read()))[0])["revision"] == 2
+
+# Reject invalid assignments and duplicate custom workout identifiers.
+bad = dict(D, assigned=["not-a-workout", None, None, None, None, None, None])
+exec_sql(signed(A, "select public.prism_v2_schedule_save(2, '" + json.dumps(bad) + "'::jsonb);"), ok=False)
+dup = dict(D, plans=[D["plans"][0], D["plans"][0]])
+exec_sql(signed(A, "select public.prism_v2_schedule_save(2, '" + json.dumps(dup) + "'::jsonb);"), ok=False)
+
+# Two independent connections: one transaction holds the row lock while another
+# tries to update against the same checkpoint, then must fail on commit of first.
+first = signed(A, "begin; " + save(2, "Transaction One") + " select pg_sleep(2); commit;")
+second = signed(A, save(2, "Transaction Two"))
+p = subprocess.Popen(BASE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=ENV)
+assert p.stdin is not None
+p.stdin.write(first)
+p.stdin.close()
+p.stdin = None
+time.sleep(0.5)
+stale = subprocess.run(BASE, input=second, text=True, capture_output=True, env=ENV, timeout=20)
+stdout, stderr = p.communicate(timeout=20)
+assert p.returncode == 0, stderr
+assert stale.returncode != 0, "Concurrent stale write incorrectly succeeded"
+assert json.loads(exec_sql(signed(A, read()))[0])["document"]["plans"][0]["title"] == "Transaction One"
+assert json.loads(exec_sql(signed(A, read()))[0])["revision"] == 3
+print("PASS: isolated PG owner isolation, permissions, stale CAS, first save, malformed input, concurrency")
