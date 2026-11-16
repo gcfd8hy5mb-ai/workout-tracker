@@ -49,6 +49,27 @@ assert exec_sql(signed(B, read()))[0] == ""
 exec_sql(signed(B, save(0, "Upper")))
 assert json.loads(exec_sql(signed(B, read()))[0])["document"]["plans"][0]["title"] == "Upper"
 
+# Concurrent *first* insert: only one request can create the row.
+C = "33333333-3333-4333-8333-333333333333"
+exec_sql("insert into auth.users(id) values ('" + C + "');")
+startup_one = signed(C, "begin; " + save(0, "First A") + " select pg_sleep(2); commit;")
+startup_two = signed(C, save(0, "First B"))
+a_process = subprocess.Popen(BASE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=ENV)
+a_process.stdin.write(startup_one)
+a_process.stdin.close()
+a_process.stdin = None
+time.sleep(0.5)
+b_process = subprocess.run(BASE, input=startup_two, text=True, capture_output=True, env=ENV, timeout=20)
+a_stdout, a_stderr = a_process.communicate(timeout=20)
+assert a_process.returncode == 0, a_stderr
+assert b_process.returncode != 0, "Concurrent initial insert unexpectedly succeeded"
+assert json.loads(exec_sql(signed(C, read()))[0])["revision"] == 1
+assert json.loads(exec_sql(signed(C, read()))[0])["document"]["plans"][0]["title"] == "First A"
+
+# Direct reads are forbidden too, so authenticated clients must use the
+# narrow account-scoped RPC rather than selecting someone else's row.
+exec_sql(signed(A, "select user_id, document from public.prism_v2_workout_schedules;"), ok=False)
+
 # No client table DML, even when signed in.
 exec_sql(signed(A, "update public.prism_v2_workout_schedules set revision=999;"), ok=False)
 exec_sql(signed(A, "delete from public.prism_v2_workout_schedules;"), ok=False)
@@ -85,4 +106,4 @@ assert p.returncode == 0, stderr
 assert stale.returncode != 0, "Concurrent stale write incorrectly succeeded"
 assert json.loads(exec_sql(signed(A, read()))[0])["document"]["plans"][0]["title"] == "Transaction One"
 assert json.loads(exec_sql(signed(A, read()))[0])["revision"] == 3
-print("PASS: isolated PG owner isolation, permissions, stale CAS, first save, malformed input, concurrency")
+print("PASS: isolated PG owner isolation, permissions, stale CAS, first-save race, malformed input, concurrent update")
