@@ -60,5 +60,16 @@
    (Array.isArray(item.exercises)&&item.exercises.some(ex=>String(ex.name||'').toLocaleLowerCase().includes(query)))
   );
  }
- return Object.freeze({load,normalizedSession,filterSessions});
+ function sessionTotals(session){
+  let sets=0,volume=0;
+  for(const exercise of Array.isArray(session?.exercises)?session.exercises:[]){
+   for(const set of Array.isArray(exercise?.sets)?exercise.sets:[]){
+    const weight=Number(set?.weight),reps=Number(set?.reps);
+    if(set?.completed===false||!Number.isFinite(weight)||weight<=0||!Number.isFinite(reps)||reps<=0)continue;
+    sets++;volume+=weight*reps;
+   }
+  }
+  return {sets,volume};
+ }
+ return Object.freeze({load,normalizedSession,filterSessions,sessionTotals});
 });
