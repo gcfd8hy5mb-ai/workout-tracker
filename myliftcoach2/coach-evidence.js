@@ -24,6 +24,7 @@
     }
     if(counted){work.sessions++;if(!work.lastDate)work.lastDate=session.date}
   }
+  }
   const latest=sessions[0]||null;
   return {completedSessions:sessions.length,trainingDays:days.size,loggedSets:sets,totalVolume:volume,
    latestDate:latest?.date||null,latestTitle:String(latest?.workoutTitle||''),movements:[...exercises.values()].filter(x=>x.sets>0).sort((a,b)=>b.sessions-a.sessions||a.name.localeCompare(b.name))};
