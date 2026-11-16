@@ -50,3 +50,23 @@ test('incomplete original sets are excluded from records and real-history chart'
  assert.deepEqual(volumeSeries(history).map(x=>x.volume),[480]);
  assert.equal(JSON.stringify(history),before);
 });
+
+test('original training calendar groups distinct completed sessions by ISO month and day',()=>{
+ const {calendarDays}=require('../myliftcoach2/progress-analysis.js');
+ const rows=[
+  {date:'2026-11-13T12:00:00Z',workoutTitle:'Upper',exercises:[{sets:[{weight:100,reps:8}]}]},
+  {date:'2026-11-13T20:00:00Z',workoutTitle:'Cardio & Core',exercises:[{sets:[{weight:20,reps:10}]}]},
+  {date:'2026-11-10T12:00:00Z',workoutTitle:'Lower',exercises:[{sets:[{weight:200,reps:5,completed:false},{weight:100,reps:5}]}]},
+  {date:'2026-12-01T12:00:00Z',workoutTitle:'December',exercises:[{sets:[{weight:300,reps:4}]}]},
+  {date:'2026-11-19T12:00:00Z',workoutTitle:'Not completed',exercises:[{sets:[{weight:300,reps:4,completed:false}]}]}
+ ];
+ const raw=JSON.stringify(rows),result=calendarDays(rows,'2026-11');
+ assert.deepEqual(result.map(x=>x.date),['2026-11-13','2026-11-10']);
+ assert.equal(result[0].workouts,2);
+ assert.equal(result[0].volume,1000);
+ assert.deepEqual(result[0].titles,['Upper','Cardio & Core']);
+ assert.equal(result[1].volume,500);
+ assert.equal(calendarDays(rows,'2026-13').length,0);
+ assert.equal(calendarDays(rows,'2026-12').length,1);
+ assert.equal(JSON.stringify(rows),raw);
+});
