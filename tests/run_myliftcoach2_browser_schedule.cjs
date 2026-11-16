@@ -58,9 +58,10 @@ const assert = require('node:assert/strict');
    await page.locator('#closeModal').evaluate(el=>el.click());
    await page.reload({waitUntil:'load'});
    assert.equal(await page.locator('#todayTitle').textContent(),'My Sidebar Routine');
-   // Copying a preset must not mutate it or revert Home to the preset.
+   // Copy an existing saved source workout from this imported account fixture.
+   // The fixture intentionally has no default 'upper-a' preset.
    await page.locator('[data-workout-action="manage"]').evaluate(el=>el.click());
-   await page.locator('#weekWorkoutSelect').selectOption('upper-a');
+   await page.locator('#weekWorkoutSelect').selectOption('custom-test-session');
    const presetName=await page.locator('#weekWorkoutName').inputValue();
    await page.locator('#weekDuplicateWorkout').evaluate(el=>el.click());
    assert.match(await page.locator('#weekWorkoutSelect').inputValue(),/^custom-/);
@@ -70,7 +71,7 @@ const assert = require('node:assert/strict');
    await page.reload({waitUntil:'load'});
    assert.equal(await page.locator('#todayTitle').textContent(),'My Copied Routine');
    await page.locator('[data-workout-action="manage"]').evaluate(el=>el.click());
-   await page.locator('#weekWorkoutSelect').selectOption('upper-a');
+   await page.locator('#weekWorkoutSelect').selectOption('custom-test-session');
    assert.equal(await page.locator('#weekWorkoutName').inputValue(),presetName);
    assert.deepEqual(errors,[],device.label+' sidebar navigation errors');
    console.log('PASS '+device.label+': Home/board/Start agree; edit, sidebar create, and reload retain custom workout');
