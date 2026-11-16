@@ -90,6 +90,9 @@ const assert = require('node:assert/strict');
    await page.locator('.sidebar [data-page="coaching"]').first().evaluate(el=>el.click());
    assert.equal(await page.locator('#coaching').isVisible(),true);
    assert.equal(await page.locator('#coachLoadOriginalHistory').isDisabled(),true);
+   await page.locator('[data-page="settings"]').first().evaluate(el=>el.click());
+   assert.equal(await page.locator('#loadAllOriginalRecords').isDisabled(),true);
+   assert.match(await page.locator('#loadAllOriginalStatus').textContent(),/Sign in/);
    assert.equal(await page.locator('#coachMovementSearch').isDisabled(),true);
    assert.deepEqual(errors,[],device.label+' navigation/account-isolation errors');
    // Rest day is a dated exception, not a reset of imported recurring rules.
