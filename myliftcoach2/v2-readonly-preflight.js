@@ -30,10 +30,10 @@
  }
  function readResponse(status,data){
   // The RPC may not yet be installed. Its absence is an expected release blocker.
+  if(status===401||status===403)throw Error('V2 cloud read is not authorized for this account');
   if(status===404||status===405||status===501||
    data?.code==='PGRST202'||data?.code==='PGRST205')
    return Object.freeze({available:false,reason:'V2 cloud read function is not deployed'});
-  if(status===401||status===403)throw Error('V2 cloud read is not authorized for this account');
   if(status<200||status>=300)throw Error('V2 cloud read failed; cloud configuration needs review');
   if(data===null)return Object.freeze({available:true,revision:0,existing:false});
   if(!data||!Number.isSafeInteger(data.revision)||data.revision<1||!recurring.validate(data.document))
