@@ -62,6 +62,7 @@ function renderOriginalCustomSchedule(){
  load.disabled=!account;
  const available=Boolean(account?.id&&importedCustomOwner===account.id&&originalCustomSchedule);
  toggle.disabled=!available;
+ $('copyOriginalCustom').disabled=!available;
  toggle.textContent=originalPreviewActive()?'Switch to editable preview':'Preview original custom assignments';
  status.textContent=!account?'Sign in to load your original custom schedule.':!available?'Load custom workouts and scheduled dates from your original account.':originalCustomSchedule.plans.length+' compatible custom workouts found · '+(originalPreviewActive()?'Original assignments shown read-only':'Local editable schedule shown');
 }
@@ -83,6 +84,18 @@ async function loadOriginalCustomSchedule(){
 function toggleOriginalCustomSchedule(){
  if(!account?.id||importedCustomOwner!==account.id||!originalCustomSchedule)return;
  originalSchedulePreview=!originalSchedulePreview;renderOriginalCustomSchedule();renderHome();renderWorkouts();
+}
+function copyOriginalToEditable(){
+ if(!originalPreviewActive()){notice('Load and preview the original schedule first.');return}
+ try{
+  const current=window.MLCCustomScheduleCopy.prepare({original:originalCustomSchedule,existing:weekly,referenceDate:new Date(),validExerciseIds:allowedExerciseIds});
+  commitWeekly(current.draft);
+  originalSchedulePreview=false;
+  renderOriginalCustomSchedule();renderHome();renderWorkouts();
+  const status=$('originalCustomStatus');
+  status.textContent='Copied '+current.copiedCount+' original custom workouts and matching assignments for '+current.dates[0]+'–'+current.dates[6]+' into your editable local draft. Future recurring rules remain unchanged in the original account.';
+  notice('Original workouts copied locally. Live cloud data unchanged.');
+ }catch(error){$('originalCustomStatus').textContent='Copy not completed: '+String(error.message||error).slice(0,180)}
 }
 function commitWeekly(candidate){
  if(weeklyDraftReadError)throw Error('Saved schedule needs recovery before editing: '+weeklyDraftReadError);
@@ -614,6 +627,7 @@ function bind(){
  $('loadOriginalTracking').addEventListener('click',loadOriginalTracking);
  $('loadOriginalCustom').addEventListener('click',loadOriginalCustomSchedule);
  $('toggleOriginalCustom').addEventListener('click',toggleOriginalCustomSchedule);
+ $('copyOriginalCustom').addEventListener('click',copyOriginalToEditable);
  $('loadOriginalSettings').addEventListener('click',loadOriginalAccountSettings);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
