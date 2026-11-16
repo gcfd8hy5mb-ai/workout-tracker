@@ -354,7 +354,11 @@ function renderProgress(){
  renderProgressChart();
  renderOriginalHistory();
  renderOriginalProgress();
- $('sessionHistory').innerHTML=demoSessions.length?demoSessions.map(x=>'<div class="recent-item"><div><strong>'+escapeHTML(x.title)+'</strong><small>'+new Date(x.created).toLocaleString()+'</small></div><span>'+x.sets.length+' sets</span></div>').join(''):'<div class="empty-note">No demo sessions recorded yet. Open Workouts to start your first practice session.</div>';
+ $('sessionHistory').innerHTML=demoSessions.length?demoSessions.map((x,index)=>{
+  const summary=window.MLCSessionSummary.summarize(x,demoSessions.slice(index+1),editorExercises);
+  const details=summary.movements.map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sets+' completed sets · Top '+ex.topWeight+' lb'+(ex.newPracticeRecord?' · Local practice record':'')+'</small></div><span>'+Math.round(ex.volume).toLocaleString()+' lb-reps</span></div>').join('');
+  return '<details class="panel"><summary><strong>'+escapeHTML(x.title)+'</strong> · '+new Date(x.created).toLocaleDateString()+' · '+summary.sets+' sets · '+Math.round(summary.volume).toLocaleString()+' lb-reps</summary><p class="small">'+(summary.durationMinutes?summary.durationMinutes+' min · ':'')+escapeHTML(x.readiness||'No readiness recorded')+' · '+summary.recordCount+' new local practice weight records</p>'+details+'</details>';
+ }).join(''):'<div class="empty-note">No demo sessions recorded yet. Open Workouts to start your first practice session.</div>';
 }
 function renderProgressChart(){
  const root=$('progressChart');if(!root)return;
@@ -718,8 +722,8 @@ function openWorkout(id){
  }
  activeSessionOwner=owner;sessionDirty=Boolean(draft);
  activePlan=draft?{...draft.plan,ids:draft.plan.ids.slice()}:{...plan,ids:plan.ids.slice()};
- session=draft?{sets:draft.sets.map(x=>({...x})),readiness:draft.readiness}:{sets:[],readiness:'Normal'};
- openModal('<div class="modal-eyebrow">PRACTICE SESSION · LOCAL ONLY</div><h2>'+escapeHTML(plan.title)+'</h2><p>'+escapeHTML(plan.description)+' All entries stay in the isolated demo workspace and will not be uploaded to Supabase.</p><div class="panel"><strong>How are you feeling today?</strong><p class="small">Readiness check-in saved with this practice session only.</p><div class="hero-actions" id="sessionReadiness"><button type="button" class="button-outline" data-session-readiness="Great" aria-pressed="false">Great</button><button type="button" class="button-outline" data-session-readiness="Normal" aria-pressed="true">Normal</button><button type="button" class="button-outline" data-session-readiness="Tired" aria-pressed="false">Tired</button></div></div><div class="panel"><strong id="sessionSetProgressText">Ready to start</strong><progress id="sessionSetProgress" value="0" max="1" style="width:100%" aria-label="Completed practice sets"></progress><p class="small">Progress reflects logged sets in this practice session.</p></div><div id="workoutLog" class="workout-log"></div><div class="modal-footer"><button type="button" class="button-outline" id="cancelWorkout">Save for later</button><button type="button" class="button-outline" id="discardWorkout">Discard draft</button><button type="button" class="button-outline" id="startRest">Rest 1:30</button><button type="button" class="button-primary" id="finishWorkout">Finish session</button></div>');
+ session=draft?{sets:draft.sets.map(x=>({...x})),readiness:draft.readiness,startedAt:draft.startedAt||Date.now()}:{sets:[],readiness:'Normal',startedAt:Date.now()};
+ openModal('<div class="modal-eyebrow">PRACTICE SESSION · LOCAL ONLY</div><h2>'+escapeHTML(activePlan.title)+'</h2><p>'+escapeHTML(activePlan.description)+' All entries stay in the isolated demo workspace and will not be uploaded to Supabase.</p><div class="panel"><strong>How are you feeling today?</strong><p class="small">Readiness check-in saved with this practice session only.</p><div class="hero-actions" id="sessionReadiness"><button type="button" class="button-outline" data-session-readiness="Great" aria-pressed="false">Great</button><button type="button" class="button-outline" data-session-readiness="Normal" aria-pressed="true">Normal</button><button type="button" class="button-outline" data-session-readiness="Tired" aria-pressed="false">Tired</button></div></div><div class="panel"><strong id="sessionSetProgressText">Ready to start</strong><progress id="sessionSetProgress" value="0" max="1" style="width:100%" aria-label="Completed practice sets"></progress><p class="small">Progress reflects logged sets in this practice session.</p></div><div id="workoutLog" class="workout-log"></div><div class="modal-footer"><button type="button" class="button-outline" id="cancelWorkout">Save for later</button><button type="button" class="button-outline" id="discardWorkout">Discard draft</button><button type="button" class="button-outline" id="startRest">Rest 1:30</button><button type="button" class="button-primary" id="finishWorkout">Finish session</button></div>');
  renderWorkoutLog();
  updateSessionReadiness(session.readiness,false);
  for(const exerciseId of activePlan.ids)updateExerciseFeedback(exerciseId);
@@ -736,7 +740,7 @@ function openWorkout(id){
  $('startRest').addEventListener('click',openRest);
  $('finishWorkout').addEventListener('click',()=>{
   if(!session?.sets.length){notice('Add at least one practice set first.');return}
-  const entry={id:'demo-'+Date.now(),created:new Date().toISOString(),title:plan.title,planId:plan.id,sets:session.sets,readiness:session.readiness};
+  const entry={id:'demo-'+Date.now(),created:new Date().toISOString(),title:activePlan.title,planId:activePlan.id,sets:session.sets.map(x=>({...x})),readiness:session.readiness,startedAt:session.startedAt};
   const updated=[entry,...demoSessions].slice(0,100);
   try{
    localStorage.setItem(DEMO_KEY,JSON.stringify(updated));
