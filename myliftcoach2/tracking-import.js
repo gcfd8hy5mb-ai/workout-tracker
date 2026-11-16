@@ -9,15 +9,20 @@
  'use strict';
  const source='dailyTrackingV1',tables=['sources','tracking','tracking_entries','tracking_maps'];
  function safeNumber(value){const n=Number(value);return Number.isFinite(n)&&n>=0?n:0;}
+ function validDay(value){
+  if(typeof value!=='string'||!/^([0-9]{4})-(0[1-9]|1[0-2])-([0-9]{2})$/.test(value))return false;
+  const date=new Date(value+'T12:00:00Z');
+  return Number.isFinite(date.getTime())&&date.toISOString().slice(0,10)===value;
+ }
  function normalize(raw){
   if(!raw||typeof raw!=='object'||Array.isArray(raw))throw Error('Invalid original tracking format');
   const asArray=x=>Array.isArray(x)?x:[];
-  const water=asArray(raw.water).filter(x=>x&&typeof x.day==='string'&&safeNumber(x.amount)>0).map(x=>({day:x.day,amount:safeNumber(x.amount)}));
-  const food=asArray(raw.food).filter(x=>x&&typeof x.day==='string'&&Number.isFinite(Number(x.calories))&&Number(x.calories)>=0).map(x=>({
+  const water=asArray(raw.water).filter(x=>x&&validDay(x.day)&&safeNumber(x.amount)>0).map(x=>({day:x.day,amount:safeNumber(x.amount)}));
+  const food=asArray(raw.food).filter(x=>x&&validDay(x.day)&&Number.isFinite(Number(x.calories))&&Number(x.calories)>=0).map(x=>({
    day:x.day,name:String(x.name||'Food'),calories:safeNumber(x.calories),
    protein:x.protein==null?null:safeNumber(x.protein),carbs:x.carbs==null?null:safeNumber(x.carbs),fat:x.fat==null?null:safeNumber(x.fat)
   }));
-  const weight=asArray(raw.weight).filter(x=>x&&typeof x.day==='string'&&Number.isFinite(Number(x.value))&&Number(x.value)>0).map(x=>({day:x.day,value:Number(x.value)}));
+  const weight=asArray(raw.weight).filter(x=>x&&validDay(x.day)&&Number.isFinite(Number(x.value))&&Number(x.value)>0).map(x=>({day:x.day,value:Number(x.value)}));
   return {water,food,weight,waterGoal:safeNumber(raw.waterGoal),waterUnit:raw.waterUnit==='oz'?'oz':'ml',
    calorieGoal:raw.calorieGoal==null?null:safeNumber(raw.calorieGoal),calorieMode:raw.calorieMode==='auto'?'auto':raw.calorieMode==='manual'?'manual':null,
    savedMeals:asArray(raw.savedMeals).length,foodFavorites:asArray(raw.foodFavorites).length};
@@ -48,7 +53,7 @@
  }
  function monthSummary(tracking,month){
   if(!/^[0-9]{4}-(0[1-9]|1[0-2])$/.test(String(month||'')))return null;
-  const group=(rows)=>Array.isArray(rows)?rows.filter(x=>typeof x?.day==='string'&&x.day.startsWith(month+'-')):[];
+  const group=(rows)=>Array.isArray(rows)?rows.filter(x=>validDay(x?.day)&&x.day.startsWith(month+'-')):[];
   const water=group(tracking?.water),food=group(tracking?.food),weight=group(tracking?.weight).slice().sort((a,b)=>b.day.localeCompare(a.day));
   const totalWater=water.reduce((sum,row)=>sum+row.amount,0);
   const calories=food.reduce((sum,row)=>sum+row.calories,0);
