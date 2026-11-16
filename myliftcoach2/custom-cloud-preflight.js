@@ -19,7 +19,7 @@
  }
  function build({owner,verifiedOwner,baseline,latest,originalRows,draft,weekStart,validExerciseIds,selectedDays,token}){
   if(!owner||owner!==verifiedOwner)throw Error('Verified account owner required');
-  if(!baseline||!latest||!Array.isArray(originalRows))throw Error('Fresh cloud snapshot required');
+  if(!baseline||!latest)throw Error('Fresh cloud snapshot required');
   for(const key of SOURCES){
    if(typeof baseline[key]!=='string'||baseline[key]!==latest[key])throw Error('Original '+key+' changed on another device; reload');
   }
