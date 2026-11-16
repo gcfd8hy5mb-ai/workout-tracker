@@ -134,3 +134,11 @@ test('duplicating a preset creates independent custom workout without overwritin
  assert.throws(()=>s.duplicate(state,'missing','custom-copy-456',allowed),/not found/);
  assert.throws(()=>s.duplicate(state,'upper-a','custom-copy-123',allowed),/Unique/);
 });
+
+test('custom workout capacity blocks non-restorable drafts instead of silently losing workouts',()=>{
+ let state=s.normalize(null,preset,allowed);
+ for(let i=0;i<51;i++)state=s.add(state,'custom-added-'+String(i).padStart(3,'0'),{title:'Personal '+i,ids:['press']},allowed);
+ assert.equal(state.plans.length,55);
+ assert.throws(()=>s.add(state,'custom-overflow-001',{title:'Overflow',ids:['press']},allowed),/limit reached/);
+ assert.equal(state.plans.length,55);
+});
