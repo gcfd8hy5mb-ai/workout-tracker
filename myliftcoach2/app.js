@@ -291,7 +291,24 @@ function setPage(next){if(!['welcome','home','workouts','library','progress','se
 }
 function totalSets(){return demoSessions.reduce((n,x)=>n+x.sets.length,0)}
 
+function renderHomeOriginalRecent(){
+ const status=$('homeOriginalRecentStatus'),root=$('homeOriginalRecent'),button=$('homeLoadOriginalHistory');
+ if(!status||!root||!button)return;
+ const signedIn=Boolean(account?.id);
+ const loaded=signedIn&&importedHistoryOwner===account.id;
+ button.disabled=!signedIn;button.hidden=Boolean(loaded);
+ root.replaceChildren();
+ if(!signedIn){status.textContent='Sign in to load real completed workouts from your original account.';return;}
+ if(!loaded){status.textContent='Original history has not been loaded for this account. Demo activity is shown separately below.';return;}
+ const sessions=originalHistory.filter(item=>window.MLCOriginalHistory.sessionTotals(item).sets>0).slice(0,3);
+ status.textContent=sessions.length?'Latest '+sessions.length+' actual completed workouts · read only · separate from demo activity.':'No qualifying completed original workouts were found.';
+ root.innerHTML=sessions.map(item=>{
+  const totals=window.MLCOriginalHistory.sessionTotals(item);
+  return '<div class="recent-item"><div><strong>'+escapeHTML(item.workoutTitle)+'</strong><small>'+new Date(item.date).toLocaleDateString()+' · '+totals.sets+' completed sets</small></div><span>'+Math.round(totals.volume).toLocaleString()+' lb-reps</span></div>';
+ }).join('');
+}
 function renderHome(){
+ renderHomeOriginalRecent();
  $('metricWorkouts').textContent=demoSessions.length;
  $('metricSets').textContent=totalSets();
  const today=resolvedWorkout(),plan=today.plan;
@@ -487,6 +504,7 @@ function clearOriginalHistory(){
  renderOriginalHistory();
  renderOriginalProgress();
  renderOriginalCoachEvidence();
+ renderHomeOriginalRecent();
 }
 function renderOriginalHistory(){
  const status=$('originalHistoryStatus'),root=$('originalHistory'),button=$('loadOriginalHistory'),search=$('originalHistorySearch');
@@ -516,10 +534,10 @@ async function loadOriginalHistory(){
   if(account?.id!==owner||!auth?.access_token)throw Error('Account session is no longer valid');
   const history=await window.MLCOriginalHistory.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner});
   if(account?.id!==owner||historyLoadEpoch!==epoch)return;
-  originalHistory=history;importedHistoryOwner=owner;renderOriginalHistory();renderOriginalProgress();renderOriginalCoachEvidence();
+  originalHistory=history;importedHistoryOwner=owner;renderOriginalHistory();renderOriginalProgress();renderOriginalCoachEvidence();renderHomeOriginalRecent();
  }catch(error){
   if(account?.id!==owner||historyLoadEpoch!==epoch)return;
-  originalHistory=[];importedHistoryOwner=null;renderOriginalHistory();renderOriginalProgress();renderOriginalCoachEvidence();
+  originalHistory=[];importedHistoryOwner=null;renderOriginalHistory();renderOriginalProgress();renderOriginalCoachEvidence();renderHomeOriginalRecent();
   status.textContent='Could not load original history: '+String(error.message||error).slice(0,180);
  }finally{if(historyLoadEpoch===epoch)button.disabled=!account}
 }
@@ -876,6 +894,8 @@ function bind(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').hidden)closeModal()});
  $('clearDemo').addEventListener('click',()=>{if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;demoSessions=[];localStorage.removeItem(DEMO_KEY);renderProgress();renderHome();notice('Local demo history cleared. Production data untouched.')});
  $('loadOriginalHistory').addEventListener('click',loadOriginalHistory);
+ $('homeLoadOriginalHistory').addEventListener('click',loadOriginalHistory);
+ document.querySelectorAll('[data-home-original-progress]').forEach(el=>el.addEventListener('click',()=>setPage('progress')));
  $('coachLoadOriginalHistory').addEventListener('click',loadOriginalHistory);
  $('coachMovementSearch').addEventListener('input',renderOriginalCoachEvidence);
  $('originalHistorySearch').addEventListener('input',renderOriginalHistory);
