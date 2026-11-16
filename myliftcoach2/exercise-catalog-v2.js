@@ -25,18 +25,23 @@
   return typeof ex?.image==='string'&&/^images\/[a-zA-Z0-9_.-]+\.(png|webp|jpg|jpeg|svg)$/.test(ex.image)?
    '../'+ex.image:null;
  }
- function filter(items,query='',group=''){
+ function filter(items,query='',group='',options={}){
   const q=String(query).trim().toLowerCase(),selected=String(group).toLowerCase();
+  const equipment=String(options.equipment||'').trim().toLowerCase();
+  const onlyPhotos=options.photosOnly===true;
+  const equipmentFor=typeof options.equipmentFor==='function'?options.equipmentFor:()=>null;
   const family=(muscle)=>{
    if(selected==='arms')return ['biceps','triceps','forearms'].includes(muscle);
    if(selected==='legs')return ['quads','hamstrings','calves','glutes','adductors'].includes(muscle);
    if(selected==='shoulders')return ['shoulders','delts'].includes(muscle);
    return !selected||muscle===selected;
   };
-  return items.filter(ex=>{
-   const muscle=String(ex.muscle||ex.group||'').toLowerCase();
-   return family(muscle)&&(String(ex.name||'')+' '+muscle).toLowerCase().includes(q);
-  });
+  return (Array.isArray(items)?items:[]).filter(ex=>{
+   const muscle=String(ex?.muscle||ex?.group||'').toLowerCase();
+   const gear=String(equipmentFor(ex)||'').trim().toLowerCase();
+   return family(muscle)&&(!equipment||gear===equipment)&&(!onlyPhotos||Boolean(imagePath(ex)))&&
+    (String(ex?.name||'')+' '+muscle+' '+gear).toLowerCase().includes(q);
+  }).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''))||String(a.id||'').localeCompare(String(b.id||'')));
  }
  return Object.freeze({merge,imagePath,filter});
 });
