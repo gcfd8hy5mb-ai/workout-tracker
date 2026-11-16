@@ -407,18 +407,20 @@ function clearOriginalHistory(){
  renderOriginalCoachEvidence();
 }
 function renderOriginalHistory(){
- const status=$('originalHistoryStatus'),root=$('originalHistory'),button=$('loadOriginalHistory');
+ const status=$('originalHistoryStatus'),root=$('originalHistory'),button=$('loadOriginalHistory'),search=$('originalHistorySearch');
  if(!status||!root||!button)return;
  button.disabled=!account;
+ search.disabled=!(account?.id&&importedHistoryOwner===account.id);
  if(!account){status.textContent='Sign in with your existing account first.';root.replaceChildren();return;}
  if(importedHistoryOwner!==account.id){status.textContent='Ready to load read-only original workout history.';root.replaceChildren();return;}
- status.textContent=originalHistory.length?originalHistory.length+' original completed workouts loaded (read only).':'No completed original workouts were returned for this account.';
- root.innerHTML=originalHistory.slice(0,200).map(item=>{
+ const matches=window.MLCOriginalHistory.filterSessions(originalHistory,search.value);
+ status.textContent=originalHistory.length?(matches.length+' of '+originalHistory.length+' original completed workouts match (read only).'):'No completed original workouts were returned for this account.';
+ root.innerHTML=matches.slice(0,200).map(item=>{
   const sets=item.exercises.flatMap(ex=>ex.sets);
   const volume=sets.reduce((n,s)=>n+s.weight*s.reps,0);
   const details=item.exercises.map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sets.length+' sets</small></div><span>'+Math.round(ex.sets.reduce((n,s)=>n+s.weight*s.reps,0)).toLocaleString()+' lb</span></div>').join('');
   return '<details class="panel"><summary><strong>'+escapeHTML(item.workoutTitle)+'</strong> · '+new Date(item.date).toLocaleDateString()+' · '+sets.length+' sets · '+Math.round(volume).toLocaleString()+' lb</summary>'+details+'</details>';
- }).join('');
+ }).join('')||(originalHistory.length?'<p class="small">No matching workouts or exercises.</p>':'');
 }
 async function loadOriginalHistory(){
  if(!account?.id||!auth?.access_token){notice('Sign in first to load your original history.');return;}
@@ -747,6 +749,7 @@ function bind(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').hidden)closeModal()});
  $('clearDemo').addEventListener('click',()=>{if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;demoSessions=[];localStorage.removeItem(DEMO_KEY);renderProgress();renderHome();notice('Local demo history cleared. Production data untouched.')});
  $('loadOriginalHistory').addEventListener('click',loadOriginalHistory);
+ $('originalHistorySearch').addEventListener('input',renderOriginalHistory);
  $('loadOriginalTracking').addEventListener('click',loadOriginalTracking);
  $('loadOriginalCustom').addEventListener('click',loadOriginalCustomSchedule);
  $('toggleOriginalCustom').addEventListener('click',toggleOriginalCustomSchedule);
