@@ -38,24 +38,62 @@ function readWeekly(){
  catch{return weeklyAPI.normalize(null,plans,allowedExerciseIds)}
 }
 let weekly=readWeekly();
+let originalCustomSchedule=null,importedCustomOwner=null,originalSchedulePreview=false;
+function originalPreviewActive(){return Boolean(originalSchedulePreview&&originalCustomSchedule&&account?.id&&importedCustomOwner===account.id)}
+function dayAtWeekIndex(day){const now=new Date();return new Date(now.getFullYear(),now.getMonth(),now.getDate()+day-weeklyAPI.dayIndex(now),12);}
+function resolvedWorkout(date=new Date()){
+ const local=weeklyAPI.resolve(weekly,date);
+ if(!originalPreviewActive())return {...local,source:'preview'};
+ const fromOriginal=window.MLCOriginalCustomSchedule.resolve(originalCustomSchedule,date);
+ return fromOriginal.hasSchedule?{...local,plan:fromOriginal.plan,source:fromOriginal.kind}:{...local,source:'preview'};
+}
+function renderOriginalCustomSchedule(){
+ const status=$('originalCustomStatus'),load=$('loadOriginalCustom'),toggle=$('toggleOriginalCustom');
+ if(!status||!load||!toggle)return;
+ load.disabled=!account;
+ const available=Boolean(account?.id&&importedCustomOwner===account.id&&originalCustomSchedule);
+ toggle.disabled=!available;
+ toggle.textContent=originalPreviewActive()?'Switch to editable preview':'Preview original custom assignments';
+ status.textContent=!account?'Sign in to load your original custom schedule.':!available?'Load custom workouts and scheduled dates from your original account.':originalCustomSchedule.plans.length+' compatible custom workouts found · '+(originalPreviewActive()?'Original assignments shown read-only':'Local editable schedule shown');
+}
+function clearOriginalCustomSchedule(){originalCustomSchedule=null;importedCustomOwner=null;originalSchedulePreview=false;renderOriginalCustomSchedule()}
+async function loadOriginalCustomSchedule(){
+ if(!account?.id||!auth?.access_token){notice('Sign in to load original custom workouts.');return;}
+ const owner=account.id,button=$('loadOriginalCustom'),status=$('originalCustomStatus');
+ button.disabled=true;status.textContent='Reading original custom workouts and dates…';
+ try{
+  await validateStoredAuth();
+  if(account?.id!==owner||!auth?.access_token)throw Error('Session changed');
+  const data=await window.MLCOriginalCustomSchedule.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner,validExerciseIds:allowedExerciseIds});
+  if(account?.id!==owner)throw Error('Account changed during import');
+  originalCustomSchedule=data;importedCustomOwner=owner;originalSchedulePreview=true;renderOriginalCustomSchedule();renderHome();renderWorkouts();
+ }catch(error){
+  clearOriginalCustomSchedule();status.textContent='Import failed: '+String(error.message||error).slice(0,160);
+ }finally{button.disabled=!account}
+}
+function toggleOriginalCustomSchedule(){
+ if(!account?.id||importedCustomOwner!==account.id||!originalCustomSchedule)return;
+ originalSchedulePreview=!originalSchedulePreview;renderOriginalCustomSchedule();renderHome();renderWorkouts();
+}
 function commitWeekly(candidate){
  weekly=weeklyAPI.commit(localStorage,WEEKLY_KEY,candidate,plans.map(p=>p.id));
 }
-function nextPlan(){return weeklyAPI.resolve(weekly).plan}
+function nextPlan(){return resolvedWorkout().plan}
 function openToday(){const plan=nextPlan();if(plan)openWorkout(plan.id);else notice('Today is a rest day. Choose a workout from the weekly board.')}
 function renderWeekBoard(){
  const current=weeklyAPI.resolve(weekly).index;
  for(const key of ['weeklyBoardHome','weeklyBoardWorkouts']){
   const target=$(key);if(!target)continue;
   target.innerHTML=weeklyAPI.DAYS.map((label,day)=>{
-   const id=weekly.assigned[day],plan=weekly.plans.find(p=>p.id===id);
-   return '<button type="button" class="week-day-card'+(day===current?' is-today':'')+'" data-week-day="'+day+'" aria-label="Edit '+label+' workout"><strong>'+label+'</strong><small>'+escapeHTML(plan?.title||'Rest')+'</small></button>';
+   const resolved=resolvedWorkout(dayAtWeekIndex(day)),plan=resolved.plan;
+   return '<button type="button" class="week-day-card'+(day===current?' is-today':'')+'" data-week-day="'+day+'" aria-label="'+(originalPreviewActive()?'View':'Edit')+' '+label+' workout"><strong>'+label+'</strong><small>'+escapeHTML(plan?.title||(resolved.source==='unmatched'?'Unmatched original':'Rest'))+'</small>'+(resolved.source!=='preview'?'<small>Original</small>':'')+'</button>';
   }).join('');
  }
 }
 function chooseWeekday(day){
  const target=$('weekEditor'),choice=$('weekWorkoutSelect');
  if(!Number.isInteger(day)||day<0||day>6)return;
+ if(originalPreviewActive()){notice('Original schedule is read-only. Switch to editable preview first.');return;}
  target.hidden=false;target.dataset.day=String(day);
  $('weekEditingDay').textContent=weeklyAPI.DAYS[day];
  choice.innerHTML='<option value="">Rest day</option>'+weekly.plans.map(p=>'<option value="'+escapeHTML(p.id)+'">'+escapeHTML(p.title)+'</option>').join('');
@@ -123,17 +161,19 @@ function totalSets(){return demoSessions.reduce((n,x)=>n+x.sets.length,0)}
 function renderHome(){
  $('metricWorkouts').textContent=demoSessions.length;
  $('metricSets').textContent=totalSets();
- const plan=nextPlan(),today=weeklyAPI.resolve(weekly);
+ const today=resolvedWorkout(),plan=today.plan;
  $('todayTitle').textContent=plan?.title||'Rest day';
  $('todayDescription').textContent=plan?today.dayName+' · '+plan.ids.length+' exercises · '+(plan.ids.length*3)+' sets':'Rest scheduled for '+today.dayName+' · tap a day to change';
- $('todayExercises').innerHTML=plan?plan.ids.map(id=>{const e=exercises.find(x=>x.id===id);return '<div class="preview-exercise"><strong>'+escapeHTML(e.name)+'</strong><small>'+e.sets+' × '+escapeHTML(e.reps)+'</small></div>'}).join(''):'<p class="small">No workout assigned today. Pick a day to edit your schedule.</p>';
+ $('todayExercises').innerHTML=plan?plan.ids.map(id=>{const e=exerciseById(id);return '<div class="preview-exercise"><strong>'+escapeHTML(e.name)+'</strong><small>'+e.sets+' × '+escapeHTML(e.reps)+'</small></div>'}).join(''):'<p class="small">No workout assigned today. Pick a day to edit your schedule.</p>';
  $('heroStart').disabled=!plan;$('todayStart').disabled=!plan;
  renderWeekBoard();
  $('recentActivity').innerHTML=demoSessions.length?demoSessions.slice(0,3).map(x=>'<div class="recent-item"><div><strong>'+escapeHTML(x.title)+'</strong><small>'+new Date(x.created).toLocaleDateString()+'</small></div><span>'+x.sets.length+' sets</span></div>').join(''):'<div class="empty-note">Your next session starts here. Practice workouts you complete in this demo will appear in this section.</div>';
 }
 function renderWorkouts(){
  renderWeekBoard();
- $('workoutGrid').innerHTML=weekly.plans.map((p,i)=>'<button type="button" class="workout-card" data-workout="'+p.id+'"><span class="number">SESSION 0'+(i+1)+' · '+escapeHTML(p.kind.toUpperCase())+'</span><h3>'+escapeHTML(p.title)+'</h3><p>'+escapeHTML(p.description)+'</p><div class="workout-meta"><span>'+p.ids.length+' movements · '+p.ids.length*3+' recommended sets</span><b>Open session ↗</b></div></button>').join('');
+ renderOriginalCustomSchedule();
+ const visible=originalPreviewActive()?[...originalCustomSchedule.plans,...weekly.plans]:weekly.plans;
+ $('workoutGrid').innerHTML=visible.map((p,i)=>'<button type="button" class="workout-card" data-workout="'+p.id+'"><span class="number">SESSION 0'+(i+1)+' · '+escapeHTML(p.kind.toUpperCase())+'</span><h3>'+escapeHTML(p.title)+'</h3><p>'+escapeHTML(p.description)+'</p><div class="workout-meta"><span>'+p.ids.length+' movements · '+p.ids.length*3+' recommended sets</span><b>Open session ↗</b></div></button>').join('');
 }
 function renderLibrary(){
  const query=$('exerciseSearch').value.trim().toLowerCase();
@@ -370,7 +410,7 @@ function renderSettings(){
 function openModal(content){$('modalContent').innerHTML=content;$('modal').hidden=false;document.body.style.overflow='hidden';$('closeModal').focus()}
 function closeModal(){closeRest();$('modal').hidden=true;document.body.style.overflow='';activePlan=null;session=null}
 function openWorkout(id){
- const plan=weekly.plans.find(x=>x.id===id);if(!plan)return;activePlan={...plan,ids:plan.ids.slice()};
+ const plan=(originalPreviewActive()?originalCustomSchedule.plans:[]).find(x=>x.id===id)||weekly.plans.find(x=>x.id===id);if(!plan)return;activePlan={...plan,ids:plan.ids.slice()};
  session={sets:[]};
  openModal('<div class="modal-eyebrow">PRACTICE SESSION · LOCAL ONLY</div><h2>'+escapeHTML(plan.title)+'</h2><p>'+escapeHTML(plan.description)+' All entries stay in the isolated demo workspace and will not be uploaded to Supabase.</p><div id="workoutLog" class="workout-log"></div><div class="modal-footer"><button type="button" class="button-outline" id="cancelWorkout">Cancel</button><button type="button" class="button-outline" id="startRest">Rest 1:30</button><button type="button" class="button-primary" id="finishWorkout">Finish session</button></div>');
  renderWorkoutLog();
@@ -465,9 +505,9 @@ async function authRequest(path,body,token,method='POST'){
 }
 function saveAuth(data){
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
- if(account?.id&&account.id!==data.user?.id){clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;renderSettings();renderOriginalHistory();
+ if(account?.id&&account.id!==data.user?.id){clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;renderSettings();renderOriginalHistory();
 }
-function clearAuth(){sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();renderSettings()}
+function clearAuth(){sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();renderHome();renderWorkouts();renderSettings()}
 async function validateStoredAuth(){
  try{
   const saved=JSON.parse(sessionStorage.getItem(AUTH_KEY)||'null');
@@ -561,8 +601,10 @@ function bind(){
  $('clearDemo').addEventListener('click',()=>{if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;demoSessions=[];localStorage.removeItem(DEMO_KEY);renderProgress();renderHome();notice('Local demo history cleared. Production data untouched.')});
  $('loadOriginalHistory').addEventListener('click',loadOriginalHistory);
  $('loadOriginalTracking').addEventListener('click',loadOriginalTracking);
+ $('loadOriginalCustom').addEventListener('click',loadOriginalCustomSchedule);
+ $('toggleOriginalCustom').addEventListener('click',toggleOriginalCustomSchedule);
  $('loadOriginalSettings').addEventListener('click',loadOriginalAccountSettings);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
-bind();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderOriginalTracking();renderSettings();renderOriginalAccountSettings();validateStoredAuth();
+bind();renderOriginalCustomSchedule();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderOriginalTracking();renderSettings();renderOriginalAccountSettings();validateStoredAuth();
 })();
