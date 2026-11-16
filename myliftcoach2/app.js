@@ -84,20 +84,21 @@ function renderOriginalCustomSchedule(){
  toggle.textContent=originalPreviewActive()?'Switch to editable preview':'Preview original custom assignments';
  status.textContent=!account?'Sign in to load your original custom schedule.':!available?'Load custom workouts and scheduled dates from your original account.':originalCustomSchedule.plans.length+' compatible custom workouts found · '+(originalPreviewActive()?'Original assignments shown read-only':'Local editable schedule shown');
 }
-function clearOriginalCustomSchedule(){originalCustomSchedule=null;importedCustomOwner=null;originalSchedulePreview=false;fullMigrationPreview=null;renderOriginalCustomSchedule();if($('recurringMigrationStatus'))$('recurringMigrationStatus').textContent='';}
+function clearOriginalCustomSchedule(){customScheduleLoadEpoch++;originalCustomSchedule=null;importedCustomOwner=null;originalSchedulePreview=false;fullMigrationPreview=null;renderOriginalCustomSchedule();if($('recurringMigrationStatus'))$('recurringMigrationStatus').textContent='';}
 async function loadOriginalCustomSchedule(){
  if(!account?.id||!auth?.access_token){notice('Sign in to load original custom workouts.');return;}
- const owner=account.id,button=$('loadOriginalCustom'),status=$('originalCustomStatus');
+ const owner=account.id,epoch=++customScheduleLoadEpoch,button=$('loadOriginalCustom'),status=$('originalCustomStatus');
  button.disabled=true;status.textContent='Reading original custom workouts and dates…';
  try{
   await validateStoredAuth();
   if(account?.id!==owner||!auth?.access_token)throw Error('Session changed');
   const data=await window.MLCOriginalCustomSchedule.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner,validExerciseIds:allowedExerciseIds});
-  if(account?.id!==owner||historyLoadEpoch!==epoch)return;
+  if(account?.id!==owner||customScheduleLoadEpoch!==epoch)return;
   originalCustomSchedule=data;importedCustomOwner=owner;originalSchedulePreview=true;fullMigrationPreview=null;$('recurringMigrationStatus').textContent='';renderOriginalCustomSchedule();renderHome();renderWorkouts();
  }catch(error){
+  if(account?.id!==owner||customScheduleLoadEpoch!==epoch)return;
   clearOriginalCustomSchedule();status.textContent='Import failed: '+String(error.message||error).slice(0,160);
- }finally{button.disabled=!account}
+ }finally{if(customScheduleLoadEpoch===epoch)button.disabled=!account}
 }
 function toggleOriginalCustomSchedule(){
  if(!account?.id||importedCustomOwner!==account.id||!originalCustomSchedule)return;
@@ -269,7 +270,7 @@ const $=(id)=>document.getElementById(id);
 let page='home',activePlan=null,session=null,guest=true,account=null,auth=null;
 let demoSessions=loadDemo();
 let originalHistory=[];
-let historyLoadEpoch=0,trackingLoadEpoch=0,settingsLoadEpoch=0;
+let historyLoadEpoch=0,trackingLoadEpoch=0,settingsLoadEpoch=0,customScheduleLoadEpoch=0;
 let importedHistoryOwner=null;
 let originalTracking=null,importedTrackingOwner=null;
 let originalAccountSettings=null,importedSettingsOwner=null;
@@ -512,7 +513,7 @@ async function loadOriginalHistory(){
   await validateStoredAuth();
   if(account?.id!==owner||!auth?.access_token)throw Error('Account session is no longer valid');
   const history=await window.MLCOriginalHistory.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner});
-  if(account?.id!==owner)throw Error('Account changed during import');
+  if(account?.id!==owner||historyLoadEpoch!==epoch)return;
   originalHistory=history;importedHistoryOwner=owner;renderOriginalHistory();renderOriginalProgress();renderOriginalCoachEvidence();
  }catch(error){
   if(account?.id!==owner||historyLoadEpoch!==epoch)return;
