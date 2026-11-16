@@ -32,3 +32,16 @@ test('rejects missing authentication and invalid session records',async()=>{
  await assert.rejects(importer.load({endpoint:'http://insecure.test',publishableKey:'public',accessToken:'token',userId:'owner'}),/Authenticated account required/);
  assert.equal(importer.normalizedSession({date:'bad',exercises:[]}),null);
 });
+
+test('read-only original history search matches workout titles and exercise names without mutation',()=>{
+ const input=[importer.normalizedSession(session),importer.normalizedSession({
+  ...session,id:102,workoutTitle:'Legs',exercises:[{id:'leg-press',name:'Leg Press',sets:[{weight:150,reps:8}]}]
+ })];
+ const raw=JSON.stringify(input);
+ assert.equal(importer.filterSessions(input,'chest').length,1);
+ assert.equal(importer.filterSessions(input,'leg press')[0].workoutTitle,'Legs');
+ assert.equal(importer.filterSessions(input,'  LEGS  ')[0].workoutTitle,'Legs');
+ assert.equal(importer.filterSessions(input,'')[0].workoutTitle,'Chest');
+ assert.equal(importer.filterSessions(input,'missing').length,0);
+ assert.equal(JSON.stringify(input),raw);
+});
