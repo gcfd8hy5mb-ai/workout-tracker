@@ -82,3 +82,20 @@ input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visi
  .library-toolbar #libraryReset{width:100%}
  .library-grid .library-anatomy{min-height:110px}
 }
+
+/* Canonical exercise library inside the custom workout editor */
+.week-exercise.library-editor-row{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;
+ background:linear-gradient(145deg,#263137,#192228)!important;
+ border:1px solid rgba(223,180,103,.52)!important;border-radius:12px;
+ padding:9px 12px;min-width:0;
+}
+.week-exercise.library-editor-row[hidden]{display:none!important}
+.week-exercise-choice{display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:pointer}
+.week-exercise-choice>input{width:19px;height:19px;flex:none;accent-color:#e7bb72}
+.week-exercise-choice span{display:flex;flex-direction:column;gap:4px;min-width:0}
+.week-exercise-choice strong{color:#ffedca;font-size:.9rem;overflow-wrap:anywhere}
+.week-exercise-choice small{font-size:.77rem;color:#d7c4a3}
+.library-editor-row>button{flex:none;min-height:34px;font-size:.78rem;padding:6px 10px}
+#weekExerciseCount{color:#efd0a0}
+@media(max-width:640px){.week-exercise.library-editor-row{padding:9px;gap:6px}.library-editor-row>button{padding:6px 8px}}
