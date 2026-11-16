@@ -328,6 +328,22 @@ function renderWorkouts(){
  const visible=originalPreviewActive()?[...originalCustomSchedule.plans,...weekly.plans]:weekly.plans;
  $('workoutGrid').innerHTML=visible.map((p,i)=>'<button type="button" class="workout-card" data-workout="'+p.id+'"><span class="number">SESSION 0'+(i+1)+' · '+escapeHTML(p.kind.toUpperCase())+'</span><h3>'+escapeHTML(p.title)+'</h3><p>'+escapeHTML(p.description)+'</p><div class="workout-meta"><span>'+p.ids.length+' movements · '+p.ids.length*3+' recommended sets</span><b>Open session ↗</b></div></button>').join('');
 }
+function libraryImage(ex){
+ return typeof ex?.image==='string'&&/^images\/[a-zA-Z0-9_.-]+\.(png|webp|jpg|jpeg|svg)$/.test(ex.image)?'../'+ex.image:'./assets/chest-press.svg';
+}
+function exerciseAnatomy(ex,size='mini'){
+ if(!window.LiftovaAnatomy)return '';
+ return window.LiftovaAnatomy.render({id:ex.id,name:ex.name,muscle:ex.muscle||ex.group||'Other'},{size});
+}
+function exerciseDetail(id){
+ const ex=originalExercises.find(e=>e.id===id)||editorExercises.find(e=>e.id===id);
+ if(!ex)return;
+ const tips=Array.isArray(ex.tips)?ex.tips:[],mistakes=Array.isArray(ex.mistakes)?ex.mistakes:[];
+ const image=libraryImage(ex),anatomy=exerciseAnatomy(ex,'detail');
+ const metadata=window.MLCExerciseMetadata.get(ex.id,ex.name);
+ const list=(label,items)=>items.length?'<h3>'+label+'</h3><ul>'+items.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'';
+ openModal('<div class="exercise-detail-modal"><div class="modal-eyebrow">EXERCISE LIBRARY · TECHNIQUE</div><h2>'+escapeHTML(ex.name)+'</h2><p class="small">Primary: '+escapeHTML(ex.muscle||ex.group||'Other')+(metadata.equipment?' · Equipment: '+escapeHTML(metadata.equipment):'')+'</p><div class="exercise-detail-visuals"><img src="'+escapeHTML(image)+'" alt="'+escapeHTML(ex.name)+' exercise reference" loading="lazy"><div>'+anatomy+'</div></div><h3>How to perform</h3><p>'+escapeHTML(ex.how||ex.cue||'Detailed instructions not available for this exercise.')+'</p>'+list('Technique tips',tips)+list('Common mistakes',mistakes)+'<p class="small">Static exercise reference and highlighted muscles. Moving demonstrations are not yet available.</p></div>');
+}
 function renderLibrary(){
  const query=$('exerciseSearch').value.trim().toLowerCase();
  const catalog=originalExercises.length?originalExercises:exercises;
@@ -341,12 +357,12 @@ function renderLibrary(){
  document.querySelectorAll('[data-muscle]').forEach(button=>button.classList.toggle('selected',button.dataset.muscle===muscleFilter));
  $('libraryGrid').innerHTML=matches.map(ex=>{
   const group=String(ex.muscle||ex.group||'Other');
-  const image=typeof ex.image==='string'&&/^images\/[a-zA-Z0-9_.-]+\.(png|webp|jpg|jpeg|svg)$/.test(ex.image)?'../'+ex.image:'./assets/chest-press.svg';
+  const image=libraryImage(ex);
   const guide=String(ex.how||ex.cue||'');
   const tips=Array.isArray(ex.tips)?ex.tips:[];
   const mistakes=Array.isArray(ex.mistakes)?ex.mistakes:[];
   const notes='<p>'+escapeHTML(guide)+'</p>'+(tips.length?'<strong>Technique tips</strong><ul>'+tips.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+(mistakes.length?'<strong>Common mistakes</strong><ul>'+mistakes.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'');
-  return '<article class="library-card reference-exercise"><img class="library-thumb" src="'+escapeHTML(image)+'" alt="" loading="lazy"><div class="library-info"><h3>'+escapeHTML(ex.name)+'</h3><p>'+escapeHTML(group)+(ex.sets?' · '+ex.sets+' sets':'')+(ex.reps?' · '+escapeHTML(ex.reps)+' reps':'')+'</p><details><summary>Technique notes</summary>'+notes+'</details></div><span class="library-chevron">›</span></article>';
+  return '<article class="library-card reference-exercise"><img class="library-thumb" src="'+escapeHTML(image)+'" alt="" loading="lazy"><div class="library-info"><h3>'+escapeHTML(ex.name)+'</h3><p>'+escapeHTML(group)+(ex.sets?' · '+ex.sets+' sets':'')+(ex.reps?' · '+escapeHTML(ex.reps)+' reps':'')+'</p><details><summary>Technique notes</summary>'+notes+'</details><button class="button-outline exercise-open" type="button" data-library-detail="'+escapeHTML(ex.id)+'">View exercise details</button></div><span class="library-chevron">›</span></article>';
  }).join('')||'<p class="empty-note">No exercises match that search.</p>';
 }
 function renderProgress(){
@@ -382,6 +398,15 @@ function renderCoach(){
   $('coachLocalWeekStatus').textContent=localWeek.from+' through '+localWeek.to+' · completed local practice only. No changes to your workout plan.';
   $('coachWeekReadiness').textContent='Recorded check-ins: Great '+localWeek.readiness.Great+' · Normal '+localWeek.readiness.Normal+' · Tired '+localWeek.readiness.Tired+'. Not an inferred recovery score.';
  }
+ const recentHistory=demoSessions.map(s=>({date:s.created,readiness:s.readiness,exercises:(s.sets||[]).reduce((acc,set)=>{
+  if(!set?.exerciseId)return acc;
+  let match=acc.find(ex=>ex.id===set.exerciseId);
+  if(!match){match={id:set.exerciseId,sets:[]};acc.push(match)}
+  match.sets.push({weight:set.weight,reps:set.reps,completed:true});return acc;
+ },[])}));
+ const localMuscles=window.MLCRecoveryPreview.summarize(recentHistory,editorExercises);
+ $('coachLocalMuscleStatus').textContent=localMuscles.muscles.length?'Latest completed local workout per muscle. Time since training, not a recovery estimate.':'No completed local exercise history with mapped muscles.';
+ $('coachLocalMuscleList').innerHTML=localMuscles.muscles.map(m=>'<div class="recent-item"><strong>'+escapeHTML(m.name)+'</strong><span>'+Math.floor(m.hoursAgo/24)+' days since trained</span></div>').join('')||'<p class="small">Muscle activity will appear after you log workouts.</p>';
  const sets=demoSessions.flatMap(x=>Array.isArray(x.sets)?x.sets:[]);
  const movementCount=new Set(sets.map(x=>x.exerciseId).filter(Boolean)).size;
  $('coachSessions').textContent=String(demoSessions.length);
@@ -828,6 +853,7 @@ function renderWorkoutLog(){
   const originalGuide=originalExercises.find(x=>x.id===id);
   const tips=originalGuide?.tips||[];
   const mistakes=originalGuide?.mistakes||[];
+  const visual='<details class="panel"><summary>Exercise image &amp; anatomy</summary><div class="exercise-detail-visuals"><img loading="lazy" src="'+escapeHTML(libraryImage(originalGuide||e))+'" alt="'+escapeHTML(e.name)+' exercise reference"><div>'+exerciseAnatomy(originalGuide||e,'mini')+'</div></div><p class="small">Static reference; movement animation pending.</p></details>';
   const guidance='<details class="panel"><summary>Exercise form &amp; technique</summary><p>'+escapeHTML(originalGuide?.how||e.cue||'Follow a comfortable controlled range of motion.')+'</p>'+
     (tips.length?'<strong>Technique tips</strong><ul>'+tips.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+
     (mistakes.length?'<strong>Common mistakes</strong><ul>'+mistakes.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+'</details>';
@@ -848,7 +874,7 @@ function renderWorkoutLog(){
     '<div class="panel"><strong>Coach progression · '+escapeHTML(coachSource)+'</strong><p class="small">'+escapeHTML(coachResult.action.toUpperCase()+': '+coachResult.reason)+'</p><button class="button-outline" type="button" data-use-coach="'+id+'">Use suggested '+coachResult.weight+' lb for this set</button></div>':'';
   const historyHint=previous?'<div class="hero-actions"><span class="small">Last original workout: '+previous.weight+' lb on '+escapeHTML(previous.date)+'</span><button type="button" class="button-outline" data-use-last="'+id+'">Use last weight</button></div>':'';
   const replacement=options.length?'<div class="inputs"><label>Replace this exercise<select aria-label="Replacement for '+escapeHTML(e.name)+'" data-swap-select="'+id+'"><option value="">Choose same-muscle alternative</option>'+options.map(x=>'<option value="'+escapeHTML(x.id)+'">'+escapeHTML(x.name)+' · '+escapeHTML(x.reason)+'</option>').join('')+'</select></label><button type="button" class="button-outline" data-swap-apply="'+id+'">Replace exercise</button></div>':'<p class="small">No unused same-muscle alternatives available.</p>';
-  return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small>'+guidance+coachHint+historyHint+compareNote+replacement+logged+'<p class="small" data-warmups="'+id+'"></p><div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
+  return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small>'+visual+guidance+coachHint+historyHint+compareNote+replacement+logged+'<p class="small" data-warmups="'+id+'"></p><div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
  }).join('');
  renderSessionSetProgress();
  for(const id of activePlan.ids)updateWarmupGuide(id);
@@ -1093,6 +1119,7 @@ function bind(){
  $('weekDuplicateWorkout').addEventListener('click',duplicateWeekWorkout);
 
  $('exerciseSearch').addEventListener('input',renderLibrary);
+ $('libraryGrid').addEventListener('click',e=>{const button=e.target.closest('[data-library-detail]');if(button)exerciseDetail(button.dataset.libraryDetail)});
  $('libraryChips').addEventListener('click',event=>{const el=event.target.closest('[data-muscle]');if(!el)return;muscleFilter=el.dataset.muscle;renderLibrary()});
  document.querySelectorAll('[data-account-page]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.accountPage)));
 
