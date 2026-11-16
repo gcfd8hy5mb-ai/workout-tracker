@@ -33,11 +33,20 @@ const editorExercises=[...exercises,...originalExercises.filter(ex=>!exercises.s
 }))];
 const exerciseById=id=>editorExercises.find(ex=>ex.id===id);
 const allowedExerciseIds=editorExercises.map(ex=>ex.id);
-function readWeekly(){
- try{return weeklyAPI.normalize(JSON.parse(localStorage.getItem(WEEKLY_KEY)||'null'),plans,allowedExerciseIds)}
- catch{return weeklyAPI.normalize(null,plans,allowedExerciseIds)}
+function scheduleOwner(){return account?.id||null}
+function readWeekly(owner=scheduleOwner()){
+ return weeklyAPI.loadOwned(localStorage,WEEKLY_KEY,owner,plans,allowedExerciseIds);
 }
-let weekly=readWeekly();
+let weekly=weeklyAPI.normalize(null,plans,allowedExerciseIds);
+let weeklyDraftReadError=null;
+function refreshWeeklyOwner(){
+ try{weekly=readWeekly();weeklyDraftReadError=null}
+ catch(error){
+  // Do not display an unrelated account's schedule, and never overwrite corrupt records.
+  weekly=weeklyAPI.normalize(null,plans,allowedExerciseIds);
+  weeklyDraftReadError=String(error.message||error);
+ }
+}
 let originalCustomSchedule=null,importedCustomOwner=null,originalSchedulePreview=false;
 function originalPreviewActive(){return Boolean(originalSchedulePreview&&originalCustomSchedule&&account?.id&&importedCustomOwner===account.id)}
 function dayAtWeekIndex(day){const now=new Date();return new Date(now.getFullYear(),now.getMonth(),now.getDate()+day-weeklyAPI.dayIndex(now),12);}
@@ -76,7 +85,8 @@ function toggleOriginalCustomSchedule(){
  originalSchedulePreview=!originalSchedulePreview;renderOriginalCustomSchedule();renderHome();renderWorkouts();
 }
 function commitWeekly(candidate){
- weekly=weeklyAPI.commit(localStorage,WEEKLY_KEY,candidate,plans.map(p=>p.id));
+ if(weeklyDraftReadError)throw Error('Saved schedule needs recovery before editing: '+weeklyDraftReadError);
+ weekly=weeklyAPI.commitOwned(localStorage,WEEKLY_KEY,scheduleOwner(),candidate,plans.map(p=>p.id));
 }
 function nextPlan(){return resolvedWorkout().plan}
 function openToday(){const plan=nextPlan();if(plan)openWorkout(plan.id);else notice('Today is a rest day. Choose a workout from the weekly board.')}
@@ -172,6 +182,7 @@ function renderHome(){
 function renderWorkouts(){
  renderWeekBoard();
  renderOriginalCustomSchedule();
+ $('weeklyDraftError').textContent=weeklyDraftReadError?'A previously saved local schedule could not be read safely: '+weeklyDraftReadError:'';
  const visible=originalPreviewActive()?[...originalCustomSchedule.plans,...weekly.plans]:weekly.plans;
  $('workoutGrid').innerHTML=visible.map((p,i)=>'<button type="button" class="workout-card" data-workout="'+p.id+'"><span class="number">SESSION 0'+(i+1)+' · '+escapeHTML(p.kind.toUpperCase())+'</span><h3>'+escapeHTML(p.title)+'</h3><p>'+escapeHTML(p.description)+'</p><div class="workout-meta"><span>'+p.ids.length+' movements · '+p.ids.length*3+' recommended sets</span><b>Open session ↗</b></div></button>').join('');
 }
@@ -505,9 +516,9 @@ async function authRequest(path,body,token,method='POST'){
 }
 function saveAuth(data){
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
- if(account?.id&&account.id!==data.user?.id){clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;renderSettings();renderOriginalHistory();
+ if(account?.id&&account.id!==data.user?.id){clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings();renderOriginalHistory();
 }
-function clearAuth(){sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();renderHome();renderWorkouts();renderSettings()}
+function clearAuth(){sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings()}
 async function validateStoredAuth(){
  try{
   const saved=JSON.parse(sessionStorage.getItem(AUTH_KEY)||'null');
@@ -516,7 +527,7 @@ async function validateStoredAuth(){
   if(saved.expires_at<Date.now()/1000+45&&saved.refresh_token){
     const refreshed=await authRequest('token?grant_type=refresh_token',{refresh_token:saved.refresh_token});
     saveAuth(refreshed);token=refreshed.access_token;
-  }else{auth=saved;account=saved.user}
+  }else{auth=saved;account=saved.user;refreshWeeklyOwner();renderHome();renderWorkouts()}
   const user=await authRequest('user',null,token,'GET');
   if(!user?.id||user.id!==account.id)clearAuth();
  }catch{clearAuth()}
@@ -606,5 +617,5 @@ function bind(){
  $('loadOriginalSettings').addEventListener('click',loadOriginalAccountSettings);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
-bind();renderOriginalCustomSchedule();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderOriginalTracking();renderSettings();renderOriginalAccountSettings();validateStoredAuth();
+refreshWeeklyOwner();bind();renderOriginalCustomSchedule();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderOriginalTracking();renderSettings();renderOriginalAccountSettings();validateStoredAuth();
 })();
