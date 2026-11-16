@@ -1,6 +1,6 @@
 /* Read-only, account-scoped import of original workoutHistoryV52; never writes or stores history. */
 (function(root,factory){
- const api=factory(root.PRISMStorageModel);
+ const api=factory(typeof module==='object'&&module.exports?require('../persistence/storage-model.js'):root.PRISMStorageModel);
  if(typeof module==='object'&&module.exports)module.exports=api;
  else root.MLCOriginalHistory=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(model){
