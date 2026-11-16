@@ -74,6 +74,18 @@ const assert = require('node:assert/strict');
    await page.locator('#weekWorkoutSelect').selectOption('custom-test-session');
    assert.equal(await page.locator('#weekWorkoutName').inputValue(),presetName);
    assert.deepEqual(errors,[],device.label+' sidebar navigation errors');
+   // History/Coach/Tracking shortcuts must lead to existing safe read-only views.
+   await page.locator('.sidebar [data-page="progress"]').first().evaluate(el=>el.click());
+   assert.equal(await page.locator('#progress').isVisible(),true);
+   assert.equal(await page.locator('#originalHistorySearch').isDisabled(),true);
+   assert.match(await page.locator('#originalVolumeChart').textContent(),/Load original account history/);
+   await page.locator('.sidebar [data-page="nutrition"]').first().evaluate(el=>el.click());
+   assert.equal(await page.locator('#nutrition').isVisible(),true);
+   await page.locator('.sidebar [data-page="coaching"]').first().evaluate(el=>el.click());
+   assert.equal(await page.locator('#coaching').isVisible(),true);
+   assert.equal(await page.locator('#coachLoadOriginalHistory').isDisabled(),true);
+   assert.equal(await page.locator('#coachMovementSearch').isDisabled(),true);
+   assert.deepEqual(errors,[],device.label+' navigation/account-isolation errors');
    console.log('PASS '+device.label+': Home/board/Start agree; edit, sidebar create, and reload retain custom workout');
    await context.close();
   }
