@@ -145,6 +145,9 @@ const assert = require('node:assert/strict');
    await page.locator('.sidebar [data-page="nutrition"]').first().evaluate(el=>el.click());
    assert.equal(await page.locator('#localCaloriesTotal').textContent(),'375');
    assert.equal(await page.locator('#localWeightLatest').textContent(),'182.5 lb');
+   assert.match(await page.locator('#localMacroTotals').textContent(),/not recorded/);
+   await page.locator('#quickWaterButton').evaluate(el=>el.click());
+   assert.match(await page.locator('#localWaterTotal').textContent(),/16\.0 oz/);
    assert.equal(await page.locator('#trackingMonth').isDisabled(),true);
 
    await page.locator('.sidebar [data-page="coaching"]').first().evaluate(el=>el.click());
