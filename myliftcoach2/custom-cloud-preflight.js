@@ -43,8 +43,9 @@
    const workoutId=draft.assigned[day];
    if(!workoutId)throw Error('Rest day synchronization is unsupported by legacy schedule; no write');
    const plan=byId.get(workoutId);
-   if(!plan||typeof plan.title!=='string'||!plan.title.trim()||!Array.isArray(plan.ids)||plan.ids.length<1||plan.ids.length>40||plan.ids.some(id=>!allowed.has(id)))throw Error('Incomplete/invalid selected custom workout');
+   if(!plan)throw Error('Selected custom workout not found');
    if(!plan.id.startsWith('custom-'))throw Error('Only explicit custom workouts can be synced; presets remain untouched');
+   if(typeof plan.title!=='string'||!plan.title.trim()||!Array.isArray(plan.ids)||plan.ids.length<1||plan.ids.length>40||plan.ids.some(id=>!allowed.has(id)))throw Error('Incomplete/invalid selected custom workout');
    const date=dates[day];
    if(Object.hasOwn(existingOnce,date)){
     throw Error('Original date '+date+' is already scheduled; manual conflict review required');
