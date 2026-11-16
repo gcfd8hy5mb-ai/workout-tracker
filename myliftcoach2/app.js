@@ -119,9 +119,10 @@ function renderCoachProgression(){
   return;
  }
  const evidence=window.MLCOriginalCoachEvidence.summarize(originalHistory);
- status.textContent=evidence.movements.length?'Read-only original rules · target 8–10 reps · 5 lb default step (equipment-specific increments need verification).':'No qualifying completed workouts available.';
+ status.textContent=evidence.movements.length?'Read-only original progression rules · 8–10 reps · original equipment-specific 2.5 or 5 lb steps. No workout targets changed.':'No qualifying completed workouts available.';
  root.innerHTML=evidence.movements.slice(0,12).map(ex=>{
-  const result=window.MLCProgressionPreview.suggest(originalHistory,ex.id,{range:{min:8,max:10},increment:5});
+  const increment=window.MLCExerciseMetadata.increment(ex.id,ex.name);
+  const result=window.MLCProgressionPreview.suggest(originalHistory,ex.id,{range:{min:8,max:10},increment});
   const label=result.status==='ready'?('Preview: '+result.action+' to '+result.weight+' lb · '+result.reason):'Not enough qualifying working-set history (at least two completed workouts required).';
   return '<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+escapeHTML(label)+'</small></div><span>'+escapeHTML(String(result.lastWeight||'—'))+' lb last</span></div>';
  }).join('');
