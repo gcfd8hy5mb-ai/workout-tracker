@@ -42,6 +42,13 @@ const assert = require('node:assert/strict');
    await page.locator('#closeModal').evaluate(el=>el.click());
    await page.locator('.sidebar [data-page="home"]').first().evaluate(el=>el.click());
    assert.match(await page.evaluate(()=>getComputedStyle(document.body).backgroundImage),/gradient/);
+   const palette=await page.evaluate(()=>{
+    const root=getComputedStyle(document.documentElement);
+    return {bg:root.getPropertyValue('--bg').trim(),gold:root.getPropertyValue('--gold').trim(),body:getComputedStyle(document.body).backgroundImage};
+   });
+   assert.equal(palette.bg,'#101519');
+   assert.equal(palette.gold,'#f3cf86');
+   assert.doesNotMatch(palette.body,/emerald-marble|\.webp/);
    await page.locator('#heroStart').evaluate(el=>el.click());
    assert.match(await page.locator('#modalContent h2').textContent(),/My Custom Session/);
    assert.ok(await page.locator('[data-exercise-card="leg-press"] .liftova-anatomy svg').count()>0);
