@@ -31,6 +31,7 @@ let page='home',activePlan=null,session=null,guest=true,account=null,auth=null;
 let demoSessions=loadDemo();
 let originalHistory=[];
 let importedHistoryOwner=null;
+let originalTracking=null,importedTrackingOwner=null;
 let toastTimer;
 let muscleFilter='';
 let restSeconds=90,restPaused=true,restClock=null;
@@ -44,7 +45,7 @@ function setPage(next){if(!['welcome','home','workouts','library','progress','se
  $('pageTitle').textContent=({welcome:'Welcome',home:'Home',workouts:'Workouts',library:'Exercise library',progress:'Progress',settings:'My Account',coaching:'Coaching',nutrition:'Nutrition'})[next];
  $('sidebar').classList.remove('open');$('sidebarScrim').classList.remove('open');document.body.classList.remove('sidebar-is-open');$('menuBtn').setAttribute('aria-expanded','false');$('moreMenuBtn').setAttribute('aria-expanded','false');$('sidebar').inert=window.matchMedia('(max-width:760px)').matches;document.body.classList.toggle('welcome-view',next==='welcome');window.scrollTo({top:0,behavior:'instant'});
  if(next==='home')renderHome();if(next==='workouts')renderWorkouts();if(next==='library')renderLibrary();
- if(next==='progress')renderProgress();if(next==='coaching')renderCoach();if(next==='settings')renderSettings();
+ if(next==='progress')renderProgress();if(next==='coaching')renderCoach();if(next==='nutrition')renderOriginalTracking();if(next==='settings')renderSettings();
 }
 function totalSets(){return demoSessions.reduce((n,x)=>n+x.sets.length,0)}
 function nextPlan(){return plans[demoSessions.length%plans.length]}
@@ -215,6 +216,45 @@ async function loadOriginalHistory(){
   status.textContent='Could not load original history: '+String(error.message||error).slice(0,180);
  }finally{button.disabled=!account}
 }
+function clearOriginalTracking(){
+ originalTracking=null;importedTrackingOwner=null;renderOriginalTracking();
+}
+function renderOriginalTracking(){
+ const status=$('trackingStatus'),button=$('loadOriginalTracking');
+ if(!status||!button)return;
+ button.disabled=!account;
+ const valid=Boolean(account?.id&&importedTrackingOwner===account.id&&originalTracking);
+ for(const id of ['Water','Food','Weight'])$('tracking'+id+'Count').textContent=valid?String(originalTracking[id.toLowerCase()].length):'—';
+ $('trackingGoals').textContent=valid?'Logged water goal: '+(originalTracking.waterGoal?Math.round(originalTracking.waterGoal)+' mL':'Not set')+' · Calorie goal: '+(originalTracking.calorieGoal??'Not set')+' · Saved meals: '+originalTracking.savedMeals+' · Food favorites: '+originalTracking.foodFavorites:'';
+ for(const id of ['Water','Food','Weight'])$('tracking'+id+'List').replaceChildren();
+ if(!account?.id){status.textContent='Sign in to view your original tracking history.';return;}
+ if(!valid){status.textContent='Ready to load original tracking without modifying any records.';return;}
+ status.textContent='Read-only original tracking data loaded for the signed-in account.';
+ const order=(a,b)=>b.day.localeCompare(a.day);
+ const water=originalTracking.water.slice().sort(order).slice(0,100);
+ $('trackingWaterList').innerHTML=water.map(x=>'<div class="recent-item"><strong>'+escapeHTML(x.day)+'</strong><span>'+Math.round(x.amount)+' mL</span></div>').join('')||'<p class="small">No water records found.</p>';
+ const food=originalTracking.food.slice().sort(order).slice(0,100);
+ $('trackingFoodList').innerHTML=food.map(x=>'<div class="recent-item"><div><strong>'+escapeHTML(x.name)+'</strong><small>'+escapeHTML(x.day)+'</small></div><span>'+x.calories+' cal</span></div>').join('')||'<p class="small">No food records found.</p>';
+ const weight=originalTracking.weight.slice().sort(order).slice(0,100);
+ $('trackingWeightList').innerHTML=weight.map(x=>'<div class="recent-item"><strong>'+escapeHTML(x.day)+'</strong><span>'+x.value+' lb</span></div>').join('')||'<p class="small">No weight records found.</p>';
+}
+async function loadOriginalTracking(){
+ if(!account?.id||!auth?.access_token){notice('Sign in before loading original tracking.');return;}
+ const owner=account.id,button=$('loadOriginalTracking'),status=$('trackingStatus');
+ button.disabled=true;status.textContent='Reading original account tracking records…';
+ try{
+  await validateStoredAuth();
+  if(account?.id!==owner||!auth?.access_token)throw Error('Account session expired or changed');
+  const data=await window.MLCOriginalTracking.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner});
+  if(account?.id!==owner)throw Error('Account changed while loading tracking data');
+  originalTracking=data;importedTrackingOwner=data?owner:null;
+  renderOriginalTracking();
+  if(!data)status.textContent='No original tracking records returned for this account.';
+ }catch(error){
+  clearOriginalTracking();
+  status.textContent='Could not load original tracking: '+String(error.message||error).slice(0,170);
+ }finally{button.disabled=!account}
+}
 function renderSettings(){
  $('accountIdentity').textContent=account?.email?account.email+' · authenticated (production workout data is not loaded)':'Not signed in. You can still explore the demo.';
  $('backendStatus').textContent=account?'AUTHENTICATED':'NOT CONNECTED';
@@ -319,9 +359,9 @@ async function authRequest(path,body,token,method='POST'){
 }
 function saveAuth(data){
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
- if(account?.id&&account.id!==data.user?.id)clearOriginalHistory();sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;renderSettings();renderOriginalHistory();
+ if(account?.id&&account.id!==data.user?.id){clearOriginalHistory();clearOriginalTracking();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;renderSettings();renderOriginalHistory();
 }
-function clearAuth(){sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();renderSettings()}
+function clearAuth(){sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();clearOriginalTracking();renderSettings()}
 async function validateStoredAuth(){
  try{
   const saved=JSON.parse(sessionStorage.getItem(AUTH_KEY)||'null');
@@ -405,7 +445,8 @@ function bind(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').hidden)closeModal()});
  $('clearDemo').addEventListener('click',()=>{if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;demoSessions=[];localStorage.removeItem(DEMO_KEY);renderProgress();renderHome();notice('Local demo history cleared. Production data untouched.')});
  $('loadOriginalHistory').addEventListener('click',loadOriginalHistory);
+ $('loadOriginalTracking').addEventListener('click',loadOriginalTracking);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
-bind();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderSettings();validateStoredAuth();
+bind();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderOriginalTracking();renderSettings();validateStoredAuth();
 })();
