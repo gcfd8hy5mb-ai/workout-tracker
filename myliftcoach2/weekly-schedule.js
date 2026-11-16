@@ -52,6 +52,15 @@ function add(state,id,changes,validExercises){
  const plan=cleanPlan({...changes,id,kind:'Custom'},validExercises);
  return {...state,plans:[...state.plans,plan]};
 }
+function duplicate(state,sourceId,newId,validExercises){
+ const source=state.plans.find(p=>p.id===sourceId);
+ if(!source)throw Error('Workout to copy not found');
+ return add(state,newId,{
+  title:(source.title+' Copy').slice(0,80),
+  description:source.description||'Your personal workout',
+  ids:source.ids.slice()
+ },validExercises);
+}
 function saved(state,presetIds){
  return {version:1,plans:state.plans.map(p=>({...p,ids:p.ids.slice()})),assigned:state.assigned.slice()};
 }
@@ -103,5 +112,5 @@ function commit(storage,key,state,presetIds){
  if(storage.getItem(key)!==serialized)throw Error('Workout schedule was not saved');
  return state;
 }
-return Object.freeze({DAYS,normalize,dayIndex,resolve,assign,edit,add,saved,commit,ownerKey,loadOwned,commitOwned});
+return Object.freeze({DAYS,normalize,dayIndex,resolve,assign,edit,add,duplicate,saved,commit,ownerKey,loadOwned,commitOwned});
 });
