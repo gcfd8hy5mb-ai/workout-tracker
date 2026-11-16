@@ -57,16 +57,15 @@ test('simulated replay from fresh checkpoint produces no duplicate cloud writes'
  assert.equal(second.status,'verified');
  assert.equal(transport.counts().writes,first.writes>0?1:0);
 });
-test('simulated stale second device is flagged before overwriting changed session records',async()=>{
+test('save preflight rejects stale second-device history before any cloud write',async()=>{
  const seed=await model.normalize({workoutHistoryV52:JSON.stringify([original])});
  const transport=fakeCloud(seed),checkpoint=await transport.read(owner);
  const a=preflight.validate(preflightInput);
  const other={...preflightInput,proposedId:'second-device',previewWorkout:{...preview,title:'Another Session'},now:'2026-11-16T15:00:00.000Z'};
  await sync.migrate({snapshot:{workoutHistoryV52:JSON.stringify(a.candidate)},owner,userId:owner,transport,checkpoint});
- const second=await sync.migrate({snapshot:{workoutHistoryV52:JSON.stringify(preflight.validate(other).candidate)},owner,userId:owner,transport,checkpoint});
- assert.equal(second.status,'conflict');
  const remote=await transport.read(owner);
  const restored=JSON.parse(model.restoreSnapshot(remote).workoutHistoryV52);
+ assert.throws(()=>preflight.validate({...other,latestHistory:restored}),/History changed since last verified read/);
  assert.equal(restored.some(s=>s.id==='mlc2-integration-1'),true);
  assert.equal(restored.some(s=>s.id==='second-device'),false);
 });
