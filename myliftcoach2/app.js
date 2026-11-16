@@ -108,6 +108,24 @@ function renderCoach(){
  $('coachDescription').textContent=demoSessions.length?'This is a factual summary of local practice sessions, not an adaptive recommendation.':'Complete a practice workout to view a factual summary of your recent activity.';
  const latest=demoSessions.find(x=>x&&x.created&&Number.isFinite(Date.parse(x.created)));
  $('coachRecent').textContent=latest?'Latest practice session: '+new Date(latest.created).toLocaleDateString()+' · '+String(latest.title||'Workout'):'No completed preview sessions have been saved.';
+ renderOriginalCoachEvidence();
+}
+function renderOriginalCoachEvidence(){
+ const status=$('coachOriginalStatus'),movements=$('coachOriginalMovements');
+ if(!status||!movements)return;
+ for(const id of ['Sessions','Days','Sets','Volume'])$('coachOriginal'+id).textContent='—';
+ movements.replaceChildren();
+ if(!account?.id||importedHistoryOwner!==account.id){
+  status.textContent='Sign in and load original history from Progress to view real completed-workout evidence. No adaptive recommendations are active.';
+  return;
+ }
+ const evidence=window.MLCOriginalCoachEvidence.summarize(originalHistory);
+ $('coachOriginalSessions').textContent=String(evidence.completedSessions);
+ $('coachOriginalDays').textContent=String(evidence.trainingDays);
+ $('coachOriginalSets').textContent=String(evidence.loggedSets);
+ $('coachOriginalVolume').textContent=Math.round(evidence.totalVolume).toLocaleString();
+ status.textContent=evidence.latestDate?'Latest completed workout: '+new Date(evidence.latestDate).toLocaleDateString()+' · '+evidence.latestTitle+'. Historical activity only, not coaching advice.':'No completed workouts in imported history.';
+ movements.innerHTML=evidence.movements.slice(0,8).map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sessions+' workouts · '+ex.sets+' sets</small></div><span>Best '+ex.bestWeight.toLocaleString()+' lb</span></div>').join('');
 }
 function renderOriginalProgress(){
  const status=$('originalProgressStatus'),root=$('originalRecords');
@@ -129,6 +147,7 @@ function clearOriginalHistory(){
  originalHistory=[];importedHistoryOwner=null;
  renderOriginalHistory();
  renderOriginalProgress();
+ renderOriginalCoachEvidence();
 }
 function renderOriginalHistory(){
  const status=$('originalHistoryStatus'),root=$('originalHistory'),button=$('loadOriginalHistory');
@@ -154,9 +173,9 @@ async function loadOriginalHistory(){
   if(account?.id!==owner||!auth?.access_token)throw Error('Account session is no longer valid');
   const history=await window.MLCOriginalHistory.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner});
   if(account?.id!==owner)throw Error('Account changed during import');
-  originalHistory=history;importedHistoryOwner=owner;renderOriginalHistory();renderOriginalProgress();
+  originalHistory=history;importedHistoryOwner=owner;renderOriginalHistory();renderOriginalProgress();renderOriginalCoachEvidence();
  }catch(error){
-  originalHistory=[];importedHistoryOwner=null;renderOriginalHistory();renderOriginalProgress();
+  originalHistory=[];importedHistoryOwner=null;renderOriginalHistory();renderOriginalProgress();renderOriginalCoachEvidence();
   status.textContent='Could not load original history: '+String(error.message||error).slice(0,180);
  }finally{button.disabled=!account}
 }
