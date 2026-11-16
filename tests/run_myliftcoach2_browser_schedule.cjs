@@ -45,7 +45,21 @@ const assert = require('node:assert/strict');
    assert.equal(await page.locator('#todayTitle').textContent(),'Updated Custom Session');
    assert.match(await page.locator('#weeklyBoardHome .week-day-card.is-today').textContent(),/Updated Custom Session/);
    assert.deepEqual(errors,[],device.label+' errors after reload');
-   console.log('PASS '+device.label+': Home/board/Start agree; renamed custom workout persists through reload');
+   // Newly restored sidebar actions must reach the SAME account-scoped editor.
+   await page.locator('[data-workout-action="manage"]').evaluate(el=>el.click());
+   assert.equal(await page.locator('#weekEditor').isVisible(),true);
+   await page.locator('[data-workout-action="create"]').evaluate(el=>el.click());
+   assert.match(await page.locator('#weekWorkoutSelect').inputValue(),/^custom-/);
+   await page.locator('#weekWorkoutName').fill('My Sidebar Routine');
+   await page.locator('#weekSaveButton').evaluate(el=>el.click());
+   assert.equal(await page.locator('#todayTitle').textContent(),'My Sidebar Routine');
+   await page.locator('#heroStart').evaluate(el=>el.click());
+   assert.equal(await page.locator('#modalContent h2').textContent(),'My Sidebar Routine');
+   await page.locator('#closeModal').evaluate(el=>el.click());
+   await page.reload({waitUntil:'load'});
+   assert.equal(await page.locator('#todayTitle').textContent(),'My Sidebar Routine');
+   assert.deepEqual(errors,[],device.label+' sidebar navigation errors');
+   console.log('PASS '+device.label+': Home/board/Start agree; edit, sidebar create, and reload retain custom workout');
    await context.close();
   }
  }finally{await browser.close()}
