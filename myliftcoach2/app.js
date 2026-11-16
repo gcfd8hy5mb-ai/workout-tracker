@@ -185,10 +185,38 @@ function chooseWeekday(day){
  target.hidden=false;target.dataset.day=String(day);
  $('weekEditingDay').textContent=weeklyAPI.DAYS[day];
  choice.innerHTML='<option value="">Rest day</option>'+weekly.plans.map(p=>'<option value="'+escapeHTML(p.id)+'">'+escapeHTML(p.title)+'</option>').join('');
- choice.value=weekly.assigned[day]||'';
+ const current=resolvedWorkout(dayAtWeekIndex(day)).plan;
+ choice.value=current?.id||'';
  updateWeekEditor();
+ refreshRestoreRepeating();
  setPage('workouts');target.hidden=false;
  target.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+function selectedWeekDate(){
+ const day=Number($('weekEditor').dataset.day);
+ if(!Number.isInteger(day)||day<0||day>6)throw Error('Select a weekday first');
+ const value=dayAtWeekIndex(day);
+ return [value.getFullYear(),String(value.getMonth()+1).padStart(2,'0'),String(value.getDate()).padStart(2,'0')].join('-');
+}
+function refreshRestoreRepeating(){
+ const button=$('weekRestoreRepeating');
+ if(!button)return;
+ const date=$('weekEditor').dataset.day===undefined?null:selectedWeekDate();
+ button.hidden=!(activeRecurring&&date&&Object.prototype.hasOwnProperty.call(activeRecurring.overrides,date)&&!originalPreviewActive());
+}
+function restoreRepeatingForDate(){
+ try{
+  if(!activeRecurring||originalPreviewActive()||weeklyDraftReadError)throw Error('Editable recurring schedule required');
+  const date=selectedWeekDate();
+  const result=recurringDraftAPI.restoreDate(activeRecurring,date,allowedExerciseIds);
+  recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),result,allowedExerciseIds);
+  activeRecurring=result;
+  const plan=resolvedWorkout(dayAtWeekIndex(Number($('weekEditor').dataset.day))).plan;
+  $('weekWorkoutSelect').value=plan?.id||'';
+  updateWeekEditor();refreshRestoreRepeating();
+  renderWeekBoard();renderHome();renderWorkouts();
+  notice('Repeating workout restored for this date; future rules preserved.');
+ }catch(error){notice(error.message)}
 }
 function updateWeekEditor(){
  const id=$('weekWorkoutSelect').value,p=weekly.plans.find(p=>p.id===id);
@@ -208,7 +236,7 @@ function saveWeekEditor(){
   }
   candidate=weeklyAPI.assign(candidate,day,id);
   commitWeekly(candidate,{day,id});
-  renderWeekBoard();renderHome();renderWorkouts();renderOriginalProgress();
+  renderWeekBoard();renderHome();renderWorkouts();renderOriginalProgress();refreshRestoreRepeating();
   notice('Saved '+weeklyAPI.DAYS[day]+' workout. Home and workout details now match.');
  }catch(error){notice(error.message)}
 }
@@ -744,6 +772,7 @@ function bind(){
   $('weekExerciseOptions').querySelectorAll('.week-exercise').forEach(label=>{label.hidden=!label.textContent.toLowerCase().includes(q)});
  });
  $('weekSaveButton').addEventListener('click',saveWeekEditor);
+ $('weekRestoreRepeating').addEventListener('click',restoreRepeatingForDate);
  $('weekNewWorkout').addEventListener('click',createWeekWorkout);
  $('weekDuplicateWorkout').addEventListener('click',duplicateWeekWorkout);
 
