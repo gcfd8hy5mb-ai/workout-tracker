@@ -57,3 +57,21 @@ test('explicit edited date overrides imported recurrence without deleting future
  assert.equal(migrate.resolve(restored,'2026-11-20').source,'one-time');
  assert.deepEqual(restored.recurring,original.recurring);
 });
+
+test('one-date rest exception overrides repeating workout, preserves future Fridays after reload',()=>{
+ const initial=doc(),db=storage(),restDate='2026-11-27';
+ const edited={...initial,overrides:{...initial.overrides,[restDate]:null}};
+ storeAPI.commit(db,'recurring',owner,edited,ids);
+ const restored=storeAPI.read(db,'recurring',owner,ids);
+ assert.equal(migrate.resolve(restored,restDate).plan,null);
+ assert.equal(migrate.resolve(restored,restDate).source,'one-time');
+ assert.equal(migrate.resolve(restored,'2026-12-04').plan.id,initial.recurring[0].workoutId);
+ assert.equal(migrate.resolve(restored,'2026-11-20').plan.id,initial.recurring[0].workoutId);
+ assert.deepEqual(restored.recurring,initial.recurring);
+ assert.deepEqual(initial.overrides[restDate],undefined);
+});
+test('rest override validation permits null only, not unsupported workout identifiers',()=>{
+ const base=doc();
+ assert.equal(migrate.validate({...base,overrides:{...base.overrides,'2026-11-27':null}}),true);
+ assert.throws(()=>migrate.validate({...base,overrides:{...base.overrides,'2026-11-27':'unknown-plan'}}),/Unmatched dated workout/);
+});
