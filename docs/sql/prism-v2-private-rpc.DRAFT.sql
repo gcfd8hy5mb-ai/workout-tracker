@@ -104,7 +104,7 @@ as $select exercise_id = any(array[
  'triceps-pushdown'
 ]::text[])$;
 revoke all on function prism_v2_private.is_supported_exercise(text) from public, anon, authenticated;
-grant execute on function prism_v2_private.is_supported_exercise(text) to authenticated;
+-- No authenticated grant: callable only from the guarded private save routine.
 
 create or replace function prism_v2_private.schedule_save(
  expected_revision bigint, new_document jsonb
