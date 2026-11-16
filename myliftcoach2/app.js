@@ -853,7 +853,7 @@ function renderWorkoutLog(){
  for(const id of activePlan.ids)updateWarmupGuide(id);
 }
 function useCoachWeight(id){
- if(!activePlan?.ids.includes(id)||!account?.id||importedHistoryOwner!==account.id)return;
+ if(!activePlan?.ids.includes(id))return;
  const ex=exerciseById(id),field=document.querySelector('[data-weight="'+id+'"]');
  if(!ex||!field)return;
  const localResult=window.MLCSessionCoach.localProgression(demoSessions,id,ex.name);
