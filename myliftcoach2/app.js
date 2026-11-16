@@ -146,10 +146,18 @@ function copyOriginalToEditable(){
   notice('Original workouts copied locally. Live cloud data unchanged.');
  }catch(error){$('originalCustomStatus').textContent='Copy not completed: '+String(error.message||error).slice(0,180)}
 }
-function commitWeekly(candidate){
+function commitWeekly(candidate,explicitDay=null){
  if(weeklyDraftReadError)throw Error('Saved schedule needs recovery before editing: '+weeklyDraftReadError);
  if(activeRecurring){
-  const document=recurringDraftAPI.edited(activeRecurring,candidate,allowedExerciseIds);
+  let document=recurringDraftAPI.edited(activeRecurring,candidate,allowedExerciseIds);
+  if(explicitDay){
+   // A direct weekday edit must appear on Home/Start even when a migrated
+   // recurring rule already covers this date. Keep all other dated rules.
+   if(explicitDay.id===null)throw Error('Rest-day exceptions in imported repeating schedules are not supported yet; draft unchanged');
+   const d=dayAtWeekIndex(explicitDay.day);
+   const date=[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+   document={...document,overrides:{...document.overrides,[date]:explicitDay.id}};
+  }
   recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),document,allowedExerciseIds);
   activeRecurring=document;weekly=candidate;
  }else{
@@ -199,7 +207,7 @@ function saveWeekEditor(){
    candidate=weeklyAPI.edit(candidate,id,{title,ids:selected},allowedExerciseIds);
   }
   candidate=weeklyAPI.assign(candidate,day,id);
-  commitWeekly(candidate);
+  commitWeekly(candidate,{day,id});
   renderWeekBoard();renderHome();renderWorkouts();renderOriginalProgress();
   notice('Saved '+weeklyAPI.DAYS[day]+' workout. Home and workout details now match.');
  }catch(error){notice(error.message)}
