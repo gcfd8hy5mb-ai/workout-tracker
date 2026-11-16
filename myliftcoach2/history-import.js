@@ -11,7 +11,7 @@
   if(!item||!Array.isArray(item.exercises)||!Number.isFinite(Date.parse(item.date)))return null;
   const exercises=item.exercises.filter(ex=>ex&&Array.isArray(ex.sets)).map(ex=>({
    id:String(ex.id||''),name:String(ex.name||ex.id||'Exercise'),
-   sets:ex.sets.filter(s=>s&&Number.isFinite(Number(s.weight))&&Number(s.weight)>0&&Number.isFinite(Number(s.reps))&&Number(s.reps)>0).map(s=>({set:s.set,weight:Number(s.weight),reps:Number(s.reps)}))
+   sets:ex.sets.filter(s=>s&&Number.isFinite(Number(s.weight))&&Number(s.weight)>0&&Number.isFinite(Number(s.reps))&&Number(s.reps)>0).map(s=>({set:s.set,weight:Number(s.weight),reps:Number(s.reps),completed:s.completed!==false}))
   })).filter(ex=>ex.sets.length);
   if(!exercises.length)return null;
   return {id:item.id,date:item.date,workoutKey:String(item.workoutKey||''),workoutTitle:String(item.workoutTitle||'Workout'),durationMinutes:item.durationMinutes,recordIds:Array.isArray(item.recordIds)?item.recordIds:[],exercises};
