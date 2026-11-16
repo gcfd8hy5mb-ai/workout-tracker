@@ -36,3 +36,20 @@ test('partial, altered or stale cloud rows fail closed',async()=>{
  await assert.rejects(api.validateRows({prepared,originalRows:rows.slice(1)}),/Incomplete|snapshot|drift/);
  await assert.rejects(api.validateRows({prepared,originalRows:rows.map((r,i)=>i===1?{...r,position:99}:r)}),/drift|corruption/);
 });
+
+test('a fully valid newer cloud snapshot must still fail if it differs from baseline',async()=>{
+ const prepared=api.build(opts());
+ const newer={...initial,dailyTrackingV1:JSON.stringify({...JSON.parse(initial.dailyTrackingV1),waterGoal:3000})};
+ const rows=(await model.normalize(newer)).map(r=>({...r,revision:2,user_id:owner}));
+ await assert.rejects(api.validateRows({prepared,originalRows:rows}),/no longer matches verified baseline/);
+});
+test('reject cloud records belonging to another account even when content is identical',async()=>{
+ const prepared=api.build(opts());
+ const rows=(await model.normalize(initial)).map(r=>({...r,revision:1,user_id:'different-account'}));
+ await assert.rejects(api.validateRows({prepared,originalRows:rows}),/another account/);
+});
+test('cloud owner must be explicit; ownerless rows cannot validate',async()=>{
+ const prepared=api.build(opts());
+ const rows=(await model.normalize(initial)).map(r=>({...r,revision:1}));
+ await assert.rejects(api.validateRows({prepared,originalRows:rows}),/another account/);
+});
