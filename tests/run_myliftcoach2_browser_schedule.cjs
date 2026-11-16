@@ -145,9 +145,26 @@ const assert = require('node:assert/strict');
    // Editing the exact scheduled plan must update Home, modal and persisted copy.
    const today=(new Date().getDay()+6)%7;
    await page.locator('#weeklyBoardHome [data-week-day="'+today+'"]').evaluate(el=>el.click());
+   // The same complete library drives the workout editor; search cannot lose checked draft selections.
+   assert.equal(await page.locator('#weekExerciseOptions input').count(),63);
+   assert.ok(await page.locator('#weekExerciseMuscle option').count()>5);
+   assert.ok(await page.locator('#weekExerciseEquipment option').count()>2);
+   await page.locator('#weekExerciseSearch').fill('dead bug');
+   assert.equal(await page.locator('#weekExerciseOptions .week-exercise:visible').count(),1);
+   await page.locator('#weekExerciseOptions input[value="dead-bug"]').check();
+   assert.match(await page.locator('#weekExerciseCount').textContent(),/3 selected/);
+   await page.locator('#weekExerciseEquipment').selectOption({index:1});
+   assert.equal(await page.locator('#weekExerciseOptions input[value="dead-bug"]').isChecked(),true);
+   await page.locator('#weekExerciseReset').evaluate(el=>el.click());
+   await page.locator('#weekExerciseOptions [data-week-library-detail="dead-bug"]').evaluate(el=>el.click());
+   assert.match(await page.locator('#modalContent h2').textContent(),/Dead Bug/);
+   await page.locator('[data-library-stage="dead-bug"]').evaluate(el=>el.click());
+   assert.equal(await page.locator('#weekExerciseOptions input[value="dead-bug"]').isChecked(),true);
+   assert.doesNotMatch(await page.locator('#todayExercises').textContent(),/Dead Bug/);
    await page.locator('#weekWorkoutName').fill('Updated Custom Session');
    await page.locator('#weekSaveButton').evaluate(el=>el.click());
    assert.equal(await page.locator('#todayTitle').textContent(),'Updated Custom Session');
+   assert.match(await page.locator('#todayExercises').textContent(),/Dead Bug/);
    assert.match(await page.locator('#weeklyBoardWorkouts .week-day-card.is-today').textContent(),/Updated Custom Session/);
    await page.locator('#todayStart').evaluate(el=>el.click());
    assert.equal(await page.locator('#modalContent h2').textContent(),'Updated Custom Session');
