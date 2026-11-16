@@ -4,7 +4,7 @@ test('private schedule functions move to least privilege no-login role',()=>{
  assert.match(sql,/create role prism_v2_executor nologin noinherit/);
  assert.match(sql,/alter function prism_v2_private\.schedule_read\(\) owner to prism_v2_executor/);
  assert.match(sql,/alter function prism_v2_private\.schedule_save\(bigint,jsonb\) owner to prism_v2_executor/);
- assert.doesNotMatch(sql,/bypassrls|superuser|login\s+password/i); // note comment strings excluded below
+ assert.doesNotMatch(sql.split('\n').filter(line=>!line.trim().startsWith('--')).join('\n'),/\b(?:bypassrls|superuser|login\s+password)\b/i);
 });
 test('executor RLS restricts select insert and update to auth uid and user id',()=>{
  assert.match(sql,/for select to prism_v2_executor using \(\(select auth\.uid\(\)\)=user_id\)/);
