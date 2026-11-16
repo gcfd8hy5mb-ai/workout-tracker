@@ -37,3 +37,21 @@ test('historical month summary separates months and never fabricates missing rec
  assert.equal(adapter.monthSummary(input,'2026-13'),null);
  assert.equal(JSON.stringify(input),raw);
 });
+
+test('malformed and impossible tracking dates never enter monthly totals',()=>{
+ const raw={
+  water:[{day:'2026-11-31',amount:99},{day:'2026-11-13',amount:12},{day:'2026-11-1',amount:20}],
+  food:[{day:'2026-02-30',calories:400},{day:'2026-11-13',calories:160}],
+  weight:[{day:'2026-11-00',value:190},{day:'2026-11-13',value:185}]
+ };
+ const snapshot=JSON.stringify(raw),normal=adapter.normalize(raw);
+ assert.equal(normal.water.length,1);
+ assert.equal(normal.food.length,1);
+ assert.equal(normal.weight.length,1);
+ const sum=adapter.monthSummary(normal,'2026-11');
+ assert.equal(sum.waterEntries,1);
+ assert.equal(sum.totalWater,12);
+ assert.equal(sum.calories,160);
+ assert.deepEqual(sum.latestWeight,{date:'2026-11-13',value:185});
+ assert.equal(JSON.stringify(raw),snapshot);
+});
