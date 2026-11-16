@@ -137,7 +137,17 @@
     <button type="button" data-coach-link="library">♧ &nbsp; Original Exercise Technique Library <span>›</span></button>
   </div>
  </section>
- <section id="nutrition" class="page" hidden><div class="page-heading"><div class="eyebrow">FUEL & RECOVER</div><h1>Nutrition &amp; Hydration</h1><p>The full nutrition, water, weight, and macro-tracking features from your original app will return here after data compatibility testing.</p></div><article class="panel"><h3>Coming from your original app</h3><p>Daily water, food logs, calorie goals, saved meals, and weight history. No entries are being written to your production data.</p></article></section>
+ <section id="nutrition" class="page" hidden>
+ <div class="page-heading"><div class="eyebrow">FUEL &amp; RECOVER</div><h1>Nutrition &amp; Hydration</h1><p>View the nutrition, hydration, and weight records from your original MYLIFTCOACH account without changing anything.</p></div>
+ <article class="panel"><div class="panel-heading"><h3>Original tracking records</h3><span class="micro-tag">READ ONLY</span></div><p class="small" id="trackingStatus" role="status">Sign in to your existing account to load saved tracking entries.</p><button type="button" id="loadOriginalTracking" class="button-outline">Load original tracking</button>
+ <div class="metrics"><article class="metric"><span>WATER LOGS</span><strong id="trackingWaterCount">—</strong></article><article class="metric"><span>FOOD LOGS</span><strong id="trackingFoodCount">—</strong></article><article class="metric"><span>WEIGHT LOGS</span><strong id="trackingWeightCount">—</strong></article></div>
+ <p id="trackingGoals" class="small"></p>
+ </article>
+ <article class="panel"><h3>Hydration history</h3><div id="trackingWaterList" class="recent-list"></div></article>
+ <article class="panel"><h3>Food and calorie history</h3><p class="small">Calories reflect originally logged amounts; no estimates are added for missing values.</p><div id="trackingFoodList" class="recent-list"></div></article>
+ <article class="panel"><h3>Weight history</h3><div id="trackingWeightList" class="recent-list"></div></article>
+ <article class="panel"><h3>Remaining functionality</h3><p>Adding food or water, changing targets, saved meals, and syncing new entries will be enabled only after account-data and iPhone verification.</p></article>
+ </section>
  <section id="settings" class="page" hidden><div class="account-brand"><img src="./assets/myliftcoach-mark.svg" alt=""><h2>My Account</h2><p>Manage your profile, training and settings</p></div><div class="account-menu"><button type="button" data-account-page="workouts"><span>▣</span> Workout Plans <b>›</b></button><button type="button" data-account-page="workouts"><span>♧</span> Custom Workouts <b>›</b></button><button type="button" data-account-page="nutrition"><span>◉</span> Nutrition &amp; Hydration <b>›</b></button><button type="button" data-account-page="progress"><span>▥</span> Measurements &amp; Progress <b>›</b></button><button type="button" data-account-page="progress"><span>▧</span> Progress Photos <b>›</b></button></div><div class="page-heading"><div class="eyebrow">YOUR ACCOUNT</div><h1>Settings</h1><p>Sign in with your existing MYLIFTCOACH account. Training data import remains off until validated.</p></div><button type="button" id="previewWelcome" class="welcome-preview-link">View welcome screen design ↗</button><article class="panel settings-panel"><div class="setting-line"><div><strong>Supabase account</strong><p id="accountIdentity">Not signed in</p></div><span class="micro-tag" id="backendStatus">NOT CONNECTED</span></div><div class="setting-line"><div><strong>Data protection</strong><p>Existing workout records are read-only and are not yet imported into 2.0.</p></div><span class="micro-tag">ISOLATED</span></div><div class="setting-line"><div><strong>Demo session history</strong><p>Saved to this browser only, separate from your original workout app.</p></div><button id="clearDemo" type="button" class="button-outline">Clear demo</button></div><button id="authAction" type="button" class="button-primary">Sign in</button></article></section>
 </main>
 <footer class="site-footer"><span>MYLIFTCOACH 2.0</span><span>STRONGER BY DESIGN · PREVIEW</span></footer>
@@ -160,6 +170,7 @@
 <script defer src="./exercise-metadata.js?v=1"></script>
 <script defer src="./progression-preview.js?v=1"></script>
 <script defer src="./recovery-preview.js?v=1"></script>
+<script defer src="./tracking-import.js?v=1"></script>
 <script defer src="./app.js?v=1"></script>
 </body>
 </html>
