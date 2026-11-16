@@ -84,6 +84,7 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f docs/sql/prism-v2-isolated-schedule.DRAFT.sql
           psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f docs/sql/prism-v2-private-rpc.DRAFT.sql
+          psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f docs/sql/prism-v2-owner-hardening.DRAFT.sql
       - name: Run two-user and concurrent transaction SQL tests
         run: python3 tests/run_v2_postgres_integration.py
 
