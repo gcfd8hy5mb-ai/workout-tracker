@@ -17,7 +17,7 @@
   if(kind==='array'?!Array.isArray(value):!value||Array.isArray(value)||typeof value!=='object')throw Error('Invalid original '+key+' format');
   return value;
  }
- function build({owner,verifiedOwner,baseline,latest,originalRows,draft,weekStart,validExerciseIds,selectedDays,token}){
+ function build({owner,verifiedOwner,baseline,latest,draft,weekStart,validExerciseIds,selectedDays,token}){
   if(!owner||owner!==verifiedOwner)throw Error('Verified account owner required');
   if(!baseline||!latest)throw Error('Fresh cloud snapshot required');
   for(const key of SOURCES){
@@ -65,13 +65,20 @@
   const outTracking={...tracking,customSchedule:newOnce};
   if(model.canonical(outTracking.customRecurringSchedule)!==model.canonical(tracking.customRecurringSchedule))throw Error('Unexpected recurring schedule change');
   const snapshot={customWorkoutsV5:JSON.stringify(proposed),dailyTrackingV1:JSON.stringify(outTracking)};
-  return Object.freeze({owner,sourceKeys:SOURCES.slice(),snapshot,dates,selectedDays:[...selected].sort(),newWorkouts:appended.size,readyForProduction:false});
+  return Object.freeze({owner,sourceKeys:SOURCES.slice(),baseline:Object.freeze({...baseline}),snapshot,dates,selectedDays:[...selected].sort(),newWorkouts:appended.size,readyForProduction:false});
  }
  async function validateRows({prepared,originalRows}){
   if(!prepared||!Array.isArray(originalRows))throw Error('Cloud preflight rows required');
   const selected=originalRows.filter(r=>prepared.sourceKeys.includes(r.source_key));
+  if(!prepared.owner||!prepared.baseline||!Array.isArray(prepared.sourceKeys)||prepared.sourceKeys.length!==SOURCES.length||SOURCES.some(x=>!prepared.sourceKeys.includes(x)))throw Error('Verified owner and source baseline required');
+  if(selected.some(r=>r.user_id!==prepared.owner))throw Error('Original cloud row belongs to another account');
   const snap=model.restoreSnapshot(selected);
   if(typeof snap.customWorkoutsV5!=='string'||typeof snap.dailyTrackingV1!=='string')throw Error('Incomplete original cloud sources');
+  for(const key of SOURCES){
+   let expected,actual;
+   try{expected=JSON.parse(prepared.baseline[key]);actual=JSON.parse(snap[key])}catch{throw Error('Cloud baseline cannot be decoded')}
+   if(model.canonical(actual)!==model.canonical(expected))throw Error('Cloud '+key+' no longer matches verified baseline; reload before saving');
+  }
   const fresh=await model.normalize({customWorkoutsV5:snap.customWorkoutsV5,dailyTrackingV1:snap.dailyTrackingV1});
   if(fresh.length!==selected.length)throw Error('Cloud sources were incomplete');
   const known=new Map(selected.map(r=>[r.table+':'+r.id,r]));
