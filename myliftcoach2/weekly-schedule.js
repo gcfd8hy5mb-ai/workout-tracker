@@ -24,7 +24,7 @@ function normalize(raw,presets,validExercises){
  }
  const allowed=new Set(plans.map(x=>x.id));
  const assigned=Array.isArray(raw?.assigned)&&raw.assigned.length===7?raw.assigned:defaultAssignments;
- const days=assigned.map((id,i)=>id===null?null:allowed.has(id)?id:(defaultAssignments[i]||null));
+ const days=assigned.map(id=>id===null?null:allowed.has(id)?id:null);
  return {plans,assigned:days};
 }
 function dayIndex(date=new Date()){
@@ -53,7 +53,7 @@ function add(state,id,changes,validExercises){
  return {...state,plans:[...state.plans,plan]};
 }
 function saved(state,presetIds){
- return {version:1,plans:state.plans.map(p=>({...p})),assigned:state.assigned.slice()};
+ return {version:1,plans:state.plans.map(p=>({...p,ids:p.ids.slice()})),assigned:state.assigned.slice()};
 }
 return Object.freeze({DAYS,normalize,dayIndex,resolve,assign,edit,add,saved});
 });
