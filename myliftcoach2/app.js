@@ -339,9 +339,30 @@ function exerciseAnatomy(ex,size='mini'){
  if(!window.LiftovaAnatomy)return '';
  return window.LiftovaAnatomy.render({id:ex.id,name:ex.name,muscle:ex.muscle||ex.group||'Other'},{size});
 }
-function exerciseDetail(id){
+function libraryPrefs(){
+ try{return window.MLCLibraryPrefs.read(localStorage,account?.id||'guest',allowedExerciseIds);}
+ catch(error){notice(String(error.message||error));return null;}
+}
+function favoriteButton(id,active){
+ return '<button type="button" class="button-outline library-favorite" data-library-favorite="'+escapeHTML(id)+'" aria-pressed="'+String(active)+'">'+(active?'★ Favorite':'☆ Favorite')+'</button>';
+}
+function toggleLibraryFavorite(id){
+ try{window.MLCLibraryPrefs.toggle(localStorage,account?.id||'guest',id,allowedExerciseIds);
+  renderLibrary();if(!$('modal').hidden&&$('modalContent').querySelector('[data-library-favorite]'))exerciseDetail(id,false);
+ }catch(error){notice(String(error.message||error));}
+}
+function renderRecentExercises(prefs){
+ const root=$('libraryRecentWrap');
+ const recent=prefs?.recent?.map(id=>editorExercises.find(ex=>ex.id===id)).filter(Boolean)||[];
+ root.hidden=!recent.length;
+ $('libraryRecentList').innerHTML=recent.map(ex=>'<button type="button" class="button-outline" data-library-recent="'+escapeHTML(ex.id)+'">'+escapeHTML(ex.name)+'</button>').join('');
+}
+function exerciseDetail(id,recordView=true){
  const ex=originalExercises.find(e=>e.id===id)||editorExercises.find(e=>e.id===id);
  if(!ex)return;
+ if(recordView){try{window.MLCLibraryPrefs.viewed(localStorage,account?.id||'guest',id,allowedExerciseIds)}catch(error){notice(String(error.message||error));}}
+ const prefs=libraryPrefs();
+ if(recordView)renderLibrary();
  const tips=Array.isArray(ex.tips)?ex.tips:[],mistakes=Array.isArray(ex.mistakes)?ex.mistakes:[];
  const image=libraryImage(ex),anatomy=exerciseAnatomy(ex,'detail');
  const metadata=window.MLCExerciseMetadata.get(ex.id,ex.name);
@@ -351,7 +372,7 @@ function exerciseDetail(id){
   .slice(0,5);
  const relatedHtml=related.length?'<h3>Other movements for this muscle</h3><div class="hero-actions">'+
    related.map(item=>'<button type="button" class="button-outline" data-library-related="'+escapeHTML(item.id)+'">'+escapeHTML(item.name)+'</button>').join('')+'</div>':'';
- const actions='<div class="hero-actions"><button type="button" class="button-primary" data-library-stage="'+escapeHTML(ex.id)+'">Add to today’s workout · review first</button></div>';
+ const actions='<div class="hero-actions">'+favoriteButton(ex.id,Boolean(prefs?.favorites.includes(ex.id)))+'<button type="button" class="button-primary" data-library-stage="'+escapeHTML(ex.id)+'">Add to today’s workout · review first</button></div>';
  openModal('<div class="exercise-detail-modal"><div class="modal-eyebrow">EXERCISE LIBRARY · TECHNIQUE</div><h2>'+escapeHTML(ex.name)+'</h2><p class="small">Primary: '+escapeHTML(ex.muscle||ex.group||'Other')+(metadata.equipment?' · Equipment: '+escapeHTML(metadata.equipment):'')+'</p><div class="exercise-detail-visuals">'+(image?'<img src="'+escapeHTML(image)+'" alt="'+escapeHTML(ex.name)+' exercise reference" loading="lazy">':'<div class="panel"><p class="small">No original exercise photograph supplied.</p></div>')+'<div>'+anatomy+'</div></div><h3>How to perform</h3><p>'+escapeHTML(ex.how||ex.cue||'Detailed instructions not available for this exercise.')+'</p>'+list('Technique tips',tips)+list('Common mistakes',mistakes)+relatedHtml+actions+'<p class="small">Static exercise reference and highlighted muscles. Moving demonstrations are not yet available.</p></div>');
 }
 function libraryEquipment(ex){
@@ -383,10 +404,12 @@ function stageLibraryExercise(id){
 function renderLibrary(){
  const query=$('exerciseSearch').value.trim().toLowerCase();
  const equipment=$('libraryEquipment').value,photosOnly=$('libraryPhotosOnly').checked;
+ const prefs=libraryPrefs(),favoritesOnly=$('libraryFavoritesOnly').checked;
  const matches=window.MLCV2ExerciseCatalog.filter(editorExercises,query,muscleFilter,{
   equipment,photosOnly,equipmentFor:libraryEquipment
- });
- $('libraryResultCount').textContent=matches.length+' of '+editorExercises.length+' exercises'+(photosOnly?' · original photographs only':'')+'.';
+ }).filter(ex=>!favoritesOnly||Boolean(prefs?.favorites.includes(ex.id)));
+ renderRecentExercises(prefs);
+ $('libraryResultCount').textContent=matches.length+' of '+editorExercises.length+' exercises'+(photosOnly?' · original photographs only':'')+(favoritesOnly?' · favorites':'')+'.';
  document.querySelectorAll('[data-muscle]').forEach(button=>button.classList.toggle('selected',button.dataset.muscle===muscleFilter));
  $('libraryGrid').innerHTML=matches.map(ex=>{
   const group=String(ex.muscle||ex.group||'Other');
@@ -395,7 +418,7 @@ function renderLibrary(){
   const tips=Array.isArray(ex.tips)?ex.tips:[];
   const mistakes=Array.isArray(ex.mistakes)?ex.mistakes:[];
   const notes='<p>'+escapeHTML(guide)+'</p>'+(tips.length?'<strong>Technique tips</strong><ul>'+tips.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+(mistakes.length?'<strong>Common mistakes</strong><ul>'+mistakes.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'');
-  return '<article class="library-card reference-exercise">'+(image?'<img class="library-thumb" src="'+escapeHTML(image)+'" alt="" loading="lazy">':'<div class="library-anatomy">'+exerciseAnatomy(ex,'mini')+'</div>')+'<div class="library-info"><h3>'+escapeHTML(ex.name)+'</h3><p>'+escapeHTML(group)+(ex.sets?' · '+ex.sets+' sets':'')+(ex.reps?' · '+escapeHTML(ex.reps)+' reps':'')+'</p><details><summary>Technique notes</summary>'+notes+'</details><button class="button-outline exercise-open" type="button" data-library-detail="'+escapeHTML(ex.id)+'">View exercise details</button></div><span class="library-chevron">›</span></article>';
+  return '<article class="library-card reference-exercise">'+(image?'<img class="library-thumb" src="'+escapeHTML(image)+'" alt="" loading="lazy">':'<div class="library-anatomy">'+exerciseAnatomy(ex,'mini')+'</div>')+'<div class="library-info"><h3>'+escapeHTML(ex.name)+'</h3><p>'+escapeHTML(group)+(ex.sets?' · '+ex.sets+' sets':'')+(ex.reps?' · '+escapeHTML(ex.reps)+' reps':'')+'</p><details><summary>Technique notes</summary>'+notes+'</details><button class="button-outline exercise-open" type="button" data-library-detail="'+escapeHTML(ex.id)+'">View exercise details</button>'+favoriteButton(ex.id,Boolean(prefs?.favorites.includes(ex.id)))+'</div><span class="library-chevron">›</span></article>';
  }).join('')||'<p class="empty-note">No exercises match that search.</p>';
 }
 function renderProgress(){
@@ -1160,16 +1183,18 @@ function bind(){
  $('exerciseSearch').addEventListener('input',renderLibrary);
  $('libraryEquipment').addEventListener('change',renderLibrary);
  $('libraryPhotosOnly').addEventListener('change',renderLibrary);
+ $('libraryFavoritesOnly').addEventListener('change',renderLibrary);
+ $('libraryRecentList').addEventListener('click',e=>{const btn=e.target.closest('[data-library-recent]');if(btn)exerciseDetail(btn.dataset.libraryRecent);});
  $('libraryReset').addEventListener('click',()=>{
-  $('exerciseSearch').value='';$('libraryEquipment').value='';$('libraryPhotosOnly').checked=false;
+  $('exerciseSearch').value='';$('libraryEquipment').value='';$('libraryPhotosOnly').checked=false;$('libraryFavoritesOnly').checked=false;
   muscleFilter='';renderLibrary();
  });
- $('libraryGrid').addEventListener('click',e=>{const button=e.target.closest('[data-library-detail]');if(button)exerciseDetail(button.dataset.libraryDetail)});
+ $('libraryGrid').addEventListener('click',e=>{const favorite=e.target.closest('[data-library-favorite]');if(favorite){toggleLibraryFavorite(favorite.dataset.libraryFavorite);return;}const button=e.target.closest('[data-library-detail]');if(button)exerciseDetail(button.dataset.libraryDetail)});
  $('libraryChips').addEventListener('click',event=>{const el=event.target.closest('[data-muscle]');if(!el)return;muscleFilter=el.dataset.muscle;renderLibrary()});
  document.querySelectorAll('[data-account-page]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.accountPage)));
 
  $('modalContent').addEventListener('input',e=>{const field=e.target.closest('[data-weight]');if(field)updateWarmupGuide(field.dataset.weight)});
- $('modalContent').addEventListener('click',e=>{const related=e.target.closest('[data-library-related]');if(related){exerciseDetail(related.dataset.libraryRelated);return}const stage=e.target.closest('[data-library-stage]');if(stage){stageLibraryExercise(stage.dataset.libraryStage);return}const remove=e.target.closest('[data-delete-logged-set]');if(remove){removeLoggedSet(Number(remove.dataset.deleteLoggedSet));return}const edit=e.target.closest('[data-save-logged-set]');if(edit){updateLoggedSet(Number(edit.dataset.saveLoggedSet));return}const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const readiness=e.target.closest('[data-session-readiness]');if(readiness){updateSessionReadiness(readiness.dataset.sessionReadiness);return}const coach=e.target.closest('[data-use-coach]');if(coach){useCoachWeight(coach.dataset.useCoach);return}const last=e.target.closest('[data-use-last]');if(last){reuseLastWorkingWeight(last.dataset.useLast);return}const swap=e.target.closest('[data-swap-apply]');if(swap){replaceSessionExercise(swap.dataset.swapApply);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
+ $('modalContent').addEventListener('click',e=>{const favorite=e.target.closest('[data-library-favorite]');if(favorite){toggleLibraryFavorite(favorite.dataset.libraryFavorite);return;}const related=e.target.closest('[data-library-related]');if(related){exerciseDetail(related.dataset.libraryRelated);return}const stage=e.target.closest('[data-library-stage]');if(stage){stageLibraryExercise(stage.dataset.libraryStage);return}const remove=e.target.closest('[data-delete-logged-set]');if(remove){removeLoggedSet(Number(remove.dataset.deleteLoggedSet));return}const edit=e.target.closest('[data-save-logged-set]');if(edit){updateLoggedSet(Number(edit.dataset.saveLoggedSet));return}const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const readiness=e.target.closest('[data-session-readiness]');if(readiness){updateSessionReadiness(readiness.dataset.sessionReadiness);return}const coach=e.target.closest('[data-use-coach]');if(coach){useCoachWeight(coach.dataset.useCoach);return}const last=e.target.closest('[data-use-last]');if(last){reuseLastWorkingWeight(last.dataset.useLast);return}const swap=e.target.closest('[data-swap-apply]');if(swap){replaceSessionExercise(swap.dataset.swapApply);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
  $('closeModal').addEventListener('click',closeModal);
  $('restClose').addEventListener('click',closeRest);
  $('restSkip').addEventListener('click',closeRest);
