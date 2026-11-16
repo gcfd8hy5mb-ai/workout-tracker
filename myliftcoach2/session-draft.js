@@ -13,6 +13,7 @@
     !value.plan.ids.every(id=>typeof id==='string'&&id.length>0&&id.length<=128)||
     !['Great','Normal','Tired'].includes(value.readiness)||!Array.isArray(value.sets)||
     value.sets.length>600||!Number.isFinite(Date.parse(value.savedAt))||
+    (value.startedAt!==undefined&&(!Number.isFinite(value.startedAt)||value.startedAt<=0))||
     !value.sets.every(set=>value.plan.ids.includes(set?.exerciseId)&&
       Number.isFinite(set.weight)&&set.weight>=0&&set.weight<=1500&&
       Number.isInteger(set.reps)&&set.reps>=1&&set.reps<=100))
@@ -30,7 +31,8 @@
   const actualOwner=owner||'guest',value={version:1,owner:actualOwner,planId:plan?.id,
    plan:plan?{id:plan.id,title:String(plan.title||'Workout'),kind:String(plan.kind||'Custom'),
      description:String(plan.description||''),ids:plan.ids?.slice()}:null,
-   readiness:session?.readiness,sets:session?.sets?.map(x=>({...x})),savedAt:new Date().toISOString()};
+   readiness:session?.readiness,sets:session?.sets?.map(x=>({...x})),
+   startedAt:Number.isFinite(session?.startedAt)&&session.startedAt>0?session.startedAt:Date.now(),savedAt:new Date().toISOString()};
   valid(value,actualOwner);
   const serialized=JSON.stringify(value),k=key(actualOwner);
   storage.setItem(k,serialized);
