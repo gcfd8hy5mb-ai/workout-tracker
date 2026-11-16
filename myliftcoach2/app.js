@@ -622,7 +622,8 @@ async function loadOriginalAccountSettings(){
   if(account?.id!==owner||!auth?.access_token)throw Error('Account changed or session expired');
   const result=await window.MLCOriginalAccountSettings.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner});
   if(account?.id!==owner||settingsLoadEpoch!==epoch)return;
-  originalAccountSettings=result;importedSettingsOwner=owner;renderOriginalAccountSettings();
+  originalAccountSettings=result;importedSettingsOwner=result?owner:null;renderOriginalAccountSettings();
+  if(!result)status.textContent='No original profile or training-goal records exist for this account.';
  }catch(err){
   if(account?.id!==owner||settingsLoadEpoch!==epoch)return;
   clearOriginalAccountSettings();
