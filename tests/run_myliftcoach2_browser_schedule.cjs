@@ -31,7 +31,17 @@ const assert = require('node:assert/strict');
    assert.match(boardToday,/My Custom Session/);
    await page.locator('#heroStart').evaluate(el=>el.click());
    assert.match(await page.locator('#modalContent h2').textContent(),/My Custom Session/);
+   assert.equal(await page.locator('[data-use-last]').count(),0);
+   await page.locator('[data-addset="leg-press"]').evaluate(el=>el.click());
+   await page.locator('[data-swap-select="leg-press"]').selectOption('leg-extension');
+   await page.locator('[data-swap-apply="leg-press"]').evaluate(el=>el.click());
+   assert.equal(await page.locator('[data-exercise-card="leg-press"]').count(),1);
+   assert.equal(await page.locator('[data-exercise-card="leg-extension"]').count(),1);
+   assert.match(await page.locator('[data-count="leg-press"]').textContent(),/1 logged/);
+   assert.equal(await page.locator('[data-use-last]').count(),0);
    await page.locator('#closeModal').evaluate(el=>el.click());
+   assert.match(await page.locator('#todayExercises').textContent(),/Leg Press/);
+   assert.doesNotMatch(await page.locator('#todayExercises').textContent(),/Leg Extension/);
 
    // Editing the exact scheduled plan must update Home, modal and persisted copy.
    const today=(new Date().getDay()+6)%7;
