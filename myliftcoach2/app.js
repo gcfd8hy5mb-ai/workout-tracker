@@ -494,25 +494,40 @@ async function loadOriginalHistory(){
  }finally{button.disabled=!account}
 }
 function clearOriginalTracking(){
- originalTracking=null;importedTrackingOwner=null;renderOriginalTracking();
+ originalTracking=null;importedTrackingOwner=null;$('trackingMonth').value='';renderOriginalTracking();
 }
 function renderOriginalTracking(){
- const status=$('trackingStatus'),button=$('loadOriginalTracking');
+ const status=$('trackingStatus'),button=$('loadOriginalTracking'),month=$('trackingMonth'),monthlyStatus=$('trackingMonthStatus'),monthlySummary=$('trackingMonthlySummary');
  if(!status||!button)return;
  button.disabled=!account;
  const valid=Boolean(account?.id&&importedTrackingOwner===account.id&&originalTracking);
+ month.disabled=!valid;monthlySummary.replaceChildren();
  for(const id of ['Water','Food','Weight'])$('tracking'+id+'Count').textContent=valid?String(originalTracking[id.toLowerCase()].length):'—';
- $('trackingGoals').textContent=valid?'Logged water goal: '+(originalTracking.waterGoal?Math.round(originalTracking.waterGoal)+' mL':'Not set')+' · Calorie goal: '+(originalTracking.calorieGoal??'Not set')+' · Saved meals: '+originalTracking.savedMeals+' · Food favorites: '+originalTracking.foodFavorites:'';
+ $('trackingGoals').textContent=valid?'Logged water goal: '+(originalTracking.waterGoal?Math.round(originalTracking.waterGoal)+' '+(originalTracking.waterUnit==='oz'?'oz':'mL'):'Not set')+' · Calorie goal: '+(originalTracking.calorieGoal??'Not set')+' · Saved meals: '+originalTracking.savedMeals+' · Food favorites: '+originalTracking.foodFavorites:'';
  for(const id of ['Water','Food','Weight'])$('tracking'+id+'List').replaceChildren();
+ monthlyStatus.textContent=valid?'':'Load original tracking to view monthly totals.';
  if(!account?.id){status.textContent='Sign in to view your original tracking history.';return;}
  if(!valid){status.textContent='Ready to load original tracking without modifying any records.';return;}
  status.textContent='Read-only original tracking data loaded for the signed-in account.';
+ if(!month.value){
+  const days=[...originalTracking.water,...originalTracking.food,...originalTracking.weight].map(x=>x.day).filter(Boolean).sort().reverse();
+  month.value=days[0]?.slice(0,7)||new Date().toISOString().slice(0,7);
+ }
+ const summary=window.MLCOriginalTracking.monthSummary(originalTracking,month.value);
+ const unit=originalTracking.waterUnit==='oz'?'oz':'mL';
+ if(summary){
+  monthlyStatus.textContent='Logged entries for '+summary.month+' only; not estimates of consumption.';
+  monthlySummary.innerHTML='<div class="recent-item"><strong>Hydration entries</strong><span>'+summary.waterEntries+' · '+Math.round(summary.totalWater).toLocaleString()+' '+unit+'</span></div>'+
+   '<div class="recent-item"><strong>Food entries</strong><span>'+summary.foodEntries+' · '+Math.round(summary.calories).toLocaleString()+' logged calories</span></div>'+
+   '<div class="recent-item"><strong>Weight entries</strong><span>'+summary.weightEntries+(summary.latestWeight?' · last '+summary.latestWeight.value+' lb':'')+'</span></div>';
+ }
+
  const order=(a,b)=>b.day.localeCompare(a.day);
- const water=originalTracking.water.slice().sort(order).slice(0,100);
- $('trackingWaterList').innerHTML=water.map(x=>'<div class="recent-item"><strong>'+escapeHTML(x.day)+'</strong><span>'+Math.round(x.amount)+' mL</span></div>').join('')||'<p class="small">No water records found.</p>';
- const food=originalTracking.food.slice().sort(order).slice(0,100);
+ const water=originalTracking.water.filter(x=>x.day.startsWith(month.value+'-')).slice().sort(order).slice(0,100);
+ $('trackingWaterList').innerHTML=water.map(x=>'<div class="recent-item"><strong>'+escapeHTML(x.day)+'</strong><span>'+Math.round(x.amount)+' '+unit+'</span></div>').join('')||'<p class="small">No water records found.</p>';
+ const food=originalTracking.food.filter(x=>x.day.startsWith(month.value+'-')).slice().sort(order).slice(0,100);
  $('trackingFoodList').innerHTML=food.map(x=>'<div class="recent-item"><div><strong>'+escapeHTML(x.name)+'</strong><small>'+escapeHTML(x.day)+'</small></div><span>'+x.calories+' cal</span></div>').join('')||'<p class="small">No food records found.</p>';
- const weight=originalTracking.weight.slice().sort(order).slice(0,100);
+ const weight=originalTracking.weight.filter(x=>x.day.startsWith(month.value+'-')).slice().sort(order).slice(0,100);
  $('trackingWeightList').innerHTML=weight.map(x=>'<div class="recent-item"><strong>'+escapeHTML(x.day)+'</strong><span>'+x.value+' lb</span></div>').join('')||'<p class="small">No weight records found.</p>';
 }
 async function loadOriginalTracking(){
@@ -810,6 +825,7 @@ function bind(){
  $('originalHistorySearch').addEventListener('input',renderOriginalHistory);
  $('originalCalendarMonth').addEventListener('change',renderOriginalCalendar);
  $('loadOriginalTracking').addEventListener('click',loadOriginalTracking);
+ $('trackingMonth').addEventListener('change',renderOriginalTracking);
  $('loadOriginalCustom').addEventListener('click',loadOriginalCustomSchedule);
  $('toggleOriginalCustom').addEventListener('click',toggleOriginalCustomSchedule);
  $('copyOriginalCustom').addEventListener('click',copyOriginalToEditable);
