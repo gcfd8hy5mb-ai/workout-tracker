@@ -430,15 +430,39 @@ function renderOriginalCalendar(){
  status.textContent=days.length?days.length+' documented training days during '+input.value+'. No demo sessions included.':'No qualifying completed workouts found for this month.';
  root.innerHTML=days.map(day=>'<details class="recent-item"><summary><strong>'+escapeHTML(day.date)+'</strong> · '+day.workouts+' workouts · '+day.sets+' sets · '+Math.round(day.volume).toLocaleString()+' lb-reps</summary><p>'+day.titles.map(escapeHTML).join(' · ')+'</p></details>').join('');
 }
+function renderOriginalExerciseTrend(records=null){
+ const select=$('originalExerciseTrendSelect'),status=$('originalExerciseTrendStatus'),root=$('originalExerciseTrend');
+ if(!select||!status||!root)return;
+ const ready=Boolean(account?.id&&importedHistoryOwner===account.id);
+ const previous=select.value;
+ root.replaceChildren();
+ if(!ready){
+  select.replaceChildren(new Option('Load original history first',''));
+  select.disabled=true;
+  status.textContent='Original exercise progress appears after loading your account history.';
+  return;
+ }
+ const rows=records||window.MLCOriginalProgress.analyze(originalHistory).records;
+ select.disabled=!rows.length;
+ select.replaceChildren(new Option(rows.length?'Choose an exercise':'No completed exercises',''));
+ for(const item of rows)select.add(new Option(item.name,item.id));
+ select.value=rows.some(x=>x.id===previous)?previous:(rows[0]?.id||'');
+ if(!select.value){status.textContent='No qualifying completed sets available.';return;}
+ const trend=window.MLCOriginalProgress.exerciseTrend(originalHistory,select.value,12);
+ status.textContent=trend.length?trend.length+' latest completed sessions for this exercise; actual logged weight, not estimated 1RM.':'No completed sets found for this exercise.';
+ root.innerHTML=trend.slice().reverse().map(item=>'<div class="recent-item"><div><strong>'+escapeHTML(item.date)+'</strong><small>'+item.sets+' completed sets · '+Math.round(item.volume).toLocaleString()+' lb-reps</small></div><span>Best '+item.bestWeight.toLocaleString()+' lb</span></div>').join('');
+}
 function renderOriginalProgress(){
  const status=$('originalProgressStatus'),root=$('originalRecords'),chart=$('originalVolumeChart');
  if(!status||!root||!chart)return;
  const ready=Boolean(account?.id&&importedHistoryOwner===account.id);
  renderOriginalCalendar();
+ if(!ready)renderOriginalExerciseTrend();
  for(const id of ['Sessions','Sets','Exercises','Volume'])$('originalProgress'+id).textContent='—';
  root.replaceChildren();chart.replaceChildren();
  if(!ready){status.textContent='Load your original history to view your workout progress and personal records.';chart.textContent='Load original account history to view the real workout volume trend.';return;}
  const result=window.MLCOriginalProgress.analyze(originalHistory);
+ renderOriginalExerciseTrend(result.records);
  $('originalProgressSessions').textContent=String(result.sessions);
  $('originalProgressSets').textContent=String(result.sets);
  $('originalProgressExercises').textContent=String(result.exercises);
@@ -831,6 +855,7 @@ function bind(){
  $('coachMovementSearch').addEventListener('input',renderOriginalCoachEvidence);
  $('originalHistorySearch').addEventListener('input',renderOriginalHistory);
  $('originalCalendarMonth').addEventListener('change',renderOriginalCalendar);
+ $('originalExerciseTrendSelect').addEventListener('change',()=>renderOriginalExerciseTrend());
  $('loadOriginalTracking').addEventListener('click',loadOriginalTracking);
  $('trackingMonth').addEventListener('change',renderOriginalTracking);
  $('loadOriginalCustom').addEventListener('click',loadOriginalCustomSchedule);
