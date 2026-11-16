@@ -119,3 +119,18 @@ test('valid unassigned custom workout remains available after reopening',()=>{
  assert.equal(result.plans.find(p=>p.id==='custom-later-1').title,'Weekend Routine');
  assert.equal(s.resolve(result,'2026-11-16T12:00:00').plan.id,'upper-a');
 });
+
+test('duplicating a preset creates independent custom workout without overwriting source',()=>{
+ let state=s.normalize(null,preset,allowed);
+ const before=JSON.stringify(state.plans.find(x=>x.id==='upper-a'));
+ state=s.duplicate(state,'upper-a','custom-copy-123',allowed);
+ const copy=state.plans.find(x=>x.id==='custom-copy-123');
+ assert.equal(copy.title,'Upper Copy');
+ assert.deepEqual(copy.ids,['press']);
+ state=s.edit(state,'custom-copy-123',{title:'Personal Push',ids:['press','row']},allowed);
+ state=s.assign(state,0,'custom-copy-123');
+ assert.equal(JSON.stringify(state.plans.find(x=>x.id==='upper-a')),before);
+ assert.equal(s.resolve(state,'2026-11-16T12:00:00').plan.title,'Personal Push');
+ assert.throws(()=>s.duplicate(state,'missing','custom-copy-456',allowed),/not found/);
+ assert.throws(()=>s.duplicate(state,'upper-a','custom-copy-123',allowed),/Unique/);
+});
