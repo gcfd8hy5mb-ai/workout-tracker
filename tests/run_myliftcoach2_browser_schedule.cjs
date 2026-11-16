@@ -50,6 +50,16 @@ const assert = require('node:assert/strict');
    await page.locator('#closeModal').evaluate(el=>el.click());
    assert.match(await page.locator('#todayExercises').textContent(),/Leg Press/);
    assert.doesNotMatch(await page.locator('#todayExercises').textContent(),/Leg Extension/);
+   const draftRaw=await page.evaluate(()=>localStorage.getItem('mlc2-unfinished-session-v1:guest'));
+   assert.ok(draftRaw&&JSON.parse(draftRaw).sets.length===1,'Unfinished workout did not persist');
+   await page.reload({waitUntil:'load'});
+   await page.locator('#heroStart').evaluate(el=>el.click());
+   assert.match(await page.locator('[data-count="leg-press"]').textContent(),/1 logged/);
+   assert.equal(await page.locator('[data-exercise-card="leg-extension"]').count(),1);
+   assert.equal(await page.locator('[data-session-readiness="Tired"]').getAttribute('aria-pressed'),'true');
+   page.once('dialog',dialog=>dialog.accept());
+   await page.locator('#discardWorkout').evaluate(el=>el.click());
+   assert.equal(await page.evaluate(()=>localStorage.getItem('mlc2-unfinished-session-v1:guest')),null);
 
    // Editing the exact scheduled plan must update Home, modal and persisted copy.
    const today=(new Date().getDay()+6)%7;
