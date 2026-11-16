@@ -45,3 +45,15 @@ test('read-only original history search matches workout titles and exercise name
  assert.equal(importer.filterSessions(input,'missing').length,0);
  assert.equal(JSON.stringify(input),raw);
 });
+
+test('original workout history detail excludes unfinished sets without altering source history',()=>{
+ const input={date:'2026-11-13',exercises:[
+  {id:'press',sets:[{weight:100,reps:8,completed:true},{weight:180,reps:10,completed:false}]},
+  {id:'row',sets:[{weight:80,reps:12},{weight:0,reps:10}]}
+ ]};
+ const before=JSON.stringify(input);
+ assert.deepEqual(importer.sessionTotals(input),{sets:2,volume:1760});
+ assert.deepEqual(importer.sessionTotals({exercises:[input.exercises[0]]}),{sets:1,volume:800});
+ assert.deepEqual(importer.sessionTotals(null),{sets:0,volume:0});
+ assert.equal(JSON.stringify(input),before);
+});
