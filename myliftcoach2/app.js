@@ -419,21 +419,25 @@ function renderCoach(){
  renderOriginalCoachEvidence();
 }
 function renderCoachProgression(){
- const status=$('coachProgressionStatus'),root=$('coachProgressionList');
+ const status=$('coachProgressionStatus'),root=$('coachProgressionList'),start=$('coachOpenToday');
  if(!status||!root)return;
- root.replaceChildren();
- if(!account?.id||importedHistoryOwner!==account.id){
-  status.textContent='Load your original workout history first. No recommendations are being applied.';
-  return;
- }
- const evidence=window.MLCOriginalCoachEvidence.summarize(originalHistory);
- status.textContent=evidence.movements.length?'Read-only original progression rules · 8–10 reps · original equipment-specific 2.5 or 5 lb steps. No workout targets changed.':'No qualifying completed workouts available.';
- root.innerHTML=evidence.movements.slice(0,12).map(ex=>{
-  const increment=window.MLCExerciseMetadata.increment(ex.id,ex.name);
-  const result=window.MLCProgressionPreview.suggest(originalHistory,ex.id,{range:{min:8,max:10},increment});
-  const label=result.status==='ready'?('Preview: '+result.action+' to '+result.weight+' lb · '+result.reason):'Not enough qualifying working-set history (at least two completed workouts required).';
-  return '<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+escapeHTML(label)+'</small></div><span>'+escapeHTML(String(result.lastWeight||'—'))+' lb last</span></div>';
- }).join('');
+ const selected=resolvedWorkout();
+ start.disabled=!selected.plan||Boolean(weeklyDraftReadError);
+ const verified=Boolean(account?.id&&importedHistoryOwner===account.id);
+ const items=window.MLCCoachDashboard.recommendations({
+  localSessions:demoSessions,originalSessions:verified?originalHistory:[],
+  legacyVerified:verified,catalog:editorExercises,limit:24
+ });
+ const ready=items.filter(x=>x.status==='ready');
+ status.textContent=ready.length?
+  ready.length+' evidence-based movement suggestions · '+items.length+' previously trained movements. Open a workout to decide whether to apply one to an individual set.':
+  items.length?'Training history found, but two qualifying working-set sessions are needed for a weight suggestion.':
+  'No eligible completed sessions yet. Log workouts locally, or sign in and load verified original training history.';
+ root.innerHTML=items.map(ex=>{
+  const suggestion=ex.status==='ready'?ex.action.toUpperCase()+' · '+ex.weight+' lb · '+ex.reason:
+   'Insufficient working-set evidence; no recommendation made.';
+  return '<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+escapeHTML(suggestion)+'</small><small>'+escapeHTML(ex.source||'No verified source yet')+'</small></div><span>'+escapeHTML(ex.lastWeight===null?'—':String(ex.lastWeight)+' lb last')+'</span></div>';
+ }).join('')||'<p class="small">Complete workouts to build your personal Coach history.</p>';
 }
 function renderOriginalRecovery(){
  const status=$('coachRecoveryStatus'),muscles=$('coachRecoveryMuscles'),readiness=$('coachReadinessRecords');
