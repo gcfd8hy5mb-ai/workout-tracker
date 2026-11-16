@@ -269,7 +269,7 @@ function createWeekWorkout(){
 const $=(id)=>document.getElementById(id);
 let page='home',activePlan=null,session=null,guest=true,account=null,auth=null;
 let demoSessions=loadDemo();
-let activeSessionOwner=null;
+let activeSessionOwner=null,sessionDirty=false;
 let originalHistory=[];
 let historyLoadEpoch=0,trackingLoadEpoch=0,settingsLoadEpoch=0,customScheduleLoadEpoch=0,combinedLoadEpoch=0;
 let importedHistoryOwner=null;
@@ -695,14 +695,14 @@ function renderSettings(){
 }
 function openModal(content){$('modalContent').innerHTML=content;$('modal').hidden=false;document.body.style.overflow='hidden';$('closeModal').focus()}
 function persistOpenSession(){
- if(!session||!activePlan)return;
+ if(!session||!activePlan||!sessionDirty)return;
  if(activeSessionOwner!==(account?.id||'guest')){notice('Account changed. Workout draft was not saved.');return;}
  try{window.MLCSessionDraft.save(localStorage,activeSessionOwner,activePlan,session)}
  catch(error){notice('Could not protect unfinished workout: '+String(error.message||error).slice(0,100))}
 }
 function closeModal(){
  if(session&&activePlan)persistOpenSession();
- closeRest();$('modal').hidden=true;document.body.style.overflow='';activePlan=null;session=null;activeSessionOwner=null;
+ closeRest();$('modal').hidden=true;document.body.style.overflow='';activePlan=null;session=null;activeSessionOwner=null;sessionDirty=false;
 }
 function openWorkout(id){
  const plan=(originalPreviewActive()?originalCustomSchedule.plans:[]).find(x=>x.id===id)||weekly.plans.find(x=>x.id===id);
@@ -716,12 +716,12 @@ function openWorkout(id){
   try{window.MLCSessionDraft.clear(localStorage,owner)}catch{notice('Cannot discard saved workout draft.');return;}
   draft=null;
  }
- activeSessionOwner=owner;
+ activeSessionOwner=owner;sessionDirty=Boolean(draft);
  activePlan=draft?{...draft.plan,ids:draft.plan.ids.slice()}:{...plan,ids:plan.ids.slice()};
  session=draft?{sets:draft.sets.map(x=>({...x})),readiness:draft.readiness}:{sets:[],readiness:'Normal'};
  openModal('<div class="modal-eyebrow">PRACTICE SESSION · LOCAL ONLY</div><h2>'+escapeHTML(plan.title)+'</h2><p>'+escapeHTML(plan.description)+' All entries stay in the isolated demo workspace and will not be uploaded to Supabase.</p><div class="panel"><strong>How are you feeling today?</strong><p class="small">Readiness check-in saved with this practice session only.</p><div class="hero-actions" id="sessionReadiness"><button type="button" class="button-outline" data-session-readiness="Great" aria-pressed="false">Great</button><button type="button" class="button-outline" data-session-readiness="Normal" aria-pressed="true">Normal</button><button type="button" class="button-outline" data-session-readiness="Tired" aria-pressed="false">Tired</button></div></div><div class="panel"><strong id="sessionSetProgressText">Ready to start</strong><progress id="sessionSetProgress" value="0" max="1" style="width:100%" aria-label="Completed practice sets"></progress><p class="small">Progress reflects logged sets in this practice session.</p></div><div id="workoutLog" class="workout-log"></div><div class="modal-footer"><button type="button" class="button-outline" id="cancelWorkout">Save for later</button><button type="button" class="button-outline" id="discardWorkout">Discard draft</button><button type="button" class="button-outline" id="startRest">Rest 1:30</button><button type="button" class="button-primary" id="finishWorkout">Finish session</button></div>');
  renderWorkoutLog();
- updateSessionReadiness(session.readiness);
+ updateSessionReadiness(session.readiness,false);
  for(const exerciseId of activePlan.ids)updateExerciseFeedback(exerciseId);
  if(draft)notice('Unfinished workout restored from this browser.');
  $('cancelWorkout').addEventListener('click',closeModal);
@@ -729,7 +729,7 @@ function openWorkout(id){
   if(!confirm('Discard this unfinished practice workout? Your completed sessions and weekly workout plan will not change.'))return;
   try{
    window.MLCSessionDraft.clear(localStorage,activeSessionOwner);
-   session=null;activePlan=null;activeSessionOwner=null;
+   session=null;activePlan=null;activeSessionOwner=null;sessionDirty=false;
    closeModal();notice('Unfinished practice workout discarded.');
   }catch{notice('Could not discard unfinished draft; it remains saved.')}
  });
@@ -744,16 +744,16 @@ function openWorkout(id){
    demoSessions=updated;
    window.MLCSessionDraft.clear(localStorage,activeSessionOwner);
    // Completion must not recreate the in-progress draft.
-   session=null;activePlan=null;activeSessionOwner=null;
+   session=null;activePlan=null;activeSessionOwner=null;sessionDirty=false;
    closeModal();renderHome();setPage('progress');notice('Practice session saved in this browser.');
   }catch{notice('Could not finish saving this workout. Your unfinished draft is retained.')}
 
  });
 }
-function updateSessionReadiness(value){
+function updateSessionReadiness(value,record=true){
  if(!session||!['Great','Normal','Tired'].includes(value))return;
  session.readiness=value;
- persistOpenSession();
+ if(record){sessionDirty=true;persistOpenSession();}
  document.querySelectorAll('[data-session-readiness]').forEach(button=>{
   const chosen=button.dataset.sessionReadiness===value;
   button.setAttribute('aria-pressed',String(chosen));
@@ -825,7 +825,7 @@ function replaceSessionExercise(id){
   const result=window.MLCSessionSubstitutions.replace(activePlan,session.sets,id,choice.value,editorExercises);
   activePlan=result.plan;
   session.sets=result.retainedSets;
-  persistOpenSession();
+  sessionDirty=true;persistOpenSession();
   renderWorkoutLog();
   for(const exerciseId of activePlan.ids)updateExerciseFeedback(exerciseId);
   notice(result.retainedOriginal?'Replacement added; previously logged sets were preserved.':'Exercise replaced for this session only. Your saved weekly plan is unchanged.');
@@ -851,7 +851,7 @@ function addSet(id){
   notice('Enter a valid weight and rep count.');return;
  }
  session.sets.push({exerciseId:id,weight,reps});
- persistOpenSession();
+ sessionDirty=true;persistOpenSession();
  // Update only this exercise: never erase inputs, keyboard focus, or scroll position.
  updateExerciseFeedback(id);
 }
@@ -860,7 +860,7 @@ function undoSet(id){
  const index=session.sets.findLastIndex(x=>x.exerciseId===id);
  if(index<0)return;
  session.sets.splice(index,1);
- persistOpenSession();
+ sessionDirty=true;persistOpenSession();
  updateExerciseFeedback(id);
 }
 function stopRestClock(){
