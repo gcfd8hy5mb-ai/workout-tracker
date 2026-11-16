@@ -51,5 +51,14 @@
   if(result.length!==parsed.length)throw Error('Original history has unsupported records; import not displayed');
   return result.sort((a,b)=>Date.parse(b.date)-Date.parse(a.date));
  }
- return Object.freeze({load,normalizedSession});
+ function filterSessions(sessions,term){
+  const query=String(term||'').trim().toLocaleLowerCase();
+  if(!Array.isArray(sessions))return [];
+  if(!query)return sessions.slice();
+  return sessions.filter(item=>
+   String(item.workoutTitle||'').toLocaleLowerCase().includes(query)||
+   (Array.isArray(item.exercises)&&item.exercises.some(ex=>String(ex.name||'').toLocaleLowerCase().includes(query)))
+  );
+ }
+ return Object.freeze({load,normalizedSession,filterSessions});
 });
