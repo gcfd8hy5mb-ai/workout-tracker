@@ -18,7 +18,7 @@ const assert = require('node:assert/strict');
     const start=[prior.getFullYear(),String(prior.getMonth()+1).padStart(2,'0'),String(prior.getDate()).padStart(2,'0')].join('-');
     const plans=[{id:'custom-test-session',title:'My Custom Session',kind:'Custom',description:'Browser test workout',ids:['leg-press','seated-leg-curl']}];
     const document={version:1,plans,assigned:Array(7).fill('custom-test-session'),overrides:{[key]:'custom-test-session'},recurring:[{start,end:null,workoutId:'custom-test-session'}]};
-    localStorage.setItem('mlc2-recurring-preview-v1:guest',JSON.stringify(document));
+    if(localStorage.getItem('mlc2-recurring-preview-v1:guest')===null) localStorage.setItem('mlc2-recurring-preview-v1:guest',JSON.stringify(document));
    });
    await page.goto(base,{waitUntil:'load'});
    await page.waitForFunction(()=>document.querySelector('#todayTitle')?.textContent==='My Custom Session',{timeout:15000});
