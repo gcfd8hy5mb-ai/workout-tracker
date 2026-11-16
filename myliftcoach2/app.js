@@ -385,18 +385,26 @@ function renderOriginalCoachEvidence(){
  renderOriginalRecovery();
 }
 function renderOriginalProgress(){
- const status=$('originalProgressStatus'),root=$('originalRecords');
- if(!status||!root)return;
+ const status=$('originalProgressStatus'),root=$('originalRecords'),chart=$('originalVolumeChart');
+ if(!status||!root||!chart)return;
  const ready=Boolean(account?.id&&importedHistoryOwner===account.id);
  for(const id of ['Sessions','Sets','Exercises','Volume'])$('originalProgress'+id).textContent='—';
- root.replaceChildren();
- if(!ready){status.textContent='Load your original history to view your workout progress and personal records.';return;}
+ root.replaceChildren();chart.replaceChildren();
+ if(!ready){status.textContent='Load your original history to view your workout progress and personal records.';chart.textContent='Load original account history to view the real workout volume trend.';return;}
  const result=window.MLCOriginalProgress.analyze(originalHistory);
  $('originalProgressSessions').textContent=String(result.sessions);
  $('originalProgressSets').textContent=String(result.sets);
  $('originalProgressExercises').textContent=String(result.exercises);
  $('originalProgressVolume').textContent=Math.round(result.volume).toLocaleString();
  status.textContent=result.sessions?result.trainingDays+' distinct training days · based on original completed workouts only. Estimates are not measured 1RM values.':'No completed original workouts found for this account.';
+ const rows=window.MLCOriginalProgress.volumeSeries(originalHistory,12);
+ if(rows.length){
+  const peak=Math.max(1,...rows.map(p=>p.volume));
+  const coordinates=rows.map((p,i)=>({x:22+i*(276/Math.max(1,rows.length-1)),y:175-p.volume/peak*142}));
+  const points=coordinates.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
+  const fill='22,184 '+points+' '+coordinates[coordinates.length-1].x.toFixed(1)+',184';
+  chart.innerHTML='<h3>Actual workout volume trend</h3><svg viewBox="0 0 320 220" role="img" aria-label="Original completed workout volume across '+rows.length+' sessions"><path d="M22 28 V184 H304" fill="none" stroke="#bbdfd2" stroke-opacity=".35"/><polygon points="'+fill+'" fill="#d8b775" fill-opacity=".15"/><polyline points="'+points+'" fill="none" stroke="#ffe1a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+coordinates.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="#ffeba8"/>').join('')+'</svg><p class="small">'+rows.length+' actual workouts · '+Math.round(rows[rows.length-1].volume).toLocaleString()+' lb-reps on '+escapeHTML(rows[rows.length-1].date)+'</p>';
+ }else chart.textContent='No qualifying original completed sets available to plot.';
  if(!result.records.length)return;
  root.innerHTML='<h3>Exercise records</h3>'+result.records.map(ex=>'<details class="recent-item"><summary><strong>'+escapeHTML(ex.name)+'</strong> · Best weight '+ex.weight.toLocaleString()+' lb</summary><p>Most reps in a set: '+ex.reps+' · Best set volume: '+Math.round(ex.setVolume).toLocaleString()+' lb · Estimated 1RM (sets up to 10 reps): '+(ex.estimatedOneRepMax?Math.round(ex.estimatedOneRepMax).toLocaleString()+' lb':'Unavailable')+'</p></details>').join('');
 }
