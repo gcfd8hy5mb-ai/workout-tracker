@@ -96,7 +96,7 @@ checked(s == 200 and reload_b["document"]["plans"][0]["id"] == "custom-b",
 
 stale_status, stale = api("prism_v2_schedule_save",
                           {"expected_revision": 0, "new_document": doc_b}, token_a)
-checked(stale_status >= 400 and stale.get("code") == "40001",
+checked(stale_status == 409 and stale.get("code") == "PT409",
         f"Stale save not flagged with expected code: {stale_status} {stale}")
 checked(api("prism_v2_schedule_read", {}, token_a)[1]["revision"] == 1,
         "Rejected save changed account revision")
