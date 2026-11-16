@@ -55,5 +55,30 @@
   points.sort((a,b)=>a.timestamp-b.timestamp);
   return points.slice(-count).map(({date,volume,sets})=>({date,volume,sets}));
  }
- return Object.freeze({analyze,volumeSeries});
+ function calendarDays(history,month){
+  if(!/^\\d{4}-(0[1-9]|1[0-2])$/.test(String(month||'')))return [];
+  const groups=new Map();
+  for(const item of Array.isArray(history)?history:[]){
+   const stamp=Date.parse(item?.date||'');
+   if(!Number.isFinite(stamp)||!Array.isArray(item?.exercises))continue;
+   const date=new Date(stamp).toISOString().slice(0,10);
+   if(!date.startsWith(month+'-'))continue;
+   let volume=0,sets=0;
+   for(const ex of item.exercises){
+    if(!Array.isArray(ex?.sets))continue;
+    for(const set of ex.sets){
+     const weight=Number(set?.weight),reps=Number(set?.reps);
+     if(set?.completed===false||!(weight>0&&reps>0&&Number.isFinite(weight)&&Number.isFinite(reps)))continue;
+     volume+=weight*reps;sets++;
+    }
+   }
+   if(!sets)continue;
+   const row=groups.get(date)||{date,workouts:0,sets:0,volume:0,titles:[]};
+   row.workouts++;row.sets+=sets;row.volume+=volume;
+   row.titles.push(String(item.workoutTitle||'Workout').slice(0,100));
+   groups.set(date,row);
+  }
+  return [...groups.values()].sort((a,b)=>b.date.localeCompare(a.date));
+ }
+ return Object.freeze({analyze,volumeSeries,calendarDays});
 });
