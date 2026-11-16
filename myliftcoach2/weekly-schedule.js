@@ -48,6 +48,7 @@ function edit(state,id,changes,validExercises){
  return {...state,plans:state.plans.map((p,i)=>i===index?plan:p)};
 }
 function add(state,id,changes,validExercises){
+ if(state.plans.length>=55)throw Error('Workout library limit reached; existing workouts preserved');
  if(state.plans.some(p=>p.id===id)||!/^custom-[a-zA-Z0-9-]{3,90}$/.test(id))throw Error('Unique custom workout ID required');
  const plan=cleanPlan({...changes,id,kind:'Custom'},validExercises);
  return {...state,plans:[...state.plans,plan]};
