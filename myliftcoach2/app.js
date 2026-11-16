@@ -28,13 +28,21 @@ const plans=[
 const originalExercises=Array.isArray(window.MLCOriginalExercises)?window.MLCOriginalExercises:[];
 const WEEKLY_KEY='mlc2-weekly-preview-v1';
 const weeklyAPI=window.MLCWeeklySchedule;
+const editorExercises=[...exercises,...originalExercises.filter(ex=>!exercises.some(demo=>demo.id===ex.id)).map(ex=>({
+ id:ex.id,name:ex.name,group:ex.muscle||'Other',sets:3,reps:'8–12',cue:ex.how||''
+}))];
+const exerciseById=id=>editorExercises.find(ex=>ex.id===id);
+const allowedExerciseIds=editorExercises.map(ex=>ex.id);
 function readWeekly(){
- try{return weeklyAPI.normalize(JSON.parse(localStorage.getItem(WEEKLY_KEY)||'null'),plans,exercises.map(x=>x.id))}
- catch{return weeklyAPI.normalize(null,plans,exercises.map(x=>x.id))}
+ try{return weeklyAPI.normalize(JSON.parse(localStorage.getItem(WEEKLY_KEY)||'null'),plans,allowedExerciseIds)}
+ catch{return weeklyAPI.normalize(null,plans,allowedExerciseIds)}
 }
 let weekly=readWeekly();
-function persistWeekly(){
- localStorage.setItem(WEEKLY_KEY,JSON.stringify(weeklyAPI.saved(weekly,plans.map(x=>x.id))));
+function commitWeekly(candidate){
+ const payload=JSON.stringify(weeklyAPI.saved(candidate,plans.map(p=>p.id)));
+ localStorage.setItem(WEEKLY_KEY,payload);
+ if(localStorage.getItem(WEEKLY_KEY)!==payload)throw Error('Workout schedule was not saved');
+ weekly=candidate;
 }
 function nextPlan(){return weeklyAPI.resolve(weekly).plan}
 function openToday(){const plan=nextPlan();if(plan)openWorkout(plan.id);else notice('Today is a rest day. Choose a workout from the weekly board.')}
@@ -63,26 +71,28 @@ function updateWeekEditor(){
  const id=$('weekWorkoutSelect').value,p=weekly.plans.find(p=>p.id===id);
  $('weekWorkoutName').value=p?.title||'';
  $('weekWorkoutName').disabled=!p;
- $('weekExerciseOptions').innerHTML=exercises.map(ex=>'<label class="week-exercise"><input type="checkbox" value="'+escapeHTML(ex.id)+'"'+(p?.ids.includes(ex.id)?' checked':'')+(p?'':' disabled')+'><span>'+escapeHTML(ex.name)+'</span></label>').join('');
+ $('weekExerciseOptions').innerHTML=editorExercises.map(ex=>'<label class="week-exercise"><input type="checkbox" value="'+escapeHTML(ex.id)+'"'+(p?.ids.includes(ex.id)?' checked':'')+(p?'':' disabled')+'><span>'+escapeHTML(ex.name)+'</span></label>').join('');
 }
 function saveWeekEditor(){
  const day=Number($('weekEditor').dataset.day),id=$('weekWorkoutSelect').value||null;
  try{
+  let candidate=weekly;
   if(id){
    const title=$('weekWorkoutName').value.trim();
    const selected=[...$('weekExerciseOptions').querySelectorAll('input:checked')].map(input=>input.value);
-   weekly=weeklyAPI.edit(weekly,id,{title,ids:selected},exercises.map(x=>x.id));
+   candidate=weeklyAPI.edit(candidate,id,{title,ids:selected},allowedExerciseIds);
   }
-  weekly=weeklyAPI.assign(weekly,day,id);
-  persistWeekly();renderWeekBoard();renderHome();renderWorkouts();
+  candidate=weeklyAPI.assign(candidate,day,id);
+  commitWeekly(candidate);
+  renderWeekBoard();renderHome();renderWorkouts();renderOriginalProgress();
   notice('Saved '+weeklyAPI.DAYS[day]+' workout. Home and workout details now match.');
  }catch(error){notice(error.message)}
 }
 function createWeekWorkout(){
  try{
   const id='custom-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
-  weekly=weeklyAPI.add(weekly,id,{title:'My Custom Workout',ids:[exercises[0].id]},exercises.map(x=>x.id));
-  persistWeekly();$('weekWorkoutSelect').innerHTML='<option value="">Rest day</option>'+weekly.plans.map(p=>'<option value="'+escapeHTML(p.id)+'">'+escapeHTML(p.title)+'</option>').join('');
+  const candidate=weeklyAPI.add(weekly,id,{title:'My Custom Workout',ids:[editorExercises[0].id]},allowedExerciseIds);
+  commitWeekly(candidate);$('weekWorkoutSelect').innerHTML='<option value="">Rest day</option>'+weekly.plans.map(p=>'<option value="'+escapeHTML(p.id)+'">'+escapeHTML(p.title)+'</option>').join('');
   $('weekWorkoutSelect').value=id;updateWeekEditor();
   notice('Custom workout created. Choose exercises and save the day.');
  }catch(error){notice(error.message)}
@@ -378,7 +388,7 @@ function openWorkout(id){
 function renderWorkoutLog(){
  if(!activePlan)return;
  $('workoutLog').innerHTML=activePlan.ids.map(id=>{
-  const e=exercises.find(x=>x.id===id);
+  const e=exerciseById(id);
   const count=session.sets.filter(x=>x.exerciseId===id).length;
   return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small><div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
  }).join('');
