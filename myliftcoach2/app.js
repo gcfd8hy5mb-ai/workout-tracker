@@ -30,9 +30,7 @@ const WEEKLY_KEY='mlc2-weekly-preview-v1';
 const RECURRING_KEY='mlc2-recurring-preview-v1';
 const recurringDraftAPI=window.MLCRecurringDraft;
 const weeklyAPI=window.MLCWeeklySchedule;
-const editorExercises=[...exercises,...originalExercises.filter(ex=>!exercises.some(demo=>demo.id===ex.id)).map(ex=>({
- id:ex.id,name:ex.name,group:ex.muscle||'Other',sets:3,reps:'8–12',cue:ex.how||''
-}))];
+const editorExercises=window.MLCV2ExerciseCatalog.merge(originalExercises,exercises);
 const exerciseById=id=>editorExercises.find(ex=>ex.id===id);
 const allowedExerciseIds=editorExercises.map(ex=>ex.id);
 function scheduleOwner(){return account?.id||null}
@@ -329,7 +327,7 @@ function renderWorkouts(){
  $('workoutGrid').innerHTML=visible.map((p,i)=>'<button type="button" class="workout-card" data-workout="'+p.id+'"><span class="number">SESSION 0'+(i+1)+' · '+escapeHTML(p.kind.toUpperCase())+'</span><h3>'+escapeHTML(p.title)+'</h3><p>'+escapeHTML(p.description)+'</p><div class="workout-meta"><span>'+p.ids.length+' movements · '+p.ids.length*3+' recommended sets</span><b>Open session ↗</b></div></button>').join('');
 }
 function libraryImage(ex){
- return typeof ex?.image==='string'&&/^images\/[a-zA-Z0-9_.-]+\.(png|webp|jpg|jpeg|svg)$/.test(ex.image)?'../'+ex.image:'./assets/chest-press.svg';
+ return window.MLCV2ExerciseCatalog.imagePath(ex);
 }
 function exerciseAnatomy(ex,size='mini'){
  if(!window.LiftovaAnatomy)return '';
@@ -342,18 +340,11 @@ function exerciseDetail(id){
  const image=libraryImage(ex),anatomy=exerciseAnatomy(ex,'detail');
  const metadata=window.MLCExerciseMetadata.get(ex.id,ex.name);
  const list=(label,items)=>items.length?'<h3>'+label+'</h3><ul>'+items.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'';
- openModal('<div class="exercise-detail-modal"><div class="modal-eyebrow">EXERCISE LIBRARY · TECHNIQUE</div><h2>'+escapeHTML(ex.name)+'</h2><p class="small">Primary: '+escapeHTML(ex.muscle||ex.group||'Other')+(metadata.equipment?' · Equipment: '+escapeHTML(metadata.equipment):'')+'</p><div class="exercise-detail-visuals"><img src="'+escapeHTML(image)+'" alt="'+escapeHTML(ex.name)+' exercise reference" loading="lazy"><div>'+anatomy+'</div></div><h3>How to perform</h3><p>'+escapeHTML(ex.how||ex.cue||'Detailed instructions not available for this exercise.')+'</p>'+list('Technique tips',tips)+list('Common mistakes',mistakes)+'<p class="small">Static exercise reference and highlighted muscles. Moving demonstrations are not yet available.</p></div>');
+ openModal('<div class="exercise-detail-modal"><div class="modal-eyebrow">EXERCISE LIBRARY · TECHNIQUE</div><h2>'+escapeHTML(ex.name)+'</h2><p class="small">Primary: '+escapeHTML(ex.muscle||ex.group||'Other')+(metadata.equipment?' · Equipment: '+escapeHTML(metadata.equipment):'')+'</p><div class="exercise-detail-visuals">'+(image?'<img src="'+escapeHTML(image)+'" alt="'+escapeHTML(ex.name)+' exercise reference" loading="lazy">':'<div class="panel"><p class="small">No original exercise photograph supplied.</p></div>')+'<div>'+anatomy+'</div></div><h3>How to perform</h3><p>'+escapeHTML(ex.how||ex.cue||'Detailed instructions not available for this exercise.')+'</p>'+list('Technique tips',tips)+list('Common mistakes',mistakes)+'<p class="small">Static exercise reference and highlighted muscles. Moving demonstrations are not yet available.</p></div>');
 }
 function renderLibrary(){
  const query=$('exerciseSearch').value.trim().toLowerCase();
- const catalog=originalExercises.length?originalExercises:exercises;
- const matches=catalog.filter(ex=>{
-  const group=String(ex.muscle||ex.group||'');
-  const normalized=group.toLowerCase();
-  const selected=muscleFilter.toLowerCase();
-  const matchesGroup=!selected||normalized===selected||(selected==='arms'&&['biceps','triceps','forearms'].includes(normalized))||(selected==='legs'&&['quads','hamstrings','calves','glutes','adductors'].includes(normalized))||(selected==='shoulders'&&normalized==='delts');
-  return matchesGroup&&(String(ex.name||'')+' '+group).toLowerCase().includes(query);
- });
+ const matches=window.MLCV2ExerciseCatalog.filter(editorExercises,query,muscleFilter);
  document.querySelectorAll('[data-muscle]').forEach(button=>button.classList.toggle('selected',button.dataset.muscle===muscleFilter));
  $('libraryGrid').innerHTML=matches.map(ex=>{
   const group=String(ex.muscle||ex.group||'Other');
@@ -362,7 +353,7 @@ function renderLibrary(){
   const tips=Array.isArray(ex.tips)?ex.tips:[];
   const mistakes=Array.isArray(ex.mistakes)?ex.mistakes:[];
   const notes='<p>'+escapeHTML(guide)+'</p>'+(tips.length?'<strong>Technique tips</strong><ul>'+tips.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+(mistakes.length?'<strong>Common mistakes</strong><ul>'+mistakes.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'');
-  return '<article class="library-card reference-exercise"><img class="library-thumb" src="'+escapeHTML(image)+'" alt="" loading="lazy"><div class="library-info"><h3>'+escapeHTML(ex.name)+'</h3><p>'+escapeHTML(group)+(ex.sets?' · '+ex.sets+' sets':'')+(ex.reps?' · '+escapeHTML(ex.reps)+' reps':'')+'</p><details><summary>Technique notes</summary>'+notes+'</details><button class="button-outline exercise-open" type="button" data-library-detail="'+escapeHTML(ex.id)+'">View exercise details</button></div><span class="library-chevron">›</span></article>';
+  return '<article class="library-card reference-exercise">'+(image?'<img class="library-thumb" src="'+escapeHTML(image)+'" alt="" loading="lazy">':'<div class="library-anatomy">'+exerciseAnatomy(ex,'mini')+'</div>')+'<div class="library-info"><h3>'+escapeHTML(ex.name)+'</h3><p>'+escapeHTML(group)+(ex.sets?' · '+ex.sets+' sets':'')+(ex.reps?' · '+escapeHTML(ex.reps)+' reps':'')+'</p><details><summary>Technique notes</summary>'+notes+'</details><button class="button-outline exercise-open" type="button" data-library-detail="'+escapeHTML(ex.id)+'">View exercise details</button></div><span class="library-chevron">›</span></article>';
  }).join('')||'<p class="empty-note">No exercises match that search.</p>';
 }
 function renderProgress(){
@@ -857,7 +848,8 @@ function renderWorkoutLog(){
   const originalGuide=originalExercises.find(x=>x.id===id);
   const tips=originalGuide?.tips||[];
   const mistakes=originalGuide?.mistakes||[];
-  const visual='<details class="panel"><summary>Exercise image &amp; anatomy</summary><div class="exercise-detail-visuals"><img loading="lazy" src="'+escapeHTML(libraryImage(originalGuide||e))+'" alt="'+escapeHTML(e.name)+' exercise reference"><div>'+exerciseAnatomy(originalGuide||e,'mini')+'</div></div><p class="small">Static reference; movement animation pending.</p></details>';
+  const photo=libraryImage(originalGuide||e);
+  const visual='<details class="panel"><summary>Exercise image &amp; anatomy</summary><div class="exercise-detail-visuals">'+(photo?'<img loading="lazy" src="'+escapeHTML(photo)+'" alt="'+escapeHTML(e.name)+' exercise reference">':'<p class="small">No original exercise photo supplied.</p>')+'<div>'+exerciseAnatomy(originalGuide||e,'mini')+'</div></div><p class="small">Static reference; movement animation pending.</p></details>';
   const guidance='<details class="panel"><summary>Exercise form &amp; technique</summary><p>'+escapeHTML(originalGuide?.how||e.cue||'Follow a comfortable controlled range of motion.')+'</p>'+
     (tips.length?'<strong>Technique tips</strong><ul>'+tips.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+
     (mistakes.length?'<strong>Common mistakes</strong><ul>'+mistakes.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+'</details>';
