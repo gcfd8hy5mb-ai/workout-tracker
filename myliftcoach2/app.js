@@ -29,6 +29,8 @@ const originalExercises=Array.isArray(window.MLCOriginalExercises)?window.MLCOri
 const $=(id)=>document.getElementById(id);
 let page='home',activePlan=null,session=null,guest=true,account=null,auth=null;
 let demoSessions=loadDemo();
+let originalHistory=[];
+let importedHistoryOwner=null;
 let toastTimer;
 let muscleFilter='';
 let restSeconds=90,restPaused=true,restClock=null;
@@ -81,6 +83,7 @@ function renderProgress(){
  const movements=new Set(demoSessions.flatMap(x=>x.sets.map(y=>y.exerciseId)));
  $('progressSessions').textContent=demoSessions.length;$('progressSets').textContent=totalSets();$('progressMovements').textContent=movements.size;
  renderProgressChart();
+ renderOriginalHistory();
  $('sessionHistory').innerHTML=demoSessions.length?demoSessions.map(x=>'<div class="recent-item"><div><strong>'+escapeHTML(x.title)+'</strong><small>'+new Date(x.created).toLocaleString()+'</small></div><span>'+x.sets.length+' sets</span></div>').join(''):'<div class="empty-note">No demo sessions recorded yet. Open Workouts to start your first practice session.</div>';
 }
 function renderProgressChart(){
@@ -104,6 +107,40 @@ function renderCoach(){
  $('coachDescription').textContent=demoSessions.length?'This is a factual summary of local practice sessions, not an adaptive recommendation.':'Complete a practice workout to view a factual summary of your recent activity.';
  const latest=demoSessions.find(x=>x&&x.created&&Number.isFinite(Date.parse(x.created)));
  $('coachRecent').textContent=latest?'Latest practice session: '+new Date(latest.created).toLocaleDateString()+' · '+String(latest.title||'Workout'):'No completed preview sessions have been saved.';
+}
+function clearOriginalHistory(){
+ originalHistory=[];importedHistoryOwner=null;
+ renderOriginalHistory();
+}
+function renderOriginalHistory(){
+ const status=$('originalHistoryStatus'),root=$('originalHistory'),button=$('loadOriginalHistory');
+ if(!status||!root||!button)return;
+ button.disabled=!account;
+ if(!account){status.textContent='Sign in with your existing account first.';root.replaceChildren();return;}
+ if(importedHistoryOwner!==account.id){status.textContent='Ready to load read-only original workout history.';root.replaceChildren();return;}
+ status.textContent=originalHistory.length?originalHistory.length+' original completed workouts loaded (read only).':'No completed original workouts were returned for this account.';
+ root.innerHTML=originalHistory.slice(0,200).map(item=>{
+  const sets=item.exercises.flatMap(ex=>ex.sets);
+  const volume=sets.reduce((n,s)=>n+s.weight*s.reps,0);
+  const details=item.exercises.map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sets.length+' sets</small></div><span>'+Math.round(ex.sets.reduce((n,s)=>n+s.weight*s.reps,0)).toLocaleString()+' lb</span></div>').join('');
+  return '<details class="panel"><summary><strong>'+escapeHTML(item.workoutTitle)+'</strong> · '+new Date(item.date).toLocaleDateString()+' · '+sets.length+' sets · '+Math.round(volume).toLocaleString()+' lb</summary>'+details+'</details>';
+ }).join('');
+}
+async function loadOriginalHistory(){
+ if(!account?.id||!auth?.access_token){notice('Sign in first to load your original history.');return;}
+ const button=$('loadOriginalHistory'),status=$('originalHistoryStatus');
+ const owner=account.id;
+ button.disabled=true;status.textContent='Reading original account history securely…';
+ try{
+  await validateStoredAuth();
+  if(account?.id!==owner||!auth?.access_token)throw Error('Account session is no longer valid');
+  const history=await window.MLCOriginalHistory.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner});
+  if(account?.id!==owner)throw Error('Account changed during import');
+  originalHistory=history;importedHistoryOwner=owner;renderOriginalHistory();
+ }catch(error){
+  originalHistory=[];importedHistoryOwner=null;renderOriginalHistory();
+  status.textContent='Could not load original history: '+String(error.message||error).slice(0,180);
+ }finally{button.disabled=!account}
 }
 function renderSettings(){
  $('accountIdentity').textContent=account?.email?account.email+' · authenticated (production workout data is not loaded)':'Not signed in. You can still explore the demo.';
@@ -209,9 +246,9 @@ async function authRequest(path,body,token,method='POST'){
 }
 function saveAuth(data){
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
- sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;renderSettings();
+ if(account?.id&&account.id!==data.user?.id)clearOriginalHistory();sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;renderSettings();renderOriginalHistory();
 }
-function clearAuth(){sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;renderSettings()}
+function clearAuth(){sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();renderSettings()}
 async function validateStoredAuth(){
  try{
   const saved=JSON.parse(sessionStorage.getItem(AUTH_KEY)||'null');
@@ -224,7 +261,7 @@ async function validateStoredAuth(){
   const user=await authRequest('user',null,token,'GET');
   if(!user?.id||user.id!==account.id)clearAuth();
  }catch{clearAuth()}
- renderSettings();
+ renderSettings();renderOriginalHistory();
 }
 function openSignIn(){
  openModal('<div class="modal-eyebrow">EXISTING SUPABASE ACCOUNT</div><h2>Welcome back</h2><p>Use the email and password from your original MYLIFTCOACH account. This only verifies your identity; it will not import, overwrite, or modify workout records.</p><form id="loginForm" class="login-form"><label>Email<input name="email" type="email" autocomplete="email" autocapitalize="none" required></label><label>Password<input name="password" type="password" autocomplete="current-password" minlength="6" required></label><button class="button-primary" id="loginSubmit" type="submit">Sign in securely</button></form><p id="loginMessage" role="status"></p><p class="small">The training area stays in demo mode until the legacy data mapping is verified.</p>');
@@ -294,6 +331,7 @@ function bind(){
  $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').hidden)closeModal()});
  $('clearDemo').addEventListener('click',()=>{if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;demoSessions=[];localStorage.removeItem(DEMO_KEY);renderProgress();renderHome();notice('Local demo history cleared. Production data untouched.')});
+ $('loadOriginalHistory').addEventListener('click',loadOriginalHistory);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
 bind();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderSettings();validateStoredAuth();
