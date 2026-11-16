@@ -713,8 +713,23 @@ function renderWorkoutLog(){
  $('workoutLog').innerHTML=activePlan.ids.map(id=>{
   const e=exerciseById(id);
   const count=session.sets.filter(x=>x.exerciseId===id).length;
-  return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small><div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
+  const options=window.MLCSessionSubstitutions.alternatives(id,activePlan.ids,editorExercises);
+  const replacement=options.length?'<div class="inputs"><label>Replace this exercise<select aria-label="Replacement for '+escapeHTML(e.name)+'" data-swap-select="'+id+'"><option value="">Choose same-muscle alternative</option>'+options.map(x=>'<option value="'+escapeHTML(x.id)+'">'+escapeHTML(x.name)+'</option>').join('')+'</select></label><button type="button" class="button-outline" data-swap-apply="'+id+'">Replace exercise</button></div>':'<p class="small">No unused same-muscle alternatives available.</p>';
+  return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small>'+replacement+'<div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
  }).join('');
+}
+function replaceSessionExercise(id){
+ if(!session||!activePlan?.ids.includes(id))return;
+ const choice=document.querySelector('[data-swap-select="'+id+'"]');
+ if(!choice?.value){notice('Choose a same-muscle alternative first.');return;}
+ try{
+  const result=window.MLCSessionSubstitutions.replace(activePlan,session.sets,id,choice.value,editorExercises);
+  activePlan=result.plan;
+  session.sets=result.retainedSets;
+  renderWorkoutLog();
+  for(const exerciseId of activePlan.ids)updateExerciseFeedback(exerciseId);
+  notice(result.retainedOriginal?'Replacement added; previously logged sets were preserved.':'Exercise replaced for this session only. Your saved weekly plan is unchanged.');
+ }catch(error){notice(String(error.message||error).slice(0,140))}
 }
 function updateExerciseFeedback(id){
  const sets=session.sets.filter(x=>x.exerciseId===id);
@@ -762,7 +777,7 @@ function closeRest(){
 function openRest(){
  restSeconds=90;restPaused=false;
  let next=activePlan?.ids.find(id=>!session?.sets.some(set=>set.exerciseId===id))||activePlan?.ids[0];
- const e=exercises.find(x=>x.id===next);
+ const e=exerciseById(next);
  $('restNextName').textContent=e?.name||'Continue workout';
  $('restNextReps').textContent=e?e.sets+' sets · '+e.reps+' reps':'';
  $('restScreen').hidden=false;
@@ -886,7 +901,7 @@ function bind(){
  $('libraryChips').addEventListener('click',event=>{const el=event.target.closest('[data-muscle]');if(!el)return;muscleFilter=el.dataset.muscle;renderLibrary()});
  document.querySelectorAll('[data-account-page]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.accountPage)));
 
- $('modalContent').addEventListener('click',e=>{const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
+ $('modalContent').addEventListener('click',e=>{const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const swap=e.target.closest('[data-swap-apply]');if(swap){replaceSessionExercise(swap.dataset.swapApply);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
  $('closeModal').addEventListener('click',closeModal);
  $('restClose').addEventListener('click',closeRest);
  $('restSkip').addEventListener('click',closeRest);
