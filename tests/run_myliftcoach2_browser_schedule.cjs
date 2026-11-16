@@ -199,7 +199,18 @@ const assert = require('node:assert/strict');
    assert.equal(await page.evaluate(()=>localStorage.getItem('mlc2-unfinished-session-v1:guest')),null);
    await page.reload({waitUntil:'load'});
    assert.equal(await page.locator('#sessionHistory details').count(),1);
-   console.log('PASS '+device.label+': workout restore, edit, selected set removal and saved completion summary');
+   await page.locator('.sidebar [data-page="coaching"]').first().evaluate(el=>el.click());
+   assert.equal(await page.locator('#coachWeekWorkouts').textContent(),'1');
+   assert.equal(await page.locator('#coachWeekDays').textContent(),'1');
+   assert.equal(await page.locator('#coachWeekSets').textContent(),'1');
+   assert.match(await page.locator('#coachWeekVolume').textContent(),/lb-reps/);
+   await page.locator('#heroStart').evaluate(el=>el.click());
+   assert.match(await page.locator('[data-exercise-card="leg-press"]').textContent(),/Last local practice:/);
+   await page.locator('[data-addset="leg-press"]').evaluate(el=>el.click());
+   assert.match(await page.locator('[data-exercise-card="leg-press"]').textContent(),/Matched previous|Improved from previous|Below previous/);
+   page.once('dialog',dialog=>dialog.accept());
+   await page.locator('#discardWorkout').evaluate(el=>el.click());
+   console.log('PASS '+device.label+': workout completion and Coach local weekly activity/previous-set feedback');
    await context.close();
   }
  }finally{await browser.close()}
