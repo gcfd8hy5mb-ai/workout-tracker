@@ -127,6 +127,21 @@ function renderCoachProgression(){
   return '<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+escapeHTML(label)+'</small></div><span>'+escapeHTML(String(result.lastWeight||'—'))+' lb last</span></div>';
  }).join('');
 }
+function renderOriginalRecovery(){
+ const status=$('coachRecoveryStatus'),muscles=$('coachRecoveryMuscles'),readiness=$('coachReadinessRecords');
+ if(!status||!muscles||!readiness)return;
+ muscles.replaceChildren();readiness.replaceChildren();
+ if(!account?.id||importedHistoryOwner!==account.id){
+  status.textContent='Load verified original account history in Progress to see recently trained muscle groups.';
+  return;
+ }
+ const summary=window.MLCRecoveryPreview.summarize(originalHistory,originalExercises);
+ const counts=summary.recordedCheckins;
+ const total=counts.Great+counts.Normal+counts.Tired;
+ status.textContent=summary.sessionCount+' completed workouts analyzed. Displaying time since each muscle group was trained, not a recovery score.';
+ muscles.innerHTML=summary.muscles.length?summary.muscles.map(m=>'<div class="recent-item"><strong>'+escapeHTML(m.name)+'</strong><span>'+Math.floor(m.hoursAgo/24)+' days ago'+(m.within72Hours?' · Within 72h':'')+'</span></div>').join(''):'<p class="small">No original exercise muscle matches were found.</p>';
+ readiness.textContent=total?'Original recorded session check-ins: Great '+counts.Great+' · Normal '+counts.Normal+' · Tired '+counts.Tired+'.':'No explicit session readiness labels found in imported completed workouts.';
+}
 function renderOriginalCoachEvidence(){
  const status=$('coachOriginalStatus'),movements=$('coachOriginalMovements');
  if(!status||!movements)return;
@@ -135,6 +150,7 @@ function renderOriginalCoachEvidence(){
  if(!account?.id||importedHistoryOwner!==account.id){
   status.textContent='Sign in and load original history from Progress to view real completed-workout evidence. No adaptive recommendations are active.';
   renderCoachProgression();
+  renderOriginalRecovery();
   return;
  }
  const evidence=window.MLCOriginalCoachEvidence.summarize(originalHistory);
@@ -145,6 +161,7 @@ function renderOriginalCoachEvidence(){
  status.textContent=evidence.latestDate?'Latest completed workout: '+new Date(evidence.latestDate).toLocaleDateString()+' · '+evidence.latestTitle+'. Historical activity only, not coaching advice.':'No completed workouts in imported history.';
  movements.innerHTML=evidence.movements.slice(0,8).map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sessions+' workouts · '+ex.sets+' sets</small></div><span>Best '+ex.bestWeight.toLocaleString()+' lb</span></div>').join('');
  renderCoachProgression();
+ renderOriginalRecovery();
 }
 function renderOriginalProgress(){
  const status=$('originalProgressStatus'),root=$('originalRecords');
