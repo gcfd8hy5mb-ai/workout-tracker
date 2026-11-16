@@ -73,7 +73,9 @@ function loadOwned(storage,base,owner,presets,validExercises){
  for(const p of input.plans||[])if(p&&typeof p.id==='string')allowed.add(p.id);
  // Refuse silent replacement when a linked custom plan was removed/corrupted.
  for(const id of input.assigned)if(id!=null&&!allowed.has(id))throw Error('Saved workout assignment is missing');
- return normalize(input,presets,validExercises);
+ const restored=normalize(input,presets,validExercises);
+ for(const id of input.assigned)if(id!=null&&!restored.plans.some(p=>p.id===id))throw Error('Saved assigned workout is invalid; original draft preserved');
+ return restored;
 }
 function commitOwned(storage,base,owner,state,presetIds){
  return commit(storage,ownerKey(base,owner),state,presetIds);
