@@ -278,8 +278,9 @@ let originalAccountSettings=null,importedSettingsOwner=null;
 let toastTimer;
 let muscleFilter='';
 let restSeconds=90,restPaused=true,restClock=null;
-function loadDemo(){try{const a=JSON.parse(localStorage.getItem(DEMO_KEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&Array.isArray(x.sets)).slice(0,100):[]}catch{return []}}
-function storeDemo(){localStorage.setItem(DEMO_KEY,JSON.stringify(demoSessions))}
+function demoKey(owner=account?.id||'guest'){return owner==='guest'?DEMO_KEY:DEMO_KEY+':'+owner;}
+function loadDemo(owner='guest'){try{const a=JSON.parse(localStorage.getItem(demoKey(owner))||'[]');return Array.isArray(a)?a.filter(x=>x&&Array.isArray(x.sets)).slice(0,100):[]}catch{return []}}
+function storeDemo(){localStorage.setItem(demoKey(),JSON.stringify(demoSessions))}
 function escapeHTML(text){return String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function notice(message){const t=$('toast');t.textContent=message;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,3400)}
 function setPage(next){if(!['welcome','home','workouts','library','progress','settings','coaching','nutrition'].includes(next))return;page=next;
@@ -790,8 +791,8 @@ function openWorkout(id){
   const entry={id:'demo-'+Date.now(),created:new Date().toISOString(),title:activePlan.title,planId:activePlan.id,sets:session.sets.map(x=>({...x})),readiness:session.readiness,startedAt:session.startedAt};
   const updated=[entry,...demoSessions].slice(0,100);
   try{
-   localStorage.setItem(DEMO_KEY,JSON.stringify(updated));
-   if(localStorage.getItem(DEMO_KEY)!==JSON.stringify(updated))throw Error('Save verification failed');
+   localStorage.setItem(demoKey(activeSessionOwner),JSON.stringify(updated));
+   if(localStorage.getItem(demoKey(activeSessionOwner))!==JSON.stringify(updated))throw Error('Save verification failed');
    demoSessions=updated;
    window.MLCSessionDraft.clear(localStorage,activeSessionOwner);
    // Completion must not recreate the in-progress draft.
@@ -999,9 +1000,9 @@ function saveAuth(data){
  // A session already in progress belongs to its original account.
  if(activePlan&&activeSessionOwner&&activeSessionOwner!==data.user?.id)closeModal();
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
- if(account?.id&&account.id!==data.user?.id){combinedLoadEpoch++;$('loadAllOriginalStatus').textContent='Account changed. Load records for the current account.';clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings();renderOriginalHistory();
+ if(account?.id&&account.id!==data.user?.id){combinedLoadEpoch++;$('loadAllOriginalStatus').textContent='Account changed. Load records for the current account.';clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;demoSessions=loadDemo(account.id);renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings();renderOriginalHistory();
 }
-function clearAuth(){if(activePlan)closeModal();combinedLoadEpoch++;if($('loadAllOriginalStatus'))$('loadAllOriginalStatus').textContent='Sign in to load original account records.';if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;renderLocalDailyTracking();clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings()}
+function clearAuth(){if(activePlan)closeModal();combinedLoadEpoch++;if($('loadAllOriginalStatus'))$('loadAllOriginalStatus').textContent='Sign in to load original account records.';if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;demoSessions=loadDemo('guest');renderLocalDailyTracking();clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings()}
 async function validateStoredAuth(){
  try{
   const saved=JSON.parse(sessionStorage.getItem(AUTH_KEY)||'null');
@@ -1010,7 +1011,7 @@ async function validateStoredAuth(){
   if(saved.expires_at<Date.now()/1000+45&&saved.refresh_token){
     const refreshed=await authRequest('token?grant_type=refresh_token',{refresh_token:saved.refresh_token});
     saveAuth(refreshed);token=refreshed.access_token;
-  }else{auth=saved;account=saved.user;renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts()}
+  }else{auth=saved;account=saved.user;demoSessions=loadDemo(account.id);renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach()}
   const user=await authRequest('user',null,token,'GET');
   if(!user?.id||user.id!==account.id)clearAuth();
  }catch{clearAuth()}
@@ -1103,7 +1104,7 @@ function bind(){
  $('restPause').addEventListener('click',()=>{restPaused=!restPaused;updateRestClock()});
  $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').hidden)closeModal()});
- $('clearDemo').addEventListener('click',()=>{if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;demoSessions=[];localStorage.removeItem(DEMO_KEY);renderProgress();renderHome();notice('Local demo history cleared. Production data untouched.')});
+ $('clearDemo').addEventListener('click',()=>{if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;demoSessions=[];localStorage.removeItem(demoKey());renderProgress();renderCoach();renderHome();notice('Local demo history cleared. Production data untouched.')});
  $('loadOriginalHistory').addEventListener('click',loadOriginalHistory);
  $('homeLoadOriginalHistory').addEventListener('click',loadOriginalHistory);
  document.querySelectorAll('[data-home-original-progress]').forEach(el=>el.addEventListener('click',()=>setPage('progress')));
