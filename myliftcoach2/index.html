@@ -123,7 +123,7 @@
  <button type="button" class="button-primary" id="weekSaveButton">Save day and workout</button></article>
  <article class="panel"><div class="panel-heading"><h3>Original custom workout schedule</h3><span class="micro-tag">READ ONLY</span></div>
  <p id="originalCustomStatus" role="status" class="small">Sign in to load original workouts.</p>
- <div class="hero-actions"><button type="button" class="button-outline" id="loadOriginalCustom">Load original schedule</button><button type="button" class="button-outline" id="toggleOriginalCustom" disabled>Preview original assignments</button><button type="button" class="button-outline" id="copyOriginalCustom" disabled>Copy this week to editable schedule</button><button type="button" class="button-outline" id="inspectRecurringMigration" disabled>Inspect complete repeating schedule</button></div>
+ <div class="hero-actions"><button type="button" class="button-outline" id="loadOriginalCustom">Load original schedule</button><button type="button" class="button-outline" id="toggleOriginalCustom" disabled>Preview original assignments</button><button type="button" class="button-outline" id="copyOriginalCustom" disabled>Copy this week to editable schedule</button><button type="button" class="button-outline" id="inspectRecurringMigration" disabled>Inspect complete repeating schedule</button><button type="button" class="button-outline" id="activateFullRecurring" disabled>Use full repeating schedule locally</button></div>
  <p class="small">Original cloud data is read-only. Switch back to editable preview to change assignments. No live data is written.</p><p id="recurringMigrationStatus" class="small" role="status" aria-live="polite"></p></article>
  <div class="workout-grid" id="workoutGrid"></div></section>
  <section id="library" class="page" hidden><div class="page-heading"><div class="eyebrow">MOVEMENT & MASTERY</div><h1>Exercise library</h1><p>A focused starter collection of machine-friendly movements.</p></div><label class="search-bar">⌕ <input id="exerciseSearch" type="search" placeholder="Search movements or muscle groups"></label><div class="filter-chips" id="libraryChips"><button type="button" data-muscle="" class="selected">All</button><button type="button" data-muscle="Chest">Chest</button><button type="button" data-muscle="Back">Back</button><button type="button" data-muscle="Shoulders">Shoulders</button><button type="button" data-muscle="Legs">Legs</button><button type="button" data-muscle="Arms">Arms</button><button type="button" data-muscle="Core">Core</button></div><div class="library-grid" id="libraryGrid"></div></section>
@@ -189,6 +189,7 @@
 <script defer src="./original-custom-schedule.js?v=1"></script>
 <script defer src="./custom-schedule-copy.js?v=1"></script>
 <script defer src="./v2-recurring-schedule.js?v=1"></script>
+<script defer src="./recurring-draft.js?v=1"></script>
 <script defer src="./weekly-schedule.js?v=1"></script>
 <script defer src="./app.js?v=1"></script>
 </body>
