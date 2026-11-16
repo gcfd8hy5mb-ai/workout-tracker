@@ -779,6 +779,10 @@ function renderWorkoutLog(){
   const guidance='<details class="panel"><summary>Exercise form &amp; technique</summary><p>'+escapeHTML(originalGuide?.how||e.cue||'Follow a comfortable controlled range of motion.')+'</p>'+
     (tips.length?'<strong>Technique tips</strong><ul>'+tips.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+
     (mistakes.length?'<strong>Common mistakes</strong><ul>'+mistakes.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+'</details>';
+  const recorded=session.sets.map((set,index)=>({...set,index})).filter(set=>set.exerciseId===id);
+  const logged=recorded.length?'<div class="recent-list">'+recorded.map(set=>
+   '<div class="recent-item"><div><strong>Logged set '+(recorded.indexOf(set)+1)+'</strong><div class="inputs"><label>Weight (lb)<input type="number" min="0" max="1500" step="2.5" inputmode="decimal" aria-label="Edit set weight" data-edit-weight="'+set.index+'" value="'+set.weight+'"></label><label>Reps<input type="number" min="1" max="100" step="1" inputmode="numeric" aria-label="Edit set reps" data-edit-reps="'+set.index+'" value="'+set.reps+'"></label><button type="button" class="button-outline" data-save-logged-set="'+set.index+'">Save set</button></div></div></div>'
+  ).join('')+'</div>':'';
   const options=window.MLCSessionCoach.rankedAlternatives(id,activePlan.ids,editorExercises);
   const previous=account?.id&&importedHistoryOwner===account.id?
     window.MLCOriginalHistory.latestWorkingWeight(originalHistory,id):null;
@@ -787,7 +791,7 @@ function renderWorkoutLog(){
     '<div class="panel"><strong>Original Coach progression</strong><p class="small">'+escapeHTML(coachResult.action.toUpperCase()+': '+coachResult.reason)+'</p><button class="button-outline" type="button" data-use-coach="'+id+'">Use suggested '+coachResult.weight+' lb for this set</button></div>':'';
   const historyHint=previous?'<div class="hero-actions"><span class="small">Last original workout: '+previous.weight+' lb on '+escapeHTML(previous.date)+'</span><button type="button" class="button-outline" data-use-last="'+id+'">Use last weight</button></div>':'';
   const replacement=options.length?'<div class="inputs"><label>Replace this exercise<select aria-label="Replacement for '+escapeHTML(e.name)+'" data-swap-select="'+id+'"><option value="">Choose same-muscle alternative</option>'+options.map(x=>'<option value="'+escapeHTML(x.id)+'">'+escapeHTML(x.name)+' · '+escapeHTML(x.reason)+'</option>').join('')+'</select></label><button type="button" class="button-outline" data-swap-apply="'+id+'">Replace exercise</button></div>':'<p class="small">No unused same-muscle alternatives available.</p>';
-  return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small>'+guidance+coachHint+historyHint+replacement+'<p class="small" data-warmups="'+id+'"></p><div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
+  return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small>'+guidance+coachHint+historyHint+replacement+logged+'<p class="small" data-warmups="'+id+'"></p><div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
  }).join('');
  renderSessionSetProgress();
  for(const id of activePlan.ids)updateWarmupGuide(id);
@@ -841,6 +845,23 @@ function updateExerciseFeedback(id){
  if(undo)undo.hidden=sets.length===0;
  renderSessionSetProgress();
 }
+function updateLoggedSet(index){
+ if(!session||!Number.isInteger(index)||index<0||index>=session.sets.length)return;
+ const weightField=document.querySelector('[data-edit-weight="'+index+'"]');
+ const repsField=document.querySelector('[data-edit-reps="'+index+'"]');
+ if(!weightField||!repsField)return;
+ const weight=Number(weightField.value),reps=Number(repsField.value);
+ if(!weightField.value.trim()||!repsField.value.trim()||!Number.isFinite(weight)||
+   weight<0||weight>1500||!Number.isInteger(reps)||reps<1||reps>100){
+  notice('Enter a valid weight and repetition count.');return;
+ }
+ session.sets[index]={...session.sets[index],weight,reps};
+ sessionDirty=true;persistOpenSession();
+ const cardId=session.sets[index].exerciseId;
+ renderWorkoutLog();
+ for(const id of activePlan.ids)updateExerciseFeedback(id);
+ notice('Logged set updated and saved to your unfinished workout.');
+}
 function addSet(id){
  if(!session||!activePlan?.ids.includes(id))return;
  const weightField=document.querySelector('[data-weight="'+id+'"]');
@@ -852,8 +873,9 @@ function addSet(id){
  }
  session.sets.push({exerciseId:id,weight,reps});
  sessionDirty=true;persistOpenSession();
- // Update only this exercise: never erase inputs, keyboard focus, or scroll position.
- updateExerciseFeedback(id);
+ // Update this exercise without discarding entries for other movements.
+ renderWorkoutLog();
+ for(const exerciseId of activePlan.ids)updateExerciseFeedback(exerciseId);
 }
 function undoSet(id){
  if(!session||!activePlan?.ids.includes(id))return;
@@ -861,7 +883,8 @@ function undoSet(id){
  if(index<0)return;
  session.sets.splice(index,1);
  sessionDirty=true;persistOpenSession();
- updateExerciseFeedback(id);
+ renderWorkoutLog();
+ for(const exerciseId of activePlan.ids)updateExerciseFeedback(exerciseId);
 }
 function stopRestClock(){
  if(restClock!==null){clearInterval(restClock);restClock=null;}
@@ -1007,7 +1030,7 @@ function bind(){
  document.querySelectorAll('[data-account-page]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.accountPage)));
 
  $('modalContent').addEventListener('input',e=>{const field=e.target.closest('[data-weight]');if(field)updateWarmupGuide(field.dataset.weight)});
- $('modalContent').addEventListener('click',e=>{const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const readiness=e.target.closest('[data-session-readiness]');if(readiness){updateSessionReadiness(readiness.dataset.sessionReadiness);return}const coach=e.target.closest('[data-use-coach]');if(coach){useCoachWeight(coach.dataset.useCoach);return}const last=e.target.closest('[data-use-last]');if(last){reuseLastWorkingWeight(last.dataset.useLast);return}const swap=e.target.closest('[data-swap-apply]');if(swap){replaceSessionExercise(swap.dataset.swapApply);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
+ $('modalContent').addEventListener('click',e=>{const edit=e.target.closest('[data-save-logged-set]');if(edit){updateLoggedSet(Number(edit.dataset.saveLoggedSet));return}const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const readiness=e.target.closest('[data-session-readiness]');if(readiness){updateSessionReadiness(readiness.dataset.sessionReadiness);return}const coach=e.target.closest('[data-use-coach]');if(coach){useCoachWeight(coach.dataset.useCoach);return}const last=e.target.closest('[data-use-last]');if(last){reuseLastWorkingWeight(last.dataset.useLast);return}const swap=e.target.closest('[data-swap-apply]');if(swap){replaceSessionExercise(swap.dataset.swapApply);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
  $('closeModal').addEventListener('click',closeModal);
  $('restClose').addEventListener('click',closeRest);
  $('restSkip').addEventListener('click',closeRest);
