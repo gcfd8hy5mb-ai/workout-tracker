@@ -42,7 +42,7 @@ function setPage(next){if(!['welcome','home','workouts','library','progress','se
  $('pageTitle').textContent=({welcome:'Welcome',home:'Home',workouts:'Workouts',library:'Exercise library',progress:'Progress',settings:'My Account',coaching:'Coaching',nutrition:'Nutrition'})[next];
  $('sidebar').classList.remove('open');$('sidebarScrim').classList.remove('open');document.body.classList.remove('sidebar-is-open');$('menuBtn').setAttribute('aria-expanded','false');$('moreMenuBtn').setAttribute('aria-expanded','false');$('sidebar').inert=window.matchMedia('(max-width:760px)').matches;document.body.classList.toggle('welcome-view',next==='welcome');window.scrollTo({top:0,behavior:'instant'});
  if(next==='home')renderHome();if(next==='workouts')renderWorkouts();if(next==='library')renderLibrary();
- if(next==='progress')renderProgress();if(next==='settings')renderSettings();
+ if(next==='progress')renderProgress();if(next==='coaching')renderCoach();if(next==='settings')renderSettings();
 }
 function totalSets(){return demoSessions.reduce((n,x)=>n+x.sets.length,0)}
 function nextPlan(){return plans[demoSessions.length%plans.length]}
@@ -93,6 +93,17 @@ function renderProgressChart(){
  const points=xy.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
  const fill='22,184 '+points+' '+xy[xy.length-1].x.toFixed(1)+',184';
  root.innerHTML='<svg viewBox="0 0 320 220" role="img" aria-label="Training volume trend based on '+count+' locally saved practice sessions"><defs><linearGradient id="volumeFill" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#f6d88c" stop-opacity=".48"/><stop offset="1" stop-color="#f6d88c" stop-opacity=".02"/></linearGradient></defs><path d="M22 28 V184 H304" fill="none" stroke="#bbdfd2" stroke-opacity=".35"/><path d="M22 80 H304 M22 132 H304" fill="none" stroke="#bbdfd2" stroke-opacity=".2"/><polygon points="'+fill+'" fill="url(#volumeFill)"/><polyline points="'+points+'" fill="none" stroke="#ffe1a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+xy.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="#ffeba8"/>').join('')+'<text x="25" y="207" fill="#c9e5da" font-size="11">Earliest</text><text x="293" y="207" text-anchor="end" fill="#c9e5da" font-size="11">Latest</text></svg><p>'+count+' practice sessions · '+Math.round(values[values.length-1]).toLocaleString()+' lb-reps last session</p>';
+}
+function renderCoach(){
+ const sets=demoSessions.flatMap(x=>Array.isArray(x.sets)?x.sets:[]);
+ const movementCount=new Set(sets.map(x=>x.exerciseId).filter(Boolean)).size;
+ $('coachSessions').textContent=String(demoSessions.length);
+ $('coachSets').textContent=String(sets.length);
+ $('coachMovements').textContent=String(movementCount);
+ $('coachStatus').textContent=demoSessions.length?'Practice activity recorded':'No practice history yet';
+ $('coachDescription').textContent=demoSessions.length?'This is a factual summary of local practice sessions, not an adaptive recommendation.':'Complete a practice workout to view a factual summary of your recent activity.';
+ const latest=demoSessions.find(x=>x&&x.created&&Number.isFinite(Date.parse(x.created)));
+ $('coachRecent').textContent=latest?'Latest practice session: '+new Date(latest.created).toLocaleDateString()+' · '+String(latest.title||'Workout'):'No completed preview sessions have been saved.';
 }
 function renderSettings(){
  $('accountIdentity').textContent=account?.email?account.email+' · authenticated (production workout data is not loaded)':'Not signed in. You can still explore the demo.';
@@ -285,5 +296,5 @@ function bind(){
  $('clearDemo').addEventListener('click',()=>{if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;demoSessions=[];localStorage.removeItem(DEMO_KEY);renderProgress();renderHome();notice('Local demo history cleared. Production data untouched.')});
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
-bind();renderHome();renderWorkouts();renderLibrary();renderProgress();renderSettings();validateStoredAuth();
+bind();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderSettings();validateStoredAuth();
 })();
