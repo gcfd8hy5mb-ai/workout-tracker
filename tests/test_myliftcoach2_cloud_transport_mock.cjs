@@ -6,7 +6,7 @@ const doc=(title='Leg Day')=>({version:1,plans:[{id:'custom-leg',title,ids:['leg
 const result=(body,status=200)=>({ok:status>=200&&status<300,status,json:async()=>body});
 function harness({owner=id,response,resultStatus=200,customFetcher,session}={}){
  let calls=[],state={access_token:'test-token',user:{id:owner},expires_at:Math.floor(Date.now()/1000)+3600};
- const fetcher=customFetcher||async(url,opts)=>{calls.push({url,opts});return result(response,resultStatus)};
+ const fetcher=customFetcher||(async(url,opts)=>{calls.push({url,opts});return result(response,resultStatus)});
  const getSession=()=>session===undefined?state:session();
  const client=api.createTestTransport({endpoint:'https://example.supabase.co',publishableKey:'test-publishable',getSession,fetcher});
  return {client,calls,setAccount(x){state={...state,user:{id:x}}},expire(){state={...state,expires_at:0}}};
