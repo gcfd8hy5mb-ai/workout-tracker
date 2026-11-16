@@ -93,7 +93,7 @@ async function loadOriginalCustomSchedule(){
   await validateStoredAuth();
   if(account?.id!==owner||!auth?.access_token)throw Error('Session changed');
   const data=await window.MLCOriginalCustomSchedule.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner,validExerciseIds:allowedExerciseIds});
-  if(account?.id!==owner)throw Error('Account changed during import');
+  if(account?.id!==owner||historyLoadEpoch!==epoch)return;
   originalCustomSchedule=data;importedCustomOwner=owner;originalSchedulePreview=true;fullMigrationPreview=null;$('recurringMigrationStatus').textContent='';renderOriginalCustomSchedule();renderHome();renderWorkouts();
  }catch(error){
   clearOriginalCustomSchedule();status.textContent='Import failed: '+String(error.message||error).slice(0,160);
@@ -269,6 +269,7 @@ const $=(id)=>document.getElementById(id);
 let page='home',activePlan=null,session=null,guest=true,account=null,auth=null;
 let demoSessions=loadDemo();
 let originalHistory=[];
+let historyLoadEpoch=0,trackingLoadEpoch=0,settingsLoadEpoch=0;
 let importedHistoryOwner=null;
 let originalTracking=null,importedTrackingOwner=null;
 let originalAccountSettings=null,importedSettingsOwner=null;
@@ -455,6 +456,7 @@ function renderOriginalProgress(){
  root.innerHTML='<h3>Exercise records</h3>'+result.records.map(ex=>'<details class="recent-item"><summary><strong>'+escapeHTML(ex.name)+'</strong> · Best weight '+ex.weight.toLocaleString()+' lb</summary><p>Most reps in a set: '+ex.reps+' · Best set volume: '+Math.round(ex.setVolume).toLocaleString()+' lb · Estimated 1RM (sets up to 10 reps): '+(ex.estimatedOneRepMax?Math.round(ex.estimatedOneRepMax).toLocaleString()+' lb':'Unavailable')+'</p></details>').join('');
 }
 function clearOriginalHistory(){
+ historyLoadEpoch++;
  originalHistory=[];importedHistoryOwner=null;
  if($('originalCalendarMonth'))$('originalCalendarMonth').value='';
  renderOriginalHistory();
@@ -480,7 +482,7 @@ function renderOriginalHistory(){
 async function loadOriginalHistory(){
  if(!account?.id||!auth?.access_token){notice('Sign in first to load your original history.');return;}
  const button=$('loadOriginalHistory'),status=$('originalHistoryStatus');
- const owner=account.id;
+ const owner=account.id,epoch=++historyLoadEpoch;
  button.disabled=true;status.textContent='Reading original account history securely…';
  try{
   await validateStoredAuth();
@@ -489,11 +491,13 @@ async function loadOriginalHistory(){
   if(account?.id!==owner)throw Error('Account changed during import');
   originalHistory=history;importedHistoryOwner=owner;renderOriginalHistory();renderOriginalProgress();renderOriginalCoachEvidence();
  }catch(error){
+  if(account?.id!==owner||historyLoadEpoch!==epoch)return;
   originalHistory=[];importedHistoryOwner=null;renderOriginalHistory();renderOriginalProgress();renderOriginalCoachEvidence();
   status.textContent='Could not load original history: '+String(error.message||error).slice(0,180);
- }finally{button.disabled=!account}
+ }finally{if(historyLoadEpoch===epoch)button.disabled=!account}
 }
 function clearOriginalTracking(){
+ trackingLoadEpoch++;
  originalTracking=null;importedTrackingOwner=null;$('trackingMonth').value='';renderOriginalTracking();
 }
 function renderOriginalTracking(){
@@ -532,22 +536,24 @@ function renderOriginalTracking(){
 }
 async function loadOriginalTracking(){
  if(!account?.id||!auth?.access_token){notice('Sign in before loading original tracking.');return;}
- const owner=account.id,button=$('loadOriginalTracking'),status=$('trackingStatus');
+ const owner=account.id,epoch=++trackingLoadEpoch,button=$('loadOriginalTracking'),status=$('trackingStatus');
  button.disabled=true;status.textContent='Reading original account tracking records…';
  try{
   await validateStoredAuth();
   if(account?.id!==owner||!auth?.access_token)throw Error('Account session expired or changed');
   const data=await window.MLCOriginalTracking.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner});
-  if(account?.id!==owner)throw Error('Account changed while loading tracking data');
+  if(account?.id!==owner||trackingLoadEpoch!==epoch)return;
   originalTracking=data;importedTrackingOwner=data?owner:null;
   renderOriginalTracking();
   if(!data)status.textContent='No original tracking records returned for this account.';
  }catch(error){
+  if(account?.id!==owner||trackingLoadEpoch!==epoch)return;
   clearOriginalTracking();
   status.textContent='Could not load original tracking: '+String(error.message||error).slice(0,170);
- }finally{button.disabled=!account}
+ }finally{if(trackingLoadEpoch===epoch)button.disabled=!account}
 }
 function clearOriginalAccountSettings(){
+ settingsLoadEpoch++;
  originalAccountSettings=null;importedSettingsOwner=null;renderOriginalAccountSettings();
 }
 function renderOriginalAccountSettings(){
@@ -564,18 +570,19 @@ function renderOriginalAccountSettings(){
 }
 async function loadOriginalAccountSettings(){
  if(!account?.id||!auth?.access_token){notice('Sign in before loading your account settings.');return;}
- const owner=account.id,status=$('originalSettingsStatus'),button=$('loadOriginalSettings');
+ const owner=account.id,epoch=++settingsLoadEpoch,status=$('originalSettingsStatus'),button=$('loadOriginalSettings');
  button.disabled=true;status.textContent='Reading original profile and goals…';
  try{
   await validateStoredAuth();
   if(account?.id!==owner||!auth?.access_token)throw Error('Account changed or session expired');
   const result=await window.MLCOriginalAccountSettings.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner});
-  if(account?.id!==owner)throw Error('Account changed during settings read');
+  if(account?.id!==owner||settingsLoadEpoch!==epoch)return;
   originalAccountSettings=result;importedSettingsOwner=owner;renderOriginalAccountSettings();
  }catch(err){
+  if(account?.id!==owner||settingsLoadEpoch!==epoch)return;
   clearOriginalAccountSettings();
   status.textContent='Original settings could not be loaded: '+String(err.message||err).slice(0,160);
- }finally{button.disabled=!account}
+ }finally{if(settingsLoadEpoch===epoch)button.disabled=!account}
 }
 async function runCloudReadinessCheck(){
  const button=$('cloudReadinessButton'),status=$('cloudReadinessStatus');
