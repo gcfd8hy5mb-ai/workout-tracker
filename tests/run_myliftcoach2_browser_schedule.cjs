@@ -32,6 +32,19 @@ const assert = require('node:assert/strict');
    await page.locator('.sidebar [data-page="library"]').first().evaluate(el=>el.click());
    assert.equal(await page.locator('#library').isVisible(),true);
    assert.ok(await page.locator('[data-library-detail]').count()>5);
+   assert.equal(await page.locator('[data-library-detail]').count(),60);
+   const photoSources=await page.evaluate(()=>window.MLCOriginalExercises.filter(ex=>ex.image).map(ex=>ex.image));
+   assert.equal(photoSources.length,14);
+   for(const asset of [...photoSources,'images/myliftcoach-anatomy-realistic.webp','images/myliftcoach-anatomy-body-mask.png']){
+    const response=await page.request.get('http://127.0.0.1:8765/'+asset);
+    assert.equal(response.status(),200,device.label+' original asset missing: '+asset);
+    assert.match(response.headers()['content-type']||'',/image\//,asset+' is not served as an image');
+   }
+   await page.locator('[data-library-detail="dead-bug"]').evaluate(el=>el.click());
+   assert.match(await page.locator('#modalContent').textContent(),/No original exercise photograph supplied/);
+   assert.equal(await page.locator('#modalContent img').count(),0);
+   assert.ok(await page.locator('#modalContent .liftova-anatomy svg').count()>0);
+   await page.locator('#closeModal').evaluate(el=>el.click());
    await page.locator('[data-library-detail="machine-chest-press"]').evaluate(el=>el.click());
    assert.match(await page.locator('#modalContent h2').textContent(),/Machine Chest Press/);
    assert.ok(await page.locator('#modalContent .liftova-anatomy svg').count()>0);
