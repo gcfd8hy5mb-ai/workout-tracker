@@ -225,7 +225,7 @@ begin
   returning pg_catalog.jsonb_build_object('revision',revision,'document',document) into result;
  end if;
  if result is null then
-   raise exception 'Schedule changed; reload before saving' using errcode='40001';
+   raise exception 'Schedule changed; reload before saving' using errcode='PT409';
  end if;
  return result;
 end;

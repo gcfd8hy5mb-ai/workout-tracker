@@ -4,7 +4,7 @@ create role anon nologin;
 create schema auth;
 create table auth.users(id uuid primary key);
 create function auth.uid() returns uuid language sql stable set search_path = ''
-as $$ select nullif(pg_catalog.current_setting('request.jwt.claim.sub', true),'')::uuid $$;
+as $auth$ select nullif(coalesce(nullif(pg_catalog.current_setting('request.jwt.claim.sub', true), ''), pg_catalog.current_setting('request.jwt.claims', true)::jsonb->>'sub'),'')::uuid $auth$;
 grant usage on schema auth to authenticated,anon;
 grant execute on function auth.uid() to authenticated,anon;
 insert into auth.users(id) values

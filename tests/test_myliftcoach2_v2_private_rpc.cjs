@@ -15,7 +15,7 @@ test('privileged functions use auth uid and bound transaction revision',()=>{
  assert.equal((file.match(/owner_id uuid := auth\.uid\(\)/g)||[]).length,2);
  assert.match(file,/where user_id=owner_id and revision=expected_revision/);
  assert.match(file,/on conflict \(user_id\) do nothing/);
- assert.match(file,/errcode='40001'/);
+ assert.match(file,/errcode='PT409'/);
  assert.doesNotMatch(file,/execute\s+format\s*\(/i);
 });
 test('public RPC wrappers are security invoker and private write is definer',()=>{
