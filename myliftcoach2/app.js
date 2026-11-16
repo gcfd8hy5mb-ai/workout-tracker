@@ -345,7 +345,7 @@ function renderHome(){
  const today=resolvedWorkout(),plan=today.plan;
  $('todayTitle').textContent=plan?.title||'Rest day';
  $('todayDescription').textContent=plan?today.dayName+' · '+plan.ids.length+' exercises · '+(plan.ids.length*3)+' sets':'Rest scheduled for '+today.dayName+' · tap a day to change';
- $('todayExercises').innerHTML=plan?plan.ids.map(id=>{const e=exerciseById(id);return '<div class="preview-exercise"><strong>'+escapeHTML(e.name)+'</strong><small>'+e.sets+' × '+escapeHTML(e.reps)+'</small></div>'}).join(''):'<p class="small">No workout assigned today. Pick a day to edit your schedule.</p>';
+ $('todayExercises').innerHTML=plan?plan.ids.map(id=>{const e=exerciseById(id);return '<div class="preview-exercise"><div><strong>'+escapeHTML(e.name)+'</strong><small>'+e.sets+' × '+escapeHTML(e.reps)+'</small></div><button type="button" class="button-outline" data-exercise-open="'+escapeHTML(id)+'" aria-label="View '+escapeHTML(e.name)+' exercise details">Details</button></div>'}).join(''):'<p class="small">No workout assigned today. Pick a day to edit your schedule.</p>';
  $('heroStart').disabled=!plan;$('todayStart').disabled=!plan;
  renderWeekBoard();
  $('recentActivity').innerHTML=demoSessions.length?demoSessions.slice(0,3).map(x=>'<div class="recent-item"><div><strong>'+escapeHTML(x.title)+'</strong><small>'+new Date(x.created).toLocaleDateString()+'</small></div><span>'+x.sets.length+' sets</span></div>').join(''):'<div class="empty-note">Your next session starts here. Practice workouts you complete in this demo will appear in this section.</div>';
@@ -1201,6 +1201,7 @@ function bind(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar()});
  mobileSidebar.addEventListener('change',()=>{sidebar.classList.remove('open');syncSidebarState()});
  syncSidebarState();
+ $('todayExercises').addEventListener('click',e=>{const item=e.target.closest('[data-exercise-open]');if(item)exerciseDetail(item.dataset.exerciseOpen);});
  $('heroStart').addEventListener('click',()=>openToday());
  $('heroViewPlan').addEventListener('click',()=>setPage('workouts'));
  $('todayStart').addEventListener('click',()=>openWorkout(nextPlan().id));
