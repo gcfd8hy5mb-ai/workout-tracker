@@ -719,12 +719,20 @@ function openWorkout(id){
  activeSessionOwner=owner;
  activePlan=draft?{...draft.plan,ids:draft.plan.ids.slice()}:{...plan,ids:plan.ids.slice()};
  session=draft?{sets:draft.sets.map(x=>({...x})),readiness:draft.readiness}:{sets:[],readiness:'Normal'};
- openModal('<div class="modal-eyebrow">PRACTICE SESSION · LOCAL ONLY</div><h2>'+escapeHTML(plan.title)+'</h2><p>'+escapeHTML(plan.description)+' All entries stay in the isolated demo workspace and will not be uploaded to Supabase.</p><div class="panel"><strong>How are you feeling today?</strong><p class="small">Readiness check-in saved with this practice session only.</p><div class="hero-actions" id="sessionReadiness"><button type="button" class="button-outline" data-session-readiness="Great" aria-pressed="false">Great</button><button type="button" class="button-outline" data-session-readiness="Normal" aria-pressed="true">Normal</button><button type="button" class="button-outline" data-session-readiness="Tired" aria-pressed="false">Tired</button></div></div><div class="panel"><strong id="sessionSetProgressText">Ready to start</strong><progress id="sessionSetProgress" value="0" max="1" style="width:100%" aria-label="Completed practice sets"></progress><p class="small">Progress reflects logged sets in this practice session.</p></div><div id="workoutLog" class="workout-log"></div><div class="modal-footer"><button type="button" class="button-outline" id="cancelWorkout">Cancel</button><button type="button" class="button-outline" id="startRest">Rest 1:30</button><button type="button" class="button-primary" id="finishWorkout">Finish session</button></div>');
+ openModal('<div class="modal-eyebrow">PRACTICE SESSION · LOCAL ONLY</div><h2>'+escapeHTML(plan.title)+'</h2><p>'+escapeHTML(plan.description)+' All entries stay in the isolated demo workspace and will not be uploaded to Supabase.</p><div class="panel"><strong>How are you feeling today?</strong><p class="small">Readiness check-in saved with this practice session only.</p><div class="hero-actions" id="sessionReadiness"><button type="button" class="button-outline" data-session-readiness="Great" aria-pressed="false">Great</button><button type="button" class="button-outline" data-session-readiness="Normal" aria-pressed="true">Normal</button><button type="button" class="button-outline" data-session-readiness="Tired" aria-pressed="false">Tired</button></div></div><div class="panel"><strong id="sessionSetProgressText">Ready to start</strong><progress id="sessionSetProgress" value="0" max="1" style="width:100%" aria-label="Completed practice sets"></progress><p class="small">Progress reflects logged sets in this practice session.</p></div><div id="workoutLog" class="workout-log"></div><div class="modal-footer"><button type="button" class="button-outline" id="cancelWorkout">Save for later</button><button type="button" class="button-outline" id="discardWorkout">Discard draft</button><button type="button" class="button-outline" id="startRest">Rest 1:30</button><button type="button" class="button-primary" id="finishWorkout">Finish session</button></div>');
  renderWorkoutLog();
  updateSessionReadiness(session.readiness);
  for(const exerciseId of activePlan.ids)updateExerciseFeedback(exerciseId);
  if(draft)notice('Unfinished workout restored from this browser.');
  $('cancelWorkout').addEventListener('click',closeModal);
+ $('discardWorkout').addEventListener('click',()=>{
+  if(!confirm('Discard this unfinished practice workout? Your completed sessions and weekly workout plan will not change.'))return;
+  try{
+   window.MLCSessionDraft.clear(localStorage,activeSessionOwner);
+   session=null;activePlan=null;activeSessionOwner=null;
+   closeModal();notice('Unfinished practice workout discarded.');
+  }catch{notice('Could not discard unfinished draft; it remains saved.')}
+ });
  $('startRest').addEventListener('click',openRest);
  $('finishWorkout').addEventListener('click',()=>{
   if(!session?.sets.length){notice('Add at least one practice set first.');return}
