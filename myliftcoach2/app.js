@@ -26,6 +26,68 @@ const plans=[
  {id:'lower-b',title:'Lower Body B',kind:'Lower Hypertrophy',description:'A second lower-body session with balanced emphasis.',ids:['leg-press','leg-extension','leg-curl','calf-raise']}
 ];
 const originalExercises=Array.isArray(window.MLCOriginalExercises)?window.MLCOriginalExercises:[];
+const WEEKLY_KEY='mlc2-weekly-preview-v1';
+const weeklyAPI=window.MLCWeeklySchedule;
+function readWeekly(){
+ try{return weeklyAPI.normalize(JSON.parse(localStorage.getItem(WEEKLY_KEY)||'null'),plans,exercises.map(x=>x.id))}
+ catch{return weeklyAPI.normalize(null,plans,exercises.map(x=>x.id))}
+}
+let weekly=readWeekly();
+function persistWeekly(){
+ localStorage.setItem(WEEKLY_KEY,JSON.stringify(weeklyAPI.saved(weekly,plans.map(x=>x.id))));
+}
+function nextPlan(){return weeklyAPI.resolve(weekly).plan}
+function openToday(){const plan=nextPlan();if(plan)openWorkout(plan.id);else notice('Today is a rest day. Choose a workout from the weekly board.')}
+function renderWeekBoard(){
+ const current=weeklyAPI.resolve(weekly).index;
+ for(const key of ['weeklyBoardHome','weeklyBoardWorkouts']){
+  const target=$(key);if(!target)continue;
+  target.innerHTML=weeklyAPI.DAYS.map((label,day)=>{
+   const id=weekly.assigned[day],plan=weekly.plans.find(p=>p.id===id);
+   return '<button type="button" class="week-day-card'+(day===current?' is-today':'')+'" data-week-day="'+day+'" aria-label="Edit '+label+' workout"><strong>'+label+'</strong><small>'+escapeHTML(plan?.title||'Rest')+'</small></button>';
+  }).join('');
+ }
+}
+function chooseWeekday(day){
+ const target=$('weekEditor'),choice=$('weekWorkoutSelect');
+ if(!Number.isInteger(day)||day<0||day>6)return;
+ target.hidden=false;target.dataset.day=String(day);
+ $('weekEditingDay').textContent=weeklyAPI.DAYS[day];
+ choice.innerHTML='<option value="">Rest day</option>'+weekly.plans.map(p=>'<option value="'+escapeHTML(p.id)+'">'+escapeHTML(p.title)+'</option>').join('');
+ choice.value=weekly.assigned[day]||'';
+ updateWeekEditor();
+ setPage('workouts');target.hidden=false;
+ target.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+function updateWeekEditor(){
+ const id=$('weekWorkoutSelect').value,p=weekly.plans.find(p=>p.id===id);
+ $('weekWorkoutName').value=p?.title||'';
+ $('weekWorkoutName').disabled=!p;
+ $('weekExerciseOptions').innerHTML=exercises.map(ex=>'<label class="week-exercise"><input type="checkbox" value="'+escapeHTML(ex.id)+'"'+(p?.ids.includes(ex.id)?' checked':'')+(p?'':' disabled')+'><span>'+escapeHTML(ex.name)+'</span></label>').join('');
+}
+function saveWeekEditor(){
+ const day=Number($('weekEditor').dataset.day),id=$('weekWorkoutSelect').value||null;
+ try{
+  if(id){
+   const title=$('weekWorkoutName').value.trim();
+   const selected=[...$('weekExerciseOptions').querySelectorAll('input:checked')].map(input=>input.value);
+   weekly=weeklyAPI.edit(weekly,id,{title,ids:selected},exercises.map(x=>x.id));
+  }
+  weekly=weeklyAPI.assign(weekly,day,id);
+  persistWeekly();renderWeekBoard();renderHome();renderWorkouts();
+  notice('Saved '+weeklyAPI.DAYS[day]+' workout. Home and workout details now match.');
+ }catch(error){notice(error.message)}
+}
+function createWeekWorkout(){
+ try{
+  const id='custom-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
+  weekly=weeklyAPI.add(weekly,id,{title:'My Custom Workout',ids:[exercises[0].id]},exercises.map(x=>x.id));
+  persistWeekly();$('weekWorkoutSelect').innerHTML='<option value="">Rest day</option>'+weekly.plans.map(p=>'<option value="'+escapeHTML(p.id)+'">'+escapeHTML(p.title)+'</option>').join('');
+  $('weekWorkoutSelect').value=id;updateWeekEditor();
+  notice('Custom workout created. Choose exercises and save the day.');
+ }catch(error){notice(error.message)}
+}
+
 const $=(id)=>document.getElementById(id);
 let page='home',activePlan=null,session=null,guest=true,account=null,auth=null;
 let demoSessions=loadDemo();
@@ -49,16 +111,21 @@ function setPage(next){if(!['welcome','home','workouts','library','progress','se
  if(next==='progress')renderProgress();if(next==='coaching')renderCoach();if(next==='nutrition')renderOriginalTracking();if(next==='settings'){renderSettings();renderOriginalAccountSettings();}
 }
 function totalSets(){return demoSessions.reduce((n,x)=>n+x.sets.length,0)}
-function nextPlan(){return plans[demoSessions.length%plans.length]}
+
 function renderHome(){
  $('metricWorkouts').textContent=demoSessions.length;
  $('metricSets').textContent=totalSets();
- const plan=nextPlan();$('todayTitle').textContent=plan.title;$('todayDescription').textContent=plan.ids.length+' exercises · '+(plan.ids.length*3)+' sets · ~45 min';
- $('todayExercises').innerHTML=plan.ids.map(id=>{const e=exercises.find(x=>x.id===id);return '<div class="preview-exercise"><strong>'+escapeHTML(e.name)+'</strong><small>'+e.sets+' × '+escapeHTML(e.reps)+'</small></div>'}).join('');
+ const plan=nextPlan(),today=weeklyAPI.resolve(weekly);
+ $('todayTitle').textContent=plan?.title||'Rest day';
+ $('todayDescription').textContent=plan?today.dayName+' · '+plan.ids.length+' exercises · '+(plan.ids.length*3)+' sets':'Rest scheduled for '+today.dayName+' · tap a day to change';
+ $('todayExercises').innerHTML=plan?plan.ids.map(id=>{const e=exercises.find(x=>x.id===id);return '<div class="preview-exercise"><strong>'+escapeHTML(e.name)+'</strong><small>'+e.sets+' × '+escapeHTML(e.reps)+'</small></div>'}).join(''):'<p class="small">No workout assigned today. Pick a day to edit your schedule.</p>';
+ $('heroStart').disabled=!plan;$('todayStart').disabled=!plan;
+ renderWeekBoard();
  $('recentActivity').innerHTML=demoSessions.length?demoSessions.slice(0,3).map(x=>'<div class="recent-item"><div><strong>'+escapeHTML(x.title)+'</strong><small>'+new Date(x.created).toLocaleDateString()+'</small></div><span>'+x.sets.length+' sets</span></div>').join(''):'<div class="empty-note">Your next session starts here. Practice workouts you complete in this demo will appear in this section.</div>';
 }
 function renderWorkouts(){
- $('workoutGrid').innerHTML=plans.map((p,i)=>'<button type="button" class="workout-card" data-workout="'+p.id+'"><span class="number">SESSION 0'+(i+1)+' · '+escapeHTML(p.kind.toUpperCase())+'</span><h3>'+escapeHTML(p.title)+'</h3><p>'+escapeHTML(p.description)+'</p><div class="workout-meta"><span>'+p.ids.length+' movements · '+p.ids.length*3+' recommended sets</span><b>Open session ↗</b></div></button>').join('');
+ renderWeekBoard();
+ $('workoutGrid').innerHTML=weekly.plans.map((p,i)=>'<button type="button" class="workout-card" data-workout="'+p.id+'"><span class="number">SESSION 0'+(i+1)+' · '+escapeHTML(p.kind.toUpperCase())+'</span><h3>'+escapeHTML(p.title)+'</h3><p>'+escapeHTML(p.description)+'</p><div class="workout-meta"><span>'+p.ids.length+' movements · '+p.ids.length*3+' recommended sets</span><b>Open session ↗</b></div></button>').join('');
 }
 function renderLibrary(){
  const query=$('exerciseSearch').value.trim().toLowerCase();
@@ -295,7 +362,7 @@ function renderSettings(){
 function openModal(content){$('modalContent').innerHTML=content;$('modal').hidden=false;document.body.style.overflow='hidden';$('closeModal').focus()}
 function closeModal(){closeRest();$('modal').hidden=true;document.body.style.overflow='';activePlan=null;session=null}
 function openWorkout(id){
- const plan=plans.find(x=>x.id===id);if(!plan)return;activePlan=plan;
+ const plan=weekly.plans.find(x=>x.id===id);if(!plan)return;activePlan={...plan,ids:plan.ids.slice()};
  session={sets:[]};
  openModal('<div class="modal-eyebrow">PRACTICE SESSION · LOCAL ONLY</div><h2>'+escapeHTML(plan.title)+'</h2><p>'+escapeHTML(plan.description)+' All entries stay in the isolated demo workspace and will not be uploaded to Supabase.</p><div id="workoutLog" class="workout-log"></div><div class="modal-footer"><button type="button" class="button-outline" id="cancelWorkout">Cancel</button><button type="button" class="button-outline" id="startRest">Rest 1:30</button><button type="button" class="button-primary" id="finishWorkout">Finish session</button></div>');
  renderWorkoutLog();
@@ -459,10 +526,15 @@ function bind(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar()});
  mobileSidebar.addEventListener('change',()=>{sidebar.classList.remove('open');syncSidebarState()});
  syncSidebarState();
- $('heroStart').addEventListener('click',()=>openWorkout(nextPlan().id));
+ $('heroStart').addEventListener('click',()=>openToday());
  $('heroViewPlan').addEventListener('click',()=>setPage('workouts'));
  $('todayStart').addEventListener('click',()=>openWorkout(nextPlan().id));
  $('workoutGrid').addEventListener('click',e=>{const el=e.target.closest('[data-workout]');if(el)openWorkout(el.dataset.workout)});
+ for(const key of ['weeklyBoardHome','weeklyBoardWorkouts'])$(key).addEventListener('click',e=>{const btn=e.target.closest('[data-week-day]');if(btn)chooseWeekday(Number(btn.dataset.weekDay))});
+ $('weekWorkoutSelect').addEventListener('change',updateWeekEditor);
+ $('weekSaveButton').addEventListener('click',saveWeekEditor);
+ $('weekNewWorkout').addEventListener('click',createWeekWorkout);
+
  $('exerciseSearch').addEventListener('input',renderLibrary);
  $('libraryChips').addEventListener('click',event=>{const el=event.target.closest('[data-muscle]');if(!el)return;muscleFilter=el.dataset.muscle;renderLibrary()});
  document.querySelectorAll('[data-account-page]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.accountPage)));
