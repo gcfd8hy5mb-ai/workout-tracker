@@ -1140,6 +1140,7 @@ function bind(){
  $('homeLoadOriginalHistory').addEventListener('click',loadOriginalHistory);
  document.querySelectorAll('[data-home-original-progress]').forEach(el=>el.addEventListener('click',()=>setPage('progress')));
  $('coachLoadOriginalHistory').addEventListener('click',loadOriginalHistory);
+ $('coachOpenToday').addEventListener('click',()=>{const chosen=resolvedWorkout();if(!chosen.plan){notice('No workout assigned today.');setPage('workouts');return;}if(weeklyDraftReadError){notice('Recover the saved schedule before starting.');return;}openWorkout(chosen.plan.id);});
  $('coachMovementSearch').addEventListener('input',renderOriginalCoachEvidence);
  $('originalHistorySearch').addEventListener('input',renderOriginalHistory);
  $('originalCalendarMonth').addEventListener('change',renderOriginalCalendar);
