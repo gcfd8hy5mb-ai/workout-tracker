@@ -72,3 +72,16 @@ test('Home original activity shows latest three actual workouts without incomple
  assert.deepEqual(importer.recentCompleted([]),[]);
  assert.equal(JSON.stringify(sessions),before);
 });
+
+test('explicit last working weight comes from latest real completed original session',()=>{
+ const original=[
+  {date:'2026-11-11T12:00:00Z',exercises:[{id:'press',sets:[{weight:200,reps:8}]}]},
+  {date:'2026-11-15T12:00:00Z',exercises:[{id:'press',sets:[{weight:500,reps:10,completed:false},{weight:175,reps:10},{weight:190,reps:8}]},{id:'row',sets:[{weight:90,reps:12}]}]},
+  {date:'bad-date',exercises:[{id:'press',sets:[{weight:900,reps:8}]}]}
+ ];
+ const before=JSON.stringify(original);
+ assert.deepEqual(importer.latestWorkingWeight(original,'press'),{weight:190,date:'2026-11-15'});
+ assert.deepEqual(importer.latestWorkingWeight(original,'row'),{weight:90,date:'2026-11-15'});
+ assert.equal(importer.latestWorkingWeight(original,'squat'),null);
+ assert.equal(JSON.stringify(original),before);
+});
