@@ -60,7 +60,7 @@ function validate(doc){
  if(doc.assigned.some(id=>id!==null&&!ids.has(id)))throw Error('Unknown default workout');
  if(!doc.overrides||Array.isArray(doc.overrides)||typeof doc.overrides!=='object')throw Error('Invalid dated overrides');
  if(!Array.isArray(doc.recurring))throw Error('Invalid recurring rules');
- for(const [d,id] of Object.entries(doc.overrides))if(day(d)!==d||!ids.has(id))throw Error('Unmatched dated workout');
+ for(const [d,id] of Object.entries(doc.overrides))if(day(d)!==d||(id!==null&&!ids.has(id)))throw Error('Unmatched dated workout');
  for(const rule of doc.recurring){
   if(!rule||!ids.has(rule.workoutId))throw Error('Unmatched recurring workout');
   if(day(rule.start)!==rule.start)throw Error('Invalid start');
