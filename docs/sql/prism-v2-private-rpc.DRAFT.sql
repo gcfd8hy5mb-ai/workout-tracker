@@ -38,7 +38,7 @@ grant execute on function prism_v2_private.schedule_read() to authenticated;
 -- approved preview exercises (12); 63 unique IDs. Review when catalog evolves.
 create or replace function prism_v2_private.is_supported_exercise(exercise_id text)
 returns boolean language sql stable security definer set search_path = ''
-as $select exercise_id = any(array[
+as $catalog$ select exercise_id = any(array[
  'ab-crunch',
  'assisted-dip',
  'assisted-pullup',
@@ -102,7 +102,7 @@ as $select exercise_id = any(array[
  'triceps-extension',
  'triceps-push',
  'triceps-pushdown'
-]::text[])$;
+]::text[]) $catalog$;
 revoke all on function prism_v2_private.is_supported_exercise(text) from public, anon, authenticated;
 -- No authenticated grant: callable only from the guarded private save routine.
 
