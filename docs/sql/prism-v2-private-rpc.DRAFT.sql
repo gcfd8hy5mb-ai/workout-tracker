@@ -106,12 +106,12 @@ as $catalog$ select exercise_id = any(array[
 revoke all on function prism_v2_private.is_supported_exercise(text) from public, anon, authenticated;
 -- No authenticated grant: callable only from the guarded private save routine.
 
--- Strict ISO calendar date validation; non-existent dates fail closed.
+-- Strict ISO date validation: reject non-existent calendar dates.
 create or replace function prism_v2_private.valid_day(value text)
 returns boolean language plpgsql immutable security invoker set search_path = ''
 as $calendar$
 begin
- if value is null or value !~ '^\\d{4}-\\d{2}-\\d{2}
+ if value is null or value !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}
  expected_revision bigint, new_document jsonb
 )
 returns jsonb language plpgsql volatile security definer set search_path = ''
@@ -166,11 +166,9 @@ begin
        or not (selected #>> '{}'=any(names)))
   then raise exception 'Unknown assigned workout'; end if;
  end loop;
- -- Dated one-time overrides and weekly repeats must point to existing plans.
- -- Documents without either field are supported for first-run weekly previews.
+ -- Dated overrides and weekly repeats reference the existing workout IDs.
  if new_document ? 'overrides' then
   if pg_catalog.jsonb_typeof(new_document->'overrides') <> 'object'
-     or pg_catalog.jsonb_object_length(new_document->'overrides') > 3660
   then raise exception 'Invalid one-time workout overrides'; end if;
   for date_key,selected in select key,value from pg_catalog.jsonb_each(new_document->'overrides') loop
    if not prism_v2_private.valid_day(date_key)
@@ -188,12 +186,16 @@ begin
       or pg_catalog.jsonb_typeof(rule->'workoutId')<>'string'
       or not ((rule->>'workoutId')=any(names))
       or not prism_v2_private.valid_day(rule->>'start')
-      or (rule ? 'end' and rule->'end'<>'null'::jsonb
-          and (not prism_v2_private.valid_day(rule->>'end')
-               or (rule->>'end')::date<(rule->>'start')::date))
-      or (rule ? 'weeks' and
-          (pg_catalog.jsonb_typeof(rule->'weeks')<>'number'
-           or (rule->>'weeks') !~ '^[0-9]+
+   then raise exception 'Invalid repeating workout rule'; end if;
+   if rule ? 'end' and rule->'end'<>'null'::jsonb then
+    if not prism_v2_private.valid_day(rule->>'end')
+    then raise exception 'Invalid repeating workout end date'; end if;
+    if (rule->>'end')::date < (rule->>'start')::date
+    then raise exception 'Repeating workout end precedes start'; end if;
+   end if;
+   if rule ? 'weeks' then
+    if pg_catalog.jsonb_typeof(rule->'weeks')<>'number'
+       or (rule->>'weeks') !~ '^[0-9]{1,3} Unique user_id prevents
  -- two first saves from succeeding even if both read revision 0.
  if expected_revision = 0 then
   insert into public.prism_v2_workout_schedules(user_id,revision,document)
@@ -236,7 +238,7 @@ grant execute on function public.prism_v2_schedule_save(bigint,jsonb) to authent
 -- testing with old app left open and a migrated user, physical iPhone tests.
 -- This is a reviewable design, not an approved production migration.
  then return false; end if;
- return (value::date)::text=value;
+ return value::date::text=value;
 exception when others then return false;
 end;
 $calendar$;
@@ -338,9 +340,10 @@ grant execute on function public.prism_v2_schedule_save(bigint,jsonb) to authent
 -- testing with old app left open and a migrated user, physical iPhone tests.
 -- This is a reviewable design, not an approved production migration.
 
-           or pg_catalog.length(rule->>'weeks')>3
-           or (rule->>'weeks')::integer not between 1 and 520))
-   then raise exception 'Invalid repeating workout rule'; end if;
+    then raise exception 'Invalid repeat duration'; end if;
+    if (rule->>'weeks')::integer not between 1 and 520
+    then raise exception 'Invalid repeat duration'; end if;
+   end if;
   end loop;
  end if;
  -- Atomic conditional INSERT for an unsaved account. Unique user_id prevents
@@ -386,7 +389,7 @@ grant execute on function public.prism_v2_schedule_save(bigint,jsonb) to authent
 -- testing with old app left open and a migrated user, physical iPhone tests.
 -- This is a reviewable design, not an approved production migration.
  then return false; end if;
- return (value::date)::text=value;
+ return value::date::text=value;
 exception when others then return false;
 end;
 $calendar$;
