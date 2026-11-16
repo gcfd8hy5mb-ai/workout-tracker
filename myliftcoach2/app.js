@@ -153,7 +153,7 @@ function commitWeekly(candidate,explicitDay=null){
   if(explicitDay){
    // A direct weekday edit must appear on Home/Start even when a migrated
    // recurring rule already covers this date. Keep all other dated rules.
-   if(explicitDay.id===null)throw Error('Rest-day exceptions in imported repeating schedules are not supported yet; draft unchanged');
+   // Null is an explicit one-date rest-day exception, not a deleted repeat.
    const d=dayAtWeekIndex(explicitDay.day);
    const date=[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
    document={...document,overrides:{...document.overrides,[date]:explicitDay.id}};
