@@ -152,7 +152,11 @@ function commitWeekly(candidate){
   const document=recurringDraftAPI.edited(activeRecurring,candidate,allowedExerciseIds);
   recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),document,allowedExerciseIds);
   activeRecurring=document;weekly=candidate;
- }else weekly=weeklyAPI.commitOwned(localStorage,WEEKLY_KEY,scheduleOwner(),candidate,plans.map(p=>p.id));
+ }else{
+  weekly=weeklyAPI.commitOwned(localStorage,WEEKLY_KEY,scheduleOwner(),candidate,plans.map(p=>p.id));
+  fullMigrationPreview=null;
+  renderOriginalCustomSchedule();
+ }
 }
 function nextPlan(){return resolvedWorkout().plan}
 function openToday(){const plan=nextPlan();if(plan)openWorkout(plan.id);else notice('Today is a rest day. Choose a workout from the weekly board.')}
