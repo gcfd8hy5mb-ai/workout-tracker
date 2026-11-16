@@ -41,6 +41,31 @@ def save(expected, title):
 def read():
     return "select public.prism_v2_schedule_read();"
 
+# Verify hardened function ownership and role grants in disposable database.
+meta,_=exec_sql("""select rolcanlogin,rolbypassrls,rolsuper,rolcreaterole
+from pg_catalog.pg_roles where rolname='prism_v2_executor';""")
+assert meta=='f|f|f|f',f'Unsafe privileged role: {meta}'
+owners,_=exec_sql("""select pg_catalog.pg_get_userbyid(p.proowner)
+from pg_catalog.pg_proc p join pg_catalog.pg_namespace n on n.oid=p.pronamespace
+where n.nspname='prism_v2_private' and p.proname in ('schedule_read','schedule_save')
+order by p.proname;""")
+assert owners.splitlines()==['prism_v2_executor','prism_v2_executor'],owners
+grants,_=exec_sql("""select
+pg_catalog.has_table_privilege('authenticated','public.prism_v2_workout_schedules','SELECT'),
+pg_catalog.has_table_privilege('authenticated','public.prism_v2_workout_schedules','INSERT'),
+pg_catalog.has_table_privilege('authenticated','public.prism_v2_workout_schedules','UPDATE'),
+pg_catalog.has_table_privilege('prism_v2_executor','public.prism_v2_workout_schedules','UPDATE'),
+pg_catalog.has_schema_privilege('prism_v2_executor','prism_v2_private','CREATE'),
+pg_catalog.pg_has_role('authenticated','prism_v2_executor','MEMBER');""")
+assert grants=='f|f|f|t|f|f',f'Unapproved grants: {grants}'
+# Test as a non-superuser login; SET ROLE from postgres would be meaningless.
+client_base = BASE.copy()
+client_base[client_base.index('postgres')] = 'v2_test_client' # -U argument
+client_env = dict(ENV, PGPASSWORD='temporary-ci-only')
+client = subprocess.run(client_base, input='SET ROLE prism_v2_executor;', text=True,
+                        capture_output=True, env=client_env, timeout=20)
+assert client.returncode != 0, 'Unprivileged client gained executor role'
+
 # Independent owner isolation and authenticated save/reload.
 out, _ = exec_sql(signed(A, save(0, "Legs")))
 assert json.loads(out)["revision"] == 1
