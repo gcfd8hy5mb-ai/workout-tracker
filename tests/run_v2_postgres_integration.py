@@ -90,6 +90,15 @@ exec_sql(signed(A, "select public.prism_v2_schedule_save(2, '" + json.dumps(bad)
 dup = dict(D, plans=[D["plans"][0], D["plans"][0]])
 exec_sql(signed(A, "select public.prism_v2_schedule_save(2, '" + json.dumps(dup) + "'::jsonb);"), ok=False)
 
+# Invalid exercise IDs must not enter the account's cloud workout document.
+bad_ex = dict(D, plans=[dict(D["plans"][0], ids=["leg-press", "not-a-real-movement"])])
+exec_sql(signed(A, "select public.prism_v2_schedule_save(2, '" + json.dumps(bad_ex) + "'::jsonb);"), ok=False)
+assert json.loads(exec_sql(signed(A, read()))[0])["revision"] == 2
+
+# Catalog checker is an internal implementation detail, not callable by clients.
+exec_sql(signed(A, "select prism_v2_private.is_supported_exercise('leg-press');"), ok=False)
+exec_sql(signed(A, "select prism_v2_private.is_supported_exercise('not-a-real-movement');"), ok=False)
+
 # Two independent connections: one transaction holds the row lock while another
 # tries to update against the same checkpoint, then must fail on commit of first.
 first = signed(A, "begin; " + save(2, "Transaction One") + " select pg_sleep(2); commit;")
