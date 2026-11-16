@@ -31,3 +31,20 @@ test('muscle filters cover delts shoulders arms and legs without hiding original
  assert.ok(lib.filter(all,'','Legs').some(e=>e.muscle==='Quads'));
  assert.ok(lib.filter(all,'chest press','').length>0);
 });
+
+test('equipment, image availability and equipment search combine predictably',()=>{
+ const gear=e=>e.id==='machine-chest-press'?'Machine':e.id==='pec-deck'?'Machine':'Cable';
+ const a=lib.filter(original,'','Chest',{equipment:'Machine',equipmentFor:gear});
+ assert.ok(a.length>=2);
+ assert.ok(a.every(ex=>gear(ex)==='Machine'));
+ const only=lib.filter(original,'','',{photosOnly:true});
+ assert.equal(only.length,14);
+ assert.ok(only.every(ex=>lib.imagePath(ex)));
+ const searched=lib.filter(original,'machine','',{equipmentFor:gear});
+ assert.ok(searched.some(ex=>ex.id==='pec-deck'));
+});
+test('alphabetical exercise ordering remains stable across repeated filtering',()=>{
+ const listed=lib.filter(original);
+ assert.deepEqual(listed.map(x=>x.name),listed.map(x=>x.name).slice().sort((a,b)=>a.localeCompare(b)));
+ assert.deepEqual(lib.filter(original,'','').map(x=>x.id),listed.map(x=>x.id));
+});
