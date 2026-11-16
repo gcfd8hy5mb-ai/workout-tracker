@@ -8,6 +8,10 @@ on:
       - 'myliftcoach2/**'
       - 'tests/test_myliftcoach2_*.cjs'
       - '.github/workflows/myliftcoach2-verify.yml'
+      - '.github/workflows/myliftcoach2-postgres-integration.yml'
+      - 'docs/sql/**'
+      - 'tests/fixtures/**'
+      - 'tests/run_v2_postgres_integration.py'
   workflow_dispatch:
 
 permissions:
@@ -52,3 +56,33 @@ jobs:
               raise SystemExit('Missing scripts: '+', '.join(missing))
           print(f'{len(parser.sources)} preview script references found and verified')
           PY
+
+  disposable-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare mock auth roles in disposable PostgreSQL
+        env:
+          PGPASSWORD: postgres
+        run: psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f tests/fixtures/v2-test-auth.sql
+      - name: Validate draft SQL in temporary DB only
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f docs/sql/prism-v2-isolated-schedule.DRAFT.sql
+          psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f docs/sql/prism-v2-private-rpc.DRAFT.sql
+      - name: Run two-user and concurrent transaction SQL tests
+        run: python3 tests/run_v2_postgres_integration.py

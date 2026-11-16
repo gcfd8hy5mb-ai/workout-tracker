@@ -1,0 +1,12 @@
+-- ONLY disposable GitHub Actions PostgreSQL service; never production.
+create role authenticated nologin;
+create role anon nologin;
+create schema auth;
+create table auth.users(id uuid primary key);
+create function auth.uid() returns uuid language sql stable set search_path = ''
+as $$ select nullif(pg_catalog.current_setting('request.jwt.claim.sub', true),'')::uuid $$;
+grant usage on schema auth to authenticated,anon;
+grant execute on function auth.uid() to authenticated,anon;
+insert into auth.users(id) values
+('11111111-1111-4111-8111-111111111111'),
+('22222222-2222-4222-8222-222222222222');
