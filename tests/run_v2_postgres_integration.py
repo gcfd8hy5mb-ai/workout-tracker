@@ -99,10 +99,34 @@ assert json.loads(exec_sql(signed(A, read()))[0])["revision"] == 2
 exec_sql(signed(A, "select prism_v2_private.is_supported_exercise('leg-press');"), ok=False)
 exec_sql(signed(A, "select prism_v2_private.is_supported_exercise('not-a-real-movement');"), ok=False)
 
+# Complete recurring document: overrides and dated repeating plans persist.
+scheduled = dict(D,
+    overrides={"2026-11-20": "custom-a"},
+    recurring=[{"start":"2026-11-13","end":"2027-01-29","workoutId":"custom-a","weeks":12}])
+out, _ = exec_sql(signed(A, "select public.prism_v2_schedule_save(2, '" + json.dumps(scheduled) + "'::jsonb);"))
+assert json.loads(out)["revision"] == 3
+assert json.loads(exec_sql(signed(A, read()))[0])["document"]["recurring"][0]["start"] == "2026-11-13"
+# Every invalid case must reject atomically, without changing the verified row.
+bad_cases = [
+ dict(scheduled, overrides={"2026-02-30":"custom-a"}),
+ dict(scheduled, overrides={"2026-11-20":"missing-workout"}),
+ dict(scheduled, recurring=[{"start":"2026-11-13","end":"2026-11-06","workoutId":"custom-a"}]),
+ dict(scheduled, recurring=[{"start":"2026-11-13","end":None,"workoutId":"missing-workout"}]),
+ dict(scheduled, recurring=[{"start":"not-a-date","end":None,"workoutId":"custom-a"}]),
+ dict(scheduled, recurring=[{"start":"2026-11-13","end":None,"workoutId":"custom-a","weeks":0}]),
+ dict(scheduled, recurring=[{"start":"2026-11-13","end":None,"workoutId":"custom-a","weeks":12.5}]),
+ dict(scheduled, recurring={"start":"2026-11-13"}),
+ dict(scheduled, overrides=["2026-11-20"]),
+]
+for bad in bad_cases:
+    exec_sql(signed(A, "select public.prism_v2_schedule_save(3, '" + json.dumps(bad) + "'::jsonb);"), ok=False)
+assert json.loads(exec_sql(signed(A, read()))[0])["revision"] == 3
+assert json.loads(exec_sql(signed(A, read()))[0])["document"]["overrides"]["2026-11-20"] == "custom-a"
+
 # Two independent connections: one transaction holds the row lock while another
 # tries to update against the same checkpoint, then must fail on commit of first.
-first = signed(A, "begin; " + save(2, "Transaction One") + " select pg_sleep(2); commit;")
-second = signed(A, save(2, "Transaction Two"))
+first = signed(A, "begin; " + save(3, "Transaction One") + " select pg_sleep(2); commit;")
+second = signed(A, save(3, "Transaction Two"))
 p = subprocess.Popen(BASE, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=ENV)
 assert p.stdin is not None
 p.stdin.write(first)
@@ -114,5 +138,5 @@ stdout, stderr = p.communicate(timeout=20)
 assert p.returncode == 0, stderr
 assert stale.returncode != 0, "Concurrent stale write incorrectly succeeded"
 assert json.loads(exec_sql(signed(A, read()))[0])["document"]["plans"][0]["title"] == "Transaction One"
-assert json.loads(exec_sql(signed(A, read()))[0])["revision"] == 3
+assert json.loads(exec_sql(signed(A, read()))[0])["revision"] == 4
 print("PASS: isolated PG owner isolation, permissions, stale CAS, first-save race, malformed input, concurrent update")
