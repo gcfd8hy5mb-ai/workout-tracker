@@ -609,6 +609,27 @@ async function loadOriginalAccountSettings(){
   status.textContent='Original settings could not be loaded: '+String(err.message||err).slice(0,160);
  }finally{if(settingsLoadEpoch===epoch)button.disabled=!account}
 }
+async function loadAllOriginalRecords(){
+ const button=$('loadAllOriginalRecords'),status=$('loadAllOriginalStatus');
+ if(!account?.id||!auth?.access_token){status.textContent='Sign in before loading original records.';return;}
+ const owner=account.id;
+ button.disabled=true;
+ status.textContent='Loading original completed workouts, tracking and profile (read-only)…';
+ try{
+  await Promise.allSettled([loadOriginalHistory(),loadOriginalTracking(),loadOriginalAccountSettings()]);
+  if(account?.id!==owner)return;
+  const loaded=[
+   importedHistoryOwner===owner,
+   importedTrackingOwner===owner&&Boolean(originalTracking),
+   importedSettingsOwner===owner&&Boolean(originalAccountSettings)
+  ];
+  const count=loaded.filter(Boolean).length;
+  status.textContent=count===3?'All three original account sections loaded read-only.':
+   count+' of 3 original account sections loaded. Review each section for missing records or read errors.';
+ }catch(error){
+  if(account?.id===owner)status.textContent='Could not complete original record loading: '+String(error.message||error).slice(0,140);
+ }finally{button.disabled=!account}
+}
 async function runCloudReadinessCheck(){
  const button=$('cloudReadinessButton'),status=$('cloudReadinessStatus');
  if(!button||!status)return;
@@ -648,6 +669,7 @@ function renderSettings(){
  $('cloudPill').textContent=account?'ACCOUNT CONNECTED · DEMO':'DEMO WORKSPACE';
  $('authAction').textContent=account?'Sign out':'Sign in with existing account';
  $('cloudReadinessButton').disabled=!account||!activeRecurring;
+ $('loadAllOriginalRecords').disabled=!account;
 }
 function openModal(content){$('modalContent').innerHTML=content;$('modal').hidden=false;document.body.style.overflow='hidden';$('closeModal').focus()}
 function closeModal(){closeRest();$('modal').hidden=true;document.body.style.overflow='';activePlan=null;session=null}
@@ -865,6 +887,7 @@ function bind(){
  $('inspectRecurringMigration').addEventListener('click',inspectCompleteRecurringMigration);
  $('activateFullRecurring').addEventListener('click',activateCompleteRecurringLocally);
  $('loadOriginalSettings').addEventListener('click',loadOriginalAccountSettings);
+ $('loadAllOriginalRecords').addEventListener('click',loadAllOriginalRecords);
  $('cloudReadinessButton').addEventListener('click',runCloudReadinessCheck);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
