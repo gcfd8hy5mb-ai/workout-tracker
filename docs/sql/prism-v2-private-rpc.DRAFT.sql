@@ -34,6 +34,78 @@ $$;
 revoke all on function prism_v2_private.schedule_read() from public, anon, authenticated;
 grant execute on function prism_v2_private.schedule_read() to authenticated;
 
+-- Canonical exercise IDs from original-exercise-catalog.js (60) and
+-- approved preview exercises (12); 63 unique IDs. Review when catalog evolves.
+create or replace function prism_v2_private.is_supported_exercise(exercise_id text)
+returns boolean language sql stable security definer set search_path = ''
+as $catalog$ select exercise_id = any(array[
+ 'ab-crunch',
+ 'assisted-dip',
+ 'assisted-pullup',
+ 'biceps-curl',
+ 'cable-crunch',
+ 'cable-curl',
+ 'cable-fly',
+ 'cable-lateral-raise',
+ 'cable-woodchop',
+ 'calf-raise',
+ 'chest-press',
+ 'chest-press-cable',
+ 'chest-supported-row',
+ 'close-grip-pulldown',
+ 'dead-bug',
+ 'dumbbell-curl',
+ 'dumbbell-lateral-raise',
+ 'dumbbell-row',
+ 'dumbbell-shoulder-press',
+ 'face-pull',
+ 'glute-bridge',
+ 'glute-kickback',
+ 'goblet-squat',
+ 'hack-squat',
+ 'hammer-curl',
+ 'hip-abduction',
+ 'hip-thrust',
+ 'incline-chest-press',
+ 'incline-dumbbell-curl',
+ 'incline-dumbbell-press',
+ 'lat-pulldown',
+ 'lateral-raise',
+ 'leg-curl',
+ 'leg-extension',
+ 'leg-press',
+ 'lying-leg-curl',
+ 'machine-chest-press',
+ 'overhead-triceps',
+ 'pallof-press',
+ 'pec-deck',
+ 'preacher-curl',
+ 'push-up',
+ 'rear-delt-cable-fly',
+ 'reverse-pec-deck',
+ 'romanian-deadlift',
+ 'rope-hammer-curl',
+ 'rope-pushdown',
+ 'seated-calf-raise',
+ 'seated-leg-curl',
+ 'seated-row',
+ 'shoulder-press',
+ 'single-arm-cable-row',
+ 'single-arm-triceps-pushdown',
+ 'smith-bench-press',
+ 'smith-squat',
+ 'split-squat',
+ 'standing-calf-raise',
+ 'standing-leg-curl',
+ 'step-up',
+ 'straight-arm-pulldown',
+ 'triceps-extension',
+ 'triceps-push',
+ 'triceps-pushdown'
+]::text[]) $catalog$;
+revoke all on function prism_v2_private.is_supported_exercise(text) from public, anon, authenticated;
+-- No authenticated grant: callable only from the guarded private save routine.
+
 create or replace function prism_v2_private.schedule_save(
  expected_revision bigint, new_document jsonb
 )
@@ -77,7 +149,8 @@ begin
    if pg_catalog.jsonb_typeof(element)<>'string'
       or pg_catalog.length(element #>> '{}')<1
       or pg_catalog.length(element #>> '{}')>128
-   then raise exception 'Invalid exercise identifier'; end if;
+      or not prism_v2_private.is_supported_exercise(element #>> '{}')
+   then raise exception 'Invalid or unsupported exercise identifier'; end if;
   end loop;
  end loop;
  for selected in select value from pg_catalog.jsonb_array_elements(new_document->'assigned') loop
