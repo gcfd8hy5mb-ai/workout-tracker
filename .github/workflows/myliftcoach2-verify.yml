@@ -1,0 +1,54 @@
+name: MYLIFTCOACH 2.0 Migration Verification
+on:
+  push:
+    branches:
+      - 'feature/myliftcoach2-*'
+  pull_request:
+    paths:
+      - 'myliftcoach2/**'
+      - 'tests/test_myliftcoach2_*.cjs'
+      - '.github/workflows/myliftcoach2-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  migration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check imported JavaScript syntax
+        run: |
+          set -euo pipefail
+          for source in myliftcoach2/*.js; do
+            echo "Checking $source"
+            node --check "$source"
+          done
+      - name: Run staged migration regression suite
+        run: node --test tests/test_myliftcoach2_*.cjs
+      - name: Verify preview script links resolve
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class Scripts(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.sources=[]
+              def handle_starttag(self,tag,attrs):
+                  if tag == 'script':
+                      source=dict(attrs).get('src')
+                      if source:
+                          self.sources.append(source.split('?')[0])
+          html=Path('myliftcoach2/index.html')
+          parser=Scripts()
+          parser.feed(html.read_text())
+          missing=[src for src in parser.sources if not (html.parent/src).is_file()]
+          if missing:
+              raise SystemExit('Missing scripts: '+', '.join(missing))
+          print(f'{len(parser.sources)} preview script references found and verified')
+          PY
