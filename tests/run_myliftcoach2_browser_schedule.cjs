@@ -33,6 +33,20 @@ const assert = require('node:assert/strict');
    assert.equal(await page.locator('#library').isVisible(),true);
    assert.ok(await page.locator('[data-library-detail]').count()>5);
    assert.equal(await page.locator('[data-library-detail]').count(),63); // 60 original + 3 starter-only IDs retained for existing plans
+   assert.match(await page.locator('#libraryResultCount').textContent(),/63 of 63 exercises/);
+   assert.ok(await page.locator('#libraryEquipment option').count()>2);
+   await page.locator('#libraryPhotosOnly').check();
+   assert.equal(await page.locator('[data-library-detail]').count(),14);
+   assert.match(await page.locator('#libraryResultCount').textContent(),/14 of 63 exercises/);
+   await page.locator('#libraryPhotosOnly').uncheck();
+   await page.locator('#exerciseSearch').fill('machine chest press');
+   assert.equal(await page.locator('[data-library-detail]').count(),1);
+   await page.locator('#libraryReset').evaluate(el=>el.click());
+   assert.equal(await page.locator('[data-library-detail]').count(),63);
+   await page.locator('#libraryEquipment').selectOption({index:1});
+   assert.ok(await page.locator('[data-library-detail]').count()>0);
+   assert.ok(await page.locator('[data-library-detail]').count()<63);
+   await page.locator('#libraryReset').evaluate(el=>el.click());
    const photoSources=await page.evaluate(()=>window.MLCOriginalExercises.filter(ex=>ex.image).map(ex=>ex.image));
    assert.equal(photoSources.length,14);
    for(const asset of [...photoSources,'images/myliftcoach-anatomy-realistic.webp','images/myliftcoach-anatomy-body-mask.png']){
@@ -44,6 +58,9 @@ const assert = require('node:assert/strict');
    assert.match(await page.locator('#modalContent').textContent(),/No original exercise photograph supplied/);
    assert.equal(await page.locator('#modalContent img').count(),0);
    assert.ok(await page.locator('#modalContent .liftova-anatomy svg').count()>0);
+   assert.ok(await page.locator('[data-library-related]').count()>0);
+   await page.locator('[data-library-related]').first().evaluate(el=>el.click());
+   assert.notEqual(await page.locator('#modalContent h2').textContent(),'Dead Bug');
    await page.locator('#closeModal').evaluate(el=>el.click());
    await page.locator('[data-library-detail="machine-chest-press"]').evaluate(el=>el.click());
    assert.match(await page.locator('#modalContent h2').textContent(),/Machine Chest Press/);
@@ -53,7 +70,14 @@ const assert = require('node:assert/strict');
    assert.ok(await page.locator('#modalContent .liftova-anatomy image[href="../images/myliftcoach-anatomy-realistic.webp"]').count()>0);
    assert.ok(await page.locator('#modalContent .liftova-anatomy image[href="../images/myliftcoach-anatomy-body-mask.png"]').count()>0);
    await page.locator('#closeModal').evaluate(el=>el.click());
+   await page.locator('[data-library-detail="dead-bug"]').evaluate(el=>el.click());
+   await page.locator('[data-library-stage="dead-bug"]').evaluate(el=>el.click());
+   assert.equal(await page.locator('#workouts').isVisible(),true);
+   assert.equal(await page.locator('#weekExerciseOptions input[value="dead-bug"]').isChecked(),true);
+   assert.equal(await page.locator('#todayTitle').textContent(),'My Custom Session');
+   // The checkbox is a proposed edit only. Leaving without saving must not alter the plan.
    await page.locator('.sidebar [data-page="home"]').first().evaluate(el=>el.click());
+   assert.doesNotMatch(await page.locator('#todayExercises').textContent(),/Dead Bug/);
    assert.match(await page.evaluate(()=>getComputedStyle(document.body).backgroundImage),/gradient/);
    const palette=await page.evaluate(()=>{
     const root=getComputedStyle(document.documentElement);
