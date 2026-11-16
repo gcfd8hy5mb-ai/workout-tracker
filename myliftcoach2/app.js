@@ -32,6 +32,7 @@ let demoSessions=loadDemo();
 let originalHistory=[];
 let importedHistoryOwner=null;
 let originalTracking=null,importedTrackingOwner=null;
+let originalAccountSettings=null,importedSettingsOwner=null;
 let toastTimer;
 let muscleFilter='';
 let restSeconds=90,restPaused=true,restClock=null;
@@ -45,7 +46,7 @@ function setPage(next){if(!['welcome','home','workouts','library','progress','se
  $('pageTitle').textContent=({welcome:'Welcome',home:'Home',workouts:'Workouts',library:'Exercise library',progress:'Progress',settings:'My Account',coaching:'Coaching',nutrition:'Nutrition'})[next];
  $('sidebar').classList.remove('open');$('sidebarScrim').classList.remove('open');document.body.classList.remove('sidebar-is-open');$('menuBtn').setAttribute('aria-expanded','false');$('moreMenuBtn').setAttribute('aria-expanded','false');$('sidebar').inert=window.matchMedia('(max-width:760px)').matches;document.body.classList.toggle('welcome-view',next==='welcome');window.scrollTo({top:0,behavior:'instant'});
  if(next==='home')renderHome();if(next==='workouts')renderWorkouts();if(next==='library')renderLibrary();
- if(next==='progress')renderProgress();if(next==='coaching')renderCoach();if(next==='nutrition')renderOriginalTracking();if(next==='settings')renderSettings();
+ if(next==='progress')renderProgress();if(next==='coaching')renderCoach();if(next==='nutrition')renderOriginalTracking();if(next==='settings'){renderSettings();renderOriginalAccountSettings();}
 }
 function totalSets(){return demoSessions.reduce((n,x)=>n+x.sets.length,0)}
 function nextPlan(){return plans[demoSessions.length%plans.length]}
@@ -255,6 +256,36 @@ async function loadOriginalTracking(){
   status.textContent='Could not load original tracking: '+String(error.message||error).slice(0,170);
  }finally{button.disabled=!account}
 }
+function clearOriginalAccountSettings(){
+ originalAccountSettings=null;importedSettingsOwner=null;renderOriginalAccountSettings();
+}
+function renderOriginalAccountSettings(){
+ const button=$('loadOriginalSettings'),status=$('originalSettingsStatus'),details=$('originalSettingsDetails');
+ if(!button||!status||!details)return;
+ button.disabled=!account;
+ details.replaceChildren();
+ if(!account){status.textContent='Sign in to load the original settings.';return;}
+ if(importedSettingsOwner!==account.id||!originalAccountSettings){status.textContent='Ready to load original profile and training goals.';return;}
+ const value=originalAccountSettings;
+ status.textContent='Original account profile and goals loaded read-only.';
+ const rows=[['Display name',value.displayName||'Not set'],['Avatar style',value.avatarId],['Onboarding',value.onboardingComplete?'Completed':'Not recorded complete'],['Training goal',value.trainingGoal||'Not set'],['Training days per week',value.days??'Not set'],['Focus',value.trainingFocus||'Not set'],['Program mode',value.workoutMode]];
+ details.innerHTML=rows.map(([name,val])=>'<div class="recent-item"><strong>'+escapeHTML(name)+'</strong><span>'+escapeHTML(String(val))+'</span></div>').join('');
+}
+async function loadOriginalAccountSettings(){
+ if(!account?.id||!auth?.access_token){notice('Sign in before loading your account settings.');return;}
+ const owner=account.id,status=$('originalSettingsStatus'),button=$('loadOriginalSettings');
+ button.disabled=true;status.textContent='Reading original profile and goals…';
+ try{
+  await validateStoredAuth();
+  if(account?.id!==owner||!auth?.access_token)throw Error('Account changed or session expired');
+  const result=await window.MLCOriginalAccountSettings.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner});
+  if(account?.id!==owner)throw Error('Account changed during settings read');
+  originalAccountSettings=result;importedSettingsOwner=owner;renderOriginalAccountSettings();
+ }catch(err){
+  clearOriginalAccountSettings();
+  status.textContent='Original settings could not be loaded: '+String(err.message||err).slice(0,160);
+ }finally{button.disabled=!account}
+}
 function renderSettings(){
  $('accountIdentity').textContent=account?.email?account.email+' · authenticated (production workout data is not loaded)':'Not signed in. You can still explore the demo.';
  $('backendStatus').textContent=account?'AUTHENTICATED':'NOT CONNECTED';
@@ -359,9 +390,9 @@ async function authRequest(path,body,token,method='POST'){
 }
 function saveAuth(data){
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
- if(account?.id&&account.id!==data.user?.id){clearOriginalHistory();clearOriginalTracking();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;renderSettings();renderOriginalHistory();
+ if(account?.id&&account.id!==data.user?.id){clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;renderSettings();renderOriginalHistory();
 }
-function clearAuth(){sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();clearOriginalTracking();renderSettings()}
+function clearAuth(){sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();renderSettings()}
 async function validateStoredAuth(){
  try{
   const saved=JSON.parse(sessionStorage.getItem(AUTH_KEY)||'null');
@@ -446,7 +477,8 @@ function bind(){
  $('clearDemo').addEventListener('click',()=>{if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;demoSessions=[];localStorage.removeItem(DEMO_KEY);renderProgress();renderHome();notice('Local demo history cleared. Production data untouched.')});
  $('loadOriginalHistory').addEventListener('click',loadOriginalHistory);
  $('loadOriginalTracking').addEventListener('click',loadOriginalTracking);
+ $('loadOriginalSettings').addEventListener('click',loadOriginalAccountSettings);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
-bind();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderOriginalTracking();renderSettings();validateStoredAuth();
+bind();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderOriginalTracking();renderSettings();renderOriginalAccountSettings();validateStoredAuth();
 })();
