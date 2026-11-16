@@ -77,5 +77,20 @@
   return sessions.filter(item=>Number.isFinite(Date.parse(item?.date||''))&&sessionTotals(item).sets>0)
    .slice().sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).slice(0,count);
  }
- return Object.freeze({load,normalizedSession,filterSessions,sessionTotals,recentCompleted});
+ function latestWorkingWeight(history,exerciseId){
+  if(!exerciseId||!Array.isArray(history))return null;
+  for(const session of history.slice().sort((a,b)=>Date.parse(b?.date||'')-Date.parse(a?.date||''))){
+   if(!Number.isFinite(Date.parse(session?.date||''))||!Array.isArray(session?.exercises))continue;
+   const matches=session.exercises.filter(ex=>ex?.id===exerciseId&&Array.isArray(ex.sets));
+   let best=null;
+   for(const ex of matches)for(const set of ex.sets){
+    const weight=Number(set?.weight),reps=Number(set?.reps);
+    if(set?.completed===false||!Number.isFinite(weight)||weight<=0||!Number.isFinite(reps)||reps<=0)continue;
+    best=Math.max(best??0,weight);
+   }
+   if(best!==null)return {weight:best,date:new Date(Date.parse(session.date)).toISOString().slice(0,10)};
+  }
+  return null;
+ }
+ return Object.freeze({load,normalizedSession,filterSessions,sessionTotals,recentCompleted,latestWorkingWeight});
 });
