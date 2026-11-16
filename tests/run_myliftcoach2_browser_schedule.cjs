@@ -102,7 +102,15 @@ const assert = require('node:assert/strict');
    await page.reload({waitUntil:'load'});
    assert.equal(await page.locator('#todayTitle').textContent(),'Rest day');
    assert.equal(await page.locator('#heroStart').isDisabled(),true);
-   assert.deepEqual(errors,[],device.label+' rest exception errors');
+   await page.locator('#weeklyBoardHome [data-week-day="'+today+'"]').evaluate(el=>el.click());
+   assert.equal(await page.locator('#weekRestoreRepeating').isVisible(),true);
+   await page.locator('#weekRestoreRepeating').evaluate(el=>el.click());
+   assert.equal(await page.locator('#todayTitle').textContent(),'My Custom Session');
+   assert.equal(await page.locator('#heroStart').isDisabled(),false);
+   assert.equal(await page.locator('#weekRestoreRepeating').isHidden(),true);
+   await page.reload({waitUntil:'load'});
+   assert.equal(await page.locator('#todayTitle').textContent(),'My Custom Session');
+   assert.deepEqual(errors,[],device.label+' rest exception undo errors');
    console.log('PASS '+device.label+': Home/board/Start agree; edit, sidebar create, and reload retain custom workout');
    await context.close();
   }
