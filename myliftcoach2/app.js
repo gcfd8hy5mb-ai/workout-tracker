@@ -223,12 +223,37 @@ function restoreRepeatingForDate(){
   notice('Repeating workout restored for this date; future rules preserved.');
  }catch(error){notice(error.message)}
 }
+function prepareWeekLibraryFilters(){
+ const muscle=$('weekExerciseMuscle'),equipment=$('weekExerciseEquipment');
+ const groups=[...new Set(editorExercises.map(ex=>String(ex.muscle||ex.group||'Other')))].sort();
+ const gears=[...new Set(editorExercises.map(ex=>libraryEquipment(ex)))].sort();
+ muscle.innerHTML='<option value="">All muscles</option>'+groups.map(x=>'<option value="'+escapeHTML(x)+'">'+escapeHTML(x)+'</option>').join('');
+ equipment.innerHTML='<option value="">All equipment</option>'+gears.map(x=>'<option value="'+escapeHTML(x)+'">'+escapeHTML(x)+'</option>').join('');
+}
+function filterWeekEditorExercises(){
+ const query=$('weekExerciseSearch').value.trim().toLowerCase(),muscle=$('weekExerciseMuscle').value,
+  equipment=$('weekExerciseEquipment').value,onlyFavorites=$('weekExerciseFavorites').checked;
+ const favorites=new Set(libraryPrefs()?.favorites||[]);
+ let shown=0;
+ $('weekExerciseOptions').querySelectorAll('.week-exercise').forEach(label=>{
+  const id=label.querySelector('input')?.value,ex=exerciseById(id);
+  const matches=Boolean(ex)&&(!muscle||String(ex.muscle||ex.group||'Other')===muscle)&&
+   (!equipment||libraryEquipment(ex)===equipment)&&(!onlyFavorites||favorites.has(id))&&
+   (!query||(ex.name+' '+String(ex.muscle||ex.group||'')+' '+libraryEquipment(ex)).toLowerCase().includes(query));
+  label.hidden=!matches;if(matches)shown++;
+ });
+ const selected=$('weekExerciseOptions').querySelectorAll('input:checked').length;
+ $('weekExerciseCount').textContent=shown+' of '+editorExercises.length+' exercises shown · '+selected+' selected · not saved until you press Save day and workout.';
+}
 function updateWeekEditor(){
  const id=$('weekWorkoutSelect').value,p=weekly.plans.find(p=>p.id===id);
  $('weekWorkoutName').value=p?.title||'';
  $('weekWorkoutName').disabled=!p;
- $('weekExerciseOptions').innerHTML=editorExercises.map(ex=>'<label class="week-exercise"><input type="checkbox" value="'+escapeHTML(ex.id)+'"'+(p?.ids.includes(ex.id)?' checked':'')+(p?'':' disabled')+'><span>'+escapeHTML(ex.name)+'</span></label>').join('');
- $('weekExerciseSearch').value='';
+ $('weekExerciseOptions').innerHTML=editorExercises.map(ex=>
+  '<div class="week-exercise library-editor-row"><label class="week-exercise-choice"><input type="checkbox" value="'+escapeHTML(ex.id)+'"'+(p?.ids.includes(ex.id)?' checked':'')+(p?'':' disabled')+'><span><strong>'+escapeHTML(ex.name)+'</strong><small>'+escapeHTML(String(ex.muscle||ex.group||'Other'))+' · '+escapeHTML(libraryEquipment(ex))+'</small></span></label><button type="button" class="button-outline" data-week-library-detail="'+escapeHTML(ex.id)+'">Details</button></div>'
+ ).join('');
+ $('weekExerciseSearch').value='';$('weekExerciseMuscle').value='';$('weekExerciseEquipment').value='';$('weekExerciseFavorites').checked=false;
+ filterWeekEditorExercises();
 }
 function saveWeekEditor(){
  const day=Number($('weekEditor').dataset.day),id=$('weekWorkoutSelect').value||null;
@@ -1170,9 +1195,19 @@ function bind(){
  $('workoutGrid').addEventListener('click',e=>{const el=e.target.closest('[data-workout]');if(el)openWorkout(el.dataset.workout)});
  for(const key of ['weeklyBoardHome','weeklyBoardWorkouts'])$(key).addEventListener('click',e=>{const btn=e.target.closest('[data-week-day]');if(btn)chooseWeekday(Number(btn.dataset.weekDay))});
  $('weekWorkoutSelect').addEventListener('change',updateWeekEditor);
- $('weekExerciseSearch').addEventListener('input',()=>{
-  const q=$('weekExerciseSearch').value.trim().toLowerCase();
-  $('weekExerciseOptions').querySelectorAll('.week-exercise').forEach(label=>{label.hidden=!label.textContent.toLowerCase().includes(q)});
+ prepareWeekLibraryFilters();
+ $('weekExerciseSearch').addEventListener('input',filterWeekEditorExercises);
+ $('weekExerciseMuscle').addEventListener('change',filterWeekEditorExercises);
+ $('weekExerciseEquipment').addEventListener('change',filterWeekEditorExercises);
+ $('weekExerciseFavorites').addEventListener('change',filterWeekEditorExercises);
+ $('weekExerciseReset').addEventListener('click',()=>{
+  $('weekExerciseSearch').value='';$('weekExerciseMuscle').value='';$('weekExerciseEquipment').value='';$('weekExerciseFavorites').checked=false;
+  filterWeekEditorExercises();
+ });
+ $('weekExerciseOptions').addEventListener('change',filterWeekEditorExercises);
+ $('weekExerciseOptions').addEventListener('click',e=>{
+  const button=e.target.closest('[data-week-library-detail]');
+  if(button)exerciseDetail(button.dataset.weekLibraryDetail);
  });
  $('weekSaveButton').addEventListener('click',saveWeekEditor);
  $('weekRestoreRepeating').addEventListener('click',restoreRepeatingForDate);
