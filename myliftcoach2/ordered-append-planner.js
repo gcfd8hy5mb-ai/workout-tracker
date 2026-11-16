@@ -18,6 +18,13 @@
   const candidate=[session,...latestHistory];
   const nextRows=await model.normalize({workoutHistoryV52:JSON.stringify(candidate)});
   const priorRows=cloudRows.filter(x=>x.source_key==='workoutHistoryV52');
+  const baselineRows=await model.normalize({workoutHistoryV52:JSON.stringify(baseline)});
+  const received=new Map(priorRows.map(row=>[row.table+':'+row.id,row]));
+  if(received.size!==priorRows.length||received.size!==baselineRows.length||
+    baselineRows.some(row=>{
+      const other=received.get(row.table+':'+row.id);
+      return !other||reconcile.content(row)!==reconcile.content(other);
+    }))throw Error('Cloud checkpoint has changed; refresh before saving');
   const proposed=reconcile.plan(nextRows,priorRows,priorRows);
   if(!proposed.ready)throw Error('Cloud data conflict — do not save');
   const ordered=JSON.parse(model.restoreSnapshot(nextRows).workoutHistoryV52);
