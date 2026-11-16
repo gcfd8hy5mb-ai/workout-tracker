@@ -29,3 +29,19 @@ test('original metadata ranks same-pattern same-equipment alternatives first',()
  assert.ok(ranked.every(x=>x.score>=100));
  assert.deepEqual(coach.rankedAlternatives('machine-chest-press',['machine-chest-press','smith-bench-press'],catalog).map(x=>x.id),['chest-press-cable']);
 });
+
+test('Coach progression uses real 2.0 completed workouts without requiring legacy account import',()=>{
+ const exerciseId='leg-press';
+ const rows=[
+  {id:'new',created:'2026-11-15T15:00:00Z',sets:[{exerciseId,weight:160,reps:10},{exerciseId,weight:160,reps:10}]},
+  {id:'old',created:'2026-11-12T15:00:00Z',sets:[{exerciseId,weight:155,reps:9},{exerciseId,weight:155,reps:10}]}
+ ];
+ const before=JSON.stringify(rows),result=coach.localProgression(rows,exerciseId,'Leg Press');
+ assert.equal(result.status,'ready');assert.equal(result.action,'increase');
+ assert.equal(result.weight,165);assert.equal(JSON.stringify(rows),before);
+ assert.equal(coach.localProgression(rows,'seated-row','Row').status,'insufficient');
+});
+test('Coach refuses incomplete local practice evidence rather than inventing a target',()=>{
+ const rows=[{id:'only',created:'2026-11-15T15:00:00Z',sets:[{exerciseId:'leg-press',weight:160,reps:10}]}];
+ assert.equal(coach.localProgression(rows,'leg-press','Leg Press').status,'insufficient');
+});
