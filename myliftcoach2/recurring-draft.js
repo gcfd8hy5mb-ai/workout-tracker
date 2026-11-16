@@ -37,5 +37,14 @@
   const next={...document,plans:candidate.plans.map(p=>({...p,ids:p.ids.slice()})),assigned:candidate.assigned.slice()};
   return guard(next,validIds);
  }
- return Object.freeze({read,commit,edited,guard});
+ function restoreDate(doc,date,validIds){
+  guard(doc,validIds);
+  if(typeof date!=='string'||!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||
+     !Object.prototype.hasOwnProperty.call(doc.overrides,date))
+   throw Error('Dated workout exception not found');
+  const overrides={...doc.overrides};
+  delete overrides[date];
+  return guard({...doc,overrides},validIds);
+ }
+ return Object.freeze({read,commit,edited,restoreDate,guard});
 });
