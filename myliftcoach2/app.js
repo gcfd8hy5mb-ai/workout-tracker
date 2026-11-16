@@ -498,10 +498,12 @@ function renderOriginalHistory(){
  const matches=window.MLCOriginalHistory.filterSessions(originalHistory,search.value);
  status.textContent=originalHistory.length?(matches.length+' of '+originalHistory.length+' original completed workouts match (read only).'):'No completed original workouts were returned for this account.';
  root.innerHTML=matches.slice(0,200).map(item=>{
-  const sets=item.exercises.flatMap(ex=>ex.sets);
-  const volume=sets.reduce((n,s)=>n+s.weight*s.reps,0);
-  const details=item.exercises.map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sets.length+' sets</small></div><span>'+Math.round(ex.sets.reduce((n,s)=>n+s.weight*s.reps,0)).toLocaleString()+' lb</span></div>').join('');
-  return '<details class="panel"><summary><strong>'+escapeHTML(item.workoutTitle)+'</strong> · '+new Date(item.date).toLocaleDateString()+' · '+sets.length+' sets · '+Math.round(volume).toLocaleString()+' lb</summary>'+details+'</details>';
+  const totals=window.MLCOriginalHistory.sessionTotals(item);
+  const details=item.exercises.map(ex=>{
+   const count=window.MLCOriginalHistory.sessionTotals({exercises:[ex]});
+   return '<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+count.sets+' completed sets</small></div><span>'+Math.round(count.volume).toLocaleString()+' lb-reps</span></div>';
+  }).join('');
+  return '<details class="panel"><summary><strong>'+escapeHTML(item.workoutTitle)+'</strong> · '+new Date(item.date).toLocaleDateString()+' · '+totals.sets+' completed sets · '+Math.round(totals.volume).toLocaleString()+' lb-reps</summary>'+details+'</details>';
  }).join('')||(originalHistory.length?'<p class="small">No matching workouts or exercises.</p>':'');
 }
 async function loadOriginalHistory(){
