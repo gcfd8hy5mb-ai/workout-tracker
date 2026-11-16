@@ -785,7 +785,7 @@ function renderWorkoutLog(){
     (mistakes.length?'<strong>Common mistakes</strong><ul>'+mistakes.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+'</details>';
   const recorded=session.sets.map((set,index)=>({...set,index})).filter(set=>set.exerciseId===id);
   const logged=recorded.length?'<div class="recent-list">'+recorded.map(set=>
-   '<div class="recent-item"><div><strong>Logged set '+(recorded.indexOf(set)+1)+'</strong><div class="inputs"><label>Weight (lb)<input type="number" min="0" max="1500" step="2.5" inputmode="decimal" aria-label="Edit set weight" data-edit-weight="'+set.index+'" value="'+set.weight+'"></label><label>Reps<input type="number" min="1" max="100" step="1" inputmode="numeric" aria-label="Edit set reps" data-edit-reps="'+set.index+'" value="'+set.reps+'"></label><button type="button" class="button-outline" data-save-logged-set="'+set.index+'">Save set</button></div></div></div>'
+   '<div class="recent-item"><div><strong>Logged set '+(recorded.indexOf(set)+1)+'</strong><div class="inputs"><label>Weight (lb)<input type="number" min="0" max="1500" step="2.5" inputmode="decimal" aria-label="Edit set weight" data-edit-weight="'+set.index+'" value="'+set.weight+'"></label><label>Reps<input type="number" min="1" max="100" step="1" inputmode="numeric" aria-label="Edit set reps" data-edit-reps="'+set.index+'" value="'+set.reps+'"></label><button type="button" class="button-outline" data-save-logged-set="'+set.index+'">Save set</button><button type="button" class="button-outline" data-delete-logged-set="'+set.index+'">Remove set</button></div></div></div>'
   ).join('')+'</div>':'';
   const options=window.MLCSessionCoach.rankedAlternatives(id,activePlan.ids,editorExercises);
   const previous=account?.id&&importedHistoryOwner===account.id?
@@ -848,6 +848,13 @@ function updateExerciseFeedback(id){
  if(feedback)feedback.textContent=sets.length?('Last set: '+sets[sets.length-1].weight+' lb × '+sets[sets.length-1].reps+' reps'):'';
  if(undo)undo.hidden=sets.length===0;
  renderSessionSetProgress();
+}
+function removeLoggedSet(index){
+ if(!session||!activePlan||!Number.isInteger(index)||index<0||index>=session.sets.length)return;
+ session.sets.splice(index,1);sessionDirty=true;persistOpenSession();
+ renderWorkoutLog();
+ for(const id of activePlan.ids)updateExerciseFeedback(id);
+ notice('Selected logged set removed from this practice session.');
 }
 function updateLoggedSet(index){
  if(!session||!Number.isInteger(index)||index<0||index>=session.sets.length)return;
@@ -1034,7 +1041,7 @@ function bind(){
  document.querySelectorAll('[data-account-page]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.accountPage)));
 
  $('modalContent').addEventListener('input',e=>{const field=e.target.closest('[data-weight]');if(field)updateWarmupGuide(field.dataset.weight)});
- $('modalContent').addEventListener('click',e=>{const edit=e.target.closest('[data-save-logged-set]');if(edit){updateLoggedSet(Number(edit.dataset.saveLoggedSet));return}const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const readiness=e.target.closest('[data-session-readiness]');if(readiness){updateSessionReadiness(readiness.dataset.sessionReadiness);return}const coach=e.target.closest('[data-use-coach]');if(coach){useCoachWeight(coach.dataset.useCoach);return}const last=e.target.closest('[data-use-last]');if(last){reuseLastWorkingWeight(last.dataset.useLast);return}const swap=e.target.closest('[data-swap-apply]');if(swap){replaceSessionExercise(swap.dataset.swapApply);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
+ $('modalContent').addEventListener('click',e=>{const remove=e.target.closest('[data-delete-logged-set]');if(remove){removeLoggedSet(Number(remove.dataset.deleteLoggedSet));return}const edit=e.target.closest('[data-save-logged-set]');if(edit){updateLoggedSet(Number(edit.dataset.saveLoggedSet));return}const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const readiness=e.target.closest('[data-session-readiness]');if(readiness){updateSessionReadiness(readiness.dataset.sessionReadiness);return}const coach=e.target.closest('[data-use-coach]');if(coach){useCoachWeight(coach.dataset.useCoach);return}const last=e.target.closest('[data-use-last]');if(last){reuseLastWorkingWeight(last.dataset.useLast);return}const swap=e.target.closest('[data-swap-apply]');if(swap){replaceSessionExercise(swap.dataset.swapApply);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
  $('closeModal').addEventListener('click',closeModal);
  $('restClose').addEventListener('click',closeRest);
  $('restSkip').addEventListener('click',closeRest);
