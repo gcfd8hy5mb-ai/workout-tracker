@@ -270,7 +270,7 @@ const $=(id)=>document.getElementById(id);
 let page='home',activePlan=null,session=null,guest=true,account=null,auth=null;
 let demoSessions=loadDemo();
 let originalHistory=[];
-let historyLoadEpoch=0,trackingLoadEpoch=0,settingsLoadEpoch=0,customScheduleLoadEpoch=0;
+let historyLoadEpoch=0,trackingLoadEpoch=0,settingsLoadEpoch=0,customScheduleLoadEpoch=0,combinedLoadEpoch=0;
 let importedHistoryOwner=null;
 let originalTracking=null,importedTrackingOwner=null;
 let originalAccountSettings=null,importedSettingsOwner=null;
@@ -612,12 +612,12 @@ async function loadOriginalAccountSettings(){
 async function loadAllOriginalRecords(){
  const button=$('loadAllOriginalRecords'),status=$('loadAllOriginalStatus');
  if(!account?.id||!auth?.access_token){status.textContent='Sign in before loading original records.';return;}
- const owner=account.id;
+ const owner=account.id,epoch=++combinedLoadEpoch;
  button.disabled=true;
  status.textContent='Loading original completed workouts, tracking and profile (read-only)…';
  try{
   await Promise.allSettled([loadOriginalHistory(),loadOriginalTracking(),loadOriginalAccountSettings()]);
-  if(account?.id!==owner)return;
+  if(account?.id!==owner||combinedLoadEpoch!==epoch)return;
   const loaded=[
    importedHistoryOwner===owner,
    importedTrackingOwner===owner&&Boolean(originalTracking),
@@ -627,8 +627,8 @@ async function loadAllOriginalRecords(){
   status.textContent=count===3?'All three original account sections loaded read-only.':
    count+' of 3 original account sections loaded. Review each section for missing records or read errors.';
  }catch(error){
-  if(account?.id===owner)status.textContent='Could not complete original record loading: '+String(error.message||error).slice(0,140);
- }finally{button.disabled=!account}
+  if(account?.id===owner&&combinedLoadEpoch===epoch)status.textContent='Could not complete original record loading: '+String(error.message||error).slice(0,140);
+ }finally{if(combinedLoadEpoch===epoch)button.disabled=!account}
 }
 async function runCloudReadinessCheck(){
  const button=$('cloudReadinessButton'),status=$('cloudReadinessStatus');
@@ -769,9 +769,9 @@ async function authRequest(path,body,token,method='POST'){
 }
 function saveAuth(data){
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
- if(account?.id&&account.id!==data.user?.id){clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings();renderOriginalHistory();
+ if(account?.id&&account.id!==data.user?.id){combinedLoadEpoch++;$('loadAllOriginalStatus').textContent='Account changed. Load records for the current account.';clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings();renderOriginalHistory();
 }
-function clearAuth(){if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings()}
+function clearAuth(){combinedLoadEpoch++;if($('loadAllOriginalStatus'))$('loadAllOriginalStatus').textContent='Sign in to load original account records.';if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderSettings()}
 async function validateStoredAuth(){
  try{
   const saved=JSON.parse(sessionStorage.getItem(AUTH_KEY)||'null');
