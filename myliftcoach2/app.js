@@ -300,7 +300,7 @@ function renderHomeOriginalRecent(){
  root.replaceChildren();
  if(!signedIn){status.textContent='Sign in to load real completed workouts from your original account.';return;}
  if(!loaded){status.textContent='Original history has not been loaded for this account. Demo activity is shown separately below.';return;}
- const sessions=originalHistory.filter(item=>window.MLCOriginalHistory.sessionTotals(item).sets>0).slice(0,3);
+ const sessions=window.MLCOriginalHistory.recentCompleted(originalHistory,3);
  status.textContent=sessions.length?'Latest '+sessions.length+' actual completed workouts · read only · separate from demo activity.':'No qualifying completed original workouts were found.';
  root.innerHTML=sessions.map(item=>{
   const totals=window.MLCOriginalHistory.sessionTotals(item);
