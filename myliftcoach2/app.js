@@ -408,6 +408,18 @@ function stageLibraryExercise(id){
  if(!ex)return;
  if(originalPreviewActive()){notice('Original imported schedule is read-only. Switch to editable workouts before adding exercises.');return;}
  if(weeklyDraftReadError){notice('Saved schedule requires recovery. No workout was changed.');return;}
+ // Exercise details opened from the editor must not discard unsaved checkboxes.
+ if(page==='workouts'&&!$('weekEditor').hidden){
+  const draftId=$('weekWorkoutSelect').value;
+  if(draftId&&weekly.plans.some(p=>p.id===draftId)){
+   const checkbox=[...$('weekExerciseOptions').querySelectorAll('input[type="checkbox"]')].find(el=>el.value===id);
+   if(checkbox&&!checkbox.disabled){
+    checkbox.checked=true;closeModal();filterWeekEditorExercises();
+    checkbox.closest('.week-exercise')?.scrollIntoView({block:'center'});
+    notice(ex.name+' selected. Save the workout to apply this change.');return;
+   }
+  }
+ }
  const current=resolvedWorkout(),plan=current.plan;
  if(!plan||!weekly.plans.some(p=>p.id===plan.id)){
   closeModal();setPage('workouts');
