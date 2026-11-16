@@ -346,10 +346,39 @@ function exerciseDetail(id){
  const image=libraryImage(ex),anatomy=exerciseAnatomy(ex,'detail');
  const metadata=window.MLCExerciseMetadata.get(ex.id,ex.name);
  const list=(label,items)=>items.length?'<h3>'+label+'</h3><ul>'+items.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'';
- openModal('<div class="exercise-detail-modal"><div class="modal-eyebrow">EXERCISE LIBRARY · TECHNIQUE</div><h2>'+escapeHTML(ex.name)+'</h2><p class="small">Primary: '+escapeHTML(ex.muscle||ex.group||'Other')+(metadata.equipment?' · Equipment: '+escapeHTML(metadata.equipment):'')+'</p><div class="exercise-detail-visuals">'+(image?'<img src="'+escapeHTML(image)+'" alt="'+escapeHTML(ex.name)+' exercise reference" loading="lazy">':'<div class="panel"><p class="small">No original exercise photograph supplied.</p></div>')+'<div>'+anatomy+'</div></div><h3>How to perform</h3><p>'+escapeHTML(ex.how||ex.cue||'Detailed instructions not available for this exercise.')+'</p>'+list('Technique tips',tips)+list('Common mistakes',mistakes)+'<p class="small">Static exercise reference and highlighted muscles. Moving demonstrations are not yet available.</p></div>');
+ const related=editorExercises.filter(item=>item.id!==ex.id&&
+  String(item.muscle||item.group||'').toLowerCase()===String(ex.muscle||ex.group||'').toLowerCase())
+  .slice(0,5);
+ const relatedHtml=related.length?'<h3>Other movements for this muscle</h3><div class="hero-actions">'+
+   related.map(item=>'<button type="button" class="button-outline" data-library-related="'+escapeHTML(item.id)+'">'+escapeHTML(item.name)+'</button>').join('')+'</div>':'';
+ const actions='<div class="hero-actions"><button type="button" class="button-primary" data-library-stage="'+escapeHTML(ex.id)+'">Add to today’s workout · review first</button></div>';
+ openModal('<div class="exercise-detail-modal"><div class="modal-eyebrow">EXERCISE LIBRARY · TECHNIQUE</div><h2>'+escapeHTML(ex.name)+'</h2><p class="small">Primary: '+escapeHTML(ex.muscle||ex.group||'Other')+(metadata.equipment?' · Equipment: '+escapeHTML(metadata.equipment):'')+'</p><div class="exercise-detail-visuals">'+(image?'<img src="'+escapeHTML(image)+'" alt="'+escapeHTML(ex.name)+' exercise reference" loading="lazy">':'<div class="panel"><p class="small">No original exercise photograph supplied.</p></div>')+'<div>'+anatomy+'</div></div><h3>How to perform</h3><p>'+escapeHTML(ex.how||ex.cue||'Detailed instructions not available for this exercise.')+'</p>'+list('Technique tips',tips)+list('Common mistakes',mistakes)+relatedHtml+actions+'<p class="small">Static exercise reference and highlighted muscles. Moving demonstrations are not yet available.</p></div>');
 }
 function libraryEquipment(ex){
  return window.MLCExerciseMetadata.get(ex.id,ex.name)?.equipment||'Unspecified';
+}
+function stageLibraryExercise(id){
+ const ex=editorExercises.find(x=>x.id===id);
+ if(!ex)return;
+ if(originalPreviewActive()){notice('Original imported schedule is read-only. Switch to editable workouts before adding exercises.');return;}
+ if(weeklyDraftReadError){notice('Saved schedule requires recovery. No workout was changed.');return;}
+ const current=resolvedWorkout(),plan=current.plan;
+ if(!plan||!weekly.plans.some(p=>p.id===plan.id)){
+  closeModal();setPage('workouts');
+  notice('Choose or create an editable workout first. No existing workout was changed.');return;
+ }
+ closeModal();
+ chooseWeekday(weeklyAPI.dayIndex(new Date()));
+ const selected=$('weekWorkoutSelect');
+ if(selected.value!==plan.id){
+  notice('Select an editable workout before adding this exercise. No changes saved.');return;
+ }
+ const check=[...$('weekExerciseOptions').querySelectorAll('input[type="checkbox"]')].find(el=>el.value===id);
+ if(!check){notice('Exercise unavailable in the editor. No changes saved.');return;}
+ check.checked=true;
+ const row=check.closest('label');
+ row?.scrollIntoView({block:'center',behavior:'smooth'});
+ notice(ex.name+' selected in the editor. Tap Save Workout to save; no change has been made yet.');
 }
 function renderLibrary(){
  const query=$('exerciseSearch').value.trim().toLowerCase();
@@ -1140,7 +1169,7 @@ function bind(){
  document.querySelectorAll('[data-account-page]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.accountPage)));
 
  $('modalContent').addEventListener('input',e=>{const field=e.target.closest('[data-weight]');if(field)updateWarmupGuide(field.dataset.weight)});
- $('modalContent').addEventListener('click',e=>{const remove=e.target.closest('[data-delete-logged-set]');if(remove){removeLoggedSet(Number(remove.dataset.deleteLoggedSet));return}const edit=e.target.closest('[data-save-logged-set]');if(edit){updateLoggedSet(Number(edit.dataset.saveLoggedSet));return}const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const readiness=e.target.closest('[data-session-readiness]');if(readiness){updateSessionReadiness(readiness.dataset.sessionReadiness);return}const coach=e.target.closest('[data-use-coach]');if(coach){useCoachWeight(coach.dataset.useCoach);return}const last=e.target.closest('[data-use-last]');if(last){reuseLastWorkingWeight(last.dataset.useLast);return}const swap=e.target.closest('[data-swap-apply]');if(swap){replaceSessionExercise(swap.dataset.swapApply);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
+ $('modalContent').addEventListener('click',e=>{const related=e.target.closest('[data-library-related]');if(related){exerciseDetail(related.dataset.libraryRelated);return}const stage=e.target.closest('[data-library-stage]');if(stage){stageLibraryExercise(stage.dataset.libraryStage);return}const remove=e.target.closest('[data-delete-logged-set]');if(remove){removeLoggedSet(Number(remove.dataset.deleteLoggedSet));return}const edit=e.target.closest('[data-save-logged-set]');if(edit){updateLoggedSet(Number(edit.dataset.saveLoggedSet));return}const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const readiness=e.target.closest('[data-session-readiness]');if(readiness){updateSessionReadiness(readiness.dataset.sessionReadiness);return}const coach=e.target.closest('[data-use-coach]');if(coach){useCoachWeight(coach.dataset.useCoach);return}const last=e.target.closest('[data-use-last]');if(last){reuseLastWorkingWeight(last.dataset.useLast);return}const swap=e.target.closest('[data-swap-apply]');if(swap){replaceSessionExercise(swap.dataset.swapApply);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
  $('closeModal').addEventListener('click',closeModal);
  $('restClose').addEventListener('click',closeRest);
  $('restSkip').addEventListener('click',closeRest);
