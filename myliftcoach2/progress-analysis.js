@@ -17,6 +17,7 @@
     const id=String(ex.id||'');
     if(!id)continue;
     for(const set of ex.sets){
+     if(set?.completed===false)continue;
      const weight=Number(set?.weight),reps=Number(set?.reps);
      if(!Number.isFinite(weight)||weight<=0||!Number.isFinite(reps)||reps<=0)continue;
      sets++;volume+=weight*reps;
@@ -43,6 +44,7 @@
    for(const exercise of session.exercises){
     if(!Array.isArray(exercise?.sets))continue;
     for(const set of exercise.sets){
+     if(set?.completed===false)continue;
      const weight=Number(set?.weight),reps=Number(set?.reps);
      if(!(weight>0&&reps>0&&Number.isFinite(weight)&&Number.isFinite(reps)))continue;
      volume+=weight*reps;validSets++;
