@@ -372,6 +372,15 @@ function renderProgressChart(){
  root.innerHTML='<svg viewBox="0 0 320 220" role="img" aria-label="Training volume trend based on '+count+' locally saved practice sessions"><defs><linearGradient id="volumeFill" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#f6d88c" stop-opacity=".48"/><stop offset="1" stop-color="#f6d88c" stop-opacity=".02"/></linearGradient></defs><path d="M22 28 V184 H304" fill="none" stroke="#bbdfd2" stroke-opacity=".35"/><path d="M22 80 H304 M22 132 H304" fill="none" stroke="#bbdfd2" stroke-opacity=".2"/><polygon points="'+fill+'" fill="url(#volumeFill)"/><polyline points="'+points+'" fill="none" stroke="#ffe1a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+xy.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="#ffeba8"/>').join('')+'<text x="25" y="207" fill="#c9e5da" font-size="11">Earliest</text><text x="293" y="207" text-anchor="end" fill="#c9e5da" font-size="11">Latest</text></svg><p>'+count+' practice sessions · '+Math.round(values[values.length-1]).toLocaleString()+' lb-reps last session</p>';
 }
 function renderCoach(){
+ const localWeek=window.MLCCoachReview.week(demoSessions);
+ if(localWeek){
+  $('coachWeekWorkouts').textContent=String(localWeek.sessions);
+  $('coachWeekDays').textContent=String(localWeek.trainingDays);
+  $('coachWeekSets').textContent=String(localWeek.sets);
+  $('coachWeekVolume').textContent=Math.round(localWeek.volume).toLocaleString()+' lb-reps';
+  $('coachLocalWeekStatus').textContent=localWeek.from+' through '+localWeek.to+' · completed local practice only. No changes to your workout plan.';
+  $('coachWeekReadiness').textContent='Recorded check-ins: Great '+localWeek.readiness.Great+' · Normal '+localWeek.readiness.Normal+' · Tired '+localWeek.readiness.Tired+'. Not an inferred recovery score.';
+ }
  const sets=demoSessions.flatMap(x=>Array.isArray(x.sets)?x.sets:[]);
  const movementCount=new Set(sets.map(x=>x.exerciseId).filter(Boolean)).size;
  $('coachSessions').textContent=String(demoSessions.length);
@@ -787,7 +796,7 @@ function openWorkout(id){
    window.MLCSessionDraft.clear(localStorage,activeSessionOwner);
    // Completion must not recreate the in-progress draft.
    session=null;activePlan=null;activeSessionOwner=null;sessionDirty=false;
-   closeModal();renderHome();setPage('progress');notice('Practice session saved in this browser.');
+   closeModal();renderHome();setPage('progress');renderCoach();notice('Practice session saved in this browser.');
   }catch{notice('Could not finish saving this workout. Your unfinished draft is retained.')}
 
  });
@@ -822,6 +831,8 @@ function renderWorkoutLog(){
     (tips.length?'<strong>Technique tips</strong><ul>'+tips.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+
     (mistakes.length?'<strong>Common mistakes</strong><ul>'+mistakes.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+'</details>';
   const recorded=session.sets.map((set,index)=>({...set,index})).filter(set=>set.exerciseId===id);
+  const lastPracticeSet=window.MLCCoachReview.priorSet(demoSessions,id);
+  const compareNote=lastPracticeSet?'<p class="small">Last local practice: '+lastPracticeSet.weight+' lb × '+lastPracticeSet.reps+' reps</p>':'';
   const logged=recorded.length?'<div class="recent-list">'+recorded.map(set=>
    '<div class="recent-item"><div><strong>Logged set '+(recorded.indexOf(set)+1)+'</strong><div class="inputs"><label>Weight (lb)<input type="number" min="0" max="1500" step="2.5" inputmode="decimal" aria-label="Edit set weight" data-edit-weight="'+set.index+'" value="'+set.weight+'"></label><label>Reps<input type="number" min="1" max="100" step="1" inputmode="numeric" aria-label="Edit set reps" data-edit-reps="'+set.index+'" value="'+set.reps+'"></label><button type="button" class="button-outline" data-save-logged-set="'+set.index+'">Save set</button><button type="button" class="button-outline" data-delete-logged-set="'+set.index+'">Remove set</button></div></div></div>'
   ).join('')+'</div>':'';
@@ -833,7 +844,7 @@ function renderWorkoutLog(){
     '<div class="panel"><strong>Original Coach progression</strong><p class="small">'+escapeHTML(coachResult.action.toUpperCase()+': '+coachResult.reason)+'</p><button class="button-outline" type="button" data-use-coach="'+id+'">Use suggested '+coachResult.weight+' lb for this set</button></div>':'';
   const historyHint=previous?'<div class="hero-actions"><span class="small">Last original workout: '+previous.weight+' lb on '+escapeHTML(previous.date)+'</span><button type="button" class="button-outline" data-use-last="'+id+'">Use last weight</button></div>':'';
   const replacement=options.length?'<div class="inputs"><label>Replace this exercise<select aria-label="Replacement for '+escapeHTML(e.name)+'" data-swap-select="'+id+'"><option value="">Choose same-muscle alternative</option>'+options.map(x=>'<option value="'+escapeHTML(x.id)+'">'+escapeHTML(x.name)+' · '+escapeHTML(x.reason)+'</option>').join('')+'</select></label><button type="button" class="button-outline" data-swap-apply="'+id+'">Replace exercise</button></div>':'<p class="small">No unused same-muscle alternatives available.</p>';
-  return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small>'+guidance+coachHint+historyHint+replacement+logged+'<p class="small" data-warmups="'+id+'"></p><div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
+  return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small>'+guidance+coachHint+historyHint+compareNote+replacement+logged+'<p class="small" data-warmups="'+id+'"></p><div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
  }).join('');
  renderSessionSetProgress();
  for(const id of activePlan.ids)updateWarmupGuide(id);
