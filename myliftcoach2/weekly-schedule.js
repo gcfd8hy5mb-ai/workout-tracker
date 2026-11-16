@@ -55,5 +55,11 @@ function add(state,id,changes,validExercises){
 function saved(state,presetIds){
  return {version:1,plans:state.plans.map(p=>({...p,ids:p.ids.slice()})),assigned:state.assigned.slice()};
 }
-return Object.freeze({DAYS,normalize,dayIndex,resolve,assign,edit,add,saved});
+function commit(storage,key,state,presetIds){
+ const serialized=JSON.stringify(saved(state,presetIds));
+ storage.setItem(key,serialized);
+ if(storage.getItem(key)!==serialized)throw Error('Workout schedule was not saved');
+ return state;
+}
+return Object.freeze({DAYS,normalize,dayIndex,resolve,assign,edit,add,saved,commit});
 });
