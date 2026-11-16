@@ -80,5 +80,28 @@
   }
   return [...groups.values()].sort((a,b)=>b.date.localeCompare(a.date));
  }
- return Object.freeze({analyze,volumeSeries,calendarDays});
+ function exerciseTrend(history,exerciseId,limit=12){
+  if(typeof exerciseId!=='string'||!exerciseId.trim()||!Array.isArray(history))return [];
+  const count=Number.isInteger(limit)&&limit>0&&limit<=100?limit:12;
+  const rows=[];
+  for(const session of history){
+   const when=Date.parse(session?.date||'');
+   if(!Number.isFinite(when)||!Array.isArray(session?.exercises))continue;
+   let bestWeight=0,bestReps=0,volume=0,sets=0;
+   for(const ex of session.exercises){
+    if(ex?.id!==exerciseId||!Array.isArray(ex.sets))continue;
+    for(const set of ex.sets){
+     const weight=Number(set?.weight),reps=Number(set?.reps);
+     if(set?.completed===false||!Number.isFinite(weight)||weight<=0||!Number.isFinite(reps)||reps<=0)continue;
+     bestWeight=Math.max(bestWeight,weight);
+     bestReps=Math.max(bestReps,reps);
+     volume+=weight*reps;sets++;
+    }
+   }
+   if(sets)rows.push({date:new Date(when).toISOString().slice(0,10),timestamp:when,bestWeight,bestReps,volume,sets});
+  }
+  rows.sort((a,b)=>a.timestamp-b.timestamp);
+  return rows.slice(-count).map(({date,bestWeight,bestReps,volume,sets})=>({date,bestWeight,bestReps,volume,sets}));
+ }
+ return Object.freeze({analyze,volumeSeries,calendarDays,exerciseTrend});
 });
