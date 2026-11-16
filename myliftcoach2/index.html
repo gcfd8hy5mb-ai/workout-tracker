@@ -125,6 +125,11 @@
   </article>
   <article class="panel"><div class="panel-heading"><h3>Original training evidence</h3><span class="micro-tag">READ ONLY</span></div><p id="coachOriginalStatus" class="small">Sign in and load original workout history from Progress to see your actual training evidence here.</p><div class="metrics"><article class="metric"><span>WORKOUTS</span><strong id="coachOriginalSessions">—</strong></article><article class="metric"><span>TRAINING DAYS</span><strong id="coachOriginalDays">—</strong></article><article class="metric"><span>SETS</span><strong id="coachOriginalSets">—</strong></article><article class="metric"><span>VOLUME (LB)</span><strong id="coachOriginalVolume">—</strong></article></div><div id="coachOriginalMovements" class="recent-list"></div><button type="button" class="button-outline" data-coach-link="progress">Go to original workout history</button></article>
   <article class="panel"><div class="panel-heading"><h3>Progressive overload previews</h3><span class="micro-tag">NO CHANGES APPLIED</span></div><p>Uses the original workout-history progression rules on completed workouts only. These are previews, not an automatic change to your training plan.</p><p class="small" id="coachProgressionStatus">Load original history from Progress to review progression evidence.</p><div id="coachProgressionList" class="recent-list"></div></article>
+  <article class="panel"><div class="panel-heading"><h3>Recently trained muscles &amp; recorded readiness</h3><span class="micro-tag">READ ONLY</span></div>
+  <p id="coachRecoveryStatus" class="small">Load your original workout history to see recorded training recency.</p>
+  <div id="coachRecoveryMuscles" class="recent-list"></div>
+  <div id="coachReadinessRecords" class="recent-list"></div>
+  <p class="small">Training recency and historical readiness labels are not a diagnosis or a prediction of recovery. Today's readiness is not inferred.</p></article>
   <article class="panel"><h3>Original Coach migration status</h3><p>The original app's personalized progressions, adjustments, fatigue and readiness analysis require verified legacy workout-history mapping. This preview intentionally does not infer recovery, prescribe changes or claim to have restored the original Coach engine.</p></article>
   <div class="coach-links">
     <button type="button" data-coach-link="workouts">◈ &nbsp; Open Workouts <span>›</span></button>
@@ -154,6 +159,7 @@
 <script defer src="./coach-evidence.js?v=1"></script>
 <script defer src="./exercise-metadata.js?v=1"></script>
 <script defer src="./progression-preview.js?v=1"></script>
+<script defer src="./recovery-preview.js?v=1"></script>
 <script defer src="./app.js?v=1"></script>
 </body>
 </html>
