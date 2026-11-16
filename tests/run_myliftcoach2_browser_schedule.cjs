@@ -33,6 +33,21 @@ const assert = require('node:assert/strict');
    assert.equal(await page.locator('#library').isVisible(),true);
    assert.ok(await page.locator('[data-library-detail]').count()>5);
    assert.equal(await page.locator('[data-library-detail]').count(),63); // 60 original + 3 starter-only IDs retained for existing plans
+   await page.locator('[data-library-favorite="dead-bug"]').first().evaluate(el=>el.click());
+   assert.equal(await page.locator('[data-library-favorite="dead-bug"]').first().getAttribute('aria-pressed'),'true');
+   await page.locator('#libraryFavoritesOnly').check();
+   assert.equal(await page.locator('[data-library-detail]').count(),1);
+   assert.equal(await page.locator('[data-library-detail="dead-bug"]').count(),1);
+   await page.locator('[data-library-detail="dead-bug"]').evaluate(el=>el.click());
+   assert.equal(await page.locator('#libraryRecentWrap').isHidden(),false);
+   assert.equal(await page.locator('#modalContent [data-library-favorite="dead-bug"]').getAttribute('aria-pressed'),'true');
+   await page.locator('#closeModal').evaluate(el=>el.click());
+   await page.reload({waitUntil:'load'});
+   await page.locator('.sidebar [data-page="library"]').first().evaluate(el=>el.click());
+   assert.equal(await page.locator('[data-library-favorite="dead-bug"]').first().getAttribute('aria-pressed'),'true');
+   assert.ok(await page.locator('#libraryRecentList [data-library-recent="dead-bug"]').count()>0);
+   assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('mlc2-library-prefs-v1:guest')).favorites),['dead-bug']);
+
    assert.match(await page.locator('#libraryResultCount').textContent(),/63 of 63 exercises/);
    assert.ok(await page.locator('#libraryEquipment option').count()>2);
    await page.locator('#libraryPhotosOnly').check();
