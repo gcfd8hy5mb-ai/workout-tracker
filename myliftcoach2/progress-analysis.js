@@ -32,5 +32,26 @@
   const records=Array.from(best.values()).sort((a,b)=>a.name.localeCompare(b.name));
   return {sessions:list.length,trainingDays:dates.size,sets,volume,exercises:records.length,records};
  }
- return Object.freeze({analyze});
+ function volumeSeries(history,limit=12){
+  if(!Array.isArray(history))return [];
+  const count=Number.isInteger(limit)&&limit>0&&limit<=100?limit:12;
+  const points=[];
+  for(const session of history){
+   const date=Date.parse(session?.date||'');
+   if(!Number.isFinite(date)||!Array.isArray(session?.exercises))continue;
+   let volume=0,validSets=0;
+   for(const exercise of session.exercises){
+    if(!Array.isArray(exercise?.sets))continue;
+    for(const set of exercise.sets){
+     const weight=Number(set?.weight),reps=Number(set?.reps);
+     if(!(weight>0&&reps>0&&Number.isFinite(weight)&&Number.isFinite(reps)))continue;
+     volume+=weight*reps;validSets++;
+    }
+   }
+   if(validSets)points.push({date:new Date(date).toISOString().slice(0,10),timestamp:date,volume,sets:validSets});
+  }
+  points.sort((a,b)=>a.timestamp-b.timestamp);
+  return points.slice(-count).map(({date,volume,sets})=>({date,volume,sets}));
+ }
+ return Object.freeze({analyze,volumeSeries});
 });
