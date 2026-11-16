@@ -652,6 +652,14 @@ function openSignIn(){
 }
 function bind(){
  document.querySelectorAll('[data-page]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.page)));
+ document.querySelectorAll('[data-workout-action]').forEach(el=>el.addEventListener('click',()=>{
+  // Both shortcuts use the existing account-scoped editor, not a second plan.
+  if(originalPreviewActive()){notice('Switch from read-only original preview to edit your local workouts.');setPage('workouts');return;}
+  if(weeklyDraftReadError){notice('Saved workout needs recovery before editing; existing data preserved.');setPage('workouts');return;}
+  const day=weeklyAPI.dayIndex(new Date());
+  chooseWeekday(day);
+  if(el.dataset.workoutAction==='create')createWeekWorkout();
+ }));
  $('avatarBtn').addEventListener('click',()=>setPage('settings'));
  $('previewWelcome').addEventListener('click',()=>setPage('welcome'));
  $('welcomeExplore').addEventListener('click',()=>setPage('home'));
