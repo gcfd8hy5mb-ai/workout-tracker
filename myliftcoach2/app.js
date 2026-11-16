@@ -39,10 +39,7 @@ function readWeekly(){
 }
 let weekly=readWeekly();
 function commitWeekly(candidate){
- const payload=JSON.stringify(weeklyAPI.saved(candidate,plans.map(p=>p.id)));
- localStorage.setItem(WEEKLY_KEY,payload);
- if(localStorage.getItem(WEEKLY_KEY)!==payload)throw Error('Workout schedule was not saved');
- weekly=candidate;
+ weekly=weeklyAPI.commit(localStorage,WEEKLY_KEY,candidate,plans.map(p=>p.id));
 }
 function nextPlan(){return weeklyAPI.resolve(weekly).plan}
 function openToday(){const plan=nextPlan();if(plan)openWorkout(plan.id);else notice('Today is a rest day. Choose a workout from the weekly board.')}
@@ -72,6 +69,7 @@ function updateWeekEditor(){
  $('weekWorkoutName').value=p?.title||'';
  $('weekWorkoutName').disabled=!p;
  $('weekExerciseOptions').innerHTML=editorExercises.map(ex=>'<label class="week-exercise"><input type="checkbox" value="'+escapeHTML(ex.id)+'"'+(p?.ids.includes(ex.id)?' checked':'')+(p?'':' disabled')+'><span>'+escapeHTML(ex.name)+'</span></label>').join('');
+ $('weekExerciseSearch').value='';
 }
 function saveWeekEditor(){
  const day=Number($('weekEditor').dataset.day),id=$('weekWorkoutSelect').value||null;
@@ -542,6 +540,10 @@ function bind(){
  $('workoutGrid').addEventListener('click',e=>{const el=e.target.closest('[data-workout]');if(el)openWorkout(el.dataset.workout)});
  for(const key of ['weeklyBoardHome','weeklyBoardWorkouts'])$(key).addEventListener('click',e=>{const btn=e.target.closest('[data-week-day]');if(btn)chooseWeekday(Number(btn.dataset.weekDay))});
  $('weekWorkoutSelect').addEventListener('change',updateWeekEditor);
+ $('weekExerciseSearch').addEventListener('input',()=>{
+  const q=$('weekExerciseSearch').value.trim().toLowerCase();
+  $('weekExerciseOptions').querySelectorAll('.week-exercise').forEach(label=>{label.hidden=!label.textContent.toLowerCase().includes(q)});
+ });
  $('weekSaveButton').addEventListener('click',saveWeekEditor);
  $('weekNewWorkout').addEventListener('click',createWeekWorkout);
 
