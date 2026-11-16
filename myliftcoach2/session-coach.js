@@ -41,5 +41,13 @@
      reason:(samePattern?'Similar movement pattern. ':'Same primary muscle. ')+(sameEquipment?'Similar equipment.':'Verify equipment and range of motion.')};
    }).sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name));
  }
- return Object.freeze({warmups,coach,rankedAlternatives});
+ function localProgression(practiceSessions,exerciseId,name){
+  const originalShape=(Array.isArray(practiceSessions)?practiceSessions:[])
+   .filter(s=>s&&Number.isFinite(Date.parse(s.created||''))&&Array.isArray(s.sets))
+   .map(s=>({date:s.created,exercises:[{id:exerciseId,sets:s.sets
+     .filter(x=>x?.exerciseId===exerciseId&&Number(x.weight)>0&&Number(x.reps)>0)
+     .map(x=>({weight:Number(x.weight),reps:Number(x.reps),completed:true}))}]}));
+  return coach(originalShape,exerciseId,name);
+ }
+ return Object.freeze({warmups,coach,rankedAlternatives,localProgression});
 });
