@@ -415,10 +415,25 @@ function renderOriginalCoachEvidence(){
  renderCoachProgression();
  renderOriginalRecovery();
 }
+function renderOriginalCalendar(){
+ const input=$('originalCalendarMonth'),status=$('originalCalendarStatus'),root=$('originalCalendarDays');
+ if(!input||!status||!root)return;
+ const loaded=Boolean(account?.id&&importedHistoryOwner===account.id);
+ input.disabled=!loaded;root.replaceChildren();
+ if(!loaded){status.textContent='Load original account history to view completed training days.';return;}
+ if(!input.value){
+  const latest=originalHistory.find(x=>x&&Number.isFinite(Date.parse(x.date||'')));
+  input.value=latest?new Date(Date.parse(latest.date)).toISOString().slice(0,7):new Date().toISOString().slice(0,7);
+ }
+ const days=window.MLCOriginalProgress.calendarDays(originalHistory,input.value);
+ status.textContent=days.length?days.length+' documented training days during '+input.value+'. No demo sessions included.':'No qualifying completed workouts found for this month.';
+ root.innerHTML=days.map(day=>'<details class="recent-item"><summary><strong>'+escapeHTML(day.date)+'</strong> · '+day.workouts+' workouts · '+day.sets+' sets · '+Math.round(day.volume).toLocaleString()+' lb-reps</summary><p>'+day.titles.map(escapeHTML).join(' · ')+'</p></details>').join('');
+}
 function renderOriginalProgress(){
  const status=$('originalProgressStatus'),root=$('originalRecords'),chart=$('originalVolumeChart');
  if(!status||!root||!chart)return;
  const ready=Boolean(account?.id&&importedHistoryOwner===account.id);
+ renderOriginalCalendar();
  for(const id of ['Sessions','Sets','Exercises','Volume'])$('originalProgress'+id).textContent='—';
  root.replaceChildren();chart.replaceChildren();
  if(!ready){status.textContent='Load your original history to view your workout progress and personal records.';chart.textContent='Load original account history to view the real workout volume trend.';return;}
@@ -792,6 +807,7 @@ function bind(){
  $('coachLoadOriginalHistory').addEventListener('click',loadOriginalHistory);
  $('coachMovementSearch').addEventListener('input',renderOriginalCoachEvidence);
  $('originalHistorySearch').addEventListener('input',renderOriginalHistory);
+ $('originalCalendarMonth').addEventListener('change',renderOriginalCalendar);
  $('loadOriginalTracking').addEventListener('click',loadOriginalTracking);
  $('loadOriginalCustom').addEventListener('click',loadOriginalCustomSchedule);
  $('toggleOriginalCustom').addEventListener('click',toggleOriginalCustomSchedule);
