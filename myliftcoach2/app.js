@@ -365,6 +365,7 @@ function renderOriginalRecovery(){
 }
 function renderOriginalCoachEvidence(){
  const status=$('coachOriginalStatus'),movements=$('coachOriginalMovements'),search=$('coachMovementSearch');
+ $('coachLoadOriginalHistory').disabled=!account;
  if(!status||!movements||!search)return;
  search.disabled=!(account?.id&&importedHistoryOwner===account.id);
  for(const id of ['Sessions','Days','Sets','Volume'])$('coachOriginal'+id).textContent='—';
@@ -759,6 +760,7 @@ function bind(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').hidden)closeModal()});
  $('clearDemo').addEventListener('click',()=>{if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;demoSessions=[];localStorage.removeItem(DEMO_KEY);renderProgress();renderHome();notice('Local demo history cleared. Production data untouched.')});
  $('loadOriginalHistory').addEventListener('click',loadOriginalHistory);
+ $('coachLoadOriginalHistory').addEventListener('click',loadOriginalHistory);
  $('coachMovementSearch').addEventListener('input',renderOriginalCoachEvidence);
  $('originalHistorySearch').addEventListener('input',renderOriginalHistory);
  $('loadOriginalTracking').addEventListener('click',loadOriginalTracking);
