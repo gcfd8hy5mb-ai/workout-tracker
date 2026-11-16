@@ -36,6 +36,8 @@ const assert = require('node:assert/strict');
    await page.locator('[data-session-readiness="Tired"]').evaluate(el=>el.click());
    assert.equal(await page.locator('[data-session-readiness="Tired"]').getAttribute('aria-pressed'),'true');
    assert.match(await page.locator('#sessionSetProgressText').textContent(),/Ready to start/);
+   assert.match(await page.locator('[data-warmups="leg-press"]').textContent(),/Optional warm-ups/);
+   assert.equal(await page.locator('[data-use-coach]').count(),0);
    await page.locator('[data-addset="leg-press"]').evaluate(el=>el.click());
    assert.match(await page.locator('#sessionSetProgressText').textContent(),/1 of/);
    await page.locator('[data-swap-select="leg-press"]').selectOption('leg-extension');
