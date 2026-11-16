@@ -154,6 +154,15 @@
  </section>
  <section id="nutrition" class="page" hidden>
  <div class="page-heading"><div class="eyebrow">FUEL &amp; RECOVER</div><h1>Nutrition &amp; Hydration</h1><p>View the nutrition, hydration, and weight records from your original MYLIFTCOACH account without changing anything.</p></div>
+ <article class="panel"><div class="panel-heading"><h3>Log today's nutrition &amp; weight</h3><span class="micro-tag">LOCAL 2.0 · NOT CLOUD SYNCED</span></div>
+ <p class="small">These are new 2.0 logs saved in this browser, separate from your original account history. Water is stored in mL to match the original app.</p>
+ <label for="localTrackingDay">Log date</label><input id="localTrackingDay" type="date">
+ <p id="localTrackingStatus" class="small" role="status">Ready to log locally.</p>
+ <div class="metrics"><article class="metric"><span>WATER TODAY</span><strong id="localWaterTotal">0 mL</strong></article><article class="metric"><span>CALORIES TODAY</span><strong id="localCaloriesTotal">0</strong></article><article class="metric"><span>WEIGHT TODAY</span><strong id="localWeightLatest">—</strong></article></div>
+ <form id="localWaterForm"><strong>Add water</strong><div class="inputs"><label>Amount<input id="localWaterAmount" type="number" inputmode="decimal" step="any" min="0.1" max="5000" required placeholder="250"></label><label>Unit<select id="localWaterUnit"><option value="oz">fl oz</option><option value="ml">mL</option></select></label><button type="submit" class="button-outline">Log water</button></div></form>
+ <form id="localFoodForm"><strong>Add food</strong><div class="inputs"><label>Food name<input id="localFoodName" maxlength="140" required placeholder="Chicken and rice"></label><label>Calories<input id="localFoodCalories" type="number" min="0" max="10000" step="1" required></label><label>Protein (g, optional)<input id="localFoodProtein" type="number" min="0" max="1000" step="any"></label><label>Carbs (g, optional)<input id="localFoodCarbs" type="number" min="0" max="1000" step="any"></label><label>Fat (g, optional)<input id="localFoodFat" type="number" min="0" max="1000" step="any"></label><button type="submit" class="button-outline">Log food</button></div></form>
+ <form id="localWeightForm"><strong>Log weight</strong><div class="inputs"><label>Weight (lb)<input id="localWeightValue" type="number" min="0.1" max="1500" step="any" required></label><button type="submit" class="button-outline">Log weight</button></div></form>
+ <div class="recent-list" id="localTrackingEntries"></div></article>
  <article class="panel"><div class="panel-heading"><h3>Original tracking records</h3><span class="micro-tag">READ ONLY</span></div><p class="small" id="trackingStatus" role="status">Sign in to your existing account to load saved tracking entries.</p><button type="button" id="loadOriginalTracking" class="button-outline">Load original tracking</button>
  <div class="metrics"><article class="metric"><span>WATER LOGS</span><strong id="trackingWaterCount">—</strong></article><article class="metric"><span>FOOD LOGS</span><strong id="trackingFoodCount">—</strong></article><article class="metric"><span>WEIGHT LOGS</span><strong id="trackingWeightCount">—</strong></article></div>
  <p id="trackingGoals" class="small"></p>
@@ -201,6 +210,7 @@
 <script defer src="./session-coach.js?v=1"></script>
 <script defer src="./session-draft.js?v=1"></script>
 <script defer src="./session-summary.js?v=1"></script>
+<script defer src="./local-daily-tracking.js?v=1"></script>
 <script defer src="./app.js?v=1"></script>
 </body>
 </html>
