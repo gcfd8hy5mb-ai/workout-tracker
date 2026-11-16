@@ -125,6 +125,28 @@ const assert = require('node:assert/strict');
    assert.equal(await page.locator('#nutrition').isVisible(),true);
    assert.equal(await page.locator('#trackingMonth').isDisabled(),true);
    assert.match(await page.locator('#trackingMonthStatus').textContent(),/Load original tracking/);
+   // New 2.0 logs are functional but isolated from the original account records.
+   assert.match(await page.locator('#localTrackingStatus').textContent(),/guest/);
+   await page.locator('#localWaterAmount').fill('8');
+   await page.locator('#localWaterForm button[type="submit"]').evaluate(el=>el.click());
+   assert.match(await page.locator('#localWaterTotal').textContent(),/8\.0 oz/);
+   await page.locator('#localFoodName').fill('Test meal');
+   await page.locator('#localFoodCalories').fill('375');
+   await page.locator('#localFoodForm button[type="submit"]').evaluate(el=>el.click());
+   assert.equal(await page.locator('#localCaloriesTotal').textContent(),'375');
+   await page.locator('#localWeightValue').fill('182.5');
+   await page.locator('#localWeightForm button[type="submit"]').evaluate(el=>el.click());
+   assert.equal(await page.locator('#localWeightLatest').textContent(),'182.5 lb');
+   const localGuest=await page.evaluate(()=>JSON.parse(localStorage.getItem('mlc2-daily-tracking-v1:guest')));
+   assert.equal(localGuest.water[0].amount,237);
+   assert.equal(localGuest.food[0].calories,375);
+   assert.equal(localGuest.weight[0].value,182.5);
+   await page.reload({waitUntil:'load'});
+   await page.locator('.sidebar [data-page="nutrition"]').first().evaluate(el=>el.click());
+   assert.equal(await page.locator('#localCaloriesTotal').textContent(),'375');
+   assert.equal(await page.locator('#localWeightLatest').textContent(),'182.5 lb');
+   assert.equal(await page.locator('#trackingMonth').isDisabled(),true);
+
    await page.locator('.sidebar [data-page="coaching"]').first().evaluate(el=>el.click());
    assert.equal(await page.locator('#coaching').isVisible(),true);
    assert.equal(await page.locator('#coachLoadOriginalHistory').isDisabled(),true);
