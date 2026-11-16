@@ -212,6 +212,21 @@ function saveWeekEditor(){
   notice('Saved '+weeklyAPI.DAYS[day]+' workout. Home and workout details now match.');
  }catch(error){notice(error.message)}
 }
+function duplicateWeekWorkout(){
+ try{
+  if(originalPreviewActive()||weeklyDraftReadError)throw Error('Switch to a healthy editable schedule before copying');
+  const sourceId=$('weekWorkoutSelect').value;
+  if(!sourceId)throw Error('Select a workout to copy first');
+  const id='custom-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
+  const candidate=weeklyAPI.duplicate(weekly,sourceId,id,allowedExerciseIds);
+  commitWeekly(candidate);
+  $('weekWorkoutSelect').innerHTML='<option value="">Rest day</option>'+weekly.plans.map(p=>'<option value="'+escapeHTML(p.id)+'">'+escapeHTML(p.title)+'</option>').join('');
+  $('weekWorkoutSelect').value=id;
+  updateWeekEditor();
+  renderWorkouts();
+  notice('Personal copy created. Edit it and save to assign it to this day. Original workout unchanged.');
+ }catch(error){notice(error.message)}
+}
 function createWeekWorkout(){
  try{
   const id='custom-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
@@ -717,6 +732,7 @@ function bind(){
  });
  $('weekSaveButton').addEventListener('click',saveWeekEditor);
  $('weekNewWorkout').addEventListener('click',createWeekWorkout);
+ $('weekDuplicateWorkout').addEventListener('click',duplicateWeekWorkout);
 
  $('exerciseSearch').addEventListener('input',renderLibrary);
  $('libraryChips').addEventListener('click',event=>{const el=event.target.closest('[data-muscle]');if(!el)return;muscleFilter=el.dataset.muscle;renderLibrary()});
