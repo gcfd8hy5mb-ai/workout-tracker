@@ -79,6 +79,8 @@ const assert = require('node:assert/strict');
    assert.equal(await page.locator('#progress').isVisible(),true);
    assert.equal(await page.locator('#originalHistorySearch').isDisabled(),true);
    assert.equal(await page.locator('#originalCalendarMonth').isDisabled(),true);
+   assert.equal(await page.locator('#originalExerciseTrendSelect').isDisabled(),true);
+   assert.match(await page.locator('#originalExerciseTrendStatus').textContent(),/Original exercise progress/);
    assert.match(await page.locator('#originalCalendarStatus').textContent(),/Load original account history/);
    assert.match(await page.locator('#originalVolumeChart').textContent(),/Load original account history/);
    await page.locator('.sidebar [data-page="nutrition"]').first().evaluate(el=>el.click());
