@@ -18,6 +18,7 @@
     if(!work){work={id:String(ex.id),name:String(ex.name||ex.id),sessions:0,sets:0,lastDate:null,bestWeight:0};exercises.set(ex.id,work)}
     let counted=false;
     for(const s of ex.sets){
+     if(s?.completed===false)continue;
      const weight=Number(s?.weight),reps=Number(s?.reps);
      if(!Number.isFinite(weight)||weight<=0||!Number.isFinite(reps)||reps<=0)continue;
      counted=true;sets++;volume+=weight*reps;work.sets++;work.bestWeight=Math.max(work.bestWeight,weight);
