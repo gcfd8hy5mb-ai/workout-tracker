@@ -53,7 +53,7 @@ function add(state,id,changes,validExercises){
  return {...state,plans:[...state.plans,plan]};
 }
 function saved(state,presetIds){
- return {version:1,plans:state.plans.filter(p=>!presetIds.includes(p.id)||p.edited===true||true).map(p=>({...p})),assigned:state.assigned.slice()};
+ return {version:1,plans:state.plans.map(p=>({...p})),assigned:state.assigned.slice()};
 }
 return Object.freeze({DAYS,normalize,dayIndex,resolve,assign,edit,add,saved});
 });
