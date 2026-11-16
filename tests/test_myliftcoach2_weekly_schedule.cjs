@@ -35,3 +35,29 @@ test('original workout and schedule source are not mutated',()=>{
  s.assign(state,0,'lower-a');s.edit(state,'upper-a',{title:'Modified'},allowed);
  assert.equal(JSON.stringify({state,preset}),before);
 });
+
+test('rehydration never silently replaces a missing custom workout with a preset',()=>{
+ const raw={plans:[],assigned:['custom-deleted-1','lower-a',null,null,null,null,null]};
+ const restored=s.normalize(raw,preset,allowed);
+ assert.equal(s.resolve(restored,'2026-11-16T12:00:00').plan,null);
+});
+test('persist then reload retains every edited custom exercise and weekday',()=>{
+ let state=s.normalize(null,preset,allowed);
+ state=s.add(state,'custom-week-a',{title:'Friday Glutes',ids:['squat','row']},allowed);
+ state=s.assign(state,4,'custom-week-a');
+ state=s.edit(state,'custom-week-a',{title:'Friday Legs',ids:['squat']},allowed);
+ const store=new Map(),storage={getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v)};
+ const committed=s.commit(storage,'weekly',state,preset.map(p=>p.id));
+ const reloaded=s.normalize(JSON.parse(storage.getItem('weekly')),preset,allowed);
+ assert.equal(committed,state);
+ assert.equal(s.resolve(reloaded,'2026-11-20T12:00:00').plan.title,'Friday Legs');
+ assert.deepEqual(s.resolve(reloaded,'2026-11-20T12:00:00').plan.ids,['squat']);
+});
+test('failed browser persistence raises error and does not return new in-memory state',()=>{
+ const state=s.normalize(null,preset,allowed);
+ let attempted=false;
+ const storage={setItem:()=>{attempted=true;throw Error('Storage full')},getItem:()=>null};
+ assert.throws(()=>s.commit(storage,'weekly',s.assign(state,0,'lower-a'),preset.map(p=>p.id)),/Storage full/);
+ assert.equal(attempted,true);
+ assert.equal(s.resolve(state,'2026-11-16T12:00:00').plan.id,'upper-a');
+});
