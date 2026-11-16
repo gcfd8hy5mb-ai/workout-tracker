@@ -37,3 +37,16 @@ test('original trend is bounded and omits invalid histories',()=>{
  assert.equal(volumeSeries(rows,3).length,3);
  assert.deepEqual(volumeSeries([{date:'invalid',exercises:[]}]),[]);
 });
+
+test('incomplete original sets are excluded from records and real-history chart',()=>{
+ const {analyze,volumeSeries}=require('../myliftcoach2/progress-analysis.js');
+ const history=[{date:'2026-11-11T12:00:00Z',exercises:[{id:'row',name:'Row',sets:[
+  {weight:100,reps:10,completed:false},{weight:60,reps:8,completed:true}
+ ]}]}];
+ const before=JSON.stringify(history),result=analyze(history);
+ assert.equal(result.sets,1);
+ assert.equal(result.volume,480);
+ assert.equal(result.records[0].weight,60);
+ assert.deepEqual(volumeSeries(history).map(x=>x.volume),[480]);
+ assert.equal(JSON.stringify(history),before);
+});
