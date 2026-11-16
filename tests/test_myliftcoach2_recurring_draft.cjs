@@ -42,3 +42,18 @@ test('invalid schedule cannot be saved and override remains intact when editing 
  assert.equal(migrate.resolve(changed,'2026-11-20').source,'one-time');
  assert.equal(migrate.resolve(changed,'2026-11-17').plan.title,'Upper');
 });
+
+test('explicit edited date overrides imported recurrence without deleting future rules',()=>{
+ const original=doc(),id=original.recurring[0].workoutId;
+ const custom={id:'custom-fresh-workout',title:'My Personal Friday',ids:['row']};
+ const candidate={plans:[...original.plans,custom],assigned:original.assigned.map((v,i)=>i===4?custom.id:v)};
+ const edited=storeAPI.edited(original,candidate,ids);
+ const withOverride={...edited,overrides:{...edited.overrides,'2026-11-27':custom.id}};
+ const db=storage();
+ storeAPI.commit(db,'recurring',owner,withOverride,ids);
+ const restored=storeAPI.read(db,'recurring',owner,ids);
+ assert.equal(migrate.resolve(restored,'2026-11-27').plan.title,'My Personal Friday');
+ assert.equal(migrate.resolve(restored,'2026-12-04').plan.id,id);
+ assert.equal(migrate.resolve(restored,'2026-11-20').source,'one-time');
+ assert.deepEqual(restored.recurring,original.recurring);
+});
