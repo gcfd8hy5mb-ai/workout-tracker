@@ -466,7 +466,7 @@ function renderProgress(){
  renderOriginalProgress();
  $('sessionHistory').innerHTML=demoSessions.length?demoSessions.map((x,index)=>{
   const summary=window.MLCSessionSummary.summarize(x,demoSessions.slice(index+1),editorExercises);
-  const details=summary.movements.map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sets+' completed sets · Top '+ex.topWeight+' lb'+(ex.newPracticeRecord?' · Local practice record':'')+'</small></div><span>'+Math.round(ex.volume).toLocaleString()+' lb-reps</span></div>').join('');
+  const details=summary.movements.map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sets+' completed sets · Top '+ex.topWeight+' lb'+(ex.newPracticeRecord?' · Local practice record':'')+'</small></div><button type="button" class="button-outline" data-exercise-open="'+escapeHTML(ex.id)+'">Exercise</button><span>'+Math.round(ex.volume).toLocaleString()+' lb-reps</span></div>').join('');
   return '<details class="panel"><summary><strong>'+escapeHTML(x.title)+'</strong> · '+new Date(x.created).toLocaleDateString()+' · '+summary.sets+' sets · '+Math.round(summary.volume).toLocaleString()+' lb-reps</summary><p class="small">'+(summary.durationMinutes?summary.durationMinutes+' min · ':'')+escapeHTML(x.readiness||'No readiness recorded')+' · '+summary.recordCount+' new local practice weight records</p>'+details+'</details>';
  }).join(''):'<div class="empty-note">No demo sessions recorded yet. Open Workouts to start your first practice session.</div>';
 }
@@ -529,7 +529,7 @@ function renderCoachProgression(){
  root.innerHTML=items.map(ex=>{
   const suggestion=ex.status==='ready'?ex.action.toUpperCase()+' · '+ex.weight+' lb · '+ex.reason:
    'Insufficient working-set evidence; no recommendation made.';
-  return '<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+escapeHTML(suggestion)+'</small><small>'+escapeHTML(ex.source||'No verified source yet')+'</small></div><span>'+escapeHTML(ex.lastWeight===null?'—':String(ex.lastWeight)+' lb last')+'</span></div>';
+  return '<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+escapeHTML(suggestion)+'</small><small>'+escapeHTML(ex.source||'No verified source yet')+'</small></div><button type="button" class="button-outline" data-exercise-open="'+escapeHTML(ex.id)+'">Exercise</button><span>'+escapeHTML(ex.lastWeight===null?'—':String(ex.lastWeight)+' lb last')+'</span></div>';
  }).join('')||'<p class="small">Complete workouts to build your personal Coach history.</p>';
 }
 function renderOriginalRecovery(){
@@ -1236,6 +1236,11 @@ function bind(){
   $('exerciseSearch').value='';$('libraryEquipment').value='';$('libraryPhotosOnly').checked=false;$('libraryFavoritesOnly').checked=false;
   muscleFilter='';renderLibrary();
  });
+ for(const id of ['sessionHistory','coachProgressionList']){
+  $(id).addEventListener('click',e=>{
+   const button=e.target.closest('[data-exercise-open]');if(button)exerciseDetail(button.dataset.exerciseOpen);
+  });
+ }
  $('libraryGrid').addEventListener('click',e=>{const favorite=e.target.closest('[data-library-favorite]');if(favorite){toggleLibraryFavorite(favorite.dataset.libraryFavorite);return;}const button=e.target.closest('[data-library-detail]');if(button)exerciseDetail(button.dataset.libraryDetail)});
  $('libraryChips').addEventListener('click',event=>{const el=event.target.closest('[data-muscle]');if(!el)return;muscleFilter=el.dataset.muscle;renderLibrary()});
  document.querySelectorAll('[data-account-page]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.accountPage)));
