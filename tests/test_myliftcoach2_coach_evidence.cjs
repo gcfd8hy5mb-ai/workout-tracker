@@ -19,3 +19,19 @@ test('ignores invalid set values and limits evidence to completed training',()=>
 test('handles empty training history without fabricating activity',()=>{
  const result=summarize([]);assert.equal(result.completedSessions,0);assert.equal(result.totalVolume,0);assert.equal(result.latestDate,null);
 });
+
+test('unfinished sets are excluded and original coach movement search does not mutate evidence',()=>{
+ const {filterMovements}=require('../myliftcoach2/coach-evidence.js');
+ const history=[{date:'2026-11-15',exercises:[
+  {id:'press',name:'Chest Press',sets:[{weight:150,reps:8,completed:false},{weight:75,reps:8,completed:true}]},
+  {id:'row',name:'Seated Row',sets:[{weight:200,reps:8,completed:false}]}
+ ]}];
+ const snapshot=JSON.stringify(history),summary=summarize(history);
+ assert.equal(summary.loggedSets,1);
+ assert.equal(summary.totalVolume,600);
+ assert.equal(summary.movements.length,1);
+ assert.equal(summary.movements[0].bestWeight,75);
+ assert.deepEqual(filterMovements(summary.movements,' CHEST ').map(x=>x.id),['press']);
+ assert.equal(filterMovements(summary.movements,'unmatched').length,0);
+ assert.equal(JSON.stringify(history),snapshot);
+});
