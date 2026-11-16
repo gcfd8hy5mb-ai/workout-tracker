@@ -79,7 +79,9 @@ function resolve(doc,when){
   const stamp=dateStamp(date);
   const matches=doc.recurring.filter(r=>{
    const start=dateStamp(r.start),end=r.end==null?Infinity:dateStamp(r.end);
-   return stamp>=start&&stamp<=end&&(stamp-start)%604800000===0;
+   const elapsed=stamp-start;
+   return elapsed>=0&&stamp<=end&&elapsed%604800000===0&&
+     (r.weeks===undefined||elapsed/604800000<r.weeks);
   }).sort((a,b)=>b.start.localeCompare(a.start));
   if(matches.length){workoutId=matches[0].workoutId;source='recurring'}
   else{const d=new Date(date+'T12:00:00Z');workoutId=doc.assigned[(d.getUTCDay()+6)%7]}
