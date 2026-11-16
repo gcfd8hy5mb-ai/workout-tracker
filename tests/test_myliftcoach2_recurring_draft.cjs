@@ -75,3 +75,18 @@ test('rest override validation permits null only, not unsupported workout identi
  assert.equal(migrate.validate({...base,overrides:{...base.overrides,'2026-11-27':null}}),true);
  assert.throws(()=>migrate.validate({...base,overrides:{...base.overrides,'2026-11-27':'unknown-plan'}}),/Unmatched dated workout/);
 });
+
+test('restore only the selected dated exception, preserving other overrides and recurrence',()=>{
+ const original=doc(),date='2026-11-27',db=storage();
+ const changed={...original,overrides:{...original.overrides,[date]:null}};
+ const restored=storeAPI.restoreDate(changed,date,ids);
+ assert.equal(Object.hasOwn(restored.overrides,date),false);
+ assert.deepEqual(restored.overrides,original.overrides);
+ assert.deepEqual(restored.recurring,original.recurring);
+ assert.equal(migrate.resolve(restored,date).source,'recurring');
+ assert.equal(migrate.resolve(restored,date).plan.id,original.recurring[0].workoutId);
+ storeAPI.commit(db,'recurring',owner,restored,ids);
+ assert.equal(migrate.resolve(storeAPI.read(db,'recurring',owner,ids),date).source,'recurring');
+ assert.equal(migrate.resolve(changed,date).plan,null);
+ assert.throws(()=>storeAPI.restoreDate(restored,date,ids),/exception not found/);
+});
