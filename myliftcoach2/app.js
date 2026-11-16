@@ -25,6 +25,7 @@ const plans=[
  {id:'upper-b',title:'Upper Body B',kind:'Upper Hypertrophy',description:'Variation for chest, back and arms.',ids:['pec-deck','seated-row','biceps-curl','triceps-push']},
  {id:'lower-b',title:'Lower Body B',kind:'Lower Hypertrophy',description:'A second lower-body session with balanced emphasis.',ids:['leg-press','leg-extension','leg-curl','calf-raise']}
 ];
+const originalExercises=Array.isArray(window.MLCOriginalExercises)?window.MLCOriginalExercises:[];
 const $=(id)=>document.getElementById(id);
 let page='home',activePlan=null,session=null,guest=true,account=null,auth=null;
 let demoSessions=loadDemo();
@@ -57,9 +58,24 @@ function renderWorkouts(){
 }
 function renderLibrary(){
  const query=$('exerciseSearch').value.trim().toLowerCase();
- const matches=exercises.filter(e=>(!muscleFilter||e.group===muscleFilter)&&(e.name+' '+e.group).toLowerCase().includes(query));
- document.querySelectorAll('[data-muscle]').forEach(b=>b.classList.toggle('selected',b.dataset.muscle===muscleFilter));
- $('libraryGrid').innerHTML=matches.map(e=>'<article class="library-card reference-exercise"><img class="library-thumb" src="./assets/chest-press.svg" alt="" loading="lazy"><div class="library-info"><h3>'+escapeHTML(e.name)+'</h3><p>'+escapeHTML(e.group)+' · '+e.sets+' sets · '+escapeHTML(e.reps)+' reps</p><details><summary>Technique notes</summary><p>'+escapeHTML(e.cue)+'</p></details></div><span class="library-chevron">›</span></article>').join('')||'<p class="empty-note">No exercises match that search.</p>';
+ const catalog=originalExercises.length?originalExercises:exercises;
+ const matches=catalog.filter(ex=>{
+  const group=String(ex.muscle||ex.group||'');
+  const normalized=group.toLowerCase();
+  const selected=muscleFilter.toLowerCase();
+  const matchesGroup=!selected||normalized===selected||(selected==='arms'&&['biceps','triceps','forearms'].includes(normalized))||(selected==='legs'&&['quads','hamstrings','calves','glutes','adductors'].includes(normalized))||(selected==='shoulders'&&normalized==='delts');
+  return matchesGroup&&(String(ex.name||'')+' '+group).toLowerCase().includes(query);
+ });
+ document.querySelectorAll('[data-muscle]').forEach(button=>button.classList.toggle('selected',button.dataset.muscle===muscleFilter));
+ $('libraryGrid').innerHTML=matches.map(ex=>{
+  const group=String(ex.muscle||ex.group||'Other');
+  const image=typeof ex.image==='string'&&/^images\/[a-zA-Z0-9_.-]+\.(png|webp|jpg|jpeg|svg)$/.test(ex.image)?'../'+ex.image:'./assets/chest-press.svg';
+  const guide=String(ex.how||ex.cue||'');
+  const tips=Array.isArray(ex.tips)?ex.tips:[];
+  const mistakes=Array.isArray(ex.mistakes)?ex.mistakes:[];
+  const notes='<p>'+escapeHTML(guide)+'</p>'+(tips.length?'<strong>Technique tips</strong><ul>'+tips.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+(mistakes.length?'<strong>Common mistakes</strong><ul>'+mistakes.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'');
+  return '<article class="library-card reference-exercise"><img class="library-thumb" src="'+escapeHTML(image)+'" alt="" loading="lazy"><div class="library-info"><h3>'+escapeHTML(ex.name)+'</h3><p>'+escapeHTML(group)+(ex.sets?' · '+ex.sets+' sets':'')+(ex.reps?' · '+escapeHTML(ex.reps)+' reps':'')+'</p><details><summary>Technique notes</summary>'+notes+'</details></div><span class="library-chevron">›</span></article>';
+ }).join('')||'<p class="empty-note">No exercises match that search.</p>';
 }
 function renderProgress(){
  const movements=new Set(demoSessions.flatMap(x=>x.sets.map(y=>y.exerciseId)));
