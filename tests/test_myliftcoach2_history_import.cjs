@@ -57,3 +57,18 @@ test('original workout history detail excludes unfinished sets without altering 
  assert.deepEqual(importer.sessionTotals(null),{sets:0,volume:0});
  assert.equal(JSON.stringify(input),before);
 });
+
+test('Home original activity shows latest three actual workouts without incomplete or mixed records',()=>{
+ const sessions=[
+  {date:'2026-11-09T12:00:00Z',workoutTitle:'Older',exercises:[{sets:[{weight:50,reps:10}]}]},
+  {date:'2026-11-16T12:00:00Z',workoutTitle:'Unfinished',exercises:[{sets:[{weight:500,reps:10,completed:false}]}]},
+  {date:'2026-11-15T12:00:00Z',workoutTitle:'Newest',exercises:[{sets:[{weight:90,reps:10}]}]},
+  {date:'2026-11-13T12:00:00Z',workoutTitle:'Middle',exercises:[{sets:[{weight:80,reps:10}]}]},
+  {date:'2026-11-11T12:00:00Z',workoutTitle:'Earlier',exercises:[{sets:[{weight:70,reps:10}]}]}
+ ];
+ const before=JSON.stringify(sessions);
+ assert.deepEqual(importer.recentCompleted(sessions,3).map(s=>s.workoutTitle),['Newest','Middle','Earlier']);
+ assert.deepEqual(importer.recentCompleted(sessions,1).map(s=>s.workoutTitle),['Newest']);
+ assert.deepEqual(importer.recentCompleted([]),[]);
+ assert.equal(JSON.stringify(sessions),before);
+});
