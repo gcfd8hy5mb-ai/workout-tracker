@@ -47,7 +47,7 @@ function refreshWeeklyOwner(){
   weeklyDraftReadError=String(error.message||error);
  }
 }
-let originalCustomSchedule=null,importedCustomOwner=null,originalSchedulePreview=false;
+let originalCustomSchedule=null,importedCustomOwner=null,originalSchedulePreview=false,fullMigrationPreview=null;
 function originalPreviewActive(){return Boolean(originalSchedulePreview&&originalCustomSchedule&&account?.id&&importedCustomOwner===account.id)}
 function dayAtWeekIndex(day){const now=new Date();return new Date(now.getFullYear(),now.getMonth(),now.getDate()+day-weeklyAPI.dayIndex(now),12);}
 function resolvedWorkout(date=new Date()){
@@ -63,10 +63,11 @@ function renderOriginalCustomSchedule(){
  const available=Boolean(account?.id&&importedCustomOwner===account.id&&originalCustomSchedule);
  toggle.disabled=!available;
  $('copyOriginalCustom').disabled=!available;
+ $('inspectRecurringMigration').disabled=!available;
  toggle.textContent=originalPreviewActive()?'Switch to editable preview':'Preview original custom assignments';
  status.textContent=!account?'Sign in to load your original custom schedule.':!available?'Load custom workouts and scheduled dates from your original account.':originalCustomSchedule.plans.length+' compatible custom workouts found · '+(originalPreviewActive()?'Original assignments shown read-only':'Local editable schedule shown');
 }
-function clearOriginalCustomSchedule(){originalCustomSchedule=null;importedCustomOwner=null;originalSchedulePreview=false;renderOriginalCustomSchedule()}
+function clearOriginalCustomSchedule(){originalCustomSchedule=null;importedCustomOwner=null;originalSchedulePreview=false;fullMigrationPreview=null;renderOriginalCustomSchedule();if($('recurringMigrationStatus'))$('recurringMigrationStatus').textContent='';}
 async function loadOriginalCustomSchedule(){
  if(!account?.id||!auth?.access_token){notice('Sign in to load original custom workouts.');return;}
  const owner=account.id,button=$('loadOriginalCustom'),status=$('originalCustomStatus');
@@ -76,7 +77,7 @@ async function loadOriginalCustomSchedule(){
   if(account?.id!==owner||!auth?.access_token)throw Error('Session changed');
   const data=await window.MLCOriginalCustomSchedule.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner,validExerciseIds:allowedExerciseIds});
   if(account?.id!==owner)throw Error('Account changed during import');
-  originalCustomSchedule=data;importedCustomOwner=owner;originalSchedulePreview=true;renderOriginalCustomSchedule();renderHome();renderWorkouts();
+  originalCustomSchedule=data;importedCustomOwner=owner;originalSchedulePreview=true;fullMigrationPreview=null;$('recurringMigrationStatus').textContent='';renderOriginalCustomSchedule();renderHome();renderWorkouts();
  }catch(error){
   clearOriginalCustomSchedule();status.textContent='Import failed: '+String(error.message||error).slice(0,160);
  }finally{button.disabled=!account}
@@ -84,6 +85,16 @@ async function loadOriginalCustomSchedule(){
 function toggleOriginalCustomSchedule(){
  if(!account?.id||importedCustomOwner!==account.id||!originalCustomSchedule)return;
  originalSchedulePreview=!originalSchedulePreview;renderOriginalCustomSchedule();renderHome();renderWorkouts();
+}
+function inspectCompleteRecurringMigration(){
+ const status=$('recurringMigrationStatus');
+ if(!account?.id||importedCustomOwner!==account.id||!originalCustomSchedule){status.textContent='Load the original schedule for this account first.';return;}
+ try{
+  const prepared=window.MLCV2RecurringSchedule.migrate({original:originalCustomSchedule,weekly,validExerciseIds:allowedExerciseIds});
+  if(!window.MLCV2RecurringSchedule.validate(prepared.document))throw Error('Migration verification failed');
+  fullMigrationPreview={owner:account.id,prepared};
+  status.textContent='Verified read-only migration preview: '+prepared.summary.workouts+' original workouts, '+prepared.summary.oneTime+' one-time dates and '+prepared.summary.recurring+' recurring rules. All future starts and end dates retained. Nothing was saved or deployed.';
+ }catch(error){fullMigrationPreview=null;status.textContent='Migration blocked: '+String(error.message||error).slice(0,200);}
 }
 function copyOriginalToEditable(){
  if(!originalPreviewActive()){notice('Load and preview the original schedule first.');return}
@@ -628,6 +639,7 @@ function bind(){
  $('loadOriginalCustom').addEventListener('click',loadOriginalCustomSchedule);
  $('toggleOriginalCustom').addEventListener('click',toggleOriginalCustomSchedule);
  $('copyOriginalCustom').addEventListener('click',copyOriginalToEditable);
+ $('inspectRecurringMigration').addEventListener('click',inspectCompleteRecurringMigration);
  $('loadOriginalSettings').addEventListener('click',loadOriginalAccountSettings);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
