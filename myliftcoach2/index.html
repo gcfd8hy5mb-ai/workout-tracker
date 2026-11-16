@@ -121,7 +121,8 @@
  <button type="button" id="weekDuplicateWorkout" class="button-outline">Copy selected workout as custom</button>
  <label>Workout name<input type="text" maxlength="80" id="weekWorkoutName" placeholder="Workout name"></label>
  <p class="small">Choose from the original 60 exercises and demo movements. Changes apply to the selected workout.</p><label>Find an exercise<input type="search" id="weekExerciseSearch" placeholder="Search exercise names"></label><div id="weekExerciseOptions" class="week-exercise-grid"></div>
- <button type="button" class="button-primary" id="weekSaveButton">Save day and workout</button></article>
+ <button type="button" class="button-primary" id="weekSaveButton">Save day and workout</button>
+ <button type="button" class="button-outline" id="weekRestoreRepeating" hidden>Restore repeating workout for this date</button></article>
  <article class="panel"><div class="panel-heading"><h3>Original custom workout schedule</h3><span class="micro-tag">READ ONLY</span></div>
  <p id="originalCustomStatus" role="status" class="small">Sign in to load original workouts.</p>
  <div class="hero-actions"><button type="button" class="button-outline" id="loadOriginalCustom">Load original schedule</button><button type="button" class="button-outline" id="toggleOriginalCustom" disabled>Preview original assignments</button><button type="button" class="button-outline" id="copyOriginalCustom" disabled>Copy this week to editable schedule</button><button type="button" class="button-outline" id="inspectRecurringMigration" disabled>Inspect complete repeating schedule</button><button type="button" class="button-outline" id="activateFullRecurring" disabled>Use full repeating schedule locally</button></div>
