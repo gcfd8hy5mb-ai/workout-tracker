@@ -39,7 +39,7 @@ function setPage(next){if(!['welcome','home','workouts','library','progress','se
  document.querySelectorAll('.page').forEach(el=>el.hidden=el.id!==next);
  document.querySelectorAll('[data-page]').forEach(el=>{const is=el.dataset.page===next;el.classList.toggle('selected',is);el.classList.toggle('active',is);if(is)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current')});
  $('pageTitle').textContent=({welcome:'Welcome',home:'Home',workouts:'Workouts',library:'Exercise library',progress:'Progress',settings:'My Account',coaching:'Coaching',nutrition:'Nutrition'})[next];
- $('sidebar').classList.remove('open');document.body.classList.toggle('welcome-view',next==='welcome');window.scrollTo({top:0,behavior:'instant'});
+ $('sidebar').classList.remove('open');$('sidebarScrim').classList.remove('open');document.body.classList.remove('sidebar-is-open');$('menuBtn').setAttribute('aria-expanded','false');$('moreMenuBtn').setAttribute('aria-expanded','false');$('sidebar').inert=window.matchMedia('(max-width:760px)').matches;document.body.classList.toggle('welcome-view',next==='welcome');window.scrollTo({top:0,behavior:'instant'});
  if(next==='home')renderHome();if(next==='workouts')renderWorkouts();if(next==='library')renderLibrary();
  if(next==='progress')renderProgress();if(next==='settings')renderSettings();
 }
@@ -221,7 +221,36 @@ function bind(){
  document.querySelectorAll('[data-shortcut]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.shortcut)));
  document.querySelectorAll('[data-coach-link]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.coachLink)));
 
- $('menuBtn').addEventListener('click',()=>$('sidebar').classList.toggle('open'));
+ const sidebar=$('sidebar');
+ const mobileSidebar=window.matchMedia('(max-width:760px)');
+ let sidebarReturnFocus=null;
+ function syncSidebarState(){
+  const opened=sidebar.classList.contains('open');
+  const mobile=mobileSidebar.matches;
+  sidebar.inert=mobile&&!opened;
+  $('menuBtn').setAttribute('aria-expanded',String(mobile&&opened));
+  $('moreMenuBtn').setAttribute('aria-expanded',String(mobile&&opened));
+  $('sidebarScrim').classList.toggle('open',mobile&&opened);
+  document.body.classList.toggle('sidebar-is-open',mobile&&opened);
+ }
+ function openSidebar(){
+  if(!mobileSidebar.matches){sidebar.scrollIntoView({block:'nearest'});return}
+  sidebarReturnFocus=document.activeElement;
+  sidebar.classList.add('open');syncSidebarState();$('sidebarClose').focus();
+ }
+ function closeSidebar(){
+  if(!sidebar.classList.contains('open'))return;
+  if(sidebar.contains(document.activeElement)&&sidebarReturnFocus?.focus)sidebarReturnFocus.focus();
+  sidebar.classList.remove('open');syncSidebarState();
+ }
+ $('menuBtn').addEventListener('click',()=>sidebar.classList.contains('open')?closeSidebar():openSidebar());
+ $('moreMenuBtn').addEventListener('click',openSidebar);
+ document.querySelectorAll('[data-sidebar-open]').forEach(el=>el.addEventListener('click',openSidebar));
+ $('sidebarClose').addEventListener('click',closeSidebar);
+ $('sidebarScrim').addEventListener('click',closeSidebar);
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar()});
+ mobileSidebar.addEventListener('change',()=>{sidebar.classList.remove('open');syncSidebarState()});
+ syncSidebarState();
  $('heroStart').addEventListener('click',()=>openWorkout(nextPlan().id));
  $('heroViewPlan').addEventListener('click',()=>setPage('workouts'));
  $('todayStart').addEventListener('click',()=>openWorkout(nextPlan().id));
