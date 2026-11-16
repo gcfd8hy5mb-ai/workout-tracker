@@ -21,7 +21,8 @@ test('one-time wins over overlapping latest repeat, and earlier rules are retain
  ]},allowed);
  const d=mod.migrate({...args(),original:t}).document;
  assert.equal(d.recurring.length,2);assert.equal(mod.resolve(d,'2026-11-20').source,'one-time');
- assert.equal(mod.resolve(d,'2027-02-12').source,'recurring');
+ assert.equal(mod.resolve(d,'2027-01-22').source,'recurring');
+ assert.equal(mod.resolve(d,'2027-02-12').source,'weekly');
 });
 test('edits to imported plan carry through to later recurring assignments by stable id',()=>{
  const doc=mod.migrate(args()).document;
@@ -54,4 +55,13 @@ test('fallback weekly assignment works when original has no rule',()=>{
  const doc=mod.migrate(args()).document;
  assert.equal(mod.resolve(doc,'2026-11-16').plan.title,'Default');
  assert.equal(mod.resolve(doc,'2026-11-17').plan,null);
+});
+
+test('week-limited repeating rule expires after exact permitted occurrences even without end date',()=>{
+ const doc=mod.migrate(args()).document;
+ doc.recurring=[{...doc.recurring[0],end:null,weeks:2}];
+ assert.equal(mod.resolve(doc,'2026-11-13').source,'recurring');
+ assert.equal(mod.resolve(doc,'2026-11-20').source,'one-time');
+ assert.equal(mod.resolve(doc,'2026-11-27').source,'weekly');
+ assert.equal(mod.resolve(doc,'2026-12-04').plan,null);
 });
