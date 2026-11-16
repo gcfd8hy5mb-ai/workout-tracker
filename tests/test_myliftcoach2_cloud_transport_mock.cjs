@@ -51,5 +51,5 @@ test('expired or mismatched owner rejects before making any request',async()=>{
 });
 test('network errors and invalid read response reject rather than resetting draft',async()=>{
  const failed=harness({customFetcher:async()=>{throw Error('Offline')}});await assert.rejects(failed.client.read(id),/Offline/);
- const invalid=harness({response:{revision:1,document:doc('Changed') .plans}});await assert.rejects(invalid.client.read(id),/Invalid cloud schedule/);
+ const invalid=harness({response:{revision:1,document:doc('Changed') .plans}});await assert.rejects(invalid.client.read(id),/Invalid (cloud|v2) schedule/);
 });
