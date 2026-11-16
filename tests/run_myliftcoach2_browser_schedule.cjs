@@ -1,0 +1,52 @@
+const { chromium } = require('playwright');
+const assert = require('node:assert/strict');
+
+(async () => {
+ const browser = await chromium.launch({headless:true,args:['--no-sandbox']});
+ const base='http://127.0.0.1:8765/myliftcoach2/';
+ try {
+  for(const device of [{label:'desktop',viewport:{width:1440,height:900},isMobile:false},{label:'iPhone-sized',viewport:{width:390,height:844},isMobile:true}]){
+   const context=await browser.newContext({viewport:device.viewport,isMobile:device.isMobile,hasTouch:device.isMobile});
+   const page=await context.newPage();
+   const errors=[];
+   page.on('pageerror',error=>errors.push(error.message));
+   await page.route('https://kirlpjflaoriiusfamsk.supabase.co/**',route=>route.abort());
+   await page.addInitScript(()=>{
+    const today=new Date();
+    const key=[today.getFullYear(),String(today.getMonth()+1).padStart(2,'0'),String(today.getDate()).padStart(2,'0')].join('-');
+    const prior=new Date(today.getFullYear(),today.getMonth(),today.getDate()-7,12);
+    const start=[prior.getFullYear(),String(prior.getMonth()+1).padStart(2,'0'),String(prior.getDate()).padStart(2,'0')].join('-');
+    const plans=[{id:'custom-test-session',title:'My Custom Session',kind:'Custom',description:'Browser test workout',ids:['leg-press','seated-leg-curl']}];
+    const document={version:1,plans,assigned:Array(7).fill('custom-test-session'),overrides:{[key]:'custom-test-session'},recurring:[{start,end:null,workoutId:'custom-test-session'}]};
+    if(localStorage.getItem('mlc2-recurring-preview-v1:guest')===null) localStorage.setItem('mlc2-recurring-preview-v1:guest',JSON.stringify(document));
+   });
+   await page.goto(base,{waitUntil:'load'});
+   await page.waitForFunction(()=>document.querySelector('#todayTitle')?.textContent==='My Custom Session',{timeout:15000});
+   assert.deepEqual(errors,[],device.label+' bootstrap errors: '+errors.join('; '));
+   assert.equal(await page.locator('#todayTitle').textContent(),'My Custom Session');
+   const boardToday=await page.locator('#weeklyBoardHome .week-day-card.is-today').textContent();
+   assert.match(boardToday,/My Custom Session/);
+   await page.locator('#heroStart').evaluate(el=>el.click());
+   assert.match(await page.locator('#modalContent h2').textContent(),/My Custom Session/);
+   await page.locator('#closeModal').evaluate(el=>el.click());
+
+   // Editing the exact scheduled plan must update Home, modal and persisted copy.
+   const today=(new Date().getDay()+6)%7;
+   await page.locator('#weeklyBoardHome [data-week-day="'+today+'"]').evaluate(el=>el.click());
+   await page.locator('#weekWorkoutName').fill('Updated Custom Session');
+   await page.locator('#weekSaveButton').evaluate(el=>el.click());
+   assert.equal(await page.locator('#todayTitle').textContent(),'Updated Custom Session');
+   assert.match(await page.locator('#weeklyBoardWorkouts .week-day-card.is-today').textContent(),/Updated Custom Session/);
+   await page.locator('#todayStart').evaluate(el=>el.click());
+   assert.equal(await page.locator('#modalContent h2').textContent(),'Updated Custom Session');
+   await page.locator('#closeModal').evaluate(el=>el.click());
+   await page.reload({waitUntil:'load'});
+   await page.waitForFunction(()=>document.querySelector('#todayTitle')?.textContent==='Updated Custom Session',{timeout:15000});
+   assert.equal(await page.locator('#todayTitle').textContent(),'Updated Custom Session');
+   assert.match(await page.locator('#weeklyBoardHome .week-day-card.is-today').textContent(),/Updated Custom Session/);
+   assert.deepEqual(errors,[],device.label+' errors after reload');
+   console.log('PASS '+device.label+': Home/board/Start agree; renamed custom workout persists through reload');
+   await context.close();
+  }
+ }finally{await browser.close()}
+})().catch(error=>{console.error(error);process.exit(1)});

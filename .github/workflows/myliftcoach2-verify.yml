@@ -86,3 +86,20 @@ jobs:
           psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -U postgres -d postgres -f docs/sql/prism-v2-private-rpc.DRAFT.sql
       - name: Run two-user and concurrent transaction SQL tests
         run: python3 tests/run_v2_postgres_integration.py
+
+  browser-workout-consistency:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test dependencies
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install chromium --with-deps
+      - name: Start local development preview
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/myliftcoach2-browser-server.log 2>&1 &
+      - name: Check Home/board/Start/edit/reload in Chromium
+        run: node tests/run_myliftcoach2_browser_schedule.cjs

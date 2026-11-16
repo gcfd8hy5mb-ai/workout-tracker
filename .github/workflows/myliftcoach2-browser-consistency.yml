@@ -1,0 +1,26 @@
+name: MYLIFTCOACH 2.0 Browser Workout Consistency
+on:
+  push:
+    branches:
+      - 'feature/myliftcoach2-browser-*'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser-schedule:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated browser test dependencies
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install chromium --with-deps
+      - name: Serve static development preview
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/myliftcoach2-browser-server.log 2>&1 &
+          echo $! > /tmp/myliftcoach2-browser-server.pid
+      - name: Verify desktop and iPhone-sized browser paths
+        run: node tests/run_myliftcoach2_browser_schedule.cjs
