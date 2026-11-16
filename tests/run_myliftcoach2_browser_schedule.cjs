@@ -86,6 +86,23 @@ const assert = require('node:assert/strict');
    assert.equal(await page.locator('#coachLoadOriginalHistory').isDisabled(),true);
    assert.equal(await page.locator('#coachMovementSearch').isDisabled(),true);
    assert.deepEqual(errors,[],device.label+' navigation/account-isolation errors');
+   // Rest day is a dated exception, not a reset of imported recurring rules.
+   await page.locator('#weeklyBoardHome [data-week-day="'+today+'"]').evaluate(el=>el.click());
+   await page.locator('#weekWorkoutSelect').selectOption('');
+   await page.locator('#weekSaveButton').evaluate(el=>el.click());
+   assert.equal(await page.locator('#todayTitle').textContent(),'Rest day');
+   assert.equal(await page.locator('#heroStart').isDisabled(),true);
+   const storedRest=await page.evaluate(()=>{
+    const doc=JSON.parse(localStorage.getItem('mlc2-recurring-preview-v1:guest'));
+    const day=new Date(),date=[day.getFullYear(),String(day.getMonth()+1).padStart(2,'0'),String(day.getDate()).padStart(2,'0')].join('-');
+    return {override:doc.overrides[date],ruleCount:doc.recurring.length};
+   });
+   assert.equal(storedRest.override,null);
+   assert.equal(storedRest.ruleCount,1);
+   await page.reload({waitUntil:'load'});
+   assert.equal(await page.locator('#todayTitle').textContent(),'Rest day');
+   assert.equal(await page.locator('#heroStart').isDisabled(),true);
+   assert.deepEqual(errors,[],device.label+' rest exception errors');
    console.log('PASS '+device.label+': Home/board/Start agree; edit, sidebar create, and reload retain custom workout');
    await context.close();
   }
