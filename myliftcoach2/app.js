@@ -697,7 +697,7 @@ function closeModal(){closeRest();$('modal').hidden=true;document.body.style.ove
 function openWorkout(id){
  const plan=(originalPreviewActive()?originalCustomSchedule.plans:[]).find(x=>x.id===id)||weekly.plans.find(x=>x.id===id);if(!plan)return;activePlan={...plan,ids:plan.ids.slice()};
  session={sets:[],readiness:'Normal'};
- openModal('<div class="modal-eyebrow">PRACTICE SESSION · LOCAL ONLY</div><h2>'+escapeHTML(plan.title)+'</h2><p>'+escapeHTML(plan.description)+' All entries stay in the isolated demo workspace and will not be uploaded to Supabase.</p><div class="panel"><strong>How are you feeling today?</strong><p class="small">Readiness check-in saved with this practice session only.</p><div class="hero-actions" id="sessionReadiness"><button type="button" class="button-outline" data-session-readiness="Great" aria-pressed="false">Great</button><button type="button" class="button-outline" data-session-readiness="Normal" aria-pressed="true">Normal</button><button type="button" class="button-outline" data-session-readiness="Tired" aria-pressed="false">Tired</button></div></div><div id="workoutLog" class="workout-log"></div><div class="modal-footer"><button type="button" class="button-outline" id="cancelWorkout">Cancel</button><button type="button" class="button-outline" id="startRest">Rest 1:30</button><button type="button" class="button-primary" id="finishWorkout">Finish session</button></div>');
+ openModal('<div class="modal-eyebrow">PRACTICE SESSION · LOCAL ONLY</div><h2>'+escapeHTML(plan.title)+'</h2><p>'+escapeHTML(plan.description)+' All entries stay in the isolated demo workspace and will not be uploaded to Supabase.</p><div class="panel"><strong>How are you feeling today?</strong><p class="small">Readiness check-in saved with this practice session only.</p><div class="hero-actions" id="sessionReadiness"><button type="button" class="button-outline" data-session-readiness="Great" aria-pressed="false">Great</button><button type="button" class="button-outline" data-session-readiness="Normal" aria-pressed="true">Normal</button><button type="button" class="button-outline" data-session-readiness="Tired" aria-pressed="false">Tired</button></div></div><div class="panel"><strong id="sessionSetProgressText">Ready to start</strong><progress id="sessionSetProgress" value="0" max="1" style="width:100%" aria-label="Completed practice sets"></progress><p class="small">Progress reflects logged sets in this practice session.</p></div><div id="workoutLog" class="workout-log"></div><div class="modal-footer"><button type="button" class="button-outline" id="cancelWorkout">Cancel</button><button type="button" class="button-outline" id="startRest">Rest 1:30</button><button type="button" class="button-primary" id="finishWorkout">Finish session</button></div>');
  renderWorkoutLog();
  $('cancelWorkout').addEventListener('click',closeModal);
  $('startRest').addEventListener('click',openRest);
@@ -717,6 +717,14 @@ function updateSessionReadiness(value){
   button.classList.toggle('selected',chosen);
  });
 }
+function renderSessionSetProgress(){
+ if(!session||!activePlan||!$('sessionSetProgress'))return;
+ const target=activePlan.ids.reduce((total,id)=>total+(exerciseById(id)?.sets||3),0);
+ const logged=session.sets.length;
+ $('sessionSetProgressText').textContent=logged?logged+' of '+target+' planned sets logged':'Ready to start · '+target+' planned sets';
+ $('sessionSetProgress').max=Math.max(1,target);
+ $('sessionSetProgress').value=Math.min(logged,target);
+}
 function renderWorkoutLog(){
  if(!activePlan)return;
  $('workoutLog').innerHTML=activePlan.ids.map(id=>{
@@ -729,6 +737,7 @@ function renderWorkoutLog(){
   const replacement=options.length?'<div class="inputs"><label>Replace this exercise<select aria-label="Replacement for '+escapeHTML(e.name)+'" data-swap-select="'+id+'"><option value="">Choose same-muscle alternative</option>'+options.map(x=>'<option value="'+escapeHTML(x.id)+'">'+escapeHTML(x.name)+'</option>').join('')+'</select></label><button type="button" class="button-outline" data-swap-apply="'+id+'">Replace exercise</button></div>':'<p class="small">No unused same-muscle alternatives available.</p>';
   return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small>'+historyHint+replacement+'<div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
  }).join('');
+ renderSessionSetProgress();
 }
 function reuseLastWorkingWeight(id){
  if(!activePlan?.ids.includes(id)||!account?.id||importedHistoryOwner!==account.id)return;
@@ -759,6 +768,7 @@ function updateExerciseFeedback(id){
  if(count)count.textContent=sets.length+' logged';
  if(feedback)feedback.textContent=sets.length?('Last set: '+sets[sets.length-1].weight+' lb × '+sets[sets.length-1].reps+' reps'):'';
  if(undo)undo.hidden=sets.length===0;
+ renderSessionSetProgress();
 }
 function addSet(id){
  if(!session||!activePlan?.ids.includes(id))return;
