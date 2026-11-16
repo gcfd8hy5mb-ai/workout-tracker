@@ -27,6 +27,8 @@ const plans=[
 ];
 const originalExercises=Array.isArray(window.MLCOriginalExercises)?window.MLCOriginalExercises:[];
 const WEEKLY_KEY='mlc2-weekly-preview-v1';
+const RECURRING_KEY='mlc2-recurring-preview-v1';
+const recurringDraftAPI=window.MLCRecurringDraft;
 const weeklyAPI=window.MLCWeeklySchedule;
 const editorExercises=[...exercises,...originalExercises.filter(ex=>!exercises.some(demo=>demo.id===ex.id)).map(ex=>({
  id:ex.id,name:ex.name,group:ex.muscle||'Other',sets:3,reps:'8–12',cue:ex.how||''
@@ -38,11 +40,19 @@ function readWeekly(owner=scheduleOwner()){
  return weeklyAPI.loadOwned(localStorage,WEEKLY_KEY,owner,plans,allowedExerciseIds);
 }
 let weekly=weeklyAPI.normalize(null,plans,allowedExerciseIds);
+let activeRecurring=null;
 let weeklyDraftReadError=null;
 function refreshWeeklyOwner(){
- try{weekly=readWeekly();weeklyDraftReadError=null}
- catch(error){
-  // Do not display an unrelated account's schedule, and never overwrite corrupt records.
+ activeRecurring=null;
+ try{
+  const recurring=recurringDraftAPI.read(localStorage,RECURRING_KEY,scheduleOwner(),allowedExerciseIds);
+  if(recurring){
+   activeRecurring=recurring;
+   weekly={plans:recurring.plans.map(p=>({...p,ids:p.ids.slice()})),assigned:recurring.assigned.slice()};
+  }else weekly=readWeekly();
+  weeklyDraftReadError=null;
+ }catch(error){
+  // Preserve bytes of the unreadable record and block changes until recovered.
   weekly=weeklyAPI.normalize(null,plans,allowedExerciseIds);
   weeklyDraftReadError=String(error.message||error);
  }
@@ -52,9 +62,15 @@ function originalPreviewActive(){return Boolean(originalSchedulePreview&&origina
 function dayAtWeekIndex(day){const now=new Date();return new Date(now.getFullYear(),now.getMonth(),now.getDate()+day-weeklyAPI.dayIndex(now),12);}
 function resolvedWorkout(date=new Date()){
  const local=weeklyAPI.resolve(weekly,date);
- if(!originalPreviewActive())return {...local,source:'preview'};
- const fromOriginal=window.MLCOriginalCustomSchedule.resolve(originalCustomSchedule,date);
- return fromOriginal.hasSchedule?{...local,plan:fromOriginal.plan,source:fromOriginal.kind}:{...local,source:'preview'};
+ if(originalPreviewActive()){
+  const fromOriginal=window.MLCOriginalCustomSchedule.resolve(originalCustomSchedule,date);
+  if(fromOriginal.hasSchedule)return {...local,plan:fromOriginal.plan,source:fromOriginal.kind};
+ }
+ if(activeRecurring){
+  const result=window.MLCV2RecurringSchedule.resolve(activeRecurring,date);
+  return {...local,plan:result.plan,source:result.source};
+ }
+ return {...local,source:'preview'};
 }
 function renderOriginalCustomSchedule(){
  const status=$('originalCustomStatus'),load=$('loadOriginalCustom'),toggle=$('toggleOriginalCustom');
@@ -64,6 +80,7 @@ function renderOriginalCustomSchedule(){
  toggle.disabled=!available;
  $('copyOriginalCustom').disabled=!available;
  $('inspectRecurringMigration').disabled=!available;
+ $('activateFullRecurring').disabled=!available||!fullMigrationPreview||fullMigrationPreview.owner!==account.id||Boolean(activeRecurring);
  toggle.textContent=originalPreviewActive()?'Switch to editable preview':'Preview original custom assignments';
  status.textContent=!account?'Sign in to load your original custom schedule.':!available?'Load custom workouts and scheduled dates from your original account.':originalCustomSchedule.plans.length+' compatible custom workouts found · '+(originalPreviewActive()?'Original assignments shown read-only':'Local editable schedule shown');
 }
@@ -93,10 +110,31 @@ function inspectCompleteRecurringMigration(){
   const prepared=window.MLCV2RecurringSchedule.migrate({original:originalCustomSchedule,weekly,validExerciseIds:allowedExerciseIds});
   if(!window.MLCV2RecurringSchedule.validate(prepared.document))throw Error('Migration verification failed');
   fullMigrationPreview={owner:account.id,prepared};
+  renderOriginalCustomSchedule();
   status.textContent='Verified read-only migration preview: '+prepared.summary.workouts+' original workouts, '+prepared.summary.oneTime+' one-time dates and '+prepared.summary.recurring+' recurring rules. All future starts and end dates retained. Nothing was saved or deployed.';
- }catch(error){fullMigrationPreview=null;status.textContent='Migration blocked: '+String(error.message||error).slice(0,200);}
+ }catch(error){fullMigrationPreview=null;renderOriginalCustomSchedule();status.textContent='Migration blocked: '+String(error.message||error).slice(0,200);}
+}
+function activateCompleteRecurringLocally(){
+ const status=$('recurringMigrationStatus');
+ if(!account?.id||!fullMigrationPreview||fullMigrationPreview.owner!==account.id||importedCustomOwner!==account.id){
+  status.textContent='Inspect the complete original schedule for this account before activating.';return;
+ }
+ try{
+  if(weeklyDraftReadError)throw Error('Existing saved schedule requires recovery');
+  if(activeRecurring)throw Error('A complete recurring schedule is already active. Original document was not overwritten.');
+  const candidate=fullMigrationPreview.prepared.document;
+  recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),candidate,allowedExerciseIds);
+  activeRecurring=candidate;
+  weekly={plans:candidate.plans.map(p=>({...p,ids:p.ids.slice()})),assigned:candidate.assigned.slice()};
+  originalSchedulePreview=false;
+  fullMigrationPreview=null;
+  renderOriginalCustomSchedule();renderHome();renderWorkouts();
+  status.textContent='Complete recurring schedule activated in this browser. One-time dates and all weekly repeats are retained. Original account records remain read-only; cloud sync is disabled.';
+  notice('Recurring workouts now govern Home and Start Workout locally.');
+ }catch(error){status.textContent='Activation blocked: '+String(error.message||error).slice(0,210)}
 }
 function copyOriginalToEditable(){
+ if(activeRecurring){$('originalCustomStatus').textContent='Full recurring schedule is already active; do not replace it with a one-week copy.';return;}
  if(!originalPreviewActive()){notice('Load and preview the original schedule first.');return}
  try{
   const current=window.MLCCustomScheduleCopy.prepare({original:originalCustomSchedule,existing:weekly,referenceDate:new Date(),validExerciseIds:allowedExerciseIds});
@@ -110,7 +148,15 @@ function copyOriginalToEditable(){
 }
 function commitWeekly(candidate){
  if(weeklyDraftReadError)throw Error('Saved schedule needs recovery before editing: '+weeklyDraftReadError);
- weekly=weeklyAPI.commitOwned(localStorage,WEEKLY_KEY,scheduleOwner(),candidate,plans.map(p=>p.id));
+ if(activeRecurring){
+  const document=recurringDraftAPI.edited(activeRecurring,candidate,allowedExerciseIds);
+  recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),document,allowedExerciseIds);
+  activeRecurring=document;weekly=candidate;
+ }else{
+  weekly=weeklyAPI.commitOwned(localStorage,WEEKLY_KEY,scheduleOwner(),candidate,plans.map(p=>p.id));
+  fullMigrationPreview=null;
+  renderOriginalCustomSchedule();
+ }
 }
 function nextPlan(){return resolvedWorkout().plan}
 function openToday(){const plan=nextPlan();if(plan)openWorkout(plan.id);else notice('Today is a rest day. Choose a workout from the weekly board.')}
@@ -640,6 +686,7 @@ function bind(){
  $('toggleOriginalCustom').addEventListener('click',toggleOriginalCustomSchedule);
  $('copyOriginalCustom').addEventListener('click',copyOriginalToEditable);
  $('inspectRecurringMigration').addEventListener('click',inspectCompleteRecurringMigration);
+ $('activateFullRecurring').addEventListener('click',activateCompleteRecurringLocally);
  $('loadOriginalSettings').addEventListener('click',loadOriginalAccountSettings);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
