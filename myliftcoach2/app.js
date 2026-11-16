@@ -110,6 +110,22 @@ function renderCoach(){
  $('coachRecent').textContent=latest?'Latest practice session: '+new Date(latest.created).toLocaleDateString()+' · '+String(latest.title||'Workout'):'No completed preview sessions have been saved.';
  renderOriginalCoachEvidence();
 }
+function renderCoachProgression(){
+ const status=$('coachProgressionStatus'),root=$('coachProgressionList');
+ if(!status||!root)return;
+ root.replaceChildren();
+ if(!account?.id||importedHistoryOwner!==account.id){
+  status.textContent='Load your original workout history first. No recommendations are being applied.';
+  return;
+ }
+ const evidence=window.MLCOriginalCoachEvidence.summarize(originalHistory);
+ status.textContent=evidence.movements.length?'Read-only original rules · target 8–10 reps · 5 lb default step (equipment-specific increments need verification).':'No qualifying completed workouts available.';
+ root.innerHTML=evidence.movements.slice(0,12).map(ex=>{
+  const result=window.MLCProgressionPreview.suggest(originalHistory,ex.id,{range:{min:8,max:10},increment:5});
+  const label=result.status==='ready'?('Preview: '+result.action+' to '+result.weight+' lb · '+result.reason):'Not enough qualifying working-set history (at least two completed workouts required).';
+  return '<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+escapeHTML(label)+'</small></div><span>'+escapeHTML(String(result.lastWeight||'—'))+' lb last</span></div>';
+ }).join('');
+}
 function renderOriginalCoachEvidence(){
  const status=$('coachOriginalStatus'),movements=$('coachOriginalMovements');
  if(!status||!movements)return;
@@ -117,6 +133,7 @@ function renderOriginalCoachEvidence(){
  movements.replaceChildren();
  if(!account?.id||importedHistoryOwner!==account.id){
   status.textContent='Sign in and load original history from Progress to view real completed-workout evidence. No adaptive recommendations are active.';
+  renderCoachProgression();
   return;
  }
  const evidence=window.MLCOriginalCoachEvidence.summarize(originalHistory);
@@ -126,6 +143,7 @@ function renderOriginalCoachEvidence(){
  $('coachOriginalVolume').textContent=Math.round(evidence.totalVolume).toLocaleString();
  status.textContent=evidence.latestDate?'Latest completed workout: '+new Date(evidence.latestDate).toLocaleDateString()+' · '+evidence.latestTitle+'. Historical activity only, not coaching advice.':'No completed workouts in imported history.';
  movements.innerHTML=evidence.movements.slice(0,8).map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sessions+' workouts · '+ex.sets+' sets</small></div><span>Best '+ex.bestWeight.toLocaleString()+' lb</span></div>').join('');
+ renderCoachProgression();
 }
 function renderOriginalProgress(){
  const status=$('originalProgressStatus'),root=$('originalRecords');
