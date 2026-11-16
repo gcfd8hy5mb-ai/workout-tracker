@@ -456,6 +456,7 @@ function renderOriginalProgress(){
 }
 function clearOriginalHistory(){
  originalHistory=[];importedHistoryOwner=null;
+ if($('originalCalendarMonth'))$('originalCalendarMonth').value='';
  renderOriginalHistory();
  renderOriginalProgress();
  renderOriginalCoachEvidence();
