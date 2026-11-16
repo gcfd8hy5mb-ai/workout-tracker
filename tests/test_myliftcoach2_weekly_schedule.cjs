@@ -61,3 +61,33 @@ test('failed browser persistence raises error and does not return new in-memory 
  assert.equal(attempted,true);
  assert.equal(s.resolve(state,'2026-11-16T12:00:00').plan.id,'upper-a');
 });
+
+test('account-scoped drafts never appear for a different user or guest',()=>{
+ const storageData=new Map(),store={getItem:k=>storageData.get(k)??null,setItem:(k,v)=>storageData.set(k,v)};
+ const a='11111111-1111-4111-8111-111111111111',b='22222222-2222-4222-8222-222222222222';
+ let first=s.normalize(null,preset,allowed);
+ first=s.add(first,'custom-owner-1',{title:'My Custom Monday',ids:['squat']},allowed);
+ first=s.assign(first,0,'custom-owner-1');
+ s.commitOwned(store,'weekly',a,first,preset.map(x=>x.id));
+ assert.equal(s.resolve(s.loadOwned(store,'weekly',a,preset,allowed),'2026-11-16T12:00:00').plan.title,'My Custom Monday');
+ assert.equal(s.resolve(s.loadOwned(store,'weekly',b,preset,allowed),'2026-11-16T12:00:00').plan.title,'Upper');
+ assert.equal(s.resolve(s.loadOwned(store,'weekly',null,preset,allowed),'2026-11-16T12:00:00').plan.title,'Upper');
+});
+test('corrupted draft refuses silent replacement and cannot be overwritten by loading',()=>{
+ const id='11111111-1111-4111-8111-111111111111',store=new Map();
+ store.set(s.ownerKey('weekly',id),'{invalid-json');
+ assert.throws(()=>s.loadOwned({getItem:k=>store.get(k)},'weekly',id,preset,allowed),/unreadable/);
+ assert.equal(store.get(s.ownerKey('weekly',id)),'{invalid-json');
+});
+test('storage namespace rejects unverified owner identifiers',()=>{
+ assert.throws(()=>s.ownerKey('weekly','!'),/Verified owner/);
+ assert.notEqual(s.ownerKey('weekly',null),s.ownerKey('weekly','11111111-1111-4111-8111-111111111111'));
+});
+
+test('invalid saved custom exercises must not be silently replaced by a default',()=>{
+ const id='11111111-1111-4111-8111-111111111111';
+ const raw={version:1,plans:[{id:'custom-missing-1',title:'My Back',ids:['removed-exercise']}],assigned:['custom-missing-1',null,null,null,null,null,null]};
+ const memory=new Map([[s.ownerKey('weekly',id),JSON.stringify(raw)]]);
+ assert.throws(()=>s.loadOwned({getItem:key=>memory.get(key)},'weekly',id,preset,allowed),/invalid/);
+ assert.equal(memory.get(s.ownerKey('weekly',id)),JSON.stringify(raw));
+});

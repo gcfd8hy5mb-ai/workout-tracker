@@ -55,11 +55,36 @@ function add(state,id,changes,validExercises){
 function saved(state,presetIds){
  return {version:1,plans:state.plans.map(p=>({...p,ids:p.ids.slice()})),assigned:state.assigned.slice()};
 }
+function ownerKey(base,owner){
+ if(!base||typeof base!=='string')throw Error('Schedule storage key required');
+ if(owner==null)return base+':guest';
+ if(!/^[a-zA-Z0-9_-]{8,128}$/.test(String(owner)))throw Error('Verified owner identifier required');
+ return base+':account:'+owner;
+}
+function loadOwned(storage,base,owner,presets,validExercises){
+ const key=ownerKey(base,owner);
+ let serialized=null;
+ try{serialized=storage.getItem(key)}catch{throw Error('Schedule storage unavailable')}
+ if(serialized==null)return normalize(null,presets,validExercises);
+ let input;
+ try{input=JSON.parse(serialized)}catch{throw Error('Saved account schedule is unreadable; refuse preset overwrite')}
+ if(!input||input.version!==1||!Array.isArray(input.plans)||!Array.isArray(input.assigned)||input.assigned.length!==7)throw Error('Saved schedule format invalid');
+ const allowed=new Set(presets.map(x=>x.id));
+ for(const p of input.plans||[])if(p&&typeof p.id==='string')allowed.add(p.id);
+ // Refuse silent replacement when a linked custom plan was removed/corrupted.
+ for(const id of input.assigned)if(id!=null&&!allowed.has(id))throw Error('Saved workout assignment is missing');
+ const restored=normalize(input,presets,validExercises);
+ for(const id of input.assigned)if(id!=null&&!restored.plans.some(p=>p.id===id))throw Error('Saved assigned workout is invalid; original draft preserved');
+ return restored;
+}
+function commitOwned(storage,base,owner,state,presetIds){
+ return commit(storage,ownerKey(base,owner),state,presetIds);
+}
 function commit(storage,key,state,presetIds){
  const serialized=JSON.stringify(saved(state,presetIds));
  storage.setItem(key,serialized);
  if(storage.getItem(key)!==serialized)throw Error('Workout schedule was not saved');
  return state;
 }
-return Object.freeze({DAYS,normalize,dayIndex,resolve,assign,edit,add,saved,commit});
+return Object.freeze({DAYS,normalize,dayIndex,resolve,assign,edit,add,saved,commit,ownerKey,loadOwned,commitOwned});
 });
