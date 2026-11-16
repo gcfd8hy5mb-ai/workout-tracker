@@ -84,6 +84,7 @@ function renderProgress(){
  $('progressSessions').textContent=demoSessions.length;$('progressSets').textContent=totalSets();$('progressMovements').textContent=movements.size;
  renderProgressChart();
  renderOriginalHistory();
+ renderOriginalProgress();
  $('sessionHistory').innerHTML=demoSessions.length?demoSessions.map(x=>'<div class="recent-item"><div><strong>'+escapeHTML(x.title)+'</strong><small>'+new Date(x.created).toLocaleString()+'</small></div><span>'+x.sets.length+' sets</span></div>').join(''):'<div class="empty-note">No demo sessions recorded yet. Open Workouts to start your first practice session.</div>';
 }
 function renderProgressChart(){
@@ -108,9 +109,26 @@ function renderCoach(){
  const latest=demoSessions.find(x=>x&&x.created&&Number.isFinite(Date.parse(x.created)));
  $('coachRecent').textContent=latest?'Latest practice session: '+new Date(latest.created).toLocaleDateString()+' · '+String(latest.title||'Workout'):'No completed preview sessions have been saved.';
 }
+function renderOriginalProgress(){
+ const status=$('originalProgressStatus'),root=$('originalRecords');
+ if(!status||!root)return;
+ const ready=Boolean(account?.id&&importedHistoryOwner===account.id);
+ for(const id of ['Sessions','Sets','Exercises','Volume'])$('originalProgress'+id).textContent='—';
+ root.replaceChildren();
+ if(!ready){status.textContent='Load your original history to view your workout progress and personal records.';return;}
+ const result=window.MLCOriginalProgress.analyze(originalHistory);
+ $('originalProgressSessions').textContent=String(result.sessions);
+ $('originalProgressSets').textContent=String(result.sets);
+ $('originalProgressExercises').textContent=String(result.exercises);
+ $('originalProgressVolume').textContent=Math.round(result.volume).toLocaleString();
+ status.textContent=result.sessions?result.trainingDays+' distinct training days · based on original completed workouts only. Estimates are not measured 1RM values.':'No completed original workouts found for this account.';
+ if(!result.records.length)return;
+ root.innerHTML='<h3>Exercise records</h3>'+result.records.map(ex=>'<details class="recent-item"><summary><strong>'+escapeHTML(ex.name)+'</strong> · Best weight '+ex.weight.toLocaleString()+' lb</summary><p>Most reps in a set: '+ex.reps+' · Best set volume: '+Math.round(ex.setVolume).toLocaleString()+' lb · Estimated 1RM (sets up to 10 reps): '+(ex.estimatedOneRepMax?Math.round(ex.estimatedOneRepMax).toLocaleString()+' lb':'Unavailable')+'</p></details>').join('');
+}
 function clearOriginalHistory(){
  originalHistory=[];importedHistoryOwner=null;
  renderOriginalHistory();
+ renderOriginalProgress();
 }
 function renderOriginalHistory(){
  const status=$('originalHistoryStatus'),root=$('originalHistory'),button=$('loadOriginalHistory');
@@ -136,9 +154,9 @@ async function loadOriginalHistory(){
   if(account?.id!==owner||!auth?.access_token)throw Error('Account session is no longer valid');
   const history=await window.MLCOriginalHistory.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner});
   if(account?.id!==owner)throw Error('Account changed during import');
-  originalHistory=history;importedHistoryOwner=owner;renderOriginalHistory();
+  originalHistory=history;importedHistoryOwner=owner;renderOriginalHistory();renderOriginalProgress();
  }catch(error){
-  originalHistory=[];importedHistoryOwner=null;renderOriginalHistory();
+  originalHistory=[];importedHistoryOwner=null;renderOriginalHistory();renderOriginalProgress();
   status.textContent='Could not load original history: '+String(error.message||error).slice(0,180);
  }finally{button.disabled=!account}
 }
