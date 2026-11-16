@@ -83,3 +83,11 @@ test('storage namespace rejects unverified owner identifiers',()=>{
  assert.throws(()=>s.ownerKey('weekly','!'),/Verified owner/);
  assert.notEqual(s.ownerKey('weekly',null),s.ownerKey('weekly','11111111-1111-4111-8111-111111111111'));
 });
+
+test('invalid saved custom exercises must not be silently replaced by a default',()=>{
+ const id='11111111-1111-4111-8111-111111111111';
+ const raw={version:1,plans:[{id:'custom-missing-1',title:'My Back',ids:['removed-exercise']}],assigned:['custom-missing-1',null,null,null,null,null,null]};
+ const memory=new Map([[s.ownerKey('weekly',id),JSON.stringify(raw)]]);
+ assert.throws(()=>s.loadOwned({getItem:key=>memory.get(key)},'weekly',id,preset,allowed),/invalid/);
+ assert.equal(memory.get(s.ownerKey('weekly',id)),JSON.stringify(raw));
+});
