@@ -36,7 +36,7 @@ const assert = require('node:assert/strict');
    await page.locator('.sidebar [data-page="library"]').first().evaluate(el=>el.click());
    assert.equal(await page.locator('#library').isVisible(),true);
    assert.ok(await page.locator('[data-library-detail]').count()>5);
-   assert.equal(await page.locator('[data-library-detail]').count(),63); // 60 original + 3 starter-only IDs retained for existing plans
+   assert.equal(await page.locator('[data-library-detail]').count(),344); // 341 genuine original + 3 starter-only compatible movements
    await page.locator('[data-library-favorite="dead-bug"]').first().evaluate(el=>el.click());
    assert.equal(await page.locator('[data-library-favorite="dead-bug"]').first().getAttribute('aria-pressed'),'true');
    await page.locator('#libraryFavoritesOnly').check();
@@ -52,20 +52,22 @@ const assert = require('node:assert/strict');
    assert.ok(await page.locator('#libraryRecentList [data-library-recent="dead-bug"]').count()>0);
    assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('mlc2-library-prefs-v1:guest')).favorites),['dead-bug']);
 
-   assert.match(await page.locator('#libraryResultCount').textContent(),/63 of 63 exercises/);
+   assert.match(await page.locator('#libraryResultCount').textContent(),/344 of 344 exercises/);
+   assert.equal(await page.evaluate(()=>window.MLCCompleteOriginalCatalogAudit.unique),341);
+   for(const name of ['Landmine Squat','Wide-Grip Lat Pulldown','Medicine Ball Slams','EZ-Bar Curl']) assert.ok(await page.locator('#libraryGrid h3').filter({hasText:name}).count()>0,name+' missing');
    assert.ok(await page.locator('#libraryEquipment option').count()>2);
    await page.locator('#libraryPhotosOnly').check();
    assert.equal(await page.locator('[data-library-detail]').count(),14);
-   assert.match(await page.locator('#libraryResultCount').textContent(),/14 of 63 exercises/);
+   assert.match(await page.locator('#libraryResultCount').textContent(),/14 of 344 exercises/);
    await page.locator('#libraryPhotosOnly').uncheck();
    await page.locator('#exerciseSearch').fill('machine chest press');
    assert.ok(await page.locator('[data-library-detail]').count()>=1);
    assert.ok(await page.locator('[data-library-detail="machine-chest-press"]').count()>0);
    await page.locator('#libraryReset').evaluate(el=>el.click());
-   assert.equal(await page.locator('[data-library-detail]').count(),63);
+   assert.equal(await page.locator('[data-library-detail]').count(),344);
    await page.locator('#libraryEquipment').selectOption({index:1});
    assert.ok(await page.locator('[data-library-detail]').count()>0);
-   assert.ok(await page.locator('[data-library-detail]').count()<63);
+   assert.ok(await page.locator('[data-library-detail]').count()<344);
    await page.locator('#libraryReset').evaluate(el=>el.click());
    const photoSources=await page.evaluate(()=>window.MLCOriginalExercises.filter(ex=>ex.image).map(ex=>ex.image));
    assert.equal(photoSources.length,14);
@@ -150,7 +152,7 @@ const assert = require('node:assert/strict');
    const today=(new Date().getDay()+6)%7;
    await page.locator('#weeklyBoardHome [data-week-day="'+today+'"]').evaluate(el=>el.click());
    // The same complete library drives the workout editor; search cannot lose checked draft selections.
-   assert.equal(await page.locator('#weekExerciseOptions input').count(),63);
+   assert.equal(await page.locator('#weekExerciseOptions input').count(),344);
    assert.ok(await page.locator('#weekExerciseMuscle option').count()>5);
    assert.ok(await page.locator('#weekExerciseEquipment option').count()>2);
    await page.locator('#weekExerciseSearch').fill('dead bug');
