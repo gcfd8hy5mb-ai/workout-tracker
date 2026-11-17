@@ -310,6 +310,7 @@ let originalTracking=null,importedTrackingOwner=null;
 let originalAccountSettings=null,importedSettingsOwner=null;
 let toastTimer;
 let muscleFilter='';
+let libraryVisibleOffset=0;
 let restSeconds=90,restPaused=true,restClock=null;
 function demoKey(owner=account?.id||'guest'){return owner==='guest'?DEMO_KEY:DEMO_KEY+':'+owner;}
 function loadDemo(owner='guest'){try{const a=JSON.parse(localStorage.getItem(demoKey(owner))||'[]');return Array.isArray(a)?a.filter(x=>x&&Array.isArray(x.sets)).slice(0,100):[]}catch{return []}}
@@ -482,18 +483,27 @@ async function importVerifiedFullCatalog(event){
  }catch(error){status.textContent=String(error.message||error)+' · Existing exercises unchanged.';}
  finally{event.target.value='';}
 }
-function renderLibrary(){
+function renderLibrary({append=false}={}){
  renderFullCatalogImportStatus();
+ if(!append)libraryVisibleOffset=0;
  const coverage=window.MLCExerciseVisualAudit.summary(originalExercises);
  $('libraryVisualCoverage').textContent=coverage.photos+' original exercise photos · '+coverage.anatomyOnly+' anatomy-only entries · '+coverage.movementDerived+' movement-derived muscle maps · '+coverage.groupOnly+' group-only maps · '+coverage.unresolved+' unresolved. Detailed highlights require expert review.';
  const query=$('exerciseSearch').value.trim().toLowerCase();
  const equipment=$('libraryEquipment').value,photosOnly=$('libraryPhotosOnly').checked;
  const prefs=libraryPrefs(),favoritesOnly=$('libraryFavoritesOnly').checked;
- const matches=window.MLCV2ExerciseCatalog.filter(editorExercises,query,muscleFilter,{
+ const allMatches=window.MLCV2ExerciseCatalog.filter(editorExercises,query,muscleFilter,{
   equipment,photosOnly,equipmentFor:libraryEquipment
  }).filter(ex=>!favoritesOnly||Boolean(prefs?.favorites.includes(ex.id)));
+ const visual=window.MLCExerciseVisualBrowser.browse(allMatches,{
+  status:$('libraryVisualStatus').value,review:$('libraryAnatomyStatus').value,
+  offset:append?libraryVisibleOffset:0
+ },window.MLCExerciseVisualAudit);
+ const matches=visual.entries;
+ libraryVisibleOffset=visual.shown;
+ $('libraryShowMore').hidden=!visual.hasMore;
+ $('libraryShownCount').textContent='Showing '+visual.shown+' of '+visual.total+' matching exercises.';
  renderRecentExercises(prefs);
- $('libraryResultCount').textContent=matches.length+' of '+editorExercises.length+' exercises'+(photosOnly?' · original photographs only':'')+(favoritesOnly?' · favorites':'')+'.';
+ $('libraryResultCount').textContent=visual.total+' matching of '+editorExercises.length+' exercises'+(photosOnly?' · original photographs only':'')+(favoritesOnly?' · favorites':'')+'.';
  document.querySelectorAll('[data-muscle]').forEach(button=>button.classList.toggle('selected',button.dataset.muscle===muscleFilter));
  $('libraryGrid').innerHTML=matches.map(ex=>{
   const group=String(ex.muscle||ex.group||'Other');
@@ -1279,10 +1289,13 @@ function bind(){
  $('exerciseSearch').addEventListener('input',renderLibrary);
  $('libraryEquipment').addEventListener('change',renderLibrary);
  $('libraryPhotosOnly').addEventListener('change',renderLibrary);
+ $('libraryVisualStatus').addEventListener('change',renderLibrary);
+ $('libraryAnatomyStatus').addEventListener('change',renderLibrary);
+ $('libraryShowMore').addEventListener('click',()=>renderLibrary({append:true}));
  $('libraryFavoritesOnly').addEventListener('change',renderLibrary);
  $('libraryRecentList').addEventListener('click',e=>{const btn=e.target.closest('[data-library-recent]');if(btn)exerciseDetail(btn.dataset.libraryRecent);});
  $('libraryReset').addEventListener('click',()=>{
-  $('exerciseSearch').value='';$('libraryEquipment').value='';$('libraryPhotosOnly').checked=false;$('libraryFavoritesOnly').checked=false;
+  $('exerciseSearch').value='';$('libraryEquipment').value='';$('libraryPhotosOnly').checked=false;$('libraryFavoritesOnly').checked=false;$('libraryVisualStatus').value='all';$('libraryAnatomyStatus').value='all';
   muscleFilter='';renderLibrary();
  });
  for(const id of ['sessionHistory','coachProgressionList']){
