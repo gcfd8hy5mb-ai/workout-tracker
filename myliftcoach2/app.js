@@ -30,7 +30,10 @@ const WEEKLY_KEY='mlc2-weekly-preview-v1';
 const RECURRING_KEY='mlc2-recurring-preview-v1';
 const recurringDraftAPI=window.MLCRecurringDraft;
 const weeklyAPI=window.MLCWeeklySchedule;
-const editorExercises=window.MLCV2ExerciseCatalog.merge(originalExercises,exercises);
+let fullCatalogLoadError=null,verifiedFullCatalog=null;
+try{verifiedFullCatalog=window.MLCFullExerciseImport.load(localStorage,originalExercises)}
+catch(error){fullCatalogLoadError=String(error.message||error)}
+const editorExercises=window.MLCV2ExerciseCatalog.merge(verifiedFullCatalog||originalExercises,exercises);
 function prepareLibraryEquipment(){
  const control=document.getElementById('libraryEquipment');
  if(!control)return;
@@ -401,7 +404,7 @@ function exerciseDetail(id,recordView=true){
  openModal('<div class="exercise-detail-modal"><div class="modal-eyebrow">EXERCISE LIBRARY · TECHNIQUE</div><h2>'+escapeHTML(ex.name)+'</h2><p class="small">Primary: '+escapeHTML(ex.muscle||ex.group||'Other')+(metadata.equipment?' · Equipment: '+escapeHTML(metadata.equipment):'')+'</p><div class="exercise-detail-visuals">'+(image?'<img src="'+escapeHTML(image)+'" alt="'+escapeHTML(ex.name)+' exercise reference" loading="lazy">':'<div class="panel"><p class="small">No original exercise photograph supplied.</p></div>')+'<div>'+anatomy+'</div></div><h3>How to perform</h3><p>'+escapeHTML(ex.how||ex.cue||'Detailed instructions not available for this exercise.')+'</p>'+list('Technique tips',tips)+list('Common mistakes',mistakes)+relatedHtml+actions+'<p class="small">Static exercise reference and highlighted muscles. Moving demonstrations are not yet available.</p></div>');
 }
 function libraryEquipment(ex){
- return window.MLCExerciseMetadata.get(ex.id,ex.name)?.equipment||'Unspecified';
+ return ex?.equipment||window.MLCExerciseMetadata.get(ex.id,ex.name)?.equipment||'Unspecified';
 }
 function stageLibraryExercise(id){
  const ex=editorExercises.find(x=>x.id===id);
@@ -438,7 +441,32 @@ function stageLibraryExercise(id){
  row?.scrollIntoView({block:'center',behavior:'smooth'});
  notice(ex.name+' selected in the editor. Tap Save Workout to save; no change has been made yet.');
 }
+function renderFullCatalogImportStatus(){
+ const target=$('fullLibraryImportStatus');
+ if(!target)return;
+ if(fullCatalogLoadError)target.textContent=fullCatalogLoadError+' · Existing library retained.';
+ else target.textContent=verifiedFullCatalog?
+  'Verified '+verifiedFullCatalog.length+' imported source exercises; '+editorExercises.length+' total catalog entries including compatible starter movements. Local development storage only.':
+  'Only '+originalExercises.length+' original exercise definitions are present in GitHub. The complete 341-exercise source is still required. No records fabricated.';
+}
+async function importVerifiedFullCatalog(event){
+ const file=event.target.files?.[0];
+ if(!file)return;
+ const status=$('fullLibraryImportStatus');
+ try{
+  if(file.size>5_000_000)throw Error('Catalog file exceeds 5 MB');
+  const parsed=JSON.parse(await file.text());
+  const prepared=window.MLCFullExerciseImport.prepare(parsed,originalExercises);
+  const extras=prepared.filter(item=>!originalExercises.some(ex=>ex.id===item.id)).length;
+  if(!confirm('Validate and save '+prepared.length+' original exercise records in this browser preview? Existing workouts, scores, cloud data and active sessions will not be changed.'))return;
+  window.MLCFullExerciseImport.save(localStorage,prepared,originalExercises);
+  status.textContent=prepared.length+' verified original exercises, including '+extras+' not in the 60-entry subset. Saved locally; reloading the preview.';
+  location.reload();
+ }catch(error){status.textContent=String(error.message||error)+' · Existing exercises unchanged.';}
+ finally{event.target.value='';}
+}
 function renderLibrary(){
+ renderFullCatalogImportStatus();
  const query=$('exerciseSearch').value.trim().toLowerCase();
  const equipment=$('libraryEquipment').value,photosOnly=$('libraryPhotosOnly').checked;
  const prefs=libraryPrefs(),favoritesOnly=$('libraryFavoritesOnly').checked;
@@ -1228,6 +1256,7 @@ function bind(){
  $('weekDuplicateWorkout').addEventListener('click',duplicateWeekWorkout);
 
  prepareLibraryEquipment();
+ $('fullLibraryImportFile').addEventListener('change',importVerifiedFullCatalog);
  $('exerciseSearch').addEventListener('input',renderLibrary);
  $('libraryEquipment').addEventListener('change',renderLibrary);
  $('libraryPhotosOnly').addEventListener('change',renderLibrary);
