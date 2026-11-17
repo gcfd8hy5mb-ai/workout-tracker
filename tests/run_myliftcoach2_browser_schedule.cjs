@@ -54,6 +54,11 @@ const assert = require('node:assert/strict');
 
    assert.match(await page.locator('#libraryResultCount').textContent(),/344 of 344 exercises/);
    assert.equal(await page.evaluate(()=>window.MLCCompleteOriginalCatalogAudit.unique),341);
+   assert.match(await page.locator('#libraryVisualCoverage').textContent(),/14 original exercise photos/);
+   assert.match(await page.locator('#libraryVisualCoverage').textContent(),/327 anatomy-only entries/);
+   assert.equal(await page.evaluate(()=>window.MLCLibraryVisualRegister.stats(window.MLCCompleteOriginalExercises).total),341);
+   assert.equal(await page.evaluate(()=>window.MLCLibraryVisualRegister.stats(window.MLCCompleteOriginalExercises).photoNeeded),327);
+
    for(const name of ['Landmine Squat','Wide-Grip Lat Pulldown','Medicine Ball Slams','EZ-Bar Curl']) assert.ok(await page.locator('#libraryGrid h3').filter({hasText:name}).count()>0,name+' missing');
    assert.ok(await page.locator('#libraryEquipment option').count()>2);
    await page.locator('#libraryPhotosOnly').check();
@@ -86,6 +91,10 @@ const assert = require('node:assert/strict');
    await page.locator('#closeModal').evaluate(el=>el.click());
    await page.locator('[data-library-detail="machine-chest-press"]').evaluate(el=>el.click());
    assert.match(await page.locator('#modalContent h2').textContent(),/Machine Chest Press/);
+   assert.match(await page.locator('#modalContent .visual-muscle-key').textContent(),/Primary: Chest/);
+   assert.match(await page.locator('#modalContent .visual-muscle-key').textContent(),/Supporting:/);
+   assert.match(await page.locator('#modalContent .visual-review-note').textContent(),/review pending/);
+
    assert.ok(await page.locator('#modalContent .liftova-anatomy svg').count()>0);
    assert.match(await page.locator('#modalContent').textContent(),/Technique tips/);
    assert.match(await page.locator('#modalContent').textContent(),/Moving demonstrations are not yet available/);
