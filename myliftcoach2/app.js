@@ -25,7 +25,8 @@ const plans=[
  {id:'upper-b',title:'Upper Body B',kind:'Upper Hypertrophy',description:'Variation for chest, back and arms.',ids:['pec-deck','seated-row','biceps-curl','triceps-push']},
  {id:'lower-b',title:'Lower Body B',kind:'Lower Hypertrophy',description:'A second lower-body session with balanced emphasis.',ids:['leg-press','leg-extension','leg-curl','calf-raise']}
 ];
-const originalExercises=Array.isArray(window.MLCOriginalExercises)?window.MLCOriginalExercises:[];
+const originalExercises=Array.isArray(window.MLCCompleteOriginalExercises)&&window.MLCCompleteOriginalExercises.length===341?
+ window.MLCCompleteOriginalExercises:(Array.isArray(window.MLCOriginalExercises)?window.MLCOriginalExercises:[]);
 const WEEKLY_KEY='mlc2-weekly-preview-v1';
 const RECURRING_KEY='mlc2-recurring-preview-v1';
 const recurringDraftAPI=window.MLCRecurringDraft;
@@ -394,6 +395,7 @@ function exerciseDetail(id,recordView=true){
  const tips=Array.isArray(ex.tips)?ex.tips:[],mistakes=Array.isArray(ex.mistakes)?ex.mistakes:[];
  const image=libraryImage(ex),anatomy=exerciseAnatomy(ex,'detail');
  const metadata=window.MLCExerciseMetadata.get(ex.id,ex.name);
+ const displayEquipment=ex.equipment||metadata.equipment;
  const list=(label,items)=>items.length?'<h3>'+label+'</h3><ul>'+items.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'';
  const related=editorExercises.filter(item=>item.id!==ex.id&&
   String(item.muscle||item.group||'').toLowerCase()===String(ex.muscle||ex.group||'').toLowerCase())
@@ -401,7 +403,7 @@ function exerciseDetail(id,recordView=true){
  const relatedHtml=related.length?'<h3>Other movements for this muscle</h3><div class="hero-actions">'+
    related.map(item=>'<button type="button" class="button-outline" data-library-related="'+escapeHTML(item.id)+'">'+escapeHTML(item.name)+'</button>').join('')+'</div>':'';
  const actions='<div class="hero-actions">'+favoriteButton(ex.id,Boolean(prefs?.favorites.includes(ex.id)))+'<button type="button" class="button-primary" data-library-stage="'+escapeHTML(ex.id)+'">Add to today’s workout · review first</button></div>';
- openModal('<div class="exercise-detail-modal"><div class="modal-eyebrow">EXERCISE LIBRARY · TECHNIQUE</div><h2>'+escapeHTML(ex.name)+'</h2><p class="small">Primary: '+escapeHTML(ex.muscle||ex.group||'Other')+(metadata.equipment?' · Equipment: '+escapeHTML(metadata.equipment):'')+'</p><div class="exercise-detail-visuals">'+(image?'<img src="'+escapeHTML(image)+'" alt="'+escapeHTML(ex.name)+' exercise reference" loading="lazy">':'<div class="panel"><p class="small">No original exercise photograph supplied.</p></div>')+'<div>'+anatomy+'</div></div><h3>How to perform</h3><p>'+escapeHTML(ex.how||ex.cue||'Detailed instructions not available for this exercise.')+'</p>'+list('Technique tips',tips)+list('Common mistakes',mistakes)+relatedHtml+actions+'<p class="small">Static exercise reference and highlighted muscles. Moving demonstrations are not yet available.</p></div>');
+ openModal('<div class="exercise-detail-modal"><div class="modal-eyebrow">EXERCISE LIBRARY · TECHNIQUE</div><h2>'+escapeHTML(ex.name)+'</h2><p class="small">Primary: '+escapeHTML(ex.muscle||ex.group||'Other')+(displayEquipment?' · Equipment: '+escapeHTML(displayEquipment):'')+'</p><div class="exercise-detail-visuals">'+(image?'<img src="'+escapeHTML(image)+'" alt="'+escapeHTML(ex.name)+' exercise reference" loading="lazy">':'<div class="panel"><p class="small">No original exercise photograph supplied.</p></div>')+'<div>'+anatomy+'</div></div><h3>How to perform</h3><p>'+escapeHTML(ex.how||ex.cue||'Detailed instructions not available for this exercise.')+'</p>'+list('Technique tips',tips)+list('Common mistakes',mistakes)+relatedHtml+actions+'<p class="small">Static exercise reference and highlighted muscles. Moving demonstrations are not yet available.</p></div>');
 }
 function libraryEquipment(ex){
  return ex?.equipment||window.MLCExerciseMetadata.get(ex.id,ex.name)?.equipment||'Unspecified';
@@ -447,7 +449,7 @@ function renderFullCatalogImportStatus(){
  if(fullCatalogLoadError)target.textContent=fullCatalogLoadError+' · Existing library retained.';
  else target.textContent=verifiedFullCatalog?
   'Verified '+verifiedFullCatalog.length+' imported source exercises; '+editorExercises.length+' total catalog entries including compatible starter movements. Local development storage only.':
-  'Only '+originalExercises.length+' original exercise definitions are present in GitHub. The complete 341-exercise source is still required. No records fabricated.';
+  originalExercises.length===341?'Complete 341-exercise original library loaded from five verified GitHub expansion sources.':'Only '+originalExercises.length+' original exercises are present; the 341 source is not available.';
 }
 async function importVerifiedFullCatalog(event){
  const file=event.target.files?.[0];
