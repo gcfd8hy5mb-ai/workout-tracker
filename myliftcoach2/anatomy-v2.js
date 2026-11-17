@@ -144,6 +144,14 @@
   const has=(name,pattern)=>pattern.test(name);
 
   function profile(ex){
+    // When the catalog supplies an explicitly audited visual mapping, use
+    // that instead of the older broad name-based guess.
+    if(ex?.anatomyMapping&&Array.isArray(ex.anatomyMapping.primary)&&Array.isArray(ex.anatomyMapping.secondary)){
+      const valid=new Set(Object.keys(labels));
+      const primary=unique(ex.anatomyMapping.primary.filter(x=>valid.has(x)));
+      const secondary=unique(ex.anatomyMapping.secondary.filter(x=>valid.has(x))).filter(x=>!primary.includes(x));
+      return {primary,secondary,primaryLabels:primary.map(x=>labels[x]),secondaryLabels:secondary.map(x=>labels[x])};
+    }
     const name=String(ex?.name||ex?.id||'').toLowerCase();
     const muscle=String(ex?.muscle||'').toLowerCase();
     let primary=[],secondary=[];
