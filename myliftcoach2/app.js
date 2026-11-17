@@ -364,9 +364,23 @@ function renderWorkouts(){
 function libraryImage(ex){
  return window.MLCV2ExerciseCatalog.imagePath(ex);
 }
+function exerciseVisualProfile(ex){
+ return window.MLCExerciseVisualAudit.resolve(ex);
+}
 function exerciseAnatomy(ex,size='mini'){
  if(!window.LiftovaAnatomy)return '';
- return window.LiftovaAnatomy.render({id:ex.id,name:ex.name,muscle:ex.muscle||ex.group||'Other'},{size});
+ const mapping=exerciseVisualProfile(ex);
+ return window.LiftovaAnatomy.render({
+  id:ex.id,name:ex.name,muscle:ex.muscle||ex.group||'Other',
+  anatomyMapping:mapping
+ },{size});
+}
+function visualMuscleNames(ex){
+ const mapping=exerciseVisualProfile(ex),labels=window.LiftovaAnatomy?.labels||{};
+ const names=ids=>ids.map(id=>labels[id]||id).join(', ')||'Not specified';
+ return '<p class="small visual-muscle-key"><strong>Primary:</strong> '+escapeHTML(names(mapping.primary))+
+  ' · <strong>Supporting:</strong> '+escapeHTML(names(mapping.secondary))+
+  ' <span class="visual-review-note">· '+escapeHTML(mapping.reviewStatus)+'</span></p>';
 }
 function libraryPrefs(){
  try{return window.MLCLibraryPrefs.read(localStorage,account?.id||'guest',allowedExerciseIds);}
@@ -394,6 +408,7 @@ function exerciseDetail(id,recordView=true){
  if(recordView)renderLibrary();
  const tips=Array.isArray(ex.tips)?ex.tips:[],mistakes=Array.isArray(ex.mistakes)?ex.mistakes:[];
  const image=libraryImage(ex),anatomy=exerciseAnatomy(ex,'detail');
+ const visualKey=visualMuscleNames(ex);
  const metadata=window.MLCExerciseMetadata.get(ex.id,ex.name);
  const displayEquipment=ex.equipment||metadata.equipment;
  const list=(label,items)=>items.length?'<h3>'+label+'</h3><ul>'+items.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'';
@@ -403,7 +418,7 @@ function exerciseDetail(id,recordView=true){
  const relatedHtml=related.length?'<h3>Other movements for this muscle</h3><div class="hero-actions">'+
    related.map(item=>'<button type="button" class="button-outline" data-library-related="'+escapeHTML(item.id)+'">'+escapeHTML(item.name)+'</button>').join('')+'</div>':'';
  const actions='<div class="hero-actions">'+favoriteButton(ex.id,Boolean(prefs?.favorites.includes(ex.id)))+'<button type="button" class="button-primary" data-library-stage="'+escapeHTML(ex.id)+'">Add to today’s workout · review first</button></div>';
- openModal('<div class="exercise-detail-modal"><div class="modal-eyebrow">EXERCISE LIBRARY · TECHNIQUE</div><h2>'+escapeHTML(ex.name)+'</h2><p class="small">Primary: '+escapeHTML(ex.muscle||ex.group||'Other')+(displayEquipment?' · Equipment: '+escapeHTML(displayEquipment):'')+'</p><div class="exercise-detail-visuals">'+(image?'<img src="'+escapeHTML(image)+'" alt="'+escapeHTML(ex.name)+' exercise reference" loading="lazy">':'<div class="panel"><p class="small">No original exercise photograph supplied.</p></div>')+'<div>'+anatomy+'</div></div><h3>How to perform</h3><p>'+escapeHTML(ex.how||ex.cue||'Detailed instructions not available for this exercise.')+'</p>'+list('Technique tips',tips)+list('Common mistakes',mistakes)+relatedHtml+actions+'<p class="small">Static exercise reference and highlighted muscles. Moving demonstrations are not yet available.</p></div>');
+ openModal('<div class="exercise-detail-modal"><div class="modal-eyebrow">EXERCISE LIBRARY · TECHNIQUE</div><h2>'+escapeHTML(ex.name)+'</h2><p class="small">Primary: '+escapeHTML(ex.muscle||ex.group||'Other')+(displayEquipment?' · Equipment: '+escapeHTML(displayEquipment):'')+'</p><div class="exercise-detail-visuals">'+(image?'<img src="'+escapeHTML(image)+'" alt="'+escapeHTML(ex.name)+' exercise reference" loading="lazy">':'<div class="panel"><p class="small">No original exercise photograph supplied.</p></div>')+'<div>'+anatomy+visualKey+'</div></div><h3>How to perform</h3><p>'+escapeHTML(ex.how||ex.cue||'Detailed instructions not available for this exercise.')+'</p>'+list('Technique tips',tips)+list('Common mistakes',mistakes)+relatedHtml+actions+'<p class="small">Static exercise reference and highlighted muscles. Moving demonstrations are not yet available.</p></div>');
 }
 function libraryEquipment(ex){
  return ex?.equipment||window.MLCExerciseMetadata.get(ex.id,ex.name)?.equipment||'Unspecified';
@@ -469,6 +484,8 @@ async function importVerifiedFullCatalog(event){
 }
 function renderLibrary(){
  renderFullCatalogImportStatus();
+ const coverage=window.MLCExerciseVisualAudit.summary(originalExercises);
+ $('libraryVisualCoverage').textContent=coverage.photos+' original exercise photos · '+coverage.anatomyOnly+' anatomy-only entries · '+coverage.movementDerived+' movement-derived muscle maps · '+coverage.groupOnly+' group-only maps · '+coverage.unresolved+' unresolved. Detailed highlights require expert review.';
  const query=$('exerciseSearch').value.trim().toLowerCase();
  const equipment=$('libraryEquipment').value,photosOnly=$('libraryPhotosOnly').checked;
  const prefs=libraryPrefs(),favoritesOnly=$('libraryFavoritesOnly').checked;
@@ -485,7 +502,7 @@ function renderLibrary(){
   const tips=Array.isArray(ex.tips)?ex.tips:[];
   const mistakes=Array.isArray(ex.mistakes)?ex.mistakes:[];
   const notes='<p>'+escapeHTML(guide)+'</p>'+(tips.length?'<strong>Technique tips</strong><ul>'+tips.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+(mistakes.length?'<strong>Common mistakes</strong><ul>'+mistakes.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'');
-  return '<article class="library-card reference-exercise">'+(image?'<img class="library-thumb" src="'+escapeHTML(image)+'" alt="" loading="lazy">':'<div class="library-anatomy">'+exerciseAnatomy(ex,'mini')+'</div>')+'<div class="library-info"><h3>'+escapeHTML(ex.name)+'</h3><p>'+escapeHTML(group)+(ex.sets?' · '+ex.sets+' sets':'')+(ex.reps?' · '+escapeHTML(ex.reps)+' reps':'')+'</p><details><summary>Technique notes</summary>'+notes+'</details><button class="button-outline exercise-open" type="button" data-library-detail="'+escapeHTML(ex.id)+'">View exercise details</button>'+favoriteButton(ex.id,Boolean(prefs?.favorites.includes(ex.id)))+'</div><span class="library-chevron">›</span></article>';
+  return '<article class="library-card reference-exercise">'+(image?'<img class="library-thumb" src="'+escapeHTML(image)+'" alt="" loading="lazy">':'<div class="library-anatomy">'+exerciseAnatomy(ex,'mini')+'</div>')+'<div class="library-info"><h3>'+escapeHTML(ex.name)+'</h3><p>'+escapeHTML(group)+(ex.sets?' · '+ex.sets+' sets':'')+(ex.reps?' · '+escapeHTML(ex.reps)+' reps':'')+'</p><details><summary>Technique notes</summary>'+notes+'</details>'+visualMuscleNames(ex)+'<button class="button-outline exercise-open" type="button" data-library-detail="'+escapeHTML(ex.id)+'">View exercise details</button>'+favoriteButton(ex.id,Boolean(prefs?.favorites.includes(ex.id)))+'</div><span class="library-chevron">›</span></article>';
  }).join('')||'<p class="empty-note">No exercises match that search.</p>';
 }
 function renderProgress(){
@@ -981,7 +998,7 @@ function renderWorkoutLog(){
   const tips=originalGuide?.tips||[];
   const mistakes=originalGuide?.mistakes||[];
   const photo=libraryImage(originalGuide||e);
-  const visual='<details class="panel"><summary>Exercise image &amp; anatomy</summary><div class="exercise-detail-visuals">'+(photo?'<img loading="lazy" src="'+escapeHTML(photo)+'" alt="'+escapeHTML(e.name)+' exercise reference">':'<p class="small">No original exercise photo supplied.</p>')+'<div>'+exerciseAnatomy(originalGuide||e,'mini')+'</div></div><p class="small">Static reference; movement animation pending.</p></details>';
+  const visual='<details class="panel"><summary>Exercise image &amp; anatomy</summary><div class="exercise-detail-visuals">'+(photo?'<img loading="lazy" src="'+escapeHTML(photo)+'" alt="'+escapeHTML(e.name)+' exercise reference">':'<p class="small">No original exercise photo supplied.</p>')+'<div>'+exerciseAnatomy(originalGuide||e,'mini')+visualMuscleNames(originalGuide||e)+'</div></div><p class="small">Static reference; movement animation pending.</p></details>';
   const guidance='<details class="panel"><summary>Exercise form &amp; technique</summary><p>'+escapeHTML(originalGuide?.how||e.cue||'Follow a comfortable controlled range of motion.')+'</p>'+
     (tips.length?'<strong>Technique tips</strong><ul>'+tips.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+
     (mistakes.length?'<strong>Common mistakes</strong><ul>'+mistakes.map(x=>'<li>'+escapeHTML(x)+'</li>').join('')+'</ul>':'')+'</details>';
