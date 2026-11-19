@@ -86,7 +86,8 @@ const assert = require('node:assert/strict');
    assert.ok(await page.locator('[data-library-detail]').count()<344);
    await page.locator('#libraryReset').evaluate(el=>el.click());
    await page.locator('#libraryVisualStatus').selectOption('missing');
-   assert.match(await page.locator('#libraryResultCount').textContent(),/327 matching/);
+   // Full 344-entry catalog = 327 original anatomy-only entries + 3 starter entries.
+   assert.match(await page.locator('#libraryResultCount').textContent(),/330 matching/);
    assert.equal(await page.locator('[data-library-detail]').count(),36);
    await page.locator('#libraryAnatomyStatus').selectOption('unresolved');
    assert.ok(await page.locator('[data-library-detail]').count()<=36);
