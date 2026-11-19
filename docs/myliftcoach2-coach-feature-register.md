@@ -155,3 +155,11 @@ Direct JavaScript regression harness passed the new targeted modules (33 cases b
 - The inventory blocks replacement until four original sections are verified, the intended v2 schedule RPC / revisions are verified, authenticated write/read-back tests pass and local workouts are explicitly reconciled to avoid loss or duplicates.
 - Direct tests passed five inventory isolation/readiness checks plus JavaScript syntax and script loading order. The full branch GitHub Actions run still requires exact-head verification.
 - **Important:** Passing mock transport tests or completing a local phone save does not demonstrate that the newest isolated development branch writes to production. Do not claim cross-device recovery or enable the transport before independent RLS and transactional-RPC security tests.
+
+## November 19 — authenticated cloud-vs-device schedule drift detection
+
+- The previous exact-head GitHub Actions run `44609601037` passed migration, disposable PostgreSQL and desktop/iPhone-sized Chromium jobs.
+- Added `v2-schedule-diff.js` as a **pure read-only comparison** of two validated v2 schedule documents. It distinguishes identical schedules, no cloud schedule, and differences in workout definitions, seven weekday assignments, one-time overrides including deliberate rest days, and repeating rules. The comparison does not choose a winning version or merge records.
+- Integrated that comparison with the existing authenticated, owner-scoped `MLCV2ReadOnlyPreflight.check` response; a successful RPC read may report equality or drift, but it never enables a save. The Account screen now shows device/cloud comparison counts; it clears those results after logout, login or a token change.
+- Added six comparison module regression cases, additional authenticated preflight cases and an unsigned-user browser assertion. None of the new features accesses Supabase outside the existing read-only endpoint.
+- **Release blocker unchanged:** the live PRISM project was observed without dedicated `prism_v2_*` RPCs; do not activate live schedule/cloud writes without an independently reviewed migration and owner-isolated authenticated read/write/read-back acceptance. A verified read is not proof of write safety.
