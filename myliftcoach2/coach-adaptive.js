@@ -17,14 +17,14 @@
      reason:'Exercise unavailable in the resolved custom plan. Verify the ID; Coach will not substitute exercises.',requiresApproval:true}));continue;
    }
    const memory=memories&&Object.prototype.hasOwnProperty.call(memories,ex.id)?memories[ex.id]:null;
-   const caution=load==='conservative'||memory?.signal==='review'||declines?.[ex.id]?.status==='review-decline';
+   const caution=load==='conservative'||(memory?.signal==='review'||memory?.signal==='unavailable')||declines?.[ex.id]?.status==='review-decline';
    let status='learning',weight=null,reason='At least two qualifying completed sessions are required before a specific weight is proposed.';
    if(ex.status==='ready'&&Number.isFinite(ex.weight)&&ex.weight>0&&ex.weight<=1500){
     status=ex.action==='increase'?'increase':ex.action==='reduce'?'reduce':'hold';
     weight=ex.weight;reason=String(ex.reason||'Qualified working-set history');
     if(caution&&status==='increase'){
      status='review-increase';weight=null;
-     reason=load==='conservative'?'This week’s self-reported recovery or difficulty calls for caution.':memory?.signal==='review'?'Several later outcomes for this exercise were rated worse; review before increasing.':'Repeated declining repetitions at comparable loads need a review before increasing.';
+     reason=load==='conservative'?'This week’s self-reported recovery or difficulty calls for caution.':memory?.signal==='review'?'Several later outcomes for this exercise were rated worse; review before increasing.':memory?.signal==='unavailable'?'Saved outcome history needs recovery before an increase can be recommended.':'Repeated declining repetitions at comparable loads need a review before increasing.';
     }
    }
    items.push(Object.freeze({exerciseId:ex.id,name:ex.name||ex.id,status,weight,reason,
