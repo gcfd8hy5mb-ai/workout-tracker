@@ -34,3 +34,10 @@ test('performance decline evidence pauses only the affected proposed increase',(
  assert.equal(result.items[1].weight,90);
  assert.match(result.items[0].reason,/declining repetitions/);
 });
+
+test('corrupted Coach memory is a review-required state, not a progression increase',()=>{
+ const result=compile({today,checkin:{load:'normal'},memories:{'leg-press':{signal:'unavailable'}}});
+ assert.equal(result.items[0].status,'review-increase');
+ assert.equal(result.items[0].weight,null);
+ assert.match(result.items[0].reason,/recovery/);
+});
