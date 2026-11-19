@@ -575,18 +575,23 @@ function renderCoachProgression(){
  const selected=resolvedWorkout();
  start.disabled=!selected.plan||Boolean(weeklyDraftReadError);
  const verified=Boolean(account?.id&&importedHistoryOwner===account.id);
+ let personalTargets={};
+ let targetReadError=false;
+ try{personalTargets=window.MLCCoachTargets.read(localStorage,account?.id||'guest').targets}
+ catch{targetReadError=true}
  const today=window.MLCTodayCoach.preview({
   plan:selected.plan,catalog:editorExercises,localSessions:demoSessions,
-  legacySessions:verified?originalHistory:[],legacyVerified:verified
+  legacySessions:verified?originalHistory:[],legacyVerified:verified,personalTargets
  });
  const todayStatus=$('coachTodayStatus'),todayList=$('coachTodayList');
  if(todayStatus&&todayList){
   todayStatus.textContent=today.status==='rest'?
    'No scheduled workout today (or no exercises assigned). Coach will not substitute a preset.':
-   today.title+' · '+today.items.length+' scheduled exercises · '+today.ready+' eligible weight suggestions. No automatic changes.';
+   today.title+' · '+today.items.length+' scheduled exercises · '+today.ready+' eligible weight suggestions. '+(targetReadError?'Personal targets need local storage recovery. ':'')+'No automatic changes.';
   todayList.innerHTML=today.items.map(row=>{
    const label=row.status==='ready'?row.action.toUpperCase()+' · '+row.weight+' lb · '+row.reason:
     row.status==='unavailable'?row.reason:'Keep your current working weight until enough completed history is available.';
+   const personal=row.personalTarget===null?'':'Personal target: '+row.personalTarget+' lb (set manually; not automatically applied).';
    const observed=window.MLCCoachConsistency.review(demoSessions,row.id);
    const evidence=observed.status==='steady-load'?
     'Recent training: same working load and similar repetitions over '+observed.sessions+' sessions. This is not a plateau diagnosis.':
@@ -594,7 +599,7 @@ function renderCoachProgression(){
     observed.status==='load-decrease'?'Recent training: recorded working load decreased.':
     observed.status==='rep-increase'?'Recent training: average repetitions increased at the same working load.':
     observed.status==='rep-decrease'?'Recent training: average repetitions decreased at the same working load.':null;
-   return '<div class="recent-item"><div><strong>'+escapeHTML(row.name)+'</strong><small>'+escapeHTML(label)+'</small><small>'+escapeHTML(row.source||'No verified recommendation')+'</small>'+(evidence?'<small>'+escapeHTML(evidence)+'</small>':'')+'</div></div>';
+   return '<div class="recent-item"><div><strong>'+escapeHTML(row.name)+'</strong><small>'+escapeHTML(label)+'</small><small>'+escapeHTML(row.source||'No verified recommendation')+'</small>'+(evidence?'<small>'+escapeHTML(evidence)+'</small>':'')+(personal?'<small>'+escapeHTML(personal)+'</small>':'')+'</div></div>';
   }).join('')||'<p class="small">No exercises scheduled for today.</p>';
  }
  const items=window.MLCCoachDashboard.recommendations({
