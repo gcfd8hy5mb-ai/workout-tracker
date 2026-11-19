@@ -20,6 +20,10 @@ const assert = require('node:assert/strict');
     localStorage.setItem('mlc2-demo-workouts-v1',JSON.stringify([{
      id:'coach-verified-workout',created:dayBefore,title:'Prior custom training',readiness:'Normal',
      sets:[{exerciseId:'leg-press',weight:155,reps:9},{exerciseId:'leg-press',weight:155,reps:10}]
+    },{
+     id:'older-training',created:new Date(now.getFullYear(),now.getMonth(),now.getDate()-14,12).toISOString(),
+     title:'Earlier custom training',readiness:'Normal',
+     sets:[{exerciseId:'leg-press',weight:150,reps:8},{exerciseId:'leg-press',weight:150,reps:9}]
     }]));
     localStorage.setItem('mlc2-coach-feedback-v1:guest',JSON.stringify({
      version:1,owner:'guest',rows:[{id:'cf-1770000000000-1',at:weekBefore,
@@ -34,6 +38,13 @@ const assert = require('node:assert/strict');
    assert.match(await page.locator('#coachAdaptiveStatus').textContent(),/scheduled movements assessed/,device.name+' adaptive summary');
    assert.match(await page.locator('#coachCycleStatus').textContent(),/Coach (before|after|during)|weekly Coach check-in/i,device.name+' original Coach cycle');
    assert.match(await page.locator('#coachEntitlementStatus').textContent(),/Production Pro access remains unverified/i,device.name+' draft entitlement boundary');
+   assert.ok(await page.locator('[data-coach-proposal-accept]').count()>0,device.name+' eligible adaptive suggestion');
+   await page.locator('[data-coach-proposal-accept]').first().evaluate(el=>el.click());
+   const decisions=await page.evaluate(()=>JSON.parse(localStorage.getItem('mlc2-coach-proposal-decisions-v1:guest')));
+   assert.equal(decisions.rows[0].choice,'accepted');
+   assert.match(await page.locator('#coachAdaptiveProposals').textContent(),/review record only/,device.name+' non-applying decision');
+   assert.equal(await page.locator('#todayTitle').textContent(),'My Custom Coach Session');
+
    await page.locator('#coachCheckinRecovery').selectOption('poor');
    await page.locator('#coachCheckinEnergy').selectOption('low');
    await page.locator('#coachCheckinDifficulty').selectOption('hard');
