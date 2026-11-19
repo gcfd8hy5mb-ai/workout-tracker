@@ -566,7 +566,24 @@ function saveCoachCheckin(){
   renderCoach();notice('Weekly Coach check-in saved on this device. No plan changes.');
  }catch(error){$('coachCheckinStatus').textContent='Not saved: '+String(error.message||error).slice(0,120)}
 }
+function answerCoachQuestion(){
+ const question=$('coachAskInput')?.value||'';
+ const selected=resolvedWorkout(),verified=Boolean(account?.id&&importedHistoryOwner===account.id);
+ let targets={};
+ try{targets=window.MLCCoachTargets.read(localStorage,account?.id||'guest').targets}catch{}
+ const today=window.MLCTodayCoach.preview({
+  plan:selected.plan,catalog:editorExercises,localSessions:demoSessions,
+  legacySessions:verified?originalHistory:[],legacyVerified:verified,personalTargets:targets
+ });
+ const checkin=coachCheckinSignal(),weekly=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin});
+ const action=window.MLCCoachActions.prioritize({today,checkin,weekly});
+ const recent=demoSessions.filter(x=>Number.isFinite(Date.parse(x?.created||''))&&Date.parse(x.created)<=Date.now())
+  .slice().sort((a,b)=>Date.parse(b.created)-Date.parse(a.created))[0]||null;
+ const result=window.MLCCoachAsk.answer(question,{today,checkin,weekly,action,lastSession:recent});
+ $('coachAskAnswer').textContent=result.text+' Source: '+result.source+'. No workout data changed.';
+}
 function renderCoach(){
+ $('coachAskAnswer').textContent='Ask about your current training records. Answers are not stored or shared.';
  renderCoachCheckin();
  const checkin=coachCheckinSignal();
  const plan=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin});
@@ -1447,6 +1464,8 @@ function bind(){
  document.querySelectorAll('[data-home-original-progress]').forEach(el=>el.addEventListener('click',()=>setPage('progress')));
  $('coachLoadOriginalHistory').addEventListener('click',loadOriginalHistory);
  $('coachCheckinSave').addEventListener('click',saveCoachCheckin);
+ $('coachAskSubmit').addEventListener('click',answerCoachQuestion);
+ $('coachAskInput').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();answerCoachQuestion()}});
  $('coachOpenToday').addEventListener('click',()=>{const chosen=resolvedWorkout();if(!chosen.plan){notice('No workout assigned today.');setPage('workouts');return;}if(weeklyDraftReadError){notice('Recover the saved schedule before starting.');return;}openWorkout(chosen.plan.id);});
  $('coachMovementSearch').addEventListener('input',renderOriginalCoachEvidence);
  $('originalHistorySearch').addEventListener('input',renderOriginalHistory);
