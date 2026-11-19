@@ -24,13 +24,14 @@
    catalogIds.add(ex.id);
   }
   if(duplicateCatalog.length)throw Error('Duplicate catalog IDs: '+duplicateCatalog.join(', '));
-  const seen=new Set(),accepted=new Map(),rejected=[];
+  const counts=new Map();
+  for(const row of manifest){const id=typeof row?.exerciseId==='string'?row.exerciseId:'';counts.set(id,(counts.get(id)||0)+1);}
+  const accepted=new Map(),rejected=[];
   for(const item of manifest){
    const id=typeof item?.exerciseId==='string'?item.exerciseId:'';
    const errors=[];
    if(!id||!catalogIds.has(id))errors.push('unknown-exercise-id');
-   if(seen.has(id))errors.push('duplicate-manifest-id');
-   seen.add(id);
+   if((counts.get(id)||0)>1)errors.push('duplicate-manifest-id');
    if(item?.approval!=='approved')errors.push('not-approved');
    if(!VALID_LICENSES.has(item?.license))errors.push('unverified-license');
    if(item?.license==='licensed-permission'&&!(typeof item.permissionReference==='string'&&item.permissionReference.trim()))errors.push('missing-permission-reference');
