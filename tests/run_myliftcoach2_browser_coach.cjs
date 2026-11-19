@@ -15,6 +15,17 @@ const assert = require('node:assert/strict');
     const plan={id:'coach-smoke-plan',title:'My Custom Coach Session',kind:'Custom',description:'Coach browser test',ids:['leg-press']};
     const draft={version:1,plans:[plan],assigned:Array(7).fill(plan.id),overrides:{[day]:plan.id},recurring:[]};
     localStorage.setItem('mlc2-recurring-preview-v1:guest',JSON.stringify(draft));
+    const dayBefore=new Date(now.getFullYear(),now.getMonth(),now.getDate()-3,12).toISOString();
+    const weekBefore=new Date(now.getFullYear(),now.getMonth(),now.getDate()-7,12).toISOString();
+    localStorage.setItem('mlc2-demo-workouts-v1',JSON.stringify([{
+     id:'coach-verified-workout',created:dayBefore,title:'Prior custom training',readiness:'Normal',
+     sets:[{exerciseId:'leg-press',weight:155,reps:9},{exerciseId:'leg-press',weight:155,reps:10}]
+    }]));
+    localStorage.setItem('mlc2-coach-feedback-v1:guest',JSON.stringify({
+     version:1,owner:'guest',rows:[{id:'cf-1770000000000-1',at:weekBefore,
+      response:'modified',kind:'progress',exerciseId:'leg-press'}]
+    }));
+
    });
    await page.goto('http://127.0.0.1:8765/myliftcoach2/',{waitUntil:'load'});
    await page.waitForFunction(()=>document.querySelector('#todayTitle')?.textContent==='My Custom Coach Session',{timeout:15000});
@@ -26,6 +37,15 @@ const assert = require('node:assert/strict');
    await page.locator('#coachCheckinDays').selectOption('3');
    await page.locator('#coachCheckinSave').evaluate(el=>el.click());
    assert.match(await page.locator('#coachCheckinStatus').textContent(),/conservative/,device.name+' check-in signal');
+   assert.ok(await page.locator('#coachOutcomeCandidate option').count()>1,device.name+' eligible outcome');
+   await page.locator('#coachOutcomeCandidate').selectOption({index:1});
+   await page.locator('#coachOutcomeRating').selectOption('same');
+   await page.locator('#coachOutcomeSave').evaluate(el=>el.click());
+   assert.match(await page.locator('#coachOutcomeStatus').textContent(),/1 outcome ratings saved/,device.name+' outcome pairing');
+   const outcome=await page.evaluate(()=>JSON.parse(localStorage.getItem('mlc2-coach-outcomes-v1:guest')));
+   assert.equal(outcome.rows[0].rating,'same');
+   assert.equal(outcome.rows[0].sessionId,'coach-verified-workout');
+
    await page.locator('#coachAskInput').fill('What workout today?');
    await page.locator('#coachAskSubmit').evaluate(el=>el.click());
    assert.match(await page.locator('#coachAskAnswer').textContent(),/My Custom Coach Session/,device.name+' Ask Coach');
