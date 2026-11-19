@@ -695,7 +695,7 @@ function renderCoach(){
  $('coachRecent').textContent=latest?'Latest practice session: '+new Date(latest.created).toLocaleDateString()+' · '+String(latest.title||'Workout')+(latest.readiness?' · Readiness: '+latest.readiness:''):'No completed preview sessions have been saved.';
  renderOriginalCoachEvidence();
 }
-function recordCoachProposalDecision(index,choice,expectedExerciseId){
+function recordCoachProposalDecision(index,choice,expectedExerciseId,expectedSignature){
  try{
   const owner=account?.id||'guest',selected=resolvedWorkout();
   if(!selected.plan||weeklyDraftReadError)throw Error('Current schedule is unavailable');
@@ -709,7 +709,7 @@ function recordCoachProposalDecision(index,choice,expectedExerciseId){
   for(const row of today.items||[])if(row?.id){memories[row.id]=coachMemoryFor(row.id);declines[row.id]=coachDeclineFor(row.id)}
   const current=window.MLCCoachAdaptive.compile({today,checkin,weekly,memories,declines});
   const proposal=current.items[index];
-  if(!proposal||proposal.exerciseId!==expectedExerciseId)throw Error('Scheduled workout changed. Review Coach again before saving this decision.');
+  if(!proposal||proposal.exerciseId!==expectedExerciseId||window.MLCCoachProposalDecisions.signature(proposal)!==expectedSignature)throw Error('Coach proposal changed. Review it again before saving a decision.');
   window.MLCCoachProposalDecisions.decide(localStorage,owner,proposal,choice);
   renderCoachProgression();
   notice(choice==='accepted'?'Marked for review only. No workout or weight was changed.':'Suggestion dismissed. Your workout stays unchanged.');
@@ -791,7 +791,7 @@ function renderCoachProgression(){
    return '<div class="recent-item"><div><strong>'+escapeHTML(row.name||row.exerciseId||'Unknown exercise')+
     '</strong><small>'+escapeHTML(description)+'</small>'+
     (decision?'<small>Your decision: '+escapeHTML(decision.choice)+' (review record only)</small>':'')+
-    (eligible&&savedDecisions?'<div class="hero-actions"><button type="button" class="button-outline" data-coach-proposal-accept="'+index+'" data-coach-proposal-id="'+escapeHTML(row.exerciseId)+'">Mark for review</button><button type="button" class="button-outline" data-coach-proposal-dismiss="'+index+'" data-coach-proposal-id="'+escapeHTML(row.exerciseId)+'">Dismiss suggestion</button></div>':'')+
+    (eligible&&savedDecisions?'<div class="hero-actions"><button type="button" class="button-outline" data-coach-proposal-accept="'+index+'" data-coach-proposal-id="'+escapeHTML(row.exerciseId)+'" data-coach-proposal-sig="'+encodeURIComponent(window.MLCCoachProposalDecisions.signature(row))+'">Mark for review</button><button type="button" class="button-outline" data-coach-proposal-dismiss="'+index+'" data-coach-proposal-id="'+escapeHTML(row.exerciseId)+'" data-coach-proposal-sig="'+encodeURIComponent(window.MLCCoachProposalDecisions.signature(row))+'">Dismiss suggestion</button></div>':'')+
     '</div></div>';
   }).join('')||'<p class="small">No exercises assigned today. Coach will not schedule a replacement.</p>';
   if(savedDecisions)$('coachAdaptiveDecisionStatus').textContent='Review decisions are kept separately from completed sets and never apply a weight automatically.';
@@ -1625,7 +1625,7 @@ function bind(){
   const source=accept||dismiss;if(!source)return;
   const index=Number(accept?accept.dataset.coachProposalAccept:dismiss.dataset.coachProposalDismiss);
   if(!Number.isInteger(index)||index<0)return;
-  recordCoachProposalDecision(index,accept?'accepted':'dismissed',source.dataset.coachProposalId);
+  recordCoachProposalDecision(index,accept?'accepted':'dismissed',source.dataset.coachProposalId,decodeURIComponent(source.dataset.coachProposalSig||''));
  });
  document.querySelectorAll('[data-coach-feedback]').forEach(button=>button.addEventListener('click',()=>saveCoachFeedback(button.dataset.coachFeedback)));
  $('coachAskInput').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();answerCoachQuestion()}});
