@@ -1160,6 +1160,23 @@ async function runCloudReadinessCheck(){
    '. No workouts were uploaded or overwritten.';
  }finally{button.disabled=!account}
 }
+function renderCloudInventory(){
+ const inventory=window.MLCV2CloudInventory.inspect({
+  owner:account?.id||null,
+  historyOwner:importedHistoryOwner,history:originalHistory,
+  trackingOwner:importedTrackingOwner,tracking:originalTracking,
+  settingsOwner:importedSettingsOwner,settings:originalAccountSettings,
+  scheduleOwner:importedCustomOwner,schedule:originalCustomSchedule,
+  localSessions:demoSessions,
+  cloudScheduleRpcVerified:false,cloudWritesVerified:false
+ });
+ const status=$('cloudInventoryStatus');if(!status)return inventory;
+ const sections=inventory.groups.map(group=>group.label+': '+(group.loaded?'loaded'+(group.count===null?'':' ('+group.count+')'):'not verified'));
+ status.textContent=inventory.loaded+' of 4 original sections loaded read-only. '+
+  sections.join(' · ')+'. Local 2.0 workouts: '+inventory.localWorkouts+
+  '. Replacement status: BLOCKED. '+inventory.blockers.join('; ')+'. No data changed.';
+ return inventory;
+}
 function renderSettings(){
  $('accountIdentity').textContent=account?.email?account.email+' · authenticated (production workout data is not loaded)':'Not signed in. You can still explore the demo.';
  $('backendStatus').textContent=account?'AUTHENTICATED':'NOT CONNECTED';
@@ -1167,6 +1184,7 @@ function renderSettings(){
  $('authAction').textContent=account?'Sign out':'Sign in with existing account';
  $('cloudReadinessButton').disabled=!account||!activeRecurring;
  $('loadAllOriginalRecords').disabled=!account;
+ renderCloudInventory();
 }
 function openModal(content){$('modalContent').innerHTML=content;$('modal').hidden=false;document.body.style.overflow='hidden';$('closeModal').focus()}
 function persistOpenSession(){
@@ -1685,6 +1703,7 @@ function bind(){
  $('loadOriginalSettings').addEventListener('click',loadOriginalAccountSettings);
  $('loadAllOriginalRecords').addEventListener('click',loadAllOriginalRecords);
  $('cloudReadinessButton').addEventListener('click',runCloudReadinessCheck);
+ $('cloudInventoryButton').addEventListener('click',renderCloudInventory);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
 refreshWeeklyOwner();bind();renderOriginalCustomSchedule();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderLocalDailyTracking();renderOriginalTracking();renderSettings();renderOriginalAccountSettings();validateStoredAuth();
