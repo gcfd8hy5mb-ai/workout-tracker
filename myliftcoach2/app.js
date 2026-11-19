@@ -587,7 +587,14 @@ function renderCoachProgression(){
   todayList.innerHTML=today.items.map(row=>{
    const label=row.status==='ready'?row.action.toUpperCase()+' · '+row.weight+' lb · '+row.reason:
     row.status==='unavailable'?row.reason:'Keep your current working weight until enough completed history is available.';
-   return '<div class="recent-item"><div><strong>'+escapeHTML(row.name)+'</strong><small>'+escapeHTML(label)+'</small><small>'+escapeHTML(row.source||'No verified recommendation')+'</small></div></div>';
+   const observed=window.MLCCoachConsistency.review(demoSessions,row.id);
+   const evidence=observed.status==='steady-load'?
+    'Recent training: same working load and similar repetitions over '+observed.sessions+' sessions. This is not a plateau diagnosis.':
+    observed.status==='load-increase'?'Recent training: recorded working load increased.':
+    observed.status==='load-decrease'?'Recent training: recorded working load decreased.':
+    observed.status==='rep-increase'?'Recent training: average repetitions increased at the same working load.':
+    observed.status==='rep-decrease'?'Recent training: average repetitions decreased at the same working load.':null;
+   return '<div class="recent-item"><div><strong>'+escapeHTML(row.name)+'</strong><small>'+escapeHTML(label)+'</small><small>'+escapeHTML(row.source||'No verified recommendation')+'</small>'+(evidence?'<small>'+escapeHTML(evidence)+'</small>':'')+'</div></div>';
   }).join('')||'<p class="small">No exercises scheduled for today.</p>';
  }
  const items=window.MLCCoachDashboard.recommendations({
