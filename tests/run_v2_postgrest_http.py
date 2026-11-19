@@ -73,7 +73,11 @@ checked(api("prism_v2_schedule_read", {}, anon_token)[0] in (401, 403),
 expired_status, _ = api("prism_v2_schedule_read", {}, signed(A, expires=int(time.time()) - 120))
 checked(expired_status == 401, "Expired JWT was accepted")
 
-forged = token_a[:-1] + ("Z" if token_a[-1] != "Z" else "A")
+# Change the first encoded signature character, never a trailing pad-bit
+# character (which can decode to the same signature bytes).
+parts = token_a.split(".")
+parts[2] = ("A" if parts[2][0] != "A" else "B") + parts[2][1:]
+forged = ".".join(parts)
 checked(api("prism_v2_schedule_read", {}, forged)[0] == 401, "Tampered JWT was accepted")
 
 s, before = api("prism_v2_schedule_read", {}, token_a)
