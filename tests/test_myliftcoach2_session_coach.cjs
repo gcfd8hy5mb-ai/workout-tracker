@@ -45,3 +45,31 @@ test('Coach refuses incomplete local practice evidence rather than inventing a t
  const rows=[{id:'only',created:'2026-11-15T15:00:00Z',sets:[{exerciseId:'leg-press',weight:160,reps:10}]}];
  assert.equal(coach.localProgression(rows,'leg-press','Leg Press').status,'insufficient');
 });
+
+test('Coach never counts incomplete or malformed sets as qualifying progression evidence',()=>{
+ const exerciseId='leg-press';
+ const history=[
+  {created:'2026-11-15T15:00:00Z',sets:[
+   {exerciseId,weight:160,reps:10,completed:false},
+   {exerciseId,weight:160,reps:10,completed:false}]},
+  {created:'2026-11-12T15:00:00Z',sets:[
+   {exerciseId,weight:155,reps:9},{exerciseId,weight:155,reps:10}]}
+ ];
+ const before=JSON.stringify(history);
+ assert.equal(coach.localProgression(history,exerciseId,'Leg Press').status,'insufficient');
+ assert.equal(JSON.stringify(history),before);
+});
+test('Coach rejects non-finite working sets without discarding other valid sessions',()=>{
+ const exerciseId='leg-press';
+ const history=[
+  {created:'2026-11-15T15:00:00Z',sets:[
+   {exerciseId,weight:'Infinity',reps:10},
+   {exerciseId,weight:160,reps:10},
+   {exerciseId,weight:160,reps:10}]},
+  {created:'2026-11-12T15:00:00Z',sets:[
+   {exerciseId,weight:155,reps:9},{exerciseId,weight:155,reps:10}]}
+ ];
+ const result=coach.localProgression(history,exerciseId,'Leg Press');
+ assert.equal(result.status,'ready');
+ assert.equal(result.weight,165);
+});
