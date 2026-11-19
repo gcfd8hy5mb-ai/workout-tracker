@@ -523,8 +523,10 @@ function renderProgress(){
  renderOriginalProgress();
  $('sessionHistory').innerHTML=demoSessions.length?demoSessions.map((x,index)=>{
   const summary=window.MLCSessionSummary.summarize(x,demoSessions.slice(index+1),editorExercises);
+  const debrief=window.MLCPostSessionCoach.review(x,demoSessions.slice(index+1),editorExercises);
+  const debriefHTML=debrief.status==='ready'?'<div class="panel"><strong>Coach · post-workout review</strong><p>'+escapeHTML(debrief.headline)+'</p>'+debrief.details.map(note=>'<p class="small">'+escapeHTML(note)+'</p>').join('')+debrief.suggestions.slice(0,8).map(row=>'<p class="small"><strong>'+escapeHTML(row.name)+'</strong> · '+escapeHTML(row.message)+'</p>').join('')+'<p class="small">'+escapeHTML(debrief.note)+'</p></div>':'';
   const details=summary.movements.map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sets+' completed sets · Top '+ex.topWeight+' lb'+(ex.newPracticeRecord?' · Local practice record':'')+'</small></div><button type="button" class="button-outline" data-exercise-open="'+escapeHTML(ex.id)+'">Exercise</button><span>'+Math.round(ex.volume).toLocaleString()+' lb-reps</span></div>').join('');
-  return '<details class="panel"><summary><strong>'+escapeHTML(x.title)+'</strong> · '+new Date(x.created).toLocaleDateString()+' · '+summary.sets+' sets · '+Math.round(summary.volume).toLocaleString()+' lb-reps</summary><p class="small">'+(summary.durationMinutes?summary.durationMinutes+' min · ':'')+escapeHTML(x.readiness||'No readiness recorded')+' · '+summary.recordCount+' new local practice weight records</p>'+details+'</details>';
+  return '<details class="panel"><summary><strong>'+escapeHTML(x.title)+'</strong> · '+new Date(x.created).toLocaleDateString()+' · '+summary.sets+' sets · '+Math.round(summary.volume).toLocaleString()+' lb-reps</summary><p class="small">'+(summary.durationMinutes?summary.durationMinutes+' min · ':'')+escapeHTML(x.readiness||'No readiness recorded')+' · '+summary.recordCount+' new local practice weight records</p>'+debriefHTML+details+'</details>';
  }).join(''):'<div class="empty-note">No demo sessions recorded yet. Open Workouts to start your first practice session.</div>';
 }
 function renderProgressChart(){
