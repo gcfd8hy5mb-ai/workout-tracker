@@ -539,17 +539,18 @@ function renderProgressChart(){
  root.innerHTML='<svg viewBox="0 0 320 220" role="img" aria-label="Training volume trend based on '+count+' locally saved practice sessions"><defs><linearGradient id="volumeFill" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#f6d88c" stop-opacity=".48"/><stop offset="1" stop-color="#f6d88c" stop-opacity=".02"/></linearGradient></defs><path d="M22 28 V184 H304" fill="none" stroke="#bbdfd2" stroke-opacity=".35"/><path d="M22 80 H304 M22 132 H304" fill="none" stroke="#bbdfd2" stroke-opacity=".2"/><polygon points="'+fill+'" fill="url(#volumeFill)"/><polyline points="'+points+'" fill="none" stroke="#ffe1a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+xy.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="#ffeba8"/>').join('')+'<text x="25" y="207" fill="#c9e5da" font-size="11">Earliest</text><text x="293" y="207" text-anchor="end" fill="#c9e5da" font-size="11">Latest</text></svg><p>'+count+' practice sessions · '+Math.round(values[values.length-1]).toLocaleString()+' lb-reps last session</p>';
 }
 function renderCoach(){
+ const trend=window.MLCCoachActivityTrend.compare(demoSessions);
  const localWeek=window.MLCCoachReview.week(demoSessions);
  if(localWeek){
   $('coachWeekWorkouts').textContent=String(localWeek.sessions);
   $('coachWeekDays').textContent=String(localWeek.trainingDays);
   $('coachWeekSets').textContent=String(localWeek.sets);
   $('coachWeekVolume').textContent=Math.round(localWeek.volume).toLocaleString()+' lb-reps';
-  $('coachLocalWeekStatus').textContent=localWeek.from+' through '+localWeek.to+' · completed local practice only. No changes to your workout plan.';
+  $('coachLocalWeekStatus').textContent=localWeek.from+' through '+localWeek.to+' · '+(trend.delta.sessions>=0?'+':'')+trend.delta.sessions+' workouts and '+(trend.delta.sets>=0?'+':'')+trend.delta.sets+' sets versus the preceding 7 days. Recorded activity only; no plan changes.';
   $('coachWeekReadiness').textContent='Recorded check-ins: Great '+localWeek.readiness.Great+' · Normal '+localWeek.readiness.Normal+' · Tired '+localWeek.readiness.Tired+'. Not an inferred recovery score.';
  }
  const recentHistory=demoSessions.map(s=>({date:s.created,readiness:s.readiness,exercises:(s.sets||[]).reduce((acc,set)=>{
-  if(!set?.exerciseId)return acc;
+  if(!window.MLCCoachActivityTrend.validSet(set))return acc;
   let match=acc.find(ex=>ex.id===set.exerciseId);
   if(!match){match={id:set.exerciseId,sets:[]};acc.push(match)}
   match.sets.push({weight:set.weight,reps:set.reps,completed:true});return acc;
@@ -557,7 +558,7 @@ function renderCoach(){
  const localMuscles=window.MLCRecoveryPreview.summarize(recentHistory,editorExercises);
  $('coachLocalMuscleStatus').textContent=localMuscles.muscles.length?'Latest completed local workout per muscle. Time since training, not a recovery estimate.':'No completed local exercise history with mapped muscles.';
  $('coachLocalMuscleList').innerHTML=localMuscles.muscles.map(m=>'<div class="recent-item"><strong>'+escapeHTML(m.name)+'</strong><span>'+Math.floor(m.hoursAgo/24)+' days since trained</span></div>').join('')||'<p class="small">Muscle activity will appear after you log workouts.</p>';
- const sets=demoSessions.flatMap(x=>Array.isArray(x.sets)?x.sets:[]);
+ const sets=demoSessions.flatMap(x=>Array.isArray(x.sets)?x.sets.filter(window.MLCCoachActivityTrend.validSet):[]);
  const movementCount=new Set(sets.map(x=>x.exerciseId).filter(Boolean)).size;
  $('coachSessions').textContent=String(demoSessions.length);
  $('coachSets').textContent=String(sets.length);
