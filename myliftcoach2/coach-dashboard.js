@@ -17,13 +17,20 @@
   const local=Array.isArray(localSessions)?localSessions:[];
   const legacy=legacyVerified&&Array.isArray(originalSessions)?originalSessions:[];
   const attempted=new Set();
+  const now=Date.now();
+  const validDate=value=>{const t=Date.parse(value||'');return Number.isFinite(t)&&t<=now;};
   for(const session of local){
-   if(!Array.isArray(session?.sets)||!Number.isFinite(Date.parse(session.created||'')))continue;
-   for(const set of session.sets||[])if(byId.has(set?.exerciseId))attempted.add(set.exerciseId);
+   if(!Array.isArray(session?.sets)||!validDate(session.created))continue;
+   for(const set of session.sets||[])if(set?.completed!==false&&byId.has(set?.exerciseId)&&
+    Number.isFinite(Number(set?.weight))&&Number(set.weight)>0&&
+    Number.isFinite(Number(set?.reps))&&Number(set.reps)>0)attempted.add(set.exerciseId);
   }
   for(const session of legacy){
-   if(!Number.isFinite(Date.parse(session?.date||'')))continue;
-   for(const ex of Array.isArray(session.exercises)?session.exercises:[])if(byId.has(ex?.id))attempted.add(ex.id);
+   if(!validDate(session?.date))continue;
+   for(const ex of Array.isArray(session.exercises)?session.exercises:[])
+    if(byId.has(ex?.id)&&Array.isArray(ex.sets)&&ex.sets.some(set=>set?.completed!==false&&
+      Number.isFinite(Number(set?.weight))&&Number(set.weight)>0&&
+      Number.isFinite(Number(set?.reps))&&Number(set.reps)>0))attempted.add(ex.id);
   }
   const results=[];
   for(const id of attempted){
