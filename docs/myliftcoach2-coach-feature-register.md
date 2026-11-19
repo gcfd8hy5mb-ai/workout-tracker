@@ -62,3 +62,34 @@ This is a correctness repair within the draft. No change to scheduling, custom w
 - Added isolated `session-input-continuity.js` with a strict snapshot/restore of only current plan IDs and valid entered values. Each exercise retains its own manual values after log/undo, including an explicitly selected Coach weight. Newly opened sessions, plan changes, and substitutions do not inherit stale inputs from a prior session.
 - Kept all changes ephemeral to form fields; workout drafts, account data, history and program definitions are not modified by the helper.
 - Added `tests/test_myliftcoach2_session_input_continuity.cjs`; direct runtime smoke check passed for 165 lb / 9 reps surviving an exercise-card rebuild, plus `app.js` syntax and script order. Full automated suite and physical iPhone exercise-flow QA remain pending.
+
+## November 19 — original Coach restoration batch (draft)
+
+Compared the source app's original `index.html`, `coach-engine.js`, `coach-checkin.js`, `coach-decision-engine-v2.js`, `coach-weekly-planning.js`, `coach-cycle.js`, `in-workout-coach.js`, `post-workout-coach.js`, `next-session-coach.js`, `adaptive-programming.js`, `ask-prism.js`, `pro-experience.js` and `myliftcoach-intelligence-core.js` against the 2.0 draft.
+
+### Restored in this draft batch
+
+- **Manual overload targets:** account/guest-scoped, validated local working weights, per-exercise save/use/clear buttons in active workouts; separate from calculated progression; no plan edits or automatic set logging.
+- **Weekly check-ins:** explicit recovery, energy, difficulty, available days and training notes, with owner-scoped local retention and conservative signal. The optional calculated-increase button is suppressed when a current conservative check-in is present.
+- **Post-workout Coach debrief:** recorded volume, exercises, time, local training markers, and opt-in next-exposure progression appear on the Progress history, sourced from logged sets.
+- **Weekly Coach planning:** counted qualifying sessions/training days against this week's self-reported availability, no invented goals and no automatic schedule changes.
+- **Coach Actions:** highest-priority explained recommendation based on today's resolved custom workout, check-in and completed training evidence. Rest and missing exercises remain explicit.
+- **Ask MYLIFTCOACH (offline subset):** rules-based Q&A for actual schedule, weekly training, previous workout, readiness check-in, optional progression and saved personal targets. No paid AI, no open-ended model or promises of AI autonomy.
+- These changes retain the pre-existing Coach progression, warmups, alternatives, scheduled workout guidance, weekly comparisons, exercise consistency and session input continuity.
+
+### Not fully ported — release BLOCK
+
+The original app contains a **larger interconnected adaptive and learning stack**. The following original capabilities do not yet have verified 2.0 parity:
+
+1. `coach-engine.js` full prioritized decision engine and `coach-decision-engine-v2.js` with readiness/fatigue arbitration.
+2. `adaptive-programming.js`, advanced autonomous progression, phase adaptation, next-session orchestration, accepted/dismissed interventions and adaptive learning outcomes.
+3. `coach-memory-v2.js`, `coach-intervention-memory.js`, `coach-learning.js`, athlete feedback and persistent learning.
+4. Original multi-turn `ask-prism.js` conversational behavior; 2.0 has only explicit local-data questions.
+5. Original Pro entitlements and server-verified feature access. `account-settings-import.js` deliberately excludes local entitlement values; the preview is **not production-safe for Pro gating**.
+6. Live account cloud write/sync migration, cross-device acceptance, and physical iPhone/desktop Coach flows.
+
+**Do not claim full Coach restoration, production readiness, or feature parity.** All of these changes remain on draft PR #373, using local preview data. The source engine assumes original global state and storage keys; loading it into 2.0 without a verified account-isolated adapter risks reading or changing live data. Never bridge it by directly sharing old PRISM localStorage keys.
+
+### Verification
+
+Direct JavaScript regression harness passed the new targeted modules (33 cases before the later Ask Coach target-specific tests), and preview `app.js` syntax/script order passed. Full exact-head GitHub Actions and physical-device tests must still be confirmed independently. No production data writes, merges or deployments.
