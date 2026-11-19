@@ -796,6 +796,20 @@ function renderCoachProgression(){
   }).join('')||'<p class="small">No exercises assigned today. Coach will not schedule a replacement.</p>';
   if(savedDecisions)$('coachAdaptiveDecisionStatus').textContent='Review decisions are kept separately from completed sets and never apply a weight automatically.';
  }
+ const prescription=window.MLCCoachNextSession.prescribe({
+  today,adaptive,decisions:savedDecisions||[]
+ });
+ $('coachNextSessionStatus').textContent=prescription.message;
+ $('coachNextSessionList').innerHTML=prescription.items.map(row=>{
+  const weight=row.weight!==null?row.status.toUpperCase()+' · suggested '+row.weight+' lb · '+row.reps.min+'–'+row.reps.max+' reps':
+   row.warning||'No weight suggestion yet.';
+  const warmups=row.warmups.length?'Suggested warm-ups: '+row.warmups.map(set=>set.weight+' lb × '+set.reps).join(' · '):'';
+  const personal=row.personalTarget!==null?'Personal target: '+row.personalTarget+' lb (not automatically used).':'';
+  return '<div class="recent-item"><div><strong>'+escapeHTML(row.name)+'</strong><small>'+escapeHTML(weight)+'</small>'+
+   (warmups?'<small>'+escapeHTML(warmups)+'</small>':'')+(personal?'<small>'+escapeHTML(personal)+'</small>':'')+
+   (row.decision?'<small>Review decision: '+escapeHTML(row.decision)+'</small>':'')+
+   '<small>Nothing is automatically applied.</small></div></div>';
+ }).join('')||'<p class="small">No session prescriptions are available.</p>';
  const topAction=guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin:checkinSignal,weekly}));
  const actionStatus=$('coachActionStatus');
  if(actionStatus)actionStatus.textContent=topAction.title+' · '+topAction.description+' WHY: '+topAction.why+' No changes are applied automatically.';
