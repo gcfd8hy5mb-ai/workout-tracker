@@ -566,6 +566,15 @@ function saveCoachCheckin(){
   renderCoach();notice('Weekly Coach check-in saved on this device. No plan changes.');
  }catch(error){$('coachCheckinStatus').textContent='Not saved: '+String(error.message||error).slice(0,120)}
 }
+function coachMemoryFor(exerciseId){
+ try{
+  const outcomes=window.MLCCoachOutcomes.read(localStorage,account?.id||'guest');
+  return window.MLCCoachMemory.review(outcomes,exerciseId||null);
+ }catch{return {signal:'unavailable',message:'Coach outcomes need local recovery before memory can be used.'}}
+}
+function guardedCoachAction(action){
+ return window.MLCCoachMemory.guard(action,coachMemoryFor(action?.exerciseId));
+}
 function answerCoachQuestion(){
  const question=$('coachAskInput')?.value||'';
  const selected=resolvedWorkout(),verified=Boolean(account?.id&&importedHistoryOwner===account.id);
@@ -576,7 +585,7 @@ function answerCoachQuestion(){
   legacySessions:verified?originalHistory:[],legacyVerified:verified,personalTargets:targets
  });
  const checkin=coachCheckinSignal(),weekly=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin});
- const action=window.MLCCoachActions.prioritize({today,checkin,weekly});
+ const action=guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin,weekly}));
  const recent=demoSessions.filter(x=>Number.isFinite(Date.parse(x?.created||''))&&Date.parse(x.created)<=Date.now())
   .slice().sort((a,b)=>Date.parse(b.created)-Date.parse(a.created))[0]||null;
  const result=window.MLCCoachAsk.answer(question,{today,checkin,weekly,action,lastSession:recent});
@@ -590,7 +599,7 @@ function currentCoachAction(){
  });
  const checkin=coachCheckinSignal();
  const weekly=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin});
- return window.MLCCoachActions.prioritize({today,checkin,weekly});
+ return guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin,weekly}));
 }
 function saveCoachFeedback(response){
  try{
@@ -632,7 +641,7 @@ function saveCoachOutcome(){
   }
   window.MLCCoachOutcomes.save(localStorage,owner,candidates[index],$('coachOutcomeRating').value,
    feedback,demoSessions);
-  renderCoachOutcomes();
+  renderCoach();
   notice('Your reported outcome was saved locally. Training plans remain unchanged.');
  }catch(error){$('coachOutcomeStatus').textContent='Outcome not saved: '+String(error.message||error).slice(0,120)}
 }
@@ -709,7 +718,7 @@ function renderCoachProgression(){
   }).join('')||'<p class="small">No exercises scheduled for today.</p>';
  }
  const weekly=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin:checkinSignal});
- const topAction=window.MLCCoachActions.prioritize({today,checkin:checkinSignal,weekly});
+ const topAction=guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin:checkinSignal,weekly}));
  const actionStatus=$('coachActionStatus');
  if(actionStatus)actionStatus.textContent=topAction.title+' · '+topAction.description+' WHY: '+topAction.why+' No changes are applied automatically.';
  try{
@@ -1168,9 +1177,9 @@ function renderWorkoutLog(inputSnapshot=null){
   const originalCoachResult=previous?window.MLCSessionCoach.coach(originalHistory,id,e.name):null;
   const coachSource=localCoachResult.status==='ready'?'2.0 completed workouts':originalCoachResult?.status==='ready'?'Original completed history':null;
   const coachResult=localCoachResult.status==='ready'?localCoachResult:originalCoachResult;
-  const caution=coachCheckinSignal().load==='conservative'&&coachResult?.action==='increase';
+  const caution=(coachCheckinSignal().load==='conservative'||coachMemoryFor(id).signal==='review')&&coachResult?.action==='increase';
   const coachHint=coachResult?.status==='ready'?
-    '<div class="panel"><strong>Coach progression · '+escapeHTML(coachSource)+'</strong><p class="small">'+escapeHTML(coachResult.action.toUpperCase()+': '+coachResult.reason)+'</p>'+(caution?'<p class="small">Weekly check-in favors holding the recent load; increase button paused.</p>':'<button class="button-outline" type="button" data-use-coach="'+id+'">Use suggested '+coachResult.weight+' lb for this set</button>')+'</div>':'';
+    '<div class="panel"><strong>Coach progression · '+escapeHTML(coachSource)+'</strong><p class="small">'+escapeHTML(coachResult.action.toUpperCase()+': '+coachResult.reason)+'</p>'+(caution?'<p class="small">Check-in or repeated weaker user-rated outcomes favor reviewing this increase; increase button paused.</p>':'<button class="button-outline" type="button" data-use-coach="'+id+'">Use suggested '+coachResult.weight+' lb for this set</button>')+'</div>':'';
   let savedTarget=null,targetError=false;
   try{savedTarget=window.MLCCoachTargets.get(localStorage,activeSessionOwner,id)}
   catch{targetError=true}
@@ -1238,6 +1247,9 @@ function useCoachWeight(id){
    window.MLCSessionCoach.coach(originalHistory,id,ex.name):null;
  const result=localResult.status==='ready'?localResult:originalResult;
  if(result?.status!=='ready'||!Number.isFinite(result.weight)||result.weight<=0||result.weight>1500)return;
+ if(result.action==='increase'&&coachMemoryFor(id).signal==='review'){
+  notice('Repeated weaker user-rated outcomes: review this exercise before applying another increase.');return;
+ }
  if(result.action==='increase'&&coachCheckinSignal().load==='conservative'){
   notice('This week\'s check-in favors holding the current weight. Coach will not apply an increase.');return;
  }
