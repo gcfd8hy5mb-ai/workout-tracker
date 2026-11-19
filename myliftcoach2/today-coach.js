@@ -7,7 +7,7 @@
  if(node)module.exports=api;else root.MLCTodayCoach=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(coach){
  'use strict';
- function preview({plan=null,catalog=[],localSessions=[],legacySessions=[],legacyVerified=false}={}){
+ function preview({plan=null,catalog=[],localSessions=[],legacySessions=[],legacyVerified=false,personalTargets={}}={}){
   const ids=Array.isArray(plan?.ids)?plan.ids:[];
   const exercises=new Map((Array.isArray(catalog)?catalog:[])
    .filter(ex=>ex&&typeof ex.id==='string'&&typeof ex.name==='string')
@@ -21,7 +21,9 @@
    const legacy=legacyVerified?coach.coach(legacySessions,id,ex.name):{status:'insufficient'};
    const chosen=local.status==='ready'?local:legacy.status==='ready'?legacy:local;
    const ready=chosen.status==='ready';
-   return Object.freeze({id,index,name:ex.name,status:ready?'ready':'insufficient',
+   const manual=Object.prototype.hasOwnProperty.call(personalTargets||{},id)?personalTargets[id]:null;
+   const target=typeof manual==='number'&&Number.isFinite(manual)&&manual>0&&manual<=1000?manual:null;
+   return Object.freeze({id,index,name:ex.name,status:ready?'ready':'insufficient',personalTarget:target,
     action:ready?chosen.action:null,weight:ready?chosen.weight:null,
     source:ready?(chosen===local?'2.0 history':'Verified original history'):null,
     reason:ready?chosen.reason:'At least two qualifying completed sessions are required.'});
