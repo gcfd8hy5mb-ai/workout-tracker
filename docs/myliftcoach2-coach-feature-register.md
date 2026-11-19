@@ -55,3 +55,10 @@ This is a correctness repair within the draft. No change to scheduling, custom w
 - Added `tests/test_myliftcoach2_coach_consistency.cjs`. A direct JavaScript check passed for steady load, increasing repetitions, insufficient evidence, app syntax, script ordering, and UI reference.
 - **Not a clinical recovery score or definitive plateau diagnosis.** Does not automatically increase loads, deload, change scheduling, or alter account data.
 - Full CI, browser flow, and physical iPhone testing still pending for these commits. No deploy or merge.
+
+## November 18 — active-session weight/reps continuity
+
+- Fixed an active workout issue where the complete `renderWorkoutLog()` redraw after logging or undoing a set reset all exercise weight/reps inputs to default 40 lb / 10 reps.
+- Added isolated `session-input-continuity.js` with a strict snapshot/restore of only current plan IDs and valid entered values. Each exercise retains its own manual values after log/undo, including an explicitly selected Coach weight. Newly opened sessions, plan changes, and substitutions do not inherit stale inputs from a prior session.
+- Kept all changes ephemeral to form fields; workout drafts, account data, history and program definitions are not modified by the helper.
+- Added `tests/test_myliftcoach2_session_input_continuity.cjs`; direct runtime smoke check passed for 165 lb / 9 reps surviving an exercise-card rebuild, plus `app.js` syntax and script order. Full automated suite and physical iPhone exercise-flow QA remain pending.
