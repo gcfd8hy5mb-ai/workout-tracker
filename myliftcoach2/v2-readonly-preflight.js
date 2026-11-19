@@ -4,9 +4,10 @@
  */
 (function(root,factory){
  const node=typeof module==='object'&&module.exports;
- const api=factory(node?require('./v2-recurring-schedule.js'):root.MLCV2RecurringSchedule);
+ const api=factory(node?require('./v2-recurring-schedule.js'):root.MLCV2RecurringSchedule,
+  node?require('./v2-schedule-diff.js'):root.MLCV2ScheduleDiff);
  if(node)module.exports=api;else root.MLCV2ReadOnlyPreflight=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(recurring){
+})(typeof globalThis!=='undefined'?globalThis:this,function(recurring,diff){
  'use strict';
  const ERROR='Acceptance checks incomplete; no records were changed';
  function validSession(session,owner){
@@ -53,7 +54,9 @@
   const after=validSession(await getSession(),owner);
   if(after.access_token!==original.access_token)throw Error('Account changed while reading cloud schedule');
   const status=readResponse(raw.status,raw.data);
-  return Object.freeze({owner,summary,...status,canWrite:false,readOnly:true});
+  const comparison=status.available?
+   diff.compare({local:localDocument,cloud:status.existing?raw.data.document:null}):null;
+  return Object.freeze({owner,summary,...status,comparison,canWrite:false,readOnly:true});
  }
  return Object.freeze({check,inspectLocal,readResponse,ERROR});
 });
