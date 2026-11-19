@@ -576,7 +576,12 @@ function coachMemoryFor(exerciseId){
  }catch{return {signal:'unavailable',message:'Coach outcomes need local recovery before memory can be used.'}}
 }
 function guardedCoachAction(action){
- const memoryGuarded=window.MLCCoachMemory.guard(action,coachMemoryFor(action?.exerciseId));
+ const memory=coachMemoryFor(action?.exerciseId);
+ if(memory.signal==='unavailable'&&action?.kind==='progress')
+  return Object.freeze({...action,kind:'review-storage',title:'Recover saved Coach outcomes',
+   description:'Review local outcome storage before using this suggested weight increase.',
+   why:memory.message,requiresExplicitAction:true});
+ const memoryGuarded=window.MLCCoachMemory.guard(action,memory);
  if(memoryGuarded?.kind==='progress'&&memoryGuarded.exerciseId&&coachDeclineFor(memoryGuarded.exerciseId).status==='review-decline')
   return Object.freeze({...memoryGuarded,kind:'review-performance',title:'Review repeated lower repetitions',
    description:'Hold off on using the proposed increase until you review your recent completed sets.',
@@ -1192,7 +1197,7 @@ function renderWorkoutLog(inputSnapshot=null){
   const originalCoachResult=previous?window.MLCSessionCoach.coach(originalHistory,id,e.name):null;
   const coachSource=localCoachResult.status==='ready'?'2.0 completed workouts':originalCoachResult?.status==='ready'?'Original completed history':null;
   const coachResult=localCoachResult.status==='ready'?localCoachResult:originalCoachResult;
-  const caution=(coachCheckinSignal().load==='conservative'||coachMemoryFor(id).signal==='review'||coachDeclineFor(id).status==='review-decline')&&coachResult?.action==='increase';
+  const caution=(coachCheckinSignal().load==='conservative'||['review','unavailable'].includes(coachMemoryFor(id).signal)||coachDeclineFor(id).status==='review-decline')&&coachResult?.action==='increase';
   const coachHint=coachResult?.status==='ready'?
     '<div class="panel"><strong>Coach progression · '+escapeHTML(coachSource)+'</strong><p class="small">'+escapeHTML(coachResult.action.toUpperCase()+': '+coachResult.reason)+'</p>'+(caution?'<p class="small">Check-in or repeated weaker user-rated outcomes favor reviewing this increase; increase button paused.</p>':'<button class="button-outline" type="button" data-use-coach="'+id+'">Use suggested '+coachResult.weight+' lb for this set</button>')+'</div>':'';
   let savedTarget=null,targetError=false;
@@ -1265,7 +1270,7 @@ function useCoachWeight(id){
  if(result.action==='increase'&&coachDeclineFor(id).status==='review-decline'){
   notice('Recent completed sets show declining repetitions. Review this suggested increase first.');return;
  }
- if(result.action==='increase'&&coachMemoryFor(id).signal==='review'){
+ if(result.action==='increase'&&['review','unavailable'].includes(coachMemoryFor(id).signal)){
   notice('Repeated weaker user-rated outcomes: review this exercise before applying another increase.');return;
  }
  if(result.action==='increase'&&coachCheckinSignal().load==='conservative'){
