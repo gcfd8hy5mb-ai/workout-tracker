@@ -24,3 +24,13 @@ Before any production merge or release:
 4. Confirm any Pro entitlement behavior matches the original application and does not unintentionally unlock gated functionality.
 
 No new Coach or workout data was written to production Supabase by this branch.
+
+## November 18 Coach evidence-integrity batch (draft)
+
+- Corrected local progressive-overload calculation: explicitly incomplete working sets and non-finite loads/reps are excluded, rather than being silently converted into completed sets.
+- Coach dashboard now excludes future-dated sessions and movements without valid completed working sets; unverified legacy account history remains excluded.
+- Added targeted Node regression tests in `tests/test_myliftcoach2_session_coach.cjs` and `tests/test_myliftcoach2_coach_dashboard.cjs`.
+- Direct connector-side JavaScript smoke check passed: incomplete sessions do not yield a weight prescription, and future/incomplete history does not generate a movement recommendation.
+- **Full GitHub Actions execution, full app integration, physical-device acceptance remain unverified for these new commits.**
+
+This is a correctness repair within the draft. No change to scheduling, custom workout precedence, user data, production site, or live Supabase.
