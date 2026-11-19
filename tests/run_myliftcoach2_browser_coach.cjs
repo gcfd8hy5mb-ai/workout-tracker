@@ -50,7 +50,7 @@ const assert = require('node:assert/strict');
    await page.locator('#coachAskSubmit').evaluate(el=>el.click());
    assert.match(await page.locator('#coachAskAnswer').textContent(),/My Custom Coach Session/,device.name+' Ask Coach');
    await page.locator('[data-coach-feedback="modified"]').evaluate(el=>el.click());
-   assert.match(await page.locator('#coachFeedbackStatus').textContent(),/1 Coach responses recorded/,device.name+' feedback');
+   assert.match(await page.locator('#coachFeedbackStatus').textContent(),/2 Coach responses recorded/,device.name+' feedback');
    assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('mlc2-coach-feedback-v1:guest')).rows[0].response),'modified');
    await page.locator('#coachOpenToday').evaluate(el=>el.click());
    await page.locator('[data-target-weight="leg-press"]').fill('165');
