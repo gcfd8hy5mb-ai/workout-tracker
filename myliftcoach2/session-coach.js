@@ -45,7 +45,9 @@
   const originalShape=(Array.isArray(practiceSessions)?practiceSessions:[])
    .filter(s=>s&&Number.isFinite(Date.parse(s.created||''))&&Array.isArray(s.sets))
    .map(s=>({date:s.created,exercises:[{id:exerciseId,sets:s.sets
-     .filter(x=>x?.exerciseId===exerciseId&&Number(x.weight)>0&&Number(x.reps)>0)
+     .filter(x=>x?.exerciseId===exerciseId&&x.completed!==false&&
+       Number.isFinite(Number(x.weight))&&Number(x.weight)>0&&
+       Number.isFinite(Number(x.reps))&&Number(x.reps)>0)
      .map(x=>({weight:Number(x.weight),reps:Number(x.reps),completed:true}))}]}));
   return coach(originalShape,exerciseId,name);
  }
