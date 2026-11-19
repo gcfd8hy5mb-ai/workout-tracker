@@ -1134,6 +1134,7 @@ async function runCloudReadinessCheck(){
  const owner=account?.id;
  button.disabled=true;
  status.textContent='Checking sign-in and cloud read capability. This does not upload or save any workout.';
+ $('cloudScheduleComparisonStatus').textContent='Checking device and cloud schedule without writing…';
  try{
   const checked=await window.MLCV2ReadOnlyPreflight.check({
    owner,session:auth,getSession:async()=>auth,
@@ -1152,6 +1153,15 @@ async function runCloudReadinessCheck(){
    }
   });
   if(account?.id!==owner)throw Error('Account changed during check');
+  const compared=checked.comparison;
+  $('cloudScheduleComparisonStatus').textContent=!checked.available?
+   'Cloud schedule RPC is not deployed. Comparison is unavailable; no records changed.':
+   !compared?'Cloud schedule comparison unavailable; no records changed.':
+   'Local versus cloud: '+compared.state.toUpperCase()+' · Local workouts '+compared.localPlans+
+   ', cloud workouts '+compared.cloudPlans+' · Local-only '+compared.localOnly+
+   ', cloud-only '+compared.cloudOnly+' · Changed plans '+compared.changedPlans+
+   ', weekdays '+compared.changedDays+', one-time dates '+compared.changedOverrides+
+   ', repeating rules '+(compared.recurringChanged?'different':'matching')+'. '+compared.message;
   cloudReadVerifiedOwner=checked.available===true?owner:null;
   renderCloudInventory();
   status.textContent=checked.summary.workouts+' local workouts, '+checked.summary.datedOverrides+
@@ -1160,6 +1170,7 @@ async function runCloudReadinessCheck(){
     checked.reason+'.')+' Cloud saving remains disabled; no data was changed.';
  }catch(error){
   cloudReadVerifiedOwner=null;
+  $('cloudScheduleComparisonStatus').textContent='Comparison was not verified. Keep existing device and cloud records unchanged.';
   renderCloudInventory();
   status.textContent='Read-only check incomplete: '+String(error.message||error).slice(0,180)+
    '. No workouts were uploaded or overwritten.';
@@ -1509,12 +1520,13 @@ async function authRequest(path,body,token,method='POST'){
 }
 function saveAuth(data){
  cloudReadVerifiedOwner=null; // Revalidate preflight after every login or token refresh.
+ if($('cloudScheduleComparisonStatus'))$('cloudScheduleComparisonStatus').textContent='Account session changed. Run a fresh comparison before trusting the result.';
  // A session already in progress belongs to its original account.
  if(activePlan&&activeSessionOwner&&activeSessionOwner!==data.user?.id)closeModal();
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
  if(account?.id&&account.id!==data.user?.id){cloudReadVerifiedOwner=null;combinedLoadEpoch++;$('loadAllOriginalStatus').textContent='Account changed. Load records for the current account.';clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;demoSessions=loadDemo(account.id);renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings();renderOriginalHistory();
 }
-function clearAuth(){cloudReadVerifiedOwner=null;if(activePlan)closeModal();combinedLoadEpoch++;if($('loadAllOriginalStatus'))$('loadAllOriginalStatus').textContent='Sign in to load original account records.';if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;demoSessions=loadDemo('guest');renderLocalDailyTracking();clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings()}
+function clearAuth(){cloudReadVerifiedOwner=null;if($('cloudScheduleComparisonStatus'))$('cloudScheduleComparisonStatus').textContent='Sign in and run a new comparison to view this account’s cloud status.';if(activePlan)closeModal();combinedLoadEpoch++;if($('loadAllOriginalStatus'))$('loadAllOriginalStatus').textContent='Sign in to load original account records.';if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;demoSessions=loadDemo('guest');renderLocalDailyTracking();clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings()}
 async function validateStoredAuth(){
  try{
   const saved=JSON.parse(sessionStorage.getItem(AUTH_KEY)||'null');
