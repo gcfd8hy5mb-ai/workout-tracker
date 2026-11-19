@@ -43,7 +43,7 @@
  }
  function localProgression(practiceSessions,exerciseId,name){
   const originalShape=(Array.isArray(practiceSessions)?practiceSessions:[])
-   .filter(s=>s&&Number.isFinite(Date.parse(s.created||''))&&Array.isArray(s.sets))
+   .filter(s=>s&&Number.isFinite(Date.parse(s.created||''))&&Date.parse(s.created)<=Date.now()&&Array.isArray(s.sets))
    .map(s=>({date:s.created,exercises:[{id:exerciseId,sets:s.sets
      .filter(x=>x?.exerciseId===exerciseId&&x.completed!==false&&
        Number.isFinite(Number(x.weight))&&Number(x.weight)>0&&
