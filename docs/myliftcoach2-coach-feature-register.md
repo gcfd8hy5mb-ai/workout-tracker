@@ -129,3 +129,12 @@ Direct JavaScript regression harness passed the new targeted modules (33 cases b
 - Added `coach-entitlement-boundary.js` and a visible Coach explanation of **draft-only** advanced features. A local tier, imported profile, beta flag or other client value can never establish production Pro authorization. Production entitlement remains denied until a trusted server-side entitlement adapter is completed.
 - Integrated phase and access status into the Coaching page. Added browser assertions and focused tests; a direct JavaScript execution run passed eight cases plus application syntax and script-order checks.
 - This is an incremental safe preview restoration, **not full original adaptive or entitlement parity**. Full original learning orchestration, trustworthy Pro enforcement, cloud write/sync, and on-device iPhone acceptance remain outstanding. Do not merge or deploy until independently verified.
+
+## November 19 — explicit adaptive proposal decisions
+
+- The previous exact-head run `44589247476` passed migration, disposable Postgres and browser consistency checks before this batch.
+- Added owner-scoped `coach-proposal-decisions.js`: eligible **increase/hold/reduce** proposals can be individually marked for review or dismissed. The stored decision is tied to exercise ID, action, weight and source. A changed weight does not inherit an earlier acceptance/dismissal.
+- These are **review-only** decisions, not automatic acceptance into a workout. No plan, session, working set, original storage key, or server record is changed. Rest, missing-exercise, conservative and review-only proposals cannot receive a weight decision.
+- Integrated per-exercise controls on Coaching, with a current-plan re-evaluation at click time. Malformed owner-specific decision storage blocks writes and surfaces a recovery message rather than silently resetting records.
+- Fixed the today's workout preview to display when an increase is paused by current check-in, repeated worse user-rated outcomes, declining working-set repetitions, or unreadable outcome history.
+- Added focused regression and desktop/iPhone-sized browser assertions; direct JavaScript verification of five new module tests and script syntax passed. Full CI and physical-device acceptance must be checked on the exact latest commit. This feature does **not** resolve production Pro authorization, autonomous adaptive parity, cloud sync or live-device verification.
