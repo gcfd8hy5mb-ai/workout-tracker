@@ -601,7 +601,43 @@ function saveCoachFeedback(response){
   notice('Your response was saved on this device. Workout and Coach guidance unchanged.');
  }catch(error){$('coachFeedbackStatus').textContent='Feedback not saved: '+String(error.message||error).slice(0,120)}
 }
+function coachOutcomeData(){
+ const owner=account?.id||'guest';
+ const feedback=window.MLCCoachFeedback.read(localStorage,owner);
+ const outcomes=window.MLCCoachOutcomes.read(localStorage,owner);
+ const candidates=window.MLCCoachOutcomes.candidates(feedback,demoSessions,outcomes);
+ return {owner,feedback,outcomes,candidates};
+}
+function renderCoachOutcomes(){
+ const select=$('coachOutcomeCandidate'),status=$('coachOutcomeStatus');
+ if(!select||!status)return;
+ try{
+  const {outcomes,candidates}=coachOutcomeData();
+  const stats=window.MLCCoachOutcomes.summary(outcomes);
+  select.innerHTML='<option value="">'+(candidates.length?'Select eligible response':'No eligible responses yet')+'</option>'+
+   candidates.map((x,i)=>'<option value="'+i+'">'+escapeHTML(x.exerciseId)+' · '+escapeHTML(x.kind)+' · '+escapeHTML(new Date(x.date).toLocaleDateString())+'</option>').join('');
+  status.textContent=stats.rated+' outcome ratings saved ('+stats.better+' better, '+stats.same+' same, '+stats.worse+' worse). '+stats.note+
+   (candidates.length?' '+candidates.length+' Coach response(s) eligible for follow-up.':' Complete a later workout with two qualifying sets for the same exercise to enable follow-up.');
+ }catch(error){
+  select.innerHTML='<option value="">Outcomes unavailable</option>';
+  status.textContent='Outcome records need recovery: '+String(error.message||error).slice(0,120);
+ }
+}
+function saveCoachOutcome(){
+ try{
+  const {owner,feedback,candidates}=coachOutcomeData();
+  const index=Number($('coachOutcomeCandidate').value);
+  if($('coachOutcomeCandidate').value===''||!Number.isInteger(index)||!candidates[index]){
+   notice('Choose a Coach response with a later completed workout.');return;
+  }
+  window.MLCCoachOutcomes.save(localStorage,owner,candidates[index],$('coachOutcomeRating').value,
+   feedback,demoSessions);
+  renderCoachOutcomes();
+  notice('Your reported outcome was saved locally. Training plans remain unchanged.');
+ }catch(error){$('coachOutcomeStatus').textContent='Outcome not saved: '+String(error.message||error).slice(0,120)}
+}
 function renderCoach(){
+ renderCoachOutcomes();
  $('coachAskAnswer').textContent='Ask about your current training records. Answers are not stored or shared.';
  renderCoachCheckin();
  const checkin=coachCheckinSignal();
@@ -1489,6 +1525,7 @@ function bind(){
  $('coachLoadOriginalHistory').addEventListener('click',loadOriginalHistory);
  $('coachCheckinSave').addEventListener('click',saveCoachCheckin);
  $('coachAskSubmit').addEventListener('click',answerCoachQuestion);
+ $('coachOutcomeSave').addEventListener('click',saveCoachOutcome);
  document.querySelectorAll('[data-coach-feedback]').forEach(button=>button.addEventListener('click',()=>saveCoachFeedback(button.dataset.coachFeedback)));
  $('coachAskInput').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();answerCoachQuestion()}});
  $('coachOpenToday').addEventListener('click',()=>{const chosen=resolvedWorkout();if(!chosen.plan){notice('No workout assigned today.');setPage('workouts');return;}if(weeklyDraftReadError){notice('Recover the saved schedule before starting.');return;}openWorkout(chosen.plan.id);});
