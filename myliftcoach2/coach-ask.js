@@ -15,6 +15,14 @@
    const names=(today.items||[]).map(x=>x.name).filter(Boolean);
    return Object.freeze({kind:'schedule',text:(today.title||'Scheduled workout')+': '+(names.join(', ')||'No exercises assigned')+'.',source:'Resolved workout schedule'});
   }
+  if(/(personal target|my target|saved target|overload target)/.test(q)){
+   const items=Array.isArray(today?.items)?today.items:[];
+   const named=items.find(x=>q.includes(String(x.name||'').toLowerCase())||q.includes(String(x.id||'').toLowerCase()));
+   const row=named||items.find(x=>Number.isFinite(x.personalTarget)&&x.personalTarget>0);
+   if(!row||!Number.isFinite(row.personalTarget)||row.personalTarget<=0)
+    return Object.freeze({kind:'needs-data',text:'No personal target is saved for that scheduled exercise. Open the workout to set one; no target will be invented.',source:'Owner-scoped local targets'});
+   return Object.freeze({kind:'personal-target',text:row.name+': your saved personal target is '+row.personalTarget+' lb. It is separate from calculated Coach progression and is not automatically applied.',source:'Owner-scoped local targets'});
+  }
   if(/(weight|heavy|increase|reduce|lighter|progression|load)/.test(q)){
    const items=Array.isArray(today?.items)?today.items:[];
    const named=items.find(x=>q.includes(String(x.name||'').toLowerCase())||q.includes(String(x.id||'').toLowerCase()));
