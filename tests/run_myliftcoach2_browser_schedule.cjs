@@ -53,6 +53,7 @@ const assert = require('node:assert/strict');
    await page.locator('#closeModal').evaluate(el=>el.click());
    await page.reload({waitUntil:'load'});
    await page.locator('.sidebar [data-page="library"]').first().evaluate(el=>el.click());
+   await page.locator('#exerciseSearch').fill('dead bug'); // progressive grid needs a search after reload
    assert.equal(await page.locator('[data-library-favorite="dead-bug"]').first().getAttribute('aria-pressed'),'true');
    assert.ok(await page.locator('#libraryRecentList [data-library-recent="dead-bug"]').count()>0);
    assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('mlc2-library-prefs-v1:guest')).favorites),['dead-bug']);
@@ -97,6 +98,7 @@ const assert = require('node:assert/strict');
     assert.equal(response.status(),200,device.label+' original asset missing: '+asset);
     assert.match(response.headers()['content-type']||'',/image\//,asset+' is not served as an image');
    }
+   await page.locator('#exerciseSearch').fill('dead bug'); // progressive grid needs a search after filters reset
    await page.locator('[data-library-detail="dead-bug"]').evaluate(el=>el.click());
    assert.match(await page.locator('#modalContent').textContent(),/No original exercise photograph supplied/);
    assert.equal(await page.locator('#modalContent img').count(),0);
