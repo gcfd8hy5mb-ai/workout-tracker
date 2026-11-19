@@ -582,6 +582,25 @@ function answerCoachQuestion(){
  const result=window.MLCCoachAsk.answer(question,{today,checkin,weekly,action,lastSession:recent});
  $('coachAskAnswer').textContent=result.text+' Source: '+result.source+'. No workout data changed.';
 }
+function currentCoachAction(){
+ const selected=resolvedWorkout(),verified=Boolean(account?.id&&importedHistoryOwner===account.id);
+ const today=window.MLCTodayCoach.preview({
+  plan:selected.plan,catalog:editorExercises,localSessions:demoSessions,
+  legacySessions:verified?originalHistory:[],legacyVerified:verified
+ });
+ const checkin=coachCheckinSignal();
+ const weekly=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin});
+ return window.MLCCoachActions.prioritize({today,checkin,weekly});
+}
+function saveCoachFeedback(response){
+ try{
+  const owner=account?.id||'guest',action=currentCoachAction();
+  window.MLCCoachFeedback.save(localStorage,owner,response,action);
+  const stats=window.MLCCoachFeedback.summary(window.MLCCoachFeedback.read(localStorage,owner));
+  $('coachFeedbackStatus').textContent=stats.responses+' Coach responses recorded · '+stats.followed+' used · '+stats.modified+' adjusted · '+stats.rejected+' skipped. These are your choices, not proven training outcomes.';
+  notice('Your response was saved on this device. Workout and Coach guidance unchanged.');
+ }catch(error){$('coachFeedbackStatus').textContent='Feedback not saved: '+String(error.message||error).slice(0,120)}
+}
 function renderCoach(){
  $('coachAskAnswer').textContent='Ask about your current training records. Answers are not stored or shared.';
  renderCoachCheckin();
@@ -657,6 +676,11 @@ function renderCoachProgression(){
  const topAction=window.MLCCoachActions.prioritize({today,checkin:checkinSignal,weekly});
  const actionStatus=$('coachActionStatus');
  if(actionStatus)actionStatus.textContent=topAction.title+' · '+topAction.description+' WHY: '+topAction.why+' No changes are applied automatically.';
+ try{
+  const feedback=window.MLCCoachFeedback.summary(window.MLCCoachFeedback.read(localStorage,account?.id||'guest'));
+  $('coachFeedbackStatus').textContent=feedback.responses+' Coach responses recorded · '+feedback.followed+' used · '+feedback.modified+' adjusted · '+feedback.rejected+' skipped. These are choices, not proven outcomes.';
+ }catch(error){$('coachFeedbackStatus').textContent='Feedback unavailable: '+String(error.message||error).slice(0,120)}
+
  const items=window.MLCCoachDashboard.recommendations({
   localSessions:demoSessions,originalSessions:verified?originalHistory:[],
   legacyVerified:verified,catalog:editorExercises,limit:24
@@ -1465,6 +1489,7 @@ function bind(){
  $('coachLoadOriginalHistory').addEventListener('click',loadOriginalHistory);
  $('coachCheckinSave').addEventListener('click',saveCoachCheckin);
  $('coachAskSubmit').addEventListener('click',answerCoachQuestion);
+ document.querySelectorAll('[data-coach-feedback]').forEach(button=>button.addEventListener('click',()=>saveCoachFeedback(button.dataset.coachFeedback)));
  $('coachAskInput').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();answerCoachQuestion()}});
  $('coachOpenToday').addEventListener('click',()=>{const chosen=resolvedWorkout();if(!chosen.plan){notice('No workout assigned today.');setPage('workouts');return;}if(weeklyDraftReadError){notice('Recover the saved schedule before starting.');return;}openWorkout(chosen.plan.id);});
  $('coachMovementSearch').addEventListener('input',renderOriginalCoachEvidence);
