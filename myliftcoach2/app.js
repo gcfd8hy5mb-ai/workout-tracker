@@ -1508,6 +1508,7 @@ async function authRequest(path,body,token,method='POST'){
  }finally{clearTimeout(timer)}
 }
 function saveAuth(data){
+ cloudReadVerifiedOwner=null; // Revalidate preflight after every login or token refresh.
  // A session already in progress belongs to its original account.
  if(activePlan&&activeSessionOwner&&activeSessionOwner!==data.user?.id)closeModal();
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
