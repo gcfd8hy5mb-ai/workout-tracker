@@ -128,5 +128,7 @@ jobs:
       - name: Start local development preview
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/myliftcoach2-browser-server.log 2>&1 &
-      - name: Check Home/board/Start/edit/reload in Chromium
-        run: node tests/run_myliftcoach2_browser_schedule.cjs
+      - name: Check schedule and restored Coach flows in Chromium
+        run: |
+          node tests/run_myliftcoach2_browser_schedule.cjs
+          node tests/run_myliftcoach2_browser_coach.cjs
