@@ -636,6 +636,10 @@ function renderCoachProgression(){
    return '<div class="recent-item"><div><strong>'+escapeHTML(row.name)+'</strong><small>'+escapeHTML(label)+'</small><small>'+escapeHTML(row.source||'No verified recommendation')+'</small>'+(evidence?'<small>'+escapeHTML(evidence)+'</small>':'')+(personal?'<small>'+escapeHTML(personal)+'</small>':'')+(caution?'<small>'+escapeHTML(caution)+'</small>':'')+'</div></div>';
   }).join('')||'<p class="small">No exercises scheduled for today.</p>';
  }
+ const weekly=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin:checkinSignal});
+ const topAction=window.MLCCoachActions.prioritize({today,checkin:checkinSignal,weekly});
+ const actionStatus=$('coachActionStatus');
+ if(actionStatus)actionStatus.textContent=topAction.title+' · '+topAction.description+' WHY: '+topAction.why+' No changes are applied automatically.';
  const items=window.MLCCoachDashboard.recommendations({
   localSessions:demoSessions,originalSessions:verified?originalHistory:[],
   legacyVerified:verified,catalog:editorExercises,limit:24
