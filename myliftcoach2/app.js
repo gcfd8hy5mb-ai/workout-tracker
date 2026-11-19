@@ -1022,7 +1022,7 @@ function renderSessionSetProgress(){
  $('sessionSetProgress').max=Math.max(1,target);
  $('sessionSetProgress').value=Math.min(logged,target);
 }
-function renderWorkoutLog(){
+function renderWorkoutLog(inputSnapshot=null){
  if(!activePlan)return;
  $('workoutLog').innerHTML=activePlan.ids.map(id=>{
   const e=exerciseById(id);
@@ -1054,6 +1054,7 @@ function renderWorkoutLog(){
   const replacement=options.length?'<div class="inputs"><label>Replace this exercise<select aria-label="Replacement for '+escapeHTML(e.name)+'" data-swap-select="'+id+'"><option value="">Choose same-muscle alternative</option>'+options.map(x=>'<option value="'+escapeHTML(x.id)+'">'+escapeHTML(x.name)+' · '+escapeHTML(x.reason)+'</option>').join('')+'</select></label><button type="button" class="button-outline" data-swap-apply="'+id+'">Replace exercise</button></div>':'<p class="small">No unused same-muscle alternatives available.</p>';
   return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small>'+visual+guidance+coachHint+historyHint+compareNote+replacement+logged+'<p class="small" data-warmups="'+id+'"></p><div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
  }).join('');
+ if(inputSnapshot)window.MLCSessionInputContinuity.restore($('workoutLog'),inputSnapshot,activePlan.ids);
  renderSessionSetProgress();
  for(const id of activePlan.ids)updateWarmupGuide(id);
 }
@@ -1142,19 +1143,21 @@ function addSet(id){
  if(weightField.value.trim()===''||repsField.value.trim()===''||!Number.isFinite(weight)||weight<0||weight>1500||!Number.isInteger(reps)||reps<1||reps>100){
   notice('Enter a valid weight and rep count.');return;
  }
+ const inputSnapshot=window.MLCSessionInputContinuity.capture($('workoutLog'),activePlan.ids);
  session.sets.push({exerciseId:id,weight,reps});
  sessionDirty=true;persistOpenSession();
  // Update this exercise without discarding entries for other movements.
- renderWorkoutLog();
+ renderWorkoutLog(inputSnapshot);
  for(const exerciseId of activePlan.ids)updateExerciseFeedback(exerciseId);
 }
 function undoSet(id){
  if(!session||!activePlan?.ids.includes(id))return;
  const index=session.sets.findLastIndex(x=>x.exerciseId===id);
  if(index<0)return;
+ const inputSnapshot=window.MLCSessionInputContinuity.capture($('workoutLog'),activePlan.ids);
  session.sets.splice(index,1);
  sessionDirty=true;persistOpenSession();
- renderWorkoutLog();
+ renderWorkoutLog(inputSnapshot);
  for(const exerciseId of activePlan.ids)updateExerciseFeedback(exerciseId);
 }
 function stopRestClock(){
