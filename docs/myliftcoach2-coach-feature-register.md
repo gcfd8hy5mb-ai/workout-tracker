@@ -45,3 +45,13 @@ This is a correctness repair within the draft. No change to scheduling, custom w
 - Direct JavaScript smoke check passed; `app.js` syntax, script order, DOM anchors, and a sample custom-plan suggestion were checked. Full CI and physical browser/device acceptance remain pending.
 
 **Release hold:** do not merge, deploy, or enable production cloud writes without separate acceptance.
+
+## November 18 — factual exercise consistency guide
+
+- Added `coach-consistency.js` to compare up to four qualifying completed local sessions for each exercise in today's **resolved** plan.
+- Distinguishes repeated loads, increasing or decreasing working weights, increasing or decreasing average repetitions, mixed patterns, and insufficient evidence.
+- Requires at least two valid working sets per observed session and three distinct qualifying sessions before showing a trend. Excludes incomplete, non-finite, future-dated and duplicate session records.
+- Integrated factual observations into existing Coaching > Today's scheduled workout section; the custom workout order, scheduled rest days, manual weight selection, and record storage remain unchanged.
+- Added `tests/test_myliftcoach2_coach_consistency.cjs`. A direct JavaScript check passed for steady load, increasing repetitions, insufficient evidence, app syntax, script ordering, and UI reference.
+- **Not a clinical recovery score or definitive plateau diagnosis.** Does not automatically increase loads, deload, change scheduling, or alter account data.
+- Full CI, browser flow, and physical iPhone testing still pending for these commits. No deploy or merge.
