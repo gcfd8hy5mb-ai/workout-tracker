@@ -1193,6 +1193,27 @@ function renderCloudInventory(){
   '. Replacement status: BLOCKED. '+inventory.blockers.join('; ')+'. No data changed.';
  return inventory;
 }
+async function previewLatestCloudSession(){
+ const button=$('cloudSessionPreviewButton'),status=$('cloudSessionPreviewStatus');
+ const owner=account?.id,workout=demoSessions[0];
+ button.disabled=true;
+ status.textContent='Verifying a local 2.0 workout against the existing account history format; no data will be uploaded.';
+ try{
+  if(!owner||importedHistoryOwner!==owner||!Array.isArray(originalHistory)||!workout)throw Error('Sign in, load verified original history, and save a local workout first');
+  const preview=await window.MLCLocalSessionCloudPreview.validateRoundTrip({
+   owner,verifiedOwner:importedHistoryOwner,history:originalHistory,
+   localWorkout:workout,catalog:editorExercises
+  });
+  if(account?.id!==owner||importedHistoryOwner!==owner||demoSessions[0]?.id!==workout.id)
+   throw Error('Account or local workout changed during verification');
+  status.textContent='Verified local preview: '+preview.session.exercises.length+
+   ' exercises and '+preview.session.exercises.reduce((sum,e)=>sum+e.sets.length,0)+
+   ' logged sets preserved · '+preview.historyBefore+' original completed workouts retained · '+
+   preview.historyAfter+' candidate records after hypothetical append. No upload, account mutation or scheduling change occurred.';
+ }catch(error){
+  status.textContent='Preview not verified: '+String(error.message||error).slice(0,160)+'. Nothing was uploaded or overwritten.';
+ }finally{button.disabled=!(account?.id&&importedHistoryOwner===account.id&&demoSessions.length>0)}
+}
 function renderSettings(){
  $('accountIdentity').textContent=account?.email?account.email+' · authenticated (production workout data is not loaded)':'Not signed in. You can still explore the demo.';
  $('backendStatus').textContent=account?'AUTHENTICATED':'NOT CONNECTED';
@@ -1200,6 +1221,7 @@ function renderSettings(){
  $('authAction').textContent=account?'Sign out':'Sign in with existing account';
  $('cloudReadinessButton').disabled=!account||!activeRecurring;
  $('loadAllOriginalRecords').disabled=!account;
+ $('cloudSessionPreviewButton').disabled=!(account?.id&&importedHistoryOwner===account.id&&demoSessions.length>0);
  renderCloudInventory();
 }
 function openModal(content){$('modalContent').innerHTML=content;$('modal').hidden=false;document.body.style.overflow='hidden';$('closeModal').focus()}
@@ -1722,6 +1744,7 @@ function bind(){
  $('loadAllOriginalRecords').addEventListener('click',loadAllOriginalRecords);
  $('cloudReadinessButton').addEventListener('click',runCloudReadinessCheck);
  $('cloudInventoryButton').addEventListener('click',renderCloudInventory);
+ $('cloudSessionPreviewButton').addEventListener('click',previewLatestCloudSession);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
 refreshWeeklyOwner();bind();renderOriginalCustomSchedule();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderLocalDailyTracking();renderOriginalTracking();renderSettings();renderOriginalAccountSettings();validateStoredAuth();
