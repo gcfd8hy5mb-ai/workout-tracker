@@ -36,6 +36,8 @@ const assert = require('node:assert/strict');
    await page.locator('.sidebar [data-page="coaching"]').first().evaluate(el=>el.click());
    assert.equal(await page.locator('#coaching').isVisible(),true,device.name+' Coach tab');
    assert.match(await page.locator('#coachAdaptiveStatus').textContent(),/scheduled movements assessed/,device.name+' adaptive summary');
+   assert.match(await page.locator('#coachNextSessionStatus').textContent(),/exact custom workout/,device.name+' next-session plan');
+   assert.match(await page.locator('#coachNextSessionList').textContent(),/Leg Press/,device.name+' actual exercise');
    assert.match(await page.locator('#coachCycleStatus').textContent(),/Coach (before|after|during)|weekly Coach check-in/i,device.name+' original Coach cycle');
    assert.match(await page.locator('#coachEntitlementStatus').textContent(),/Production Pro access remains unverified/i,device.name+' draft entitlement boundary');
    assert.ok(await page.locator('[data-coach-proposal-accept]').count()>0,device.name+' eligible adaptive suggestion');
