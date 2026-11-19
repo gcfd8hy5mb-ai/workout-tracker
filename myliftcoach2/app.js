@@ -695,6 +695,26 @@ function renderCoach(){
  $('coachRecent').textContent=latest?'Latest practice session: '+new Date(latest.created).toLocaleDateString()+' · '+String(latest.title||'Workout')+(latest.readiness?' · Readiness: '+latest.readiness:''):'No completed preview sessions have been saved.';
  renderOriginalCoachEvidence();
 }
+function recordCoachProposalDecision(index,choice){
+ try{
+  const owner=account?.id||'guest',selected=resolvedWorkout();
+  if(!selected.plan||weeklyDraftReadError)throw Error('Current schedule is unavailable');
+  const verified=Boolean(account?.id&&importedHistoryOwner===account.id);
+  const today=window.MLCTodayCoach.preview({plan:selected.plan,catalog:editorExercises,
+   localSessions:demoSessions,legacySessions:verified?originalHistory:[],
+   legacyVerified:verified});
+  const checkin=coachCheckinSignal();
+  const weekly=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin});
+  const memories={},declines={};
+  for(const row of today.items||[])if(row?.id){memories[row.id]=coachMemoryFor(row.id);declines[row.id]=coachDeclineFor(row.id)}
+  const current=window.MLCCoachAdaptive.compile({today,checkin,weekly,memories,declines});
+  const proposal=current.items[index];
+  if(!proposal)throw Error('This proposal is no longer available');
+  window.MLCCoachProposalDecisions.decide(localStorage,owner,proposal,choice);
+  renderCoachProgression();
+  notice(choice==='accepted'?'Marked for review only. No workout or weight was changed.':'Suggestion dismissed. Your workout stays unchanged.');
+ }catch(error){$('coachAdaptiveDecisionStatus').textContent='Decision not saved: '+String(error.message||error).slice(0,120)}
+}
 function renderCoachProgression(){
  const boundary=window.MLCCoachEntitlementBoundary.assess({environment:'draft',accountId:account?.id||null});
  $('coachEntitlementStatus').textContent=boundary.reason+' No local account tier grants premium access.';
@@ -749,6 +769,24 @@ function renderCoachProgression(){
   activeSession:ownActive,lastSession:latestCycleSession,now:Date.now()});
  $('coachCycleStatus').textContent=cycle.title+' · '+cycle.message+' WHY: '+cycle.why+
   ' This preview cannot change your current custom workout.';
+ const proposals=$('coachAdaptiveProposals');
+ if(proposals){
+  let savedDecisions=null;
+  try{savedDecisions=window.MLCCoachProposalDecisions.read(localStorage,account?.id||'guest')}
+  catch(error){$('coachAdaptiveDecisionStatus').textContent='Saved proposal decisions require recovery: '+String(error.message||error).slice(0,100)}
+  proposals.innerHTML=adaptive.items.map((row,index)=>{
+   const decision=savedDecisions?.find(x=>x.signature===window.MLCCoachProposalDecisions.signature(row));
+   const eligible=Boolean(window.MLCCoachProposalDecisions.signature(row));
+   const description=eligible?row.status.toUpperCase()+' · '+row.weight+' lb · '+row.reason:
+    row.status.replaceAll('-',' ')+' · '+row.reason;
+   return '<div class="recent-item"><div><strong>'+escapeHTML(row.name||row.exerciseId||'Unknown exercise')+
+    '</strong><small>'+escapeHTML(description)+'</small>'+
+    (decision?'<small>Your decision: '+escapeHTML(decision.choice)+' (review record only)</small>':'')+
+    (eligible&&savedDecisions?'<div class="hero-actions"><button type="button" class="button-outline" data-coach-proposal-accept="'+index+'">Mark for review</button><button type="button" class="button-outline" data-coach-proposal-dismiss="'+index+'">Dismiss suggestion</button></div>':'')+
+    '</div></div>';
+  }).join('')||'<p class="small">No exercises assigned today. Coach will not schedule a replacement.</p>';
+  if(savedDecisions)$('coachAdaptiveDecisionStatus').textContent='Review decisions are kept separately from completed sets and never apply a weight automatically.';
+ }
  const topAction=guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin:checkinSignal,weekly}));
  const actionStatus=$('coachActionStatus');
  if(actionStatus)actionStatus.textContent=topAction.title+' · '+topAction.description+' WHY: '+topAction.why+' No changes are applied automatically.';
@@ -1572,6 +1610,14 @@ function bind(){
  $('coachCheckinSave').addEventListener('click',saveCoachCheckin);
  $('coachAskSubmit').addEventListener('click',answerCoachQuestion);
  $('coachOutcomeSave').addEventListener('click',saveCoachOutcome);
+ $('coachAdaptiveProposals').addEventListener('click',event=>{
+  const accept=event.target.closest('[data-coach-proposal-accept]');
+  const dismiss=event.target.closest('[data-coach-proposal-dismiss]');
+  const source=accept||dismiss;if(!source)return;
+  const index=Number(accept?accept.dataset.coachProposalAccept:dismiss.dataset.coachProposalDismiss);
+  if(!Number.isInteger(index)||index<0)return;
+  recordCoachProposalDecision(index,accept?'accepted':'dismissed');
+ });
  document.querySelectorAll('[data-coach-feedback]').forEach(button=>button.addEventListener('click',()=>saveCoachFeedback(button.dataset.coachFeedback)));
  $('coachAskInput').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();answerCoachQuestion()}});
  $('coachOpenToday').addEventListener('click',()=>{const chosen=resolvedWorkout();if(!chosen.plan){notice('No workout assigned today.');setPage('workouts');return;}if(weeklyDraftReadError){notice('Recover the saved schedule before starting.');return;}openWorkout(chosen.plan.id);});
