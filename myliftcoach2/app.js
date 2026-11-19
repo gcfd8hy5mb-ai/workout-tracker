@@ -568,6 +568,9 @@ function saveCoachCheckin(){
 }
 function renderCoach(){
  renderCoachCheckin();
+ const checkin=coachCheckinSignal();
+ const plan=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin});
+ $('coachWeeklyPlan').textContent=plan.workouts+' recorded workouts across '+plan.trainingDays+' days this week ('+plan.weekStart+'–'+plan.weekEnd+'). '+plan.note+' No automatic schedule changes.';
  const trend=window.MLCCoachActivityTrend.compare(demoSessions);
  const localWeek=window.MLCCoachReview.week(demoSessions);
  if(localWeek){
