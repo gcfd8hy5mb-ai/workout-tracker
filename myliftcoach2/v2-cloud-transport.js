@@ -13,6 +13,9 @@ function create({endpoint,publishableKey,getSession,fetcher,enabled=false}){
  if(enabled!==true||ENABLED!==true)throw Error('Live custom workout sync is disabled pending release approval');
  return buildTransport({endpoint,publishableKey,getSession,fetcher});
 }
+function validRemoteDocument(document){
+ try{return schedule.validate(document)===true}catch{return false}
+}
 function buildTransport({endpoint,publishableKey,getSession,fetcher}){
  if(typeof getSession!=='function'||typeof fetcher!=='function'||!publishableKey)throw Error('Session and network transport required');
  const url=new URL(endpoint);
@@ -41,7 +44,7 @@ function buildTransport({endpoint,publishableKey,getSession,fetcher}){
   async read(owner){
    const result=await rpc('prism_v2_schedule_read',owner,{});
    if(result===null)return Object.freeze({revision:0,document:null});
-   if(!result||!Number.isSafeInteger(result.revision)||result.revision<1||!schedule.validate(result.document))throw Error('Invalid cloud schedule response');
+   if(!result||!Number.isSafeInteger(result.revision)||result.revision<1||!validRemoteDocument(result.document))throw Error('Invalid cloud schedule response');
    return Object.freeze({revision:result.revision,document:result.document});
   },
   async save(owner,expectedRevision,document){
