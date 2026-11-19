@@ -738,6 +738,15 @@ function renderCoachProgression(){
   adaptive.items.length+' scheduled movements assessed · '+adaptive.items.filter(row=>row.status==='review-increase').length+
   ' suggested increases paused for review · '+adaptive.items.filter(row=>row.status==='increase'||row.status==='reduce').length+
   ' optional weight changes. '+adaptive.note;
+ const latestCycleSession=demoSessions.filter(entry=>{
+  const date=Date.parse(entry?.created||'');
+  return Number.isFinite(date)&&date<=Date.now();
+ }).slice().sort((a,b)=>Date.parse(b.created)-Date.parse(a.created))[0]||null;
+ const ownActive=activeSessionOwner===(account?.id||'guest')?session:null;
+ const cycle=window.MLCCoachCycle.guidance({today,checkin:checkinSignal,
+  activeSession:ownActive,lastSession:latestCycleSession,now:Date.now()});
+ $('coachCycleStatus').textContent=cycle.title+' · '+cycle.message+' WHY: '+cycle.why+
+  ' This preview cannot change your current custom workout.';
  const topAction=guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin:checkinSignal,weekly}));
  const actionStatus=$('coachActionStatus');
  if(actionStatus)actionStatus.textContent=topAction.title+' · '+topAction.description+' WHY: '+topAction.why+' No changes are applied automatically.';
