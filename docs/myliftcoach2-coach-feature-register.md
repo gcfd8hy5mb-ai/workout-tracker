@@ -93,3 +93,11 @@ The original app contains a **larger interconnected adaptive and learning stack*
 ### Verification
 
 Direct JavaScript regression harness passed the new targeted modules (33 cases before the later Ask Coach target-specific tests), and preview `app.js` syntax/script order passed. Full exact-head GitHub Actions and physical-device tests must still be confirmed independently. No production data writes, merges or deployments.
+
+## November 19 — Coach responses and browser verification follow-up
+
+- Previous migration workflow #44567124920 completed successfully: migration-tests, disposable-postgres and browser-workout-consistency passed. This verified the previous Coach feature integration on its exact commit; it did **not** validate later commits.
+- Restored an owner-isolated Coach response register in `coach-feedback.js`: users can explicitly mark a priority suggestion used, adjusted, or skipped. The responses are factual user choices, **not validated performance outcomes** or automatic learning inputs.
+- The responses appear next to the existing explainable Coach Action, with strictly validated local storage and no change to sets, account workouts, Coach weights, or scheduling. Added `tests/test_myliftcoach2_coach_feedback.cjs` and a desktop/iPhone-sized browser check.
+- Full original Coach intervention memory, autonomous adaptive orchestration, outcome-based confidence, and original entitlement rules remain **unported/unverified**. These feedback records deliberately do not pretend to provide adaptive-learning parity.
+- Draft-only development continues; release/merge/cloud write hold remains active.
