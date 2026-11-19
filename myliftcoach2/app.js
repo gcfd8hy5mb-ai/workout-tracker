@@ -738,10 +738,19 @@ function renderCoachProgression(){
    'No scheduled workout today (or no exercises assigned). Coach will not substitute a preset.':
    today.title+' · '+today.items.length+' scheduled exercises · '+today.ready+' eligible weight suggestions. '+(targetReadError?'Personal targets need local storage recovery. ':'')+'No automatic changes.';
   todayList.innerHTML=today.items.map(row=>{
-   const label=row.status==='ready'?row.action.toUpperCase()+' · '+row.weight+' lb · '+row.reason:
+   const memory=coachMemoryFor(row.id),decline=coachDeclineFor(row.id);
+   const paused=row.status==='ready'&&row.action==='increase'&&
+    (checkinSignal.load==='conservative'||['review','unavailable'].includes(memory.signal)||decline.status==='review-decline');
+   const label=paused?'INCREASE PAUSED FOR REVIEW · '+row.reason:
+    row.status==='ready'?row.action.toUpperCase()+' · '+row.weight+' lb · '+row.reason:
     row.status==='unavailable'?row.reason:'Keep your current working weight until enough completed history is available.';
    const personal=row.personalTarget===null?'':'Personal target: '+row.personalTarget+' lb (set manually; not automatically applied).';
-   const caution=checkinSignal.load==='conservative'&&row.action==='increase'?'This week\'s check-in favors holding progression; the calculated increase is not an instruction to raise your weight.':'';
+   const caution=paused?(checkinSignal.load==='conservative'?
+    'Your weekly check-in favors a cautious approach.':
+    memory.signal==='unavailable'?'Saved Coach outcome history needs recovery.':
+    memory.signal==='review'?'Repeated worse user-rated outcomes require review.':
+    'Repeated declining repetitions at comparable loads require review.'):'';
+
    const observed=window.MLCCoachConsistency.review(demoSessions,row.id);
    const evidence=observed.status==='steady-load'?
     'Recent training: same working load and similar repetitions over '+observed.sessions+' sessions. This is not a plateau diagnosis.':
