@@ -8,7 +8,8 @@
  function key(owner){if(typeof owner!=='string'||!owner||owner.length>160)throw Error('Invalid feedback owner');return PREFIX+owner}
  const values=new Set(['followed','modified','rejected']);
  function valid(row){return row&&values.has(row.response)&&typeof row.kind==='string'&&row.kind.length<=40&&
-  (row.exerciseId===null||(typeof row.exerciseId==='string'&&row.exerciseId.length<=128))&&Number.isFinite(Date.parse(row.at||''));}
+  (row.exerciseId===null||(typeof row.exerciseId==='string'&&row.exerciseId.length<=128))&&
+  (row.id===undefined||(typeof row.id==='string'&&/^cf-\d+-\d+$/.test(row.id)))&&Number.isFinite(Date.parse(row.at||''));}
  function read(store,owner){
   if(!store||typeof store.getItem!=='function')throw Error('Coach feedback storage unavailable');
   const raw=store.getItem(key(owner));if(raw===null)return Object.freeze([]);
@@ -20,7 +21,8 @@
  function save(store,owner,response,action,now=Date.now()){
   const at=new Date(now).toISOString();
   const row={at,response,kind:String(action?.kind||'').slice(0,40),
-   exerciseId:typeof action?.exerciseId==='string'?action.exerciseId:null};
+   exerciseId:typeof action?.exerciseId==='string'?action.exerciseId:null,
+   id:'cf-'+Date.parse(at)+'-'+(Math.max(0,...read(store,owner).map(x=>Number(String(x.id||'').split('-').at(-1))||0))+1)};
   if(!valid(row)||!action?.requiresExplicitAction)throw Error('Invalid Coach response');
   const history=read(store,owner),rows=[row,...history].slice(0,100);
   const raw=JSON.stringify({version:1,owner,rows});
