@@ -73,3 +73,11 @@ test('Coach rejects non-finite working sets without discarding other valid sessi
  assert.equal(result.status,'ready');
  assert.equal(result.weight,165);
 });
+
+test('future-dated practice sessions cannot support a Coach weight increase',()=>{
+ const id='leg-press';
+ const future={created:'2099-11-10T12:00:00Z',sets:[{exerciseId:id,weight:200,reps:10},{exerciseId:id,weight:200,reps:10}]};
+ const recent={created:'2026-11-12T12:00:00Z',sets:[{exerciseId:id,weight:160,reps:10},{exerciseId:id,weight:160,reps:10}]};
+ const p=coach.localProgression([future,recent],id,'Leg Press');
+ assert.equal(p.status,'insufficient');
+});
