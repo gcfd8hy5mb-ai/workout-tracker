@@ -23,6 +23,10 @@ const assert = require('node:assert/strict');
    await page.goto(base,{waitUntil:'load'});
    await page.waitForFunction(()=>document.querySelector('#todayTitle')?.textContent==='My Custom Session',{timeout:15000});
    assert.deepEqual(errors,[],device.label+' bootstrap errors: '+errors.join('; '));
+   await page.locator('#cloudInventoryButton').evaluate(el=>el.click());
+   assert.match(await page.locator('#cloudInventoryStatus').textContent(),/0 of 4 original sections loaded read-only/,device.label+' unsigned inventory');
+   assert.match(await page.locator('#cloudInventoryStatus').textContent(),/Replacement status: BLOCKED/,device.label+' release safeguard');
+
    assert.equal(await page.locator('#todayTitle').textContent(),'My Custom Session');
    await page.locator('#todayExercises [data-exercise-open="leg-press"]').evaluate(el=>el.click());
    assert.match(await page.locator('#modalContent h2').textContent(),/Leg Press/);
