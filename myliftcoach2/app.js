@@ -566,6 +566,9 @@ function saveCoachCheckin(){
   renderCoach();notice('Weekly Coach check-in saved on this device. No plan changes.');
  }catch(error){$('coachCheckinStatus').textContent='Not saved: '+String(error.message||error).slice(0,120)}
 }
+function coachDeclineFor(exerciseId){
+ return window.MLCCoachFatigue.review(demoSessions,exerciseId);
+}
 function coachMemoryFor(exerciseId){
  try{
   const outcomes=window.MLCCoachOutcomes.read(localStorage,account?.id||'guest');
@@ -573,7 +576,12 @@ function coachMemoryFor(exerciseId){
  }catch{return {signal:'unavailable',message:'Coach outcomes need local recovery before memory can be used.'}}
 }
 function guardedCoachAction(action){
- return window.MLCCoachMemory.guard(action,coachMemoryFor(action?.exerciseId));
+ const memoryGuarded=window.MLCCoachMemory.guard(action,coachMemoryFor(action?.exerciseId));
+ if(memoryGuarded?.kind==='progress'&&memoryGuarded.exerciseId&&coachDeclineFor(memoryGuarded.exerciseId).status==='review-decline')
+  return Object.freeze({...memoryGuarded,kind:'review-performance',title:'Review repeated lower repetitions',
+   description:'Hold off on using the proposed increase until you review your recent completed sets.',
+   why:'Three comparable-load training sessions show declining repetitions. This is not a recovery diagnosis and never changes your schedule.'});
+ return memoryGuarded;
 }
 function answerCoachQuestion(){
  const question=$('coachAskInput')?.value||'';
@@ -718,9 +726,9 @@ function renderCoachProgression(){
   }).join('')||'<p class="small">No exercises scheduled for today.</p>';
  }
  const weekly=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin:checkinSignal});
- let memories={};
- for(const row of today.items||[])if(row?.id)memories[row.id]=coachMemoryFor(row.id);
- const adaptive=window.MLCCoachAdaptive.compile({today,checkin:checkinSignal,weekly,memories});
+ let memories={},declines={};
+ for(const row of today.items||[])if(row?.id){memories[row.id]=coachMemoryFor(row.id);declines[row.id]=coachDeclineFor(row.id)}
+ const adaptive=window.MLCCoachAdaptive.compile({today,checkin:checkinSignal,weekly,memories,declines});
  $('coachAdaptiveStatus').textContent=adaptive.status==='rest'?adaptive.note:
   adaptive.items.length+' scheduled movements assessed · '+adaptive.items.filter(row=>row.status==='review-increase').length+
   ' suggested increases paused for review · '+adaptive.items.filter(row=>row.status==='increase'||row.status==='reduce').length+
@@ -1184,7 +1192,7 @@ function renderWorkoutLog(inputSnapshot=null){
   const originalCoachResult=previous?window.MLCSessionCoach.coach(originalHistory,id,e.name):null;
   const coachSource=localCoachResult.status==='ready'?'2.0 completed workouts':originalCoachResult?.status==='ready'?'Original completed history':null;
   const coachResult=localCoachResult.status==='ready'?localCoachResult:originalCoachResult;
-  const caution=(coachCheckinSignal().load==='conservative'||coachMemoryFor(id).signal==='review')&&coachResult?.action==='increase';
+  const caution=(coachCheckinSignal().load==='conservative'||coachMemoryFor(id).signal==='review'||coachDeclineFor(id).status==='review-decline')&&coachResult?.action==='increase';
   const coachHint=coachResult?.status==='ready'?
     '<div class="panel"><strong>Coach progression · '+escapeHTML(coachSource)+'</strong><p class="small">'+escapeHTML(coachResult.action.toUpperCase()+': '+coachResult.reason)+'</p>'+(caution?'<p class="small">Check-in or repeated weaker user-rated outcomes favor reviewing this increase; increase button paused.</p>':'<button class="button-outline" type="button" data-use-coach="'+id+'">Use suggested '+coachResult.weight+' lb for this set</button>')+'</div>':'';
   let savedTarget=null,targetError=false;
@@ -1254,6 +1262,9 @@ function useCoachWeight(id){
    window.MLCSessionCoach.coach(originalHistory,id,ex.name):null;
  const result=localResult.status==='ready'?localResult:originalResult;
  if(result?.status!=='ready'||!Number.isFinite(result.weight)||result.weight<=0||result.weight>1500)return;
+ if(result.action==='increase'&&coachDeclineFor(id).status==='review-decline'){
+  notice('Recent completed sets show declining repetitions. Review this suggested increase first.');return;
+ }
  if(result.action==='increase'&&coachMemoryFor(id).signal==='review'){
   notice('Repeated weaker user-rated outcomes: review this exercise before applying another increase.');return;
  }
