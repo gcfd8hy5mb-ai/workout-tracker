@@ -181,3 +181,12 @@ Direct JavaScript regression harness passed the new targeted modules (33 cases b
 - Added an Account settings button to verify the most recent local practice session against a separately owner-verified original workout history snapshot and show preserved counts. This **never uploads, replaces, changes workouts, or mutates original cloud data**.
 - Added desktop/phone-sized browser checks requiring signed-in, imported original history before enabling the local session cloud-format preview. Physical cross-device synchronization remains unverified.
 - Note: this is only a serialization/compatibility gate. The source original account history must be reloaded/checked for drift before any later production append. The actual live workout sync transport and database release approval remain disabled.
+
+## November 19 — read-only batch workout history reconciliation
+
+- Previous exact-head GitHub Actions run `44623988946` passed all migration, disposable PostgreSQL, and desktop/phone-sized browser jobs.
+- Added `local-history-batch-preview.js`, which checks up to 100 local 2.0 workouts against the verified original account workout history, preserving original newest-first order and all previously saved entries.
+- Uses deterministic `mlc2-demo-*` identities. Exact existing content is flagged `already-saved`; missing sessions are flagged `new`; any same-ID content mismatch blocks the entire preview, preventing a silent overwrite. Duplicate local IDs, duplicate original IDs, wrong account, unsupported exercises, invalid sets, and legacy serialization errors all fail closed.
+- Account settings now offer an explicit **Review all local workouts** action, requiring owner-verified imported original history. The preview reports counts only and performs no cloud writes, local mutations, automatic merges or retries.
+- Added six targeted batch tests and desktop/iPhone-sized browser assertions. The test result is a *compatibility preview*, not proof of an up-to-date remote checkpoint: future production writes must re-read authenticated cloud rows immediately before the transaction, enforce atomic revisions, and independently read back the result.
+- Live production synchronization remains disabled pending explicit approval and independent authorization review.
