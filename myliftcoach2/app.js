@@ -696,6 +696,8 @@ function renderCoach(){
  renderOriginalCoachEvidence();
 }
 function renderCoachProgression(){
+ const boundary=window.MLCCoachEntitlementBoundary.assess({environment:'draft',accountId:account?.id||null});
+ $('coachEntitlementStatus').textContent=boundary.reason+' No local account tier grants premium access.';
  const status=$('coachProgressionStatus'),root=$('coachProgressionList'),start=$('coachOpenToday');
  if(!status||!root)return;
  const selected=resolvedWorkout();
