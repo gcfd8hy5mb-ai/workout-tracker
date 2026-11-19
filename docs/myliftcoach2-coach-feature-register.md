@@ -138,3 +138,11 @@ Direct JavaScript regression harness passed the new targeted modules (33 cases b
 - Integrated per-exercise controls on Coaching, with a current-plan re-evaluation at click time. Malformed owner-specific decision storage blocks writes and surfaces a recovery message rather than silently resetting records.
 - Fixed the today's workout preview to display when an increase is paused by current check-in, repeated worse user-rated outcomes, declining working-set repetitions, or unreadable outcome history.
 - Added focused regression and desktop/iPhone-sized browser assertions; direct JavaScript verification of five new module tests and script syntax passed. Full CI and physical-device acceptance must be checked on the exact latest commit. This feature does **not** resolve production Pro authorization, autonomous adaptive parity, cloud sync or live-device verification.
+
+## November 19 — next-session Coach prescription preview
+
+- Added `coach-next-session.js`, a strictly read-only, source-bound next-exposure card using the exact resolved custom workout and adaptive Coach decision sequence.
+- Displays the original 8–10 repetition target, equipment-adjusted optional working weights, three proportional warm-up sets where a qualifying working weight exists, current personal target as a separate value, and an exact saved review/dismiss decision.
+- Prevents substitutions and automatically generated sessions on rest days. The module fails closed if the schedule and adaptive decision arrays differ, have changed exercise order, contain duplicate IDs, or have insufficient weight evidence. Paused progression never generates an actionable working weight or warm-ups.
+- Added desktop/iPhone-sized browser assertions and four directly executed targeted tests. Direct validation passed all four plus preview app and browser test syntax and script ordering.
+- All values remain **suggestions** and cannot alter the plan, live workout, actual logged sets, or account server records. Real hardware and exact-head GitHub Actions acceptance remain separate release gates; autonomous programming parity and server entitlement enforcement remain incomplete.
