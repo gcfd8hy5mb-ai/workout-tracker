@@ -121,3 +121,11 @@ Direct JavaScript regression harness passed the new targeted modules (33 cases b
 - Added regression coverage for custom exercise order, rest days, partial evidence, conservative check-in, repeated weak outcomes, declining reps and malformed memory; the desktop/iPhone-sized Chromium Coach acceptance test checks the adaptive summary.
 - Original autonomous adaptive programming/phase adjustments/predictive models, production entitlement verification, account-based cloud writes, and real iPhone hardware acceptance are **still not implemented/verified**. Full original Coach feature parity therefore cannot truthfully be certified.
 - The latest completely verified pre-change migration run was #44577553693 (success). CI must pass on the **exact final commit** of this batch before branch verification is marked green. Production and source account records remain unchanged.
+
+## November 19 — Coach lifecycle and entitlement boundary
+
+- Previous exact-head verification run `44579423883` completed successfully before this new batch.
+- Added `coach-cycle-preview.js`, a draft-only source-adapted four-phase workflow: weekly check-in, before workout, during active workout, and shortly after completed workout. It reads the exact scheduled custom workout, account-owned active session and recorded completion. It neither chooses a preset nor mutates any history or weekly board.
+- Added `coach-entitlement-boundary.js` and a visible Coach explanation of **draft-only** advanced features. A local tier, imported profile, beta flag or other client value can never establish production Pro authorization. Production entitlement remains denied until a trusted server-side entitlement adapter is completed.
+- Integrated phase and access status into the Coaching page. Added browser assertions and focused tests; a direct JavaScript execution run passed eight cases plus application syntax and script-order checks.
+- This is an incremental safe preview restoration, **not full original adaptive or entitlement parity**. Full original learning orchestration, trustworthy Pro enforcement, cloud write/sync, and on-device iPhone acceptance remain outstanding. Do not merge or deploy until independently verified.
