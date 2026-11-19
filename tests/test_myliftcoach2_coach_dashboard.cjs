@@ -39,3 +39,16 @@ test('empty or malformed source yields no bogus recommendations',()=>{
  assert.deepEqual(dashboard.recommendations({catalog}),[]);
  assert.deepEqual(dashboard.recommendations({localSessions:[{created:'invalid',sets:[{exerciseId:'leg-press',weight:400,reps:8}]}],catalog}),[]);
 });
+
+test('Coach excludes future-dated and explicitly incomplete training records',()=>{
+ const bad=[
+  {created:'2099-01-01T00:00:00Z',sets:[{exerciseId:'leg-press',weight:999,reps:10}]},
+  {created:'2026-11-15T15:00:00Z',sets:[{exerciseId:'leg-press',weight:160,reps:10,completed:false}]},
+  {created:'2026-11-12T15:00:00Z',sets:[{exerciseId:'leg-press',weight:'Infinity',reps:10}]}
+ ];
+ assert.deepEqual(dashboard.recommendations({localSessions:bad,catalog}),[]);
+});
+test('Coach refuses unverified or malformed original workout evidence',()=>{
+ const broken=[{date:'2026-11-12T15:00:00Z',exercises:[{id:'seated-row',sets:[{weight:100,reps:10,completed:false}]}]}];
+ assert.deepEqual(dashboard.recommendations({originalSessions:broken,legacyVerified:true,catalog}),[]);
+});
