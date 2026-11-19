@@ -778,9 +778,9 @@ function renderCoachProgression(){
   activeSession:ownActive,lastSession:latestCycleSession,now:Date.now()});
  $('coachCycleStatus').textContent=cycle.title+' · '+cycle.message+' WHY: '+cycle.why+
   ' This preview cannot change your current custom workout.';
+ let savedDecisions=null;
  const proposals=$('coachAdaptiveProposals');
  if(proposals){
-  let savedDecisions=null;
   try{savedDecisions=window.MLCCoachProposalDecisions.read(localStorage,account?.id||'guest')}
   catch(error){$('coachAdaptiveDecisionStatus').textContent='Saved proposal decisions require recovery: '+String(error.message||error).slice(0,100)}
   proposals.innerHTML=adaptive.items.map((row,index)=>{
