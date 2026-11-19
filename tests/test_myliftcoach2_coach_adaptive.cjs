@@ -25,3 +25,12 @@ test('insufficient evidence and malformed suggestions do not produce loads',()=>
  const p=compile({today:{status:'scheduled',items:[{id:'a',status:'insufficient'},{id:'b',status:'ready',action:'increase',weight:Infinity}]}});
  assert.deepEqual(p.items.map(x=>x.weight),[null,null]);
 });
+
+test('performance decline evidence pauses only the affected proposed increase',()=>{
+ const inputs={status:'scheduled',items:[...today.items,{id:'seated-row',status:'ready',action:'increase',weight:90}]};
+ const result=compile({today:inputs,checkin:{load:'normal'},declines:{'leg-press':{status:'review-decline'}}});
+ assert.equal(result.items[0].status,'review-increase');
+ assert.equal(result.items[0].weight,null);
+ assert.equal(result.items[1].weight,90);
+ assert.match(result.items[0].reason,/declining repetitions/);
+});
