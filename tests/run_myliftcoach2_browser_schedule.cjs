@@ -28,6 +28,8 @@ const assert = require('node:assert/strict');
    assert.match(await page.locator('#cloudInventoryStatus').textContent(),/Replacement status: BLOCKED/,device.label+' release safeguard');
    assert.match(await page.locator('#cloudScheduleComparisonStatus').textContent(),/No cloud-to-device comparison completed/,device.label+' no unverified comparison');
    assert.equal(await page.locator('#cloudSessionPreviewButton').isDisabled(),true,device.label+' requires verified original history');
+   assert.equal(await page.locator('#cloudBatchPreviewButton').isDisabled(),true,device.label+' all-workout review requires verified account history');
+   assert.match(await page.locator('#cloudBatchPreviewStatus').textContent(),/Sign in and load original workout history/,device.label+' all-workout review not started');
    assert.match(await page.locator('#cloudSessionPreviewStatus').textContent(),/Sign in, load original workout history/,device.label+' no unverified upload');
 
    assert.equal(await page.locator('#todayTitle').textContent(),'My Custom Session');
