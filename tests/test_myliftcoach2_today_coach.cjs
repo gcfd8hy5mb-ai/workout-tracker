@@ -34,3 +34,16 @@ test('Rest day and missing catalog ID never fall back to arbitrary presets',()=>
  assert.equal(result.items[0].status,'unavailable');
  assert.equal(result.items[1].status,'insufficient');
 });
+
+test('personal target appears alongside but never replaces the calculated Coach suggestion',()=>{
+ const p=preview({plan:{ids:['leg-press']},catalog,localSessions:local,personalTargets:{'leg-press':175}});
+ assert.equal(p.items[0].personalTarget,175);
+ assert.equal(p.items[0].weight,165);
+ assert.equal(p.items[0].source,'2.0 history');
+});
+test('malformed or absent manual targets do not become automatic prescriptions',()=>{
+ const p=preview({plan:{ids:['seated-row','leg-press']},catalog,
+  personalTargets:{'seated-row':-3,'leg-press':Infinity}});
+ assert.deepEqual(p.items.map(x=>x.personalTarget),[null,null]);
+ assert.ok(p.items.every(x=>x.weight===null));
+});
