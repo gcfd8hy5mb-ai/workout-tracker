@@ -575,6 +575,21 @@ function renderCoachProgression(){
  const selected=resolvedWorkout();
  start.disabled=!selected.plan||Boolean(weeklyDraftReadError);
  const verified=Boolean(account?.id&&importedHistoryOwner===account.id);
+ const today=window.MLCTodayCoach.preview({
+  plan:selected.plan,catalog:editorExercises,localSessions:demoSessions,
+  legacySessions:verified?originalHistory:[],legacyVerified:verified
+ });
+ const todayStatus=$('coachTodayStatus'),todayList=$('coachTodayList');
+ if(todayStatus&&todayList){
+  todayStatus.textContent=today.status==='rest'?
+   'No scheduled workout today (or no exercises assigned). Coach will not substitute a preset.':
+   today.title+' · '+today.items.length+' scheduled exercises · '+today.ready+' eligible weight suggestions. No automatic changes.';
+  todayList.innerHTML=today.items.map(row=>{
+   const label=row.status==='ready'?row.action.toUpperCase()+' · '+row.weight+' lb · '+row.reason:
+    row.status==='unavailable'?row.reason:'Keep your current working weight until enough completed history is available.';
+   return '<div class="recent-item"><div><strong>'+escapeHTML(row.name)+'</strong><small>'+escapeHTML(label)+'</small><small>'+escapeHTML(row.source||'No verified recommendation')+'</small></div></div>';
+  }).join('')||'<p class="small">No exercises scheduled for today.</p>';
+ }
  const items=window.MLCCoachDashboard.recommendations({
   localSessions:demoSessions,originalSessions:verified?originalHistory:[],
   legacyVerified:verified,catalog:editorExercises,limit:24
