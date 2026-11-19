@@ -33,6 +33,7 @@ const assert = require('node:assert/strict');
    assert.equal(await page.locator('#coaching').isVisible(),true,device.name+' Coach tab');
    assert.match(await page.locator('#coachAdaptiveStatus').textContent(),/scheduled movements assessed/,device.name+' adaptive summary');
    assert.match(await page.locator('#coachCycleStatus').textContent(),/Coach (before|after|during)|weekly Coach check-in/i,device.name+' original Coach cycle');
+   assert.match(await page.locator('#coachEntitlementStatus').textContent(),/Production Pro access remains unverified/i,device.name+' draft entitlement boundary');
    await page.locator('#coachCheckinRecovery').selectOption('poor');
    await page.locator('#coachCheckinEnergy').selectOption('low');
    await page.locator('#coachCheckinDifficulty').selectOption('hard');
