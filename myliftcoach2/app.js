@@ -538,7 +538,34 @@ function renderProgressChart(){
  const fill='22,184 '+points+' '+xy[xy.length-1].x.toFixed(1)+',184';
  root.innerHTML='<svg viewBox="0 0 320 220" role="img" aria-label="Training volume trend based on '+count+' locally saved practice sessions"><defs><linearGradient id="volumeFill" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#f6d88c" stop-opacity=".48"/><stop offset="1" stop-color="#f6d88c" stop-opacity=".02"/></linearGradient></defs><path d="M22 28 V184 H304" fill="none" stroke="#bbdfd2" stroke-opacity=".35"/><path d="M22 80 H304 M22 132 H304" fill="none" stroke="#bbdfd2" stroke-opacity=".2"/><polygon points="'+fill+'" fill="url(#volumeFill)"/><polyline points="'+points+'" fill="none" stroke="#ffe1a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+xy.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="#ffeba8"/>').join('')+'<text x="25" y="207" fill="#c9e5da" font-size="11">Earliest</text><text x="293" y="207" text-anchor="end" fill="#c9e5da" font-size="11">Latest</text></svg><p>'+count+' practice sessions · '+Math.round(values[values.length-1]).toLocaleString()+' lb-reps last session</p>';
 }
+function coachCheckinSignal(){
+ try{return window.MLCCoachCheckin.signal(window.MLCCoachCheckin.current(localStorage,account?.id||'guest'))}
+ catch{return {status:'unavailable',load:'unknown',reason:'Saved check-in requires local recovery.'}}
+}
+function renderCoachCheckin(){
+ const status=$('coachCheckinStatus');if(!status)return;
+ let row;
+ try{row=window.MLCCoachCheckin.current(localStorage,account?.id||'guest')}
+ catch(error){status.textContent='Check-in unavailable: '+String(error.message||error).slice(0,120);return}
+ const fields={recovery:'coachCheckinRecovery',energy:'coachCheckinEnergy',difficulty:'coachCheckinDifficulty',days:'coachCheckinDays',limitations:'coachCheckinLimitations'};
+ for(const [name,id] of Object.entries(fields))$(id).value=row?String(row[name]??''):'';
+ const signal=window.MLCCoachCheckin.signal(row);
+ status.textContent=row?'This week: '+signal.load+' training context. '+signal.reason+' No schedule or set changed.':
+  'No check-in saved this week. Coach will not infer your recovery or availability.';
+}
+function saveCoachCheckin(){
+ const values={
+  recovery:$('coachCheckinRecovery').value,energy:$('coachCheckinEnergy').value,
+  difficulty:$('coachCheckinDifficulty').value,days:$('coachCheckinDays').value,
+  limitations:$('coachCheckinLimitations').value
+ };
+ try{
+  window.MLCCoachCheckin.save(localStorage,account?.id||'guest',values);
+  renderCoach();notice('Weekly Coach check-in saved on this device. No plan changes.');
+ }catch(error){$('coachCheckinStatus').textContent='Not saved: '+String(error.message||error).slice(0,120)}
+}
 function renderCoach(){
+ renderCoachCheckin();
  const trend=window.MLCCoachActivityTrend.compare(demoSessions);
  const localWeek=window.MLCCoachReview.week(demoSessions);
  if(localWeek){
@@ -574,6 +601,7 @@ function renderCoachProgression(){
  if(!status||!root)return;
  const selected=resolvedWorkout();
  start.disabled=!selected.plan||Boolean(weeklyDraftReadError);
+ const checkinSignal=coachCheckinSignal();
  const verified=Boolean(account?.id&&importedHistoryOwner===account.id);
  let personalTargets={};
  let targetReadError=false;
@@ -592,6 +620,7 @@ function renderCoachProgression(){
    const label=row.status==='ready'?row.action.toUpperCase()+' · '+row.weight+' lb · '+row.reason:
     row.status==='unavailable'?row.reason:'Keep your current working weight until enough completed history is available.';
    const personal=row.personalTarget===null?'':'Personal target: '+row.personalTarget+' lb (set manually; not automatically applied).';
+   const caution=checkinSignal.load==='conservative'&&row.action==='increase'?'This week\'s check-in favors holding progression; the calculated increase is not an instruction to raise your weight.':'';
    const observed=window.MLCCoachConsistency.review(demoSessions,row.id);
    const evidence=observed.status==='steady-load'?
     'Recent training: same working load and similar repetitions over '+observed.sessions+' sessions. This is not a plateau diagnosis.':
@@ -599,7 +628,7 @@ function renderCoachProgression(){
     observed.status==='load-decrease'?'Recent training: recorded working load decreased.':
     observed.status==='rep-increase'?'Recent training: average repetitions increased at the same working load.':
     observed.status==='rep-decrease'?'Recent training: average repetitions decreased at the same working load.':null;
-   return '<div class="recent-item"><div><strong>'+escapeHTML(row.name)+'</strong><small>'+escapeHTML(label)+'</small><small>'+escapeHTML(row.source||'No verified recommendation')+'</small>'+(evidence?'<small>'+escapeHTML(evidence)+'</small>':'')+(personal?'<small>'+escapeHTML(personal)+'</small>':'')+'</div></div>';
+   return '<div class="recent-item"><div><strong>'+escapeHTML(row.name)+'</strong><small>'+escapeHTML(label)+'</small><small>'+escapeHTML(row.source||'No verified recommendation')+'</small>'+(evidence?'<small>'+escapeHTML(evidence)+'</small>':'')+(personal?'<small>'+escapeHTML(personal)+'</small>':'')+(caution?'<small>'+escapeHTML(caution)+'</small>':'')+'</div></div>';
   }).join('')||'<p class="small">No exercises scheduled for today.</p>';
  }
  const items=window.MLCCoachDashboard.recommendations({
@@ -1053,8 +1082,9 @@ function renderWorkoutLog(inputSnapshot=null){
   const originalCoachResult=previous?window.MLCSessionCoach.coach(originalHistory,id,e.name):null;
   const coachSource=localCoachResult.status==='ready'?'2.0 completed workouts':originalCoachResult?.status==='ready'?'Original completed history':null;
   const coachResult=localCoachResult.status==='ready'?localCoachResult:originalCoachResult;
+  const caution=coachCheckinSignal().load==='conservative'&&coachResult?.action==='increase';
   const coachHint=coachResult?.status==='ready'?
-    '<div class="panel"><strong>Coach progression · '+escapeHTML(coachSource)+'</strong><p class="small">'+escapeHTML(coachResult.action.toUpperCase()+': '+coachResult.reason)+'</p><button class="button-outline" type="button" data-use-coach="'+id+'">Use suggested '+coachResult.weight+' lb for this set</button></div>':'';
+    '<div class="panel"><strong>Coach progression · '+escapeHTML(coachSource)+'</strong><p class="small">'+escapeHTML(coachResult.action.toUpperCase()+': '+coachResult.reason)+'</p>'+(caution?'<p class="small">Weekly check-in favors holding the recent load; increase button paused.</p>':'<button class="button-outline" type="button" data-use-coach="'+id+'">Use suggested '+coachResult.weight+' lb for this set</button>')+'</div>':'';
   let savedTarget=null,targetError=false;
   try{savedTarget=window.MLCCoachTargets.get(localStorage,activeSessionOwner,id)}
   catch{targetError=true}
@@ -1122,6 +1152,9 @@ function useCoachWeight(id){
    window.MLCSessionCoach.coach(originalHistory,id,ex.name):null;
  const result=localResult.status==='ready'?localResult:originalResult;
  if(result?.status!=='ready'||!Number.isFinite(result.weight)||result.weight<=0||result.weight>1500)return;
+ if(result.action==='increase'&&coachCheckinSignal().load==='conservative'){
+  notice('This week\'s check-in favors holding the current weight. Coach will not apply an increase.');return;
+ }
  field.value=String(result.weight);
  updateWarmupGuide(id);
  notice('Coach suggested weight entered for this set only. No sets or weekly plans changed.');
@@ -1404,6 +1437,7 @@ function bind(){
  $('homeLoadOriginalHistory').addEventListener('click',loadOriginalHistory);
  document.querySelectorAll('[data-home-original-progress]').forEach(el=>el.addEventListener('click',()=>setPage('progress')));
  $('coachLoadOriginalHistory').addEventListener('click',loadOriginalHistory);
+ $('coachCheckinSave').addEventListener('click',saveCoachCheckin);
  $('coachOpenToday').addEventListener('click',()=>{const chosen=resolvedWorkout();if(!chosen.plan){notice('No workout assigned today.');setPage('workouts');return;}if(weeklyDraftReadError){notice('Recover the saved schedule before starting.');return;}openWorkout(chosen.plan.id);});
  $('coachMovementSearch').addEventListener('input',renderOriginalCoachEvidence);
  $('originalHistorySearch').addEventListener('input',renderOriginalHistory);
