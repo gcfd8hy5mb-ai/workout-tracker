@@ -18,3 +18,15 @@ test('unknown exercise or no real history returns insufficient evidence',()=>{
 test('does not claim medical recovery from an absent check-in',()=>{
  assert.equal(answer('How is my recovery?',{checkin:{status:'missing'}}).kind,'needs-data');
 });
+
+test('saved personal target never substitutes a calculated progression weight',()=>{
+ const personalized={...today,items:[{...today.items[0],personalTarget:175}]};
+ const x=answer('What is my target for Leg Press?',{today:personalized});
+ assert.equal(x.kind,'personal-target');
+ assert.match(x.text,/175 lb/);
+ assert.match(x.text,/separate from calculated/);
+});
+test('missing saved target does not invent a user-defined weight',()=>{
+ const x=answer('What is my personal target for Leg Press?',{today});
+ assert.equal(x.kind,'needs-data');
+});
