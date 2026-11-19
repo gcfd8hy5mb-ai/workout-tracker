@@ -718,6 +718,13 @@ function renderCoachProgression(){
   }).join('')||'<p class="small">No exercises scheduled for today.</p>';
  }
  const weekly=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin:checkinSignal});
+ let memories={};
+ for(const row of today.items||[])if(row?.id)memories[row.id]=coachMemoryFor(row.id);
+ const adaptive=window.MLCCoachAdaptive.compile({today,checkin:checkinSignal,weekly,memories});
+ $('coachAdaptiveStatus').textContent=adaptive.status==='rest'?adaptive.note:
+  adaptive.items.length+' scheduled movements assessed · '+adaptive.items.filter(row=>row.status==='review-increase').length+
+  ' suggested increases paused for review · '+adaptive.items.filter(row=>row.status==='increase'||row.status==='reduce').length+
+  ' optional weight changes. '+adaptive.note;
  const topAction=guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin:checkinSignal,weekly}));
  const actionStatus=$('coachActionStatus');
  if(actionStatus)actionStatus.textContent=topAction.title+' · '+topAction.description+' WHY: '+topAction.why+' No changes are applied automatically.';
