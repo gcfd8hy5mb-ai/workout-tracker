@@ -101,3 +101,13 @@ Direct JavaScript regression harness passed the new targeted modules (33 cases b
 - The responses appear next to the existing explainable Coach Action, with strictly validated local storage and no change to sets, account workouts, Coach weights, or scheduling. Added `tests/test_myliftcoach2_coach_feedback.cjs` and a desktop/iPhone-sized browser check.
 - Full original Coach intervention memory, autonomous adaptive orchestration, outcome-based confidence, and original entitlement rules remain **unported/unverified**. These feedback records deliberately do not pretend to provide adaptive-learning parity.
 - Draft-only development continues; release/merge/cloud write hold remains active.
+
+## November 19 — Coach feedback-to-outcome memory (draft)
+
+- Added `coach-outcomes.js`: only an explicitly recorded Coach response attached to a later completed session with at least **two qualifying working sets for the same exercise** can receive a user-reported `better`, `same`, or `worse` outcome. Prior sessions, future dates, rejected advice, single/incomplete sets, and mismatched exercise IDs cannot qualify.
+- Added stable IDs on newly created `coach-feedback.js` records to pair outcomes with the exact response. Existing feedback records without IDs continue to load but cannot be retrospectively paired without a stable identifier.
+- Added `coach-memory.js`: after at least four rated outcomes for the same exercise, summarizes the pattern without asserting causation. Three or more worse ratings (and more worse than better) trigger a **review-only hold** on calculated Coach increases in the session and prioritized Coach Actions. No automatic plan, target, or workout changes.
+- Connected an outcome editor to Coaching and added an account-scoped browser test covering response → subsequent completed local workout → saved outcome. Changed no production Supabase data or original `PRISM` storage keys.
+- Added focused tests for owner isolation, malformed record recovery, one rating per feedback, no fabricated outcomes, and conservative memory safeguards. Direct JavaScript check: 15/15 newly targeted tests passed; app and browser test source syntax passed. Full latest-head CI and device acceptance must be confirmed separately.
+- Earlier run `44567721564`: migration and Chromium browser jobs passed, but the disposable PostgreSQL HTTP security test **failed the tampered-JWT assertion**. It is a genuine unresolved release gate and should not be dismissed as harmless without investigation.
+- Full original adaptive Coach learning, performance outcome measurement, multi-turn intelligence and Pro entitlement parity remain incomplete; these source-faithful features are incremental.
