@@ -34,3 +34,14 @@ No new Coach or workout data was written to production Supabase by this branch.
 - **Full GitHub Actions execution, full app integration, physical-device acceptance remain unverified for these new commits.**
 
 This is a correctness repair within the draft. No change to scheduling, custom workout precedence, user data, production site, or live Supabase.
+
+## November 18 — scheduled workout Coach preview
+
+- Added `myliftcoach2/today-coach.js`, a read-only pre-session guide that takes the exact `resolvedWorkout()` plan that Home and Start Workout already use. It does **not** choose an alternate preset when today's schedule is empty, and preserves exercise order.
+- Every planned exercise shows its own evidence-based increase/hold/reduce suggestion only if qualifying workout history exists; missing and unknown exercise IDs show a safe unavailable/insufficient state.
+- Local 2.0 completed sessions take precedence. Original history is evaluated only when it is already verified for the current account.
+- Exposed the guide on the draft Coaching page using `coachTodayStatus` and `coachTodayList`, without mutating the weekly board, the session, workout records, or weight values.
+- Added `tests/test_myliftcoach2_today_coach.cjs` for custom-plan ordering, verified/unverified legacy history, missing catalog IDs, and rest days.
+- Direct JavaScript smoke check passed; `app.js` syntax, script order, DOM anchors, and a sample custom-plan suggestion were checked. Full CI and physical browser/device acceptance remain pending.
+
+**Release hold:** do not merge, deploy, or enable production cloud writes without separate acceptance.
