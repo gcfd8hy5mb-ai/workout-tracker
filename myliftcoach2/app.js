@@ -1050,13 +1050,63 @@ function renderWorkoutLog(inputSnapshot=null){
   const coachResult=localCoachResult.status==='ready'?localCoachResult:originalCoachResult;
   const coachHint=coachResult?.status==='ready'?
     '<div class="panel"><strong>Coach progression · '+escapeHTML(coachSource)+'</strong><p class="small">'+escapeHTML(coachResult.action.toUpperCase()+': '+coachResult.reason)+'</p><button class="button-outline" type="button" data-use-coach="'+id+'">Use suggested '+coachResult.weight+' lb for this set</button></div>':'';
+  let savedTarget=null,targetError=false;
+  try{savedTarget=window.MLCCoachTargets.get(localStorage,activeSessionOwner,id)}
+  catch{targetError=true}
+  const targetHint='<div class="panel"><strong>My working-weight target · local only</strong>'+
+   (targetError?'<p class="small">Saved targets need recovery. No target can be changed until storage is repaired.</p>':
+    '<p class="small">'+(savedTarget!==null?'Personal target: '+savedTarget+' lb.':'No personal target set.')+
+    ' A personal target is separate from Coach\'s calculated suggestion.</p>'+
+    '<div class="inputs"><label>Personal target (lb)<input type="number" min="0.25" max="1000" step="0.25" inputmode="decimal" data-target-weight="'+escapeHTML(id)+'" value="'+(savedTarget??'')+'"></label>'+
+    '<button type="button" class="button-outline" data-target-save="'+escapeHTML(id)+'">Save target</button>'+
+    (savedTarget!==null?'<button type="button" class="button-outline" data-target-use="'+escapeHTML(id)+'">Use '+savedTarget+' lb for this set</button><button type="button" class="button-outline" data-target-clear="'+escapeHTML(id)+'">Clear target</button>':'')+
+    '</div>')+'</div>';
   const historyHint=previous?'<div class="hero-actions"><span class="small">Last original workout: '+previous.weight+' lb on '+escapeHTML(previous.date)+'</span><button type="button" class="button-outline" data-use-last="'+id+'">Use last weight</button></div>':'';
   const replacement=options.length?'<div class="inputs"><label>Replace this exercise<select aria-label="Replacement for '+escapeHTML(e.name)+'" data-swap-select="'+id+'"><option value="">Choose same-muscle alternative</option>'+options.map(x=>'<option value="'+escapeHTML(x.id)+'">'+escapeHTML(x.name)+' · '+escapeHTML(x.reason)+'</option>').join('')+'</select></label><button type="button" class="button-outline" data-swap-apply="'+id+'">Replace exercise</button></div>':'<p class="small">No unused same-muscle alternatives available.</p>';
-  return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small>'+visual+guidance+coachHint+historyHint+compareNote+replacement+logged+'<p class="small" data-warmups="'+id+'"></p><div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
+  return '<article class="log-card" data-exercise-card="'+id+'"><div class="log-title"><h4>'+escapeHTML(e.name)+'</h4><span class="logged-count" data-count="'+id+'">'+count+' logged</span></div><small>Target: '+e.sets+' sets × '+escapeHTML(e.reps)+' reps</small>'+visual+guidance+coachHint+targetHint+historyHint+compareNote+replacement+logged+'<p class="small" data-warmups="'+id+'"></p><div class="inputs"><label>Weight (lb)<input aria-label="'+escapeHTML(e.name)+' weight in pounds" type="number" min="0" max="1500" step="2.5" inputmode="decimal" data-weight="'+id+'" value="40"></label><label>Reps<input aria-label="'+escapeHTML(e.name)+' repetitions" type="number" min="1" max="100" step="1" inputmode="numeric" data-reps="'+id+'" value="10"></label><button class="button-outline" data-addset="'+id+'" type="button">Log set</button></div><div class="set-feedback" data-feedback="'+id+'" role="status" aria-live="polite"></div><button class="undo-set" data-undo="'+id+'" type="button" hidden>Undo last set</button></article>'
  }).join('');
  if(inputSnapshot)window.MLCSessionInputContinuity.restore($('workoutLog'),inputSnapshot,activePlan.ids);
  renderSessionSetProgress();
  for(const id of activePlan.ids)updateWarmupGuide(id);
+}
+function coachTargetOwner(){
+ const owner=account?.id||'guest';
+ return activePlan&&session&&activeSessionOwner===owner?owner:null;
+}
+function saveCoachTarget(id){
+ const owner=coachTargetOwner();
+ if(!owner||!activePlan.ids.includes(id))return;
+ const input=document.querySelector('[data-target-weight="'+id+'"]');
+ if(!input)return;
+ if(input.value.trim()===''){notice('Enter a target weight, or use Clear target.');return;}
+ try{
+  const value=Number(input.value);
+  window.MLCCoachTargets.save(localStorage,owner,id,value);
+  const snapshot=window.MLCSessionInputContinuity.capture($('workoutLog'),activePlan.ids);
+  renderWorkoutLog(snapshot);
+  notice('Personal target saved on this device only. No set or workout plan was changed.');
+ }catch(error){notice('Target not saved: '+String(error.message||error).slice(0,120))}
+}
+function clearCoachTarget(id){
+ const owner=coachTargetOwner();
+ if(!owner||!activePlan.ids.includes(id))return;
+ try{
+  window.MLCCoachTargets.clear(localStorage,owner,id);
+  const snapshot=window.MLCSessionInputContinuity.capture($('workoutLog'),activePlan.ids);
+  renderWorkoutLog(snapshot);
+  notice('Personal target cleared. Recorded workouts remain unchanged.');
+ }catch(error){notice('Target not cleared: '+String(error.message||error).slice(0,120))}
+}
+function useCoachTarget(id){
+ const owner=coachTargetOwner(),field=document.querySelector('[data-weight="'+id+'"]');
+ if(!owner||!activePlan.ids.includes(id)||!field)return;
+ try{
+  const weight=window.MLCCoachTargets.get(localStorage,owner,id);
+  if(weight===null)return;
+  field.value=String(weight);
+  updateWarmupGuide(id);
+  notice('Personal target copied into this set only. Log the set when ready.');
+ }catch(error){notice('Target unavailable: '+String(error.message||error).slice(0,120))}
 }
 function useCoachWeight(id){
  if(!activePlan?.ids.includes(id))return;
@@ -1334,7 +1384,10 @@ function bind(){
  document.querySelectorAll('[data-account-page]').forEach(el=>el.addEventListener('click',()=>setPage(el.dataset.accountPage)));
 
  $('modalContent').addEventListener('input',e=>{const field=e.target.closest('[data-weight]');if(field)updateWarmupGuide(field.dataset.weight)});
- $('modalContent').addEventListener('click',e=>{const favorite=e.target.closest('[data-library-favorite]');if(favorite){toggleLibraryFavorite(favorite.dataset.libraryFavorite);return;}const related=e.target.closest('[data-library-related]');if(related){exerciseDetail(related.dataset.libraryRelated);return}const stage=e.target.closest('[data-library-stage]');if(stage){stageLibraryExercise(stage.dataset.libraryStage);return}const remove=e.target.closest('[data-delete-logged-set]');if(remove){removeLoggedSet(Number(remove.dataset.deleteLoggedSet));return}const edit=e.target.closest('[data-save-logged-set]');if(edit){updateLoggedSet(Number(edit.dataset.saveLoggedSet));return}const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const readiness=e.target.closest('[data-session-readiness]');if(readiness){updateSessionReadiness(readiness.dataset.sessionReadiness);return}const coach=e.target.closest('[data-use-coach]');if(coach){useCoachWeight(coach.dataset.useCoach);return}const last=e.target.closest('[data-use-last]');if(last){reuseLastWorkingWeight(last.dataset.useLast);return}const swap=e.target.closest('[data-swap-apply]');if(swap){replaceSessionExercise(swap.dataset.swapApply);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
+ $('modalContent').addEventListener('click',e=>{const favorite=e.target.closest('[data-library-favorite]');if(favorite){toggleLibraryFavorite(favorite.dataset.libraryFavorite);return;}const related=e.target.closest('[data-library-related]');if(related){exerciseDetail(related.dataset.libraryRelated);return}const stage=e.target.closest('[data-library-stage]');if(stage){stageLibraryExercise(stage.dataset.libraryStage);return}const remove=e.target.closest('[data-delete-logged-set]');if(remove){removeLoggedSet(Number(remove.dataset.deleteLoggedSet));return}const edit=e.target.closest('[data-save-logged-set]');if(edit){updateLoggedSet(Number(edit.dataset.saveLoggedSet));return}const add=e.target.closest('[data-addset]');if(add){addSet(add.dataset.addset);return}const readiness=e.target.closest('[data-session-readiness]');if(readiness){updateSessionReadiness(readiness.dataset.sessionReadiness);return}const targetSave=e.target.closest('[data-target-save]');if(targetSave){saveCoachTarget(targetSave.dataset.targetSave);return}
+ const targetUse=e.target.closest('[data-target-use]');if(targetUse){useCoachTarget(targetUse.dataset.targetUse);return}
+ const targetClear=e.target.closest('[data-target-clear]');if(targetClear){clearCoachTarget(targetClear.dataset.targetClear);return}
+ const coach=e.target.closest('[data-use-coach]');if(coach){useCoachWeight(coach.dataset.useCoach);return}const last=e.target.closest('[data-use-last]');if(last){reuseLastWorkingWeight(last.dataset.useLast);return}const swap=e.target.closest('[data-swap-apply]');if(swap){replaceSessionExercise(swap.dataset.swapApply);return}const undo=e.target.closest('[data-undo]');if(undo)undoSet(undo.dataset.undo)});
  $('closeModal').addEventListener('click',closeModal);
  $('restClose').addEventListener('click',closeRest);
  $('restSkip').addEventListener('click',closeRest);
