@@ -121,6 +121,7 @@ const assert = require('node:assert/strict');
    assert.ok(await page.locator('#modalContent .liftova-anatomy image[href="../images/myliftcoach-anatomy-realistic.webp"]').count()>0);
    assert.ok(await page.locator('#modalContent .liftova-anatomy image[href="../images/myliftcoach-anatomy-body-mask.png"]').count()>0);
    await page.locator('#closeModal').evaluate(el=>el.click());
+   await page.locator('#exerciseSearch').fill('dead bug'); // return from machine-only filtered results
    await page.locator('[data-library-detail="dead-bug"]').evaluate(el=>el.click());
    await page.locator('[data-library-stage="dead-bug"]').evaluate(el=>el.click());
    assert.equal(await page.locator('#workouts').isVisible(),true);
