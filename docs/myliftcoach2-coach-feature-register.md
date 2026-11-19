@@ -111,3 +111,13 @@ Direct JavaScript regression harness passed the new targeted modules (33 cases b
 - Added focused tests for owner isolation, malformed record recovery, one rating per feedback, no fabricated outcomes, and conservative memory safeguards. Direct JavaScript check: 15/15 newly targeted tests passed; app and browser test source syntax passed. Full latest-head CI and device acceptance must be confirmed separately.
 - Earlier run `44567721564`: migration and Chromium browser jobs passed, but the disposable PostgreSQL HTTP security test **failed the tampered-JWT assertion**. It is a genuine unresolved release gate and should not be dismissed as harmless without investigation.
 - Full original adaptive Coach learning, performance outcome measurement, multi-turn intelligence and Pro entitlement parity remain incomplete; these source-faithful features are incremental.
+
+## November 19 — bounded adaptive restoration acceptance batch
+
+- Added `coach-adaptive.js`: pure read-only, custom-plan-respecting per-exercise decision arbitration. Combines qualifying completed-set suggestions, weekly check-in, self-rated outcome memory, and repeated-performance decline evidence. Outputs only optional, manual-use suggestions, never calendar edits, preset substitutions or auto-recorded weights.
+- Added `coach-fatigue.js`: detects a *recorded* decline in repetitions across at least three comparable-load sessions with at least two qualifying sets each, without presenting it as a medical recovery diagnosis. That signal holds a proposed **increase** for review without altering other exercises.
+- Connected adaptive review counts to the Coach page and the decision guards to the individual set suggestion and top Coach Action. Unreadable outcome memory now fails closed: calculated increases are not offered until data is recovered.
+- Fixed `session-coach.js` so future-dated local workout records cannot be used in progression calculations.
+- Added regression coverage for custom exercise order, rest days, partial evidence, conservative check-in, repeated weak outcomes, declining reps and malformed memory; the desktop/iPhone-sized Chromium Coach acceptance test checks the adaptive summary.
+- Original autonomous adaptive programming/phase adjustments/predictive models, production entitlement verification, account-based cloud writes, and real iPhone hardware acceptance are **still not implemented/verified**. Full original Coach feature parity therefore cannot truthfully be certified.
+- The latest completely verified pre-change migration run was #44577553693 (success). CI must pass on the **exact final commit** of this batch before branch verification is marked green. Production and source account records remain unchanged.
