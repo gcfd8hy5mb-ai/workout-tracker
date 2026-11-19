@@ -26,6 +26,7 @@ const assert = require('node:assert/strict');
    await page.locator('#cloudInventoryButton').evaluate(el=>el.click());
    assert.match(await page.locator('#cloudInventoryStatus').textContent(),/0 of 4 original sections loaded read-only/,device.label+' unsigned inventory');
    assert.match(await page.locator('#cloudInventoryStatus').textContent(),/Replacement status: BLOCKED/,device.label+' release safeguard');
+   assert.match(await page.locator('#cloudScheduleComparisonStatus').textContent(),/No cloud-to-device comparison completed/,device.label+' no unverified comparison');
 
    assert.equal(await page.locator('#todayTitle').textContent(),'My Custom Session');
    await page.locator('#todayExercises [data-exercise-open="leg-press"]').evaluate(el=>el.click());
