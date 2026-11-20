@@ -6,7 +6,7 @@ const weekly=()=>({plans:[{id:'upper-a',title:'Upper',kind:'Preset',ids:['press'
  assigned:['upper-a',null,null,null,null,null,null]});
 function storage(){
  const map=new Map();
- return {getItem:key=>map.has(key)?map.get(key):null,setItem:(key,val)=>map.set(key,val),map};
+ return {getItem:key=>map.has(key)?map.get(key):null,setItem:(key,val)=>map.set(key,val),removeItem:key=>map.delete(key),map};
 }
 test('account workout schedule is queued locally without any network dependency',()=>{
  const db=storage(),plan=weekly();
@@ -60,7 +60,7 @@ test('unknown pending operation state is retained rather than rewritten',()=>{
   fingerprint:'not-a-snapshot',document:weekly()
  }}));
  const original=db.getItem(key);
- assert.throws(()=>queue.stage(db,owner,weekly(),valid),/changed unexpectedly/);
+ assert.throws(()=>queue.stage(db,owner,weekly(),valid),/manual recovery/);
  assert.equal(db.getItem(key),original);
 });
 
