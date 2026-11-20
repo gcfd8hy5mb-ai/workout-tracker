@@ -112,6 +112,24 @@ function commitOwned(storage,base,owner,state,presetIds){
  return commit(storage,ownerKey(base,owner),state,presetIds);
 }
 function commit(storage,key,state,presetIds){
+ // Reject states that cannot round-trip through loadOwned. Never write a
+ // partial or dangling schedule over an existing account's local draft.
+ if(!state||!Array.isArray(state.plans)||!Array.isArray(state.assigned)||
+    state.assigned.length!==7||state.plans.length>55)
+  throw Error('Workout schedule cannot be restored; existing draft preserved');
+ const ids=new Set(),knownPresets=new Set(presetIds||[]);
+ for(const plan of state.plans){
+  if(!plan||typeof plan.id!=='string'||ids.has(plan.id)||
+     (!knownPresets.has(plan.id)&&!/^custom-[a-zA-Z0-9-]{3,90}$/.test(plan.id))||
+     typeof plan.title!=='string'||!plan.title.trim()||plan.title.trim().length>80||
+     !Array.isArray(plan.ids)||!plan.ids.length||plan.ids.length>40||
+     plan.ids.some(id=>typeof id!=='string'||!id)||
+     new Set(plan.ids).size!==plan.ids.length)
+   throw Error('Workout schedule contains an invalid plan; existing draft preserved');
+  ids.add(plan.id);
+ }
+ if(state.assigned.some(id=>id!==null&&!ids.has(id)))
+  throw Error('Workout schedule references a missing plan; existing draft preserved');
  const serialized=JSON.stringify(saved(state,presetIds));
  storage.setItem(key,serialized);
  if(storage.getItem(key)!==serialized)throw Error('Workout schedule was not saved');
