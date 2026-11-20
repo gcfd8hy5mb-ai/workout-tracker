@@ -130,7 +130,7 @@ const assert = require('node:assert/strict');
    await page.reload();
    await page.waitForFunction(()=>document.querySelector('#betaMode').value==='pro');
    await page.locator('#authAction').evaluate(el=>el.click());
-   assert.equal(await page.locator('#betaMode').isDisabled(),true);
+   assert.equal(await page.locator('#betaMode').isEnabled(),true,'guest beta switch remains available like original MYLIFTCOACH');
    await page.locator('#authAction').evaluate(el=>el.click());
    await page.locator('#loginForm [name=email]').fill('beta@example.test');
    await page.locator('#loginForm [name=password]').fill('fixture-only');
@@ -140,7 +140,7 @@ const assert = require('node:assert/strict');
    offline=true;
    await page.reload();
    await page.waitForFunction(()=>document.querySelector('#progressSessions').textContent==='2');
-   assert.equal(await page.locator('#betaMode').isDisabled(),true);
+   assert.equal(await page.locator('#betaMode').isEnabled(),true,'offline beta switch remains available like original MYLIFTCOACH');
    assert.deepEqual(errors,[],device.name+' browser errors: '+errors.join('; '));
    await context.close();
   }
