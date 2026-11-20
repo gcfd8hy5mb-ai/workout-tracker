@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict');
-const {synchronize}=require('../myliftcoach2/v2-schedule-sync-coordinator.js');
+const {synchronize,inspect}=require('../myliftcoach2/v2-schedule-sync-coordinator.js');
 const owner='owner-one',other='owner-two';
 const document=(title='Legs')=>({version:1,plans:[{id:'custom-a',title,ids:['leg-press']}],
  assigned:['custom-a',null,null,null,null,null,null],
@@ -68,4 +68,30 @@ test('ambiguous read-back is never retried automatically',async()=>{
  await assert.rejects(synchronize({owner,localDocument:document(),checkpoint:{revision:0,document:null},
   transport,explicitApproval:true}),/do not retry automatically/);
  assert.equal(writes,1);assert.equal(reads,2);
+});
+
+test('read-only cross-device inspection distinguishes synchronized and changed schedules without writes',async()=>{
+ const base=document(),cloud=fake(base,3),checkpoint={revision:3,document:base};
+ const synced=await inspect({owner,localDocument:document(),checkpoint,transport:cloud.transport});
+ assert.equal(synced.status,'in-sync');
+ assert.equal(synced.writeCount,0);
+ assert.equal(synced.safeToOfferSave,false);
+ const local=await inspect({owner,localDocument:document('Edited on laptop'),checkpoint,transport:cloud.transport});
+ assert.equal(local.status,'local-only');
+ assert.equal(local.safeToOfferSave,true);
+ cloud.replace(document('Edited on phone'));
+ const remote=await inspect({owner,localDocument:document(),checkpoint,transport:cloud.transport});
+ assert.equal(remote.status,'cloud-newer');
+ assert.equal(remote.safeToOfferSave,false);
+ const conflict=await inspect({owner,localDocument:document('Edited on laptop'),checkpoint,transport:cloud.transport});
+ assert.equal(conflict.status,'conflict');
+ assert.equal(conflict.remoteDocument.plans[0].title,'Edited on phone');
+ assert.equal(conflict.safeToOfferSave,false);
+ assert.equal(cloud.counts().writes,0);
+});
+test('read-only schedule inspection refuses unauthenticated, malformed or changing drafts',async()=>{
+ const x=fake();
+ await assert.rejects(inspect({owner:'',localDocument:document(),checkpoint:{revision:0,document:null},transport:x.transport}),/Authenticated owner/);
+ await assert.rejects(inspect({owner,localDocument:{...document(),assigned:['unknown',null,null,null,null,null,null]},checkpoint:{revision:0,document:null},transport:x.transport}),/Unknown default workout/);
+ assert.deepEqual(x.counts(),{reads:0,writes:0});
 });
