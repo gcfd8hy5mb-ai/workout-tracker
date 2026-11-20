@@ -145,6 +145,7 @@ function activateCompleteRecurringLocally(){
   recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),candidate,allowedExerciseIds,null);
   activeRecurring=candidate;
   weekly={plans:candidate.plans.map(p=>({...p,ids:p.ids.slice()})),assigned:candidate.assigned.slice()};
+  queueWorkoutCloudBackup();
   originalSchedulePreview=false;
   fullMigrationPreview=null;
   renderOriginalCustomSchedule();renderHome();renderWorkouts();
@@ -166,6 +167,31 @@ function copyOriginalToEditable(){
   notice('Original workouts copied locally. Live cloud data unchanged.');
  }catch(error){$('originalCustomStatus').textContent='Copy not completed: '+String(error.message||error).slice(0,180)}
 }
+function queueWorkoutCloudBackup(){
+ // Local saves remain authoritative. This records an upload candidate only:
+ // never sends a cloud request and never changes completed workout records.
+ if(!account?.id)return;
+ try{
+  const entry=window.MLCScheduleBackupQueue.stage(localStorage,account.id,
+   activeRecurring||weekly,allowedExerciseIds);
+  if($('scheduleBackupPendingStatus'))
+   $('scheduleBackupPendingStatus').textContent='Workout changes saved on this phone · cloud backup pending ('+entry.updatedAt+').';
+ }catch(error){
+  const message='Workout saved locally, but cloud backup could not be queued: '+String(error.message||error).slice(0,110);
+  if($('scheduleBackupPendingStatus'))$('scheduleBackupPendingStatus').textContent=message;
+  notice(message);
+ }
+}
+function renderPendingScheduleBackup(){
+ const status=$('scheduleBackupPendingStatus');
+ if(!status)return;
+ if(!account?.id){status.textContent='Sign in to prepare a custom workout cloud backup.';return;}
+ try{
+  const queued=window.MLCScheduleBackupQueue.read(localStorage,account.id,allowedExerciseIds);
+  status.textContent=queued?'Latest custom workout edits saved on this phone · cloud backup pending ('+queued.updatedAt+').':
+   'No pending custom workout cloud backup on this phone.';
+ }catch(error){status.textContent='Pending backup requires local recovery: '+String(error.message||error).slice(0,130);}
+}
 function commitWeekly(candidate,explicitDay=null){
  if(weeklyDraftReadError)throw Error('Saved schedule needs recovery before editing: '+weeklyDraftReadError);
  if(activeRecurring){
@@ -186,6 +212,7 @@ function commitWeekly(candidate,explicitDay=null){
   fullMigrationPreview=null;
   renderOriginalCustomSchedule();
  }
+ queueWorkoutCloudBackup();
 }
 function nextPlan(){return resolvedWorkout().plan}
 function openToday(){const plan=nextPlan();if(plan)openWorkout(plan.id);else notice('Today is a rest day. Choose a workout from the weekly board.')}
@@ -234,6 +261,7 @@ function restoreRepeatingForDate(){
   const result=recurringDraftAPI.restoreDate(activeRecurring,date,allowedExerciseIds);
   recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),result,allowedExerciseIds,activeRecurring);
   activeRecurring=result;
+  queueWorkoutCloudBackup();
   const plan=resolvedWorkout(dayAtWeekIndex(Number($('weekEditor').dataset.day))).plan;
   $('weekWorkoutSelect').value=plan?.id||'';
   updateWeekEditor();refreshRestoreRepeating();
@@ -1495,6 +1523,7 @@ function restoreScheduleBackup(){
  }catch(error){status.textContent='Restore blocked: '+String(error.message||error).slice(0,160);}
 }
 function renderSettings(){
+ renderPendingScheduleBackup();
  $('scheduleBackupCheck').disabled=!account?.id;
  $('scheduleBackupRestore').disabled=!safeToRestoreSchedule();
  $('existingCloudSessionsButton').disabled=!account?.id;
