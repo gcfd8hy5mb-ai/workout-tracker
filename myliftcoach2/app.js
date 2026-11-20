@@ -1210,6 +1210,77 @@ function renderCloudInventory(){
   '. Replacement status: BLOCKED. '+inventory.blockers.join('; ')+'. No data changed.';
  return inventory;
 }
+function renderManualCloudTest(){
+ const upload=$('manualCloudTestButton'),verify=$('manualCloudVerifyButton');
+ if(!upload||!verify)return;
+ let pending=null,pendingError=false;
+ try{if(account?.id)pending=window.MLCManualCloudTest.getPending(localStorage,account.id)}
+ catch(error){pendingError=true;$('manualCloudTestStatus').textContent='Uncertain pending test operation. Preserve local data: '+String(error.message).slice(0,100);}
+ upload.disabled=!account?.id||Boolean(localHistoryIssue)||pendingError||(!pending&&!demoSessions.length);
+ upload.textContent=pending?'Verify pending upload':'Upload one test workout';
+ verify.disabled=!account?.id;
+ if(!account?.id){$('manualCloudTestStatus').textContent='Sign in and finish a local practice workout to enable a manual cloud test.';}
+}
+async function uploadManualCloudTest(){
+ const button=$('manualCloudTestButton'),status=$('manualCloudTestStatus');
+ if(button.disabled)return;
+ const owner=account?.id,token=auth?.access_token;
+ let pending;
+ try{pending=window.MLCManualCloudTest.getPending(localStorage,owner)}
+ catch(error){status.textContent=String(error.message||error);return}
+ if(!pending&&!confirm('Upload a separate copy of your most recent locally completed workout to your signed-in MYLIFTCOACH 2.0 cloud account? This creates one test record. It does not change your original PRISM workout data.'))return;
+ button.disabled=true;status.textContent=pending?'Checking prior upload without retrying the write…':'Uploading one isolated test copy with read-back verification…';
+ try{
+  if(!owner||!token||localHistoryIssue)throw Error('Account or local workout history needs verification');
+  const workout=demoSessions[0];
+  const result=await window.MLCManualCloudTest.run({
+   owner,session:async()=>auth,verifyUser:t=>authRequest('user',null,t,'GET'),
+   endpoint:BACKEND,publishableKey:PUBLIC_KEY,storage:localStorage,workout,
+   cryptoAPI:window.crypto,confirmWrite:!pending,
+   fetcher:async(url,options)=>{
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+    try{return await fetch(url,{...options,signal:controller.signal})}finally{clearTimeout(timer)}
+   }
+  });
+  if(account?.id!==owner||auth?.access_token!==token)throw Error('Account changed during cloud test');
+  $('manualCloudVerifyId').value=result.recordId;
+  status.textContent='Verified cloud test record: '+result.recordId+
+   ' · revision '+result.revision+'. Copy this ID to your laptop and use Verify cloud workout. Original app data unchanged.';
+ }catch(error){status.textContent='Cloud test not confirmed: '+String(error.message||error).slice(0,190)+
+   '. Do not create another upload until the pending operation is verified.'}
+ finally{renderManualCloudTest()}
+}
+async function verifyManualCloudRecord(){
+ const button=$('manualCloudVerifyButton'),status=$('manualCloudVerifyStatus');
+ const owner=account?.id,token=auth?.access_token;
+ const id=$('manualCloudVerifyId').value.trim();
+ if(!/^mlc2-test-[0-9a-f-]{36}$/i.test(id)){status.textContent='Enter the exact mlc2-test- record ID from your first device.';return}
+ button.disabled=true;status.textContent='Checking the exact cloud test workout and its exercise sets…';
+ try{
+  if(!owner||!token)throw Error('Sign in to your account first');
+  const user=await authRequest('user',null,token,'GET');
+  if(user?.id!==owner)throw Error('Authenticated account does not match');
+  const url=new URL('/rest/v1/rpc/mlc2_v1_read',BACKEND);
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+  let res;
+  try{res=await fetch(url.toString(),{method:'POST',cache:'no-store',signal:controller.signal,
+   headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},
+   body:JSON.stringify({p_type:'session',p_record_id:id})})}finally{clearTimeout(timer)}
+  if(account?.id!==owner||auth?.access_token!==token)throw Error('Account changed while reading cloud record');
+  if(!res.ok)throw Error('Cloud test read failed ('+res.status+')');
+  const row=await res.json();
+  if(!row){status.textContent='No matching test workout yet for this account. Nothing has been imported.';return}
+  if(row.owner!==owner||row.id!==id||row.type!=='session'||row.deleted!==false||
+    !row.payload?.cloudTest||row.payload.id!==id||!Array.isArray(row.payload.sets))
+    throw Error('Cloud test record is invalid or belongs to a different account');
+  const sets=row.payload.sets;
+  const detail=sets.slice(0,10).map(set=>String(set.exerciseId||'Exercise')+
+   ': '+String(set.weight)+' lb × '+String(set.reps)+' reps').join(' | ');
+  status.textContent='Verified on this device: '+String(row.payload.title||'Test workout').slice(0,80)+
+   ' · '+sets.length+' sets · '+detail+'. Read-only: local workouts were not replaced.';
+ }catch(error){status.textContent='Could not verify exact test workout: '+String(error.message||error).slice(0,180)}
+ finally{button.disabled=!account?.id}
+}
 async function inspectExistingCloudSessions(){
  const button=$('existingCloudSessionsButton'),status=$('existingCloudSessionsStatus');
  const owner=account?.id,token=auth?.access_token;
@@ -1226,8 +1297,13 @@ async function inspectExistingCloudSessions(){
    }
   });
   if(account?.id!==owner||auth?.access_token!==token)throw Error('Account changed during cloud read');
+  const testRecord=result.records.filter(row=>!row.deleted&&row.payload?.cloudTest===true&&
+    row.id.startsWith('mlc2-test-')).at(-1);
+  if(testRecord)$('manualCloudVerifyId').value=testRecord.id;
   status.textContent='Verified 2.0 cloud inventory: '+result.active+' active completed records, '+
    result.deleted+' deleted markers · '+result.total+' owner-scoped records read. '+
+   (testRecord?'Test workout found: '+testRecord.id+'. Use Verify cloud workout below. ':
+    'No identified manual cloud test record in this inventory. ')+
    'This did not upload, import, delete or overwrite workouts.';
  }catch(error){
   status.textContent='2.0 cloud inventory incomplete: '+String(error.message||error).slice(0,180)+
@@ -1328,6 +1404,7 @@ async function previewLatestCloudSession(){
 }
 function renderSettings(){
  $('existingCloudSessionsButton').disabled=!account?.id;
+ renderManualCloudTest();
  renderLocalHistoryIntegrity();
  $('accountIdentity').textContent=account?.email?account.email+' · authenticated (production workout data is not loaded)':'Not signed in. You can still explore the demo.';
  $('backendStatus').textContent=account?'AUTHENTICATED':'NOT CONNECTED';
@@ -1677,7 +1754,7 @@ function saveAuth(data){
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
  if(account?.id&&account.id!==data.user?.id){cloudReadVerifiedOwner=null;combinedLoadEpoch++;$('loadAllOriginalStatus').textContent='Account changed. Load records for the current account.';clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;demoSessions=loadDemo(account.id);renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings();renderOriginalHistory();
 }
-function clearAuth(){cloudReadVerifiedOwner=null;if($('existingCloudSessionsStatus'))$('existingCloudSessionsStatus').textContent='Sign in to inspect existing 2.0 cloud sessions.';for(const id of ['cloudSessionPreviewStatus','cloudBatchPreviewStatus','cloudFreshCheckpointStatus']){
+function clearAuth(){cloudReadVerifiedOwner=null;for(const id of ['manualCloudTestStatus','manualCloudVerifyStatus']){if($(id))$(id).textContent='Sign in to use the cloud test.';}if($('existingCloudSessionsStatus'))$('existingCloudSessionsStatus').textContent='Sign in to inspect existing 2.0 cloud sessions.';for(const id of ['cloudSessionPreviewStatus','cloudBatchPreviewStatus','cloudFreshCheckpointStatus']){
  const node=$(id);if(node)node.textContent='Sign in and load this account’s original history before cloud review.';
 }if($('cloudScheduleComparisonStatus'))$('cloudScheduleComparisonStatus').textContent='Sign in and run a new comparison to view this account’s cloud status.';if(activePlan)closeModal();combinedLoadEpoch++;if($('loadAllOriginalStatus'))$('loadAllOriginalStatus').textContent='Sign in to load original account records.';if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;demoSessions=loadDemo('guest');renderLocalDailyTracking();clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings()}
 async function validateStoredAuth(){
@@ -1888,6 +1965,8 @@ function bind(){
  $('cloudBatchPreviewButton').addEventListener('click',previewAllLocalCloudSessions);
  $('cloudFreshCheckpointButton').addEventListener('click',previewFreshCloudCheckpoint);
  $('existingCloudSessionsButton').addEventListener('click',inspectExistingCloudSessions);
+ $('manualCloudTestButton').addEventListener('click',uploadManualCloudTest);
+ $('manualCloudVerifyButton').addEventListener('click',verifyManualCloudRecord);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
 refreshWeeklyOwner();bind();renderOriginalCustomSchedule();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderLocalDailyTracking();renderOriginalTracking();renderSettings();renderOriginalAccountSettings();validateStoredAuth();
