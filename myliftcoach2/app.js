@@ -1433,7 +1433,70 @@ async function previewLatestCloudSession(){
   status.textContent='Preview not verified: '+String(error.message||error).slice(0,160)+'. Nothing was uploaded or overwritten.';
  }finally{button.disabled=!(account?.id&&importedHistoryOwner===account.id&&demoSessions.length>0)}
 }
+let scheduleBackupPreview=null, scheduleBackupEpoch=0;
+function clearScheduleBackupPreview(){
+ scheduleBackupEpoch++;scheduleBackupPreview=null;
+ if($('scheduleBackupRestore'))$('scheduleBackupRestore').disabled=true;
+ if($('scheduleBackupStatus'))$('scheduleBackupStatus').textContent='Sign in to check your custom workout backup.';
+ if($('scheduleBackupRestoreStatus'))$('scheduleBackupRestoreStatus').textContent='Check your backup before restoring.';
+}
+function safeToRestoreSchedule(){
+ if(!account?.id||!scheduleBackupPreview||scheduleBackupPreview.owner!==account.id||
+    !scheduleBackupPreview.document||activeRecurring||weeklyDraftReadError)return false;
+ try{return localStorage.getItem(weeklyAPI.ownerKey(WEEKLY_KEY,account.id))===null&&
+  localStorage.getItem(weeklyAPI.ownerKey(RECURRING_KEY,account.id))===null;}
+ catch{return false;}
+}
+async function checkScheduleBackup(){
+ const owner=account?.id,token=auth?.access_token,epoch=++scheduleBackupEpoch;
+ const status=$('scheduleBackupStatus'),button=$('scheduleBackupCheck');
+ scheduleBackupPreview=null;button.disabled=true;$('scheduleBackupRestore').disabled=true;
+ status.textContent='Checking your existing custom workout backup (read-only)…';
+ try{
+  if(!owner||!token)throw Error('Sign in to check cloud backup');
+  const verifiedUser=await authRequest('user',null,token,'GET');
+  if(verifiedUser?.id!==owner||account?.id!==owner||auth?.access_token!==token)throw Error('Account changed');
+  const transport=window.MLCExistingScheduleBackup.createReadOnly({
+   endpoint:BACKEND,publishableKey:PUBLIC_KEY,getSession:async()=>auth,fetcher:fetch.bind(window)
+  });
+  const saved=await transport.read(owner);
+  if(epoch!==scheduleBackupEpoch||account?.id!==owner||auth?.access_token!==token)return;
+  if(!saved.document){status.textContent='No custom workout backup found. No records changed.';return;}
+  recurringDraftAPI.guard(saved.document,allowedExerciseIds);
+  scheduleBackupPreview={owner,revision:saved.revision,document:saved.document};
+  status.textContent='Verified backup: '+saved.document.plans.length+' workouts, '+
+   saved.document.recurring.length+' repeating rules, '+Object.keys(saved.document.overrides).length+
+   ' dated exceptions. Revision '+saved.revision+'. No records changed.';
+  $('scheduleBackupRestoreStatus').textContent=safeToRestoreSchedule()?
+   'This phone has no stored custom schedule; optional local recovery is available.':
+   'A local schedule exists or requires recovery; automatic replacement is blocked.';
+  $('scheduleBackupRestore').disabled=!safeToRestoreSchedule();
+ }catch(error){
+  if(epoch!==scheduleBackupEpoch||account?.id!==owner)return;
+  scheduleBackupPreview=null;
+  status.textContent='Backup unavailable: '+String(error.message||error).slice(0,150);
+  $('scheduleBackupRestoreStatus').textContent='No recovery performed. Local data retained.';
+ }finally{if(epoch===scheduleBackupEpoch)button.disabled=!account?.id;}
+}
+function restoreScheduleBackup(){
+ const status=$('scheduleBackupRestoreStatus');
+ try{
+  if(!safeToRestoreSchedule())throw Error('A local schedule already exists; recovery blocked');
+  if(!confirmDiscardWeekEdits())return;
+  if(!confirm('Restore this cloud workout schedule to this phone? No cloud records will change.'))return;
+  if(!safeToRestoreSchedule())throw Error('Local schedule changed; recovery canceled');
+  recurringDraftAPI.guard(scheduleBackupPreview.document,allowedExerciseIds);
+  recurringDraftAPI.commit(localStorage,RECURRING_KEY,account.id,scheduleBackupPreview.document,allowedExerciseIds,null);
+  refreshWeeklyOwner();
+  scheduleBackupPreview=null;
+  renderHome();renderWorkouts();renderSettings();
+  status.textContent='Cloud workout backup restored locally. No cloud records changed.';
+  notice('Custom workout schedule restored on this phone.');
+ }catch(error){status.textContent='Restore blocked: '+String(error.message||error).slice(0,160);}
+}
 function renderSettings(){
+ $('scheduleBackupCheck').disabled=!account?.id;
+ $('scheduleBackupRestore').disabled=!safeToRestoreSchedule();
  $('existingCloudSessionsButton').disabled=!account?.id;
  renderManualCloudTest();
  renderLocalHistoryIntegrity();
@@ -1778,6 +1841,7 @@ async function authRequest(path,body,token,method='POST'){
  }finally{clearTimeout(timer)}
 }
 function saveAuth(data){
+ if(account?.id!==data.user?.id)clearScheduleBackupPreview();
  cloudReadVerifiedOwner=null; // Revalidate preflight after every login or token refresh.
  if($('cloudScheduleComparisonStatus'))$('cloudScheduleComparisonStatus').textContent='Account session changed. Run a fresh comparison before trusting the result.';
  // A session already in progress belongs to its original account.
@@ -1785,7 +1849,7 @@ function saveAuth(data){
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
  if(account?.id&&account.id!==data.user?.id){cloudReadVerifiedOwner=null;combinedLoadEpoch++;$('loadAllOriginalStatus').textContent='Account changed. Load records for the current account.';clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;demoSessions=loadDemo(account.id);renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings();renderOriginalHistory();
 }
-function clearAuth(){cloudReadVerifiedOwner=null;for(const id of ['manualCloudTestStatus','manualCloudVerifyStatus']){if($(id))$(id).textContent='Sign in to use the cloud test.';}if($('existingCloudSessionsStatus'))$('existingCloudSessionsStatus').textContent='Sign in to inspect existing 2.0 cloud sessions.';for(const id of ['cloudSessionPreviewStatus','cloudBatchPreviewStatus','cloudFreshCheckpointStatus']){
+function clearAuth(){clearScheduleBackupPreview();cloudReadVerifiedOwner=null;for(const id of ['manualCloudTestStatus','manualCloudVerifyStatus']){if($(id))$(id).textContent='Sign in to use the cloud test.';}if($('existingCloudSessionsStatus'))$('existingCloudSessionsStatus').textContent='Sign in to inspect existing 2.0 cloud sessions.';for(const id of ['cloudSessionPreviewStatus','cloudBatchPreviewStatus','cloudFreshCheckpointStatus']){
  const node=$(id);if(node)node.textContent='Sign in and load this account’s original history before cloud review.';
 }if($('cloudScheduleComparisonStatus'))$('cloudScheduleComparisonStatus').textContent='Sign in and run a new comparison to view this account’s cloud status.';if(activePlan)closeModal();combinedLoadEpoch++;if($('loadAllOriginalStatus'))$('loadAllOriginalStatus').textContent='Sign in to load original account records.';if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;demoSessions=loadDemo('guest');renderLocalDailyTracking();clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings()}
 async function validateStoredAuth(){
@@ -2003,6 +2067,8 @@ function bind(){
  $('cloudSessionPreviewButton').addEventListener('click',previewLatestCloudSession);
  $('cloudBatchPreviewButton').addEventListener('click',previewAllLocalCloudSessions);
  $('cloudFreshCheckpointButton').addEventListener('click',previewFreshCloudCheckpoint);
+ $('scheduleBackupCheck').addEventListener('click',checkScheduleBackup);
+ $('scheduleBackupRestore').addEventListener('click',restoreScheduleBackup);
  $('existingCloudSessionsButton').addEventListener('click',inspectExistingCloudSessions);
  $('manualCloudTestButton').addEventListener('click',uploadManualCloudTest);
  $('manualCloudVerifyButton').addEventListener('click',verifyManualCloudRecord);
