@@ -49,7 +49,7 @@
     status==='local-only'?'Local changes found; a new explicit save requires fresh approval.':
     'Local and cloud schedules match the verified checkpoint.'});
  }
- async function synchronize({owner,localDocument,checkpoint,transport,explicitApproval=false}={}){
+ async function synchronize({owner,localDocument,checkpoint,transport,operationId,explicitApproval=false}={}){
   if(explicitApproval!==true)throw Error('Explicit user approval required for isolated cloud save');
   if(typeof owner!=='string'||!owner||typeof transport?.read!=='function'||typeof transport?.save!=='function')
    throw Error('Authenticated owner and approved transport required');
@@ -66,7 +66,7 @@
   }
   if(canonical(localDocument)!==localBefore)throw Error('Local workout schedule changed while verifying cloud checkpoint');
   const result=await saveVerification.verify({owner,expectedRevision:fresh.revision,
-   document:localDocument,transport});
+   document:localDocument,transport,operationId});
   if(canonical(localDocument)!==localBefore)throw Error('Local workout schedule changed during cloud save; preserve both versions');
   return Object.freeze({status:'verified',revision:result.revision,writeCount:1,
    readBackMatches:result.readBackMatches,
