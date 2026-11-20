@@ -99,3 +99,30 @@ input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visi
 .library-editor-row>button{flex:none;min-height:34px;font-size:.78rem;padding:6px 10px}
 #weekExerciseCount{color:#efd0a0}
 @media(max-width:640px){.week-exercise.library-editor-row{padding:9px;gap:6px}.library-editor-row>button{padding:6px 8px}}
+
+/* Keep the session actions reachable while the set editor scrolls. */
+.modal-panel:has(#workoutLog) {
+ display:flex;
+ flex-direction:column;
+ overflow:hidden;
+}
+#modalContent:has(#workoutLog) {
+ overflow-y:auto;
+ min-height:0;
+ overscroll-behavior:contain;
+}
+#workoutLog,
+#workoutLog .log-card,
+#workoutLog .inputs label {
+ min-width:0;
+}
+#workoutLog select {max-width:100%}
+#workoutLog + .modal-footer {
+ position:sticky;
+ bottom:0;
+ z-index:2;
+ background:#192228;
+ border-top:1px solid rgba(223,180,103,.54);
+ padding:8px 0;
+}
+.modal-panel:has(#workoutLog) .modal-close {z-index:3}
