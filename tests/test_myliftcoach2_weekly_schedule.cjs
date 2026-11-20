@@ -152,3 +152,20 @@ test('oversized saved workout library is rejected without dropping unassigned cu
  assert.throws(()=>s.loadOwned({getItem:k=>memory.get(k)},'weekly',owner,preset,allowed),/exceeds supported capacity/);
  assert.equal(memory.get(key),original);
 });
+
+test('refuse invalid schedule saves without changing existing saved custom workout',()=>{
+ const owner='11111111-1111-4111-8111-111111111111';
+ const key=s.ownerKey('weekly',owner),original='previous-custom-workout-draft';
+ const records=new Map([[key,original]]);
+ let writes=0;
+ const storage={getItem:k=>records.get(k)??null,setItem:(k,v)=>{writes++;records.set(k,v)}};
+ const valid=s.normalize(null,preset,allowed);
+ const overCapacity={...valid,plans:[...valid.plans,...Array.from({length:52},(_,i)=>({id:'custom-extra-'+i,title:'Extra '+i,ids:['press']}))]};
+ const missing={...valid,assigned:['custom-missing-1',...valid.assigned.slice(1)]};
+ const duplicate={...valid,plans:[...valid.plans,{...valid.plans[0]}]};
+ for(const candidate of [overCapacity,missing,duplicate]){
+  assert.throws(()=>s.commitOwned(storage,'weekly',owner,candidate,preset.map(p=>p.id)),/preserved/);
+  assert.equal(records.get(key),original);
+ }
+ assert.equal(writes,0);
+});
