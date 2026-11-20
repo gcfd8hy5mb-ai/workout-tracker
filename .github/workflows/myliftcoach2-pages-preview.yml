@@ -1,0 +1,80 @@
+name: Publish isolated MYLIFTCOACH 2.0 preview to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'myliftcoach2/**'
+      - '.github/workflows/myliftcoach2-pages-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages-publish-preview
+  cancel-in-progress: false
+
+jobs:
+  validate-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify preview JavaScript and safe relative references
+        run: |
+          set -euo pipefail
+          test -f index.html
+          test -f myliftcoach2/index.html
+          test -f persistence/storage-model.js
+          test -f persistence/reconcile.js
+          for file in myliftcoach2/*.js; do node --check "$file"; done
+          python3 - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          class Resources(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.paths=[]
+              def handle_starttag(self,tag,attrs):
+                  fields=dict(attrs)
+                  if tag=='script' and fields.get('src'):
+                      self.paths.append(fields['src'].split('?')[0])
+                  if tag=='link' and fields.get('rel')=='stylesheet' and fields.get('href'):
+                      self.paths.append(fields['href'].split('?')[0])
+          page=Path('myliftcoach2/index.html')
+          scan=Resources()
+          scan.feed(page.read_text())
+          missing=[path for path in scan.paths if not (page.parent/path).is_file()]
+          if missing: raise SystemExit('Missing preview assets: '+', '.join(missing))
+          print('Verified',len(scan.paths),'local preview script/style references')
+          PY
+      - name: Verify preview cannot perform production workout writes
+        run: |
+          set -euo pipefail
+          ! grep -q 'src="./existing-session-transport.js' myliftcoach2/index.html
+          ! grep -q 'src="./v2-cloud-transport.js' myliftcoach2/index.html
+          grep -q 'const ENABLED=false' myliftcoach2/existing-session-transport.js
+          grep -q 'const ENABLED=false' myliftcoach2/v2-cloud-transport.js
+
+  deploy-preview:
+    needs: validate-preview
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}myliftcoach2/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      # Deploy the existing repository root unchanged, plus the isolated
+      # myliftcoach2/ directory. Existing root index.html is not replaced.
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Publish GitHub Pages preview
+        id: deployment
+        uses: actions/deploy-pages@v4
