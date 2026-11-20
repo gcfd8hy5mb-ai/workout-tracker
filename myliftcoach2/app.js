@@ -1,4 +1,4 @@
-/* MYLIFTCOACH 2.0 · Phase 1. No writes to production Supabase tables. */
+/* MYLIFTCOACH 2.0 · Isolated development: authenticated custom-plan backup only; original records unchanged. */
 (()=>{
 'use strict';
 const BACKEND='https://kirlpjflaoriiusfamsk.supabase.co';
@@ -176,11 +176,15 @@ function queueWorkoutCloudBackup(){
    activeRecurring||weekly,allowedExerciseIds);
   if($('scheduleBackupPendingStatus'))
    $('scheduleBackupPendingStatus').textContent='Workout saved on this phone · preparing verified cloud backup…';
-  void synchronizePhoneWorkoutBackup();
+  if(cloudWorkoutUploadBusy)cloudWorkoutFollowUpRequested=true;
+  else void synchronizePhoneWorkoutBackup();
  }catch(error){
   const message='Workout saved locally, but cloud backup could not be queued: '+String(error.message||error).slice(0,110);
   if($('scheduleBackupPendingStatus'))$('scheduleBackupPendingStatus').textContent=message;
   notice(message);
+  // An earlier attempted upload can be reconciled by reading the cloud;
+  // never create a new write while its outcome is unknown.
+  void synchronizePhoneWorkoutBackup();
  }
 }
 function renderPendingScheduleBackup(){
@@ -202,6 +206,7 @@ function canonicalCloudWorkout(value){
 }
 const CLOUD_WORKOUT_CHECKPOINT_KEY='mlc2-custom-workout-cloud-checkpoint-v1';
 let cloudWorkoutUploadBusy=false;
+let cloudWorkoutFollowUpRequested=false;
 function cloudWorkoutCheckpoint(owner){
  const key=weeklyAPI.ownerKey(CLOUD_WORKOUT_CHECKPOINT_KEY,owner);
  const value=localStorage.getItem(key);
@@ -281,6 +286,7 @@ async function synchronizePhoneWorkoutBackup(){
   const current=window.MLCScheduleBackupQueue.asDocument(activeRecurring||weekly,allowedExerciseIds);
   if(canonicalCloudWorkout(current)!==canonicalCloudWorkout(verified.document)){
    window.MLCScheduleBackupQueue.stage(localStorage,owner,current,allowedExerciseIds);
+   cloudWorkoutFollowUpRequested=true;
    if(status)status.textContent='Earlier backup verified · newer workout changes remain queued on this phone.';
   }else if(status)status.textContent='Custom workouts saved and verified in Supabase · revision '+result.revision+'.';
  }catch(error){
@@ -290,6 +296,10 @@ async function synchronizePhoneWorkoutBackup(){
   }
  }finally{
   cloudWorkoutUploadBusy=false;
+  if(cloudWorkoutFollowUpRequested&&account?.id===owner){
+   cloudWorkoutFollowUpRequested=false;
+   Promise.resolve().then(()=>synchronizePhoneWorkoutBackup());
+  }else cloudWorkoutFollowUpRequested=false;
  }
 }
 function commitWeekly(candidate,explicitDay=null){
@@ -2004,6 +2014,7 @@ async function validateStoredAuth(){
   }else{auth=saved;account=saved.user;demoSessions=loadDemo(account.id);renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach()}
   const user=await authRequest('user',null,token,'GET');
   if(!user?.id||user.id!==account.id)clearAuth();
+  else void synchronizePhoneWorkoutBackup();
  }catch{clearAuth()}
  renderSettings();renderOriginalHistory();
 }
@@ -2015,7 +2026,7 @@ function openSignIn(){
   try{
    const response=await authRequest('token?grant_type=password',{email:String(form.get('email')).trim(),password:String(form.get('password'))});
    if(!response?.access_token||!response?.user?.id)throw Error('No verified account was returned.');
-   saveAuth(response);closeModal();notice('Account verified. This workspace remains demo-only.');setPage('home');
+   saveAuth(response);closeModal();notice('Account verified. Custom workout backups use your existing account.');setPage('home');
   }catch(err){$('loginMessage').className='auth-error';$('loginMessage').textContent=err.name==='AbortError'?'The account service timed out.':/invalid/i.test(err.message)?'Email or password was not accepted.':'Could not sign in: '+String(err.message).slice(0,120)}
   finally{submit.disabled=false;submit.textContent='Sign in securely'}
  });
