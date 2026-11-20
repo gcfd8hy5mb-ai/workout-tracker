@@ -218,3 +218,11 @@ Direct JavaScript regression harness passed the new targeted modules (33 cases b
 - Fixed an actual Account UI integration issue: the cloud history review buttons now rerender when original history loads or fails; without this, their disabled states could persist after a successful load.
 - Clear stale cloud-review status messages when original account history or authentication is cleared, preventing a previous sign-in's statistics from appearing as a current verification.
 - A double-read match is **not** a transactionally consistent snapshot and cannot authorize a write. Atomic owner/revision checks, the approved isolated RPC deployment, and real cross-device acceptance remain separate release gates. Production writes stayed disabled.
+
+## November 19 — isolated schedule sync coordinator (not wired into production)
+
+- Started from PR #373 head `2a0fdce74f7b91748e65cec51ebc3793cc9fba0e`, whose exact-head CI run `44651253404` passed.
+- Added `myliftcoach2/v2-schedule-sync-coordinator.js` (not loaded by `index.html` or `app.js`) to compose existing v2 document validation, a fresh owner-verified schedule read, a checkpoint revision/document comparison, the existing save contract, and independent post-save read-back.
+- The coordinator requires explicit approval for *each* invocation; denies missing account ownership, invalid schedule documents, untrusted checkpoints and changed cloud revisions/documents before any write. A matching cloud schedule short-circuits with zero writes; an ambiguous read-back is not retried automatically.
+- Added eight isolated tests for first-save/read-back, idempotent no-op, two-device revisions, intervening first save, missing approval, altered same-revision response, malformed inputs, and uncertain read-back. These use fake transports only.
+- No production cloud transport was enabled, live Supabase RPCs deployed or existing app data changed. The coordinator remains an **unconnected staging component** until a separate reviewed security migration and explicit production release decision.
