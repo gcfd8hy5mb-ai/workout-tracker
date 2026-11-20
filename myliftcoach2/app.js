@@ -314,7 +314,21 @@ let muscleFilter='';
 let libraryVisibleOffset=0;
 let restSeconds=90,restPaused=true,restClock=null;
 function demoKey(owner=account?.id||'guest'){return owner==='guest'?DEMO_KEY:DEMO_KEY+':'+owner;}
-function loadDemo(owner='guest'){try{return window.MLCCompletedLocalHistory.read(localStorage,demoKey(owner))}catch{return []}}
+let localHistoryIssue=null;
+function loadDemo(owner='guest'){
+ try{const history=window.MLCCompletedLocalHistory.read(localStorage,demoKey(owner));
+  localHistoryIssue=null;return history}
+ catch(error){localHistoryIssue='Saved completed workouts could not be read safely: '+String(error.message||error).slice(0,180);
+  return []}
+}
+function renderLocalHistoryIntegrity(){
+ const status=$('localHistoryIntegrityStatus');
+ if(!status)return;
+ status.textContent=localHistoryIssue?
+  localHistoryIssue+' Existing storage has NOT been erased. Saving or clearing completed history is blocked.':
+  'Local completed history verified. '+demoSessions.length+' completed workout(s) retained on this device.';
+ $('clearDemo').disabled=Boolean(localHistoryIssue);
+}
 function storeDemo(){localStorage.setItem(demoKey(),JSON.stringify(demoSessions))}
 function escapeHTML(text){return String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function notice(message){const t=$('toast');t.textContent=message;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,3400)}
@@ -1289,6 +1303,7 @@ async function previewLatestCloudSession(){
  }finally{button.disabled=!(account?.id&&importedHistoryOwner===account.id&&demoSessions.length>0)}
 }
 function renderSettings(){
+ renderLocalHistoryIntegrity();
  $('accountIdentity').textContent=account?.email?account.email+' · authenticated (production workout data is not loaded)':'Not signed in. You can still explore the demo.';
  $('backendStatus').textContent=account?'AUTHENTICATED':'NOT CONNECTED';
  $('cloudPill').textContent=account?'ACCOUNT CONNECTED · DEMO':'DEMO WORKSPACE';
@@ -1343,15 +1358,23 @@ function openWorkout(id){
  $('startRest').addEventListener('click',openRest);
  $('finishWorkout').addEventListener('click',()=>{
   if(!session?.sets.length){notice('Add at least one practice set first.');return}
+  if(localHistoryIssue){notice('Completed history is unreadable. Preserve existing data and resolve the issue before saving.');return}
+  let historySaved=false;
   try{
    const entry={id:window.MLCCompletedLocalHistory.newId(window.crypto),created:new Date().toISOString(),title:activePlan.title,planId:activePlan.id,sets:session.sets.map(x=>({...x})),readiness:session.readiness,startedAt:session.startedAt};
    const updated=window.MLCCompletedLocalHistory.append(localStorage,demoKey(activeSessionOwner),demoSessions,entry);
-   demoSessions=updated;
-   window.MLCSessionDraft.clear(localStorage,activeSessionOwner);
-   // Completion must not recreate the in-progress draft.
+   demoSessions=updated;historySaved=true;
+   // Stop unfinished-draft re-persistence even if clearing its storage fails.
+   const completedOwner=activeSessionOwner;
    session=null;activePlan=null;activeSessionOwner=null;sessionDirty=false;
-   closeModal();renderHome();setPage('progress');renderCoach();notice('Practice session saved in this browser.');
-  }catch{notice('Could not finish saving this workout. Your unfinished draft is retained.')}
+   try{window.MLCSessionDraft.clear(localStorage,completedOwner)}
+   catch{notice('Workout saved, but an old unfinished draft could not be cleared. Do not finish it again.')}
+   closeModal();renderHome();setPage('progress');renderCoach();renderSettings();
+   notice('Practice session saved in this browser.');
+  }catch(error){
+   if(historySaved){notice('Workout was saved, but the screen could not update. Do not repeat completion.');return}
+   notice('Could not finish saving this workout. Your unfinished draft is retained.')
+  }
 
  });
 }
@@ -1759,7 +1782,16 @@ function bind(){
  $('restPause').addEventListener('click',()=>{restPaused=!restPaused;updateRestClock()});
  $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').hidden)closeModal()});
- $('clearDemo').addEventListener('click',()=>{if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;demoSessions=[];localStorage.removeItem(demoKey());renderProgress();renderCoach();renderHome();notice('Local demo history cleared. Production data untouched.')});
+ $('clearDemo').addEventListener('click',()=>{
+ if(localHistoryIssue){notice('Saved workout data is unreadable. Clearing is blocked to protect it.');return}
+ if(!confirm('Delete only MYLIFTCOACH 2.0 practice sessions stored in this browser?'))return;
+ try{
+  localStorage.removeItem(demoKey());
+  if(localStorage.getItem(demoKey())!==null)throw Error('Local history deletion not verified');
+  demoSessions=[];renderProgress();renderCoach();renderHome();renderSettings();
+  notice('Local demo history cleared. Production data untouched.');
+ }catch(error){notice('Could not verify local history deletion. Existing storage state was not reset.')}
+});
  $('loadOriginalHistory').addEventListener('click',loadOriginalHistory);
  $('homeLoadOriginalHistory').addEventListener('click',loadOriginalHistory);
  document.querySelectorAll('[data-home-original-progress]').forEach(el=>el.addEventListener('click',()=>setPage('progress')));
