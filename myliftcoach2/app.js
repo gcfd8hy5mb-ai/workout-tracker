@@ -188,7 +188,9 @@ function renderPendingScheduleBackup(){
  if(!account?.id){status.textContent='Sign in to prepare a custom workout cloud backup.';return;}
  try{
   const queued=window.MLCScheduleBackupQueue.read(localStorage,account.id,allowedExerciseIds);
-  status.textContent=queued?'Latest custom workout edits saved on this phone · cloud backup pending ('+queued.updatedAt+').':
+  status.textContent=queued?.status==='attempted'?
+   'Cloud upload result needs recovery. Original upload ID preserved; no automatic retry or overwrite.':
+   queued?'Latest custom workout edits saved on this phone · cloud backup pending ('+queued.updatedAt+').':
    'No pending custom workout cloud backup on this phone.';
  }catch(error){status.textContent='Pending backup requires local recovery: '+String(error.message||error).slice(0,130);}
 }
