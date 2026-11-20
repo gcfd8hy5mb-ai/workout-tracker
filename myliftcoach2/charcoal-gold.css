@@ -126,3 +126,13 @@ input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visi
  margin-top:4px;
 }
 .modal-panel:has(.workout-session-body) .modal-close {z-index:3}
+
+@media (max-width:760px) {
+ html, body, .app-shell {max-width:100%;overflow-x:clip}
+ .modal {
+  inset:0 auto auto 0;
+  width:100vw;
+  height:100dvh;
+ }
+ .modal-panel input, .modal-panel select {font-size:16px}
+}

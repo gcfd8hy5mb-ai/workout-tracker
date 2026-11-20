@@ -109,7 +109,7 @@ const assert = require('node:assert/strict');
    const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('mlc2-coach-manual-targets-v1:beta-tester')));
    assert.equal(saved.targets['leg-press'],165,device.name+' isolated local target');
    const saveLater=page.locator('#cancelWorkout');
-   try{await saveLater.click({timeout:5000})}
+   try{if(device.isMobile)await saveLater.tap({timeout:8000});else await saveLater.click({timeout:8000})}
    catch(error){
     console.error(device.name,await saveLater.evaluate(button=>{
      const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
