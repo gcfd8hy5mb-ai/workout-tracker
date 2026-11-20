@@ -1210,6 +1210,30 @@ function renderCloudInventory(){
   '. Replacement status: BLOCKED. '+inventory.blockers.join('; ')+'. No data changed.';
  return inventory;
 }
+async function inspectExistingCloudSessions(){
+ const button=$('existingCloudSessionsButton'),status=$('existingCloudSessionsStatus');
+ const owner=account?.id,token=auth?.access_token;
+ button.disabled=true;status.textContent='Reading existing MYLIFTCOACH 2.0 cloud sessions for this account (read-only)…';
+ try{
+  if(!owner||!token)throw Error('Sign in to your existing account first');
+  const result=await window.MLCExistingCloudSessions.inspect({
+   endpoint:BACKEND,publishableKey:PUBLIC_KEY,owner,getSession:async()=>auth,
+   verifyUser:accessToken=>authRequest('user',null,accessToken,'GET'),
+   fetcher:async(url,options)=>{
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+    try{return await fetch(url,{...options,signal:controller.signal})}
+    finally{clearTimeout(timer)}
+   }
+  });
+  if(account?.id!==owner||auth?.access_token!==token)throw Error('Account changed during cloud read');
+  status.textContent='Verified 2.0 cloud inventory: '+result.active+' active completed records, '+
+   result.deleted+' deleted markers · '+result.total+' owner-scoped records read. '+
+   'This did not upload, import, delete or overwrite workouts.';
+ }catch(error){
+  status.textContent='2.0 cloud inventory incomplete: '+String(error.message||error).slice(0,180)+
+   '. No saved workout was changed.';
+ }finally{button.disabled=!account?.id}
+}
 async function previewFreshCloudCheckpoint(){
  const button=$('cloudFreshCheckpointButton'),status=$('cloudFreshCheckpointStatus');
  const owner=account?.id,sessionToken=auth?.access_token;
@@ -1303,6 +1327,7 @@ async function previewLatestCloudSession(){
  }finally{button.disabled=!(account?.id&&importedHistoryOwner===account.id&&demoSessions.length>0)}
 }
 function renderSettings(){
+ $('existingCloudSessionsButton').disabled=!account?.id;
  renderLocalHistoryIntegrity();
  $('accountIdentity').textContent=account?.email?account.email+' · authenticated (production workout data is not loaded)':'Not signed in. You can still explore the demo.';
  $('backendStatus').textContent=account?'AUTHENTICATED':'NOT CONNECTED';
@@ -1652,7 +1677,7 @@ function saveAuth(data){
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
  if(account?.id&&account.id!==data.user?.id){cloudReadVerifiedOwner=null;combinedLoadEpoch++;$('loadAllOriginalStatus').textContent='Account changed. Load records for the current account.';clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;demoSessions=loadDemo(account.id);renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings();renderOriginalHistory();
 }
-function clearAuth(){cloudReadVerifiedOwner=null;for(const id of ['cloudSessionPreviewStatus','cloudBatchPreviewStatus','cloudFreshCheckpointStatus']){
+function clearAuth(){cloudReadVerifiedOwner=null;if($('existingCloudSessionsStatus'))$('existingCloudSessionsStatus').textContent='Sign in to inspect existing 2.0 cloud sessions.';for(const id of ['cloudSessionPreviewStatus','cloudBatchPreviewStatus','cloudFreshCheckpointStatus']){
  const node=$(id);if(node)node.textContent='Sign in and load this account’s original history before cloud review.';
 }if($('cloudScheduleComparisonStatus'))$('cloudScheduleComparisonStatus').textContent='Sign in and run a new comparison to view this account’s cloud status.';if(activePlan)closeModal();combinedLoadEpoch++;if($('loadAllOriginalStatus'))$('loadAllOriginalStatus').textContent='Sign in to load original account records.';if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;demoSessions=loadDemo('guest');renderLocalDailyTracking();clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings()}
 async function validateStoredAuth(){
@@ -1862,6 +1887,7 @@ function bind(){
  $('cloudSessionPreviewButton').addEventListener('click',previewLatestCloudSession);
  $('cloudBatchPreviewButton').addEventListener('click',previewAllLocalCloudSessions);
  $('cloudFreshCheckpointButton').addEventListener('click',previewFreshCloudCheckpoint);
+ $('existingCloudSessionsButton').addEventListener('click',inspectExistingCloudSessions);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
 refreshWeeklyOwner();bind();renderOriginalCustomSchedule();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderLocalDailyTracking();renderOriginalTracking();renderSettings();renderOriginalAccountSettings();validateStoredAuth();
