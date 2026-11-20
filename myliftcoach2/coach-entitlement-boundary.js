@@ -24,12 +24,15 @@
   if(entitlement?.tier==='pro'&&Date.parse(entitlement.expires_at)>now)return 'pro';
   return 'free';
  }
- // Release builds may disable beta previews independently of paid account claims.
+ // Mirrors the original MYLIFTCOACH public-beta preview switch. This flag
+ // is for the isolated 2.0 beta build only; disable before a paid public release.
+ // A browser preference changes the on-device FEATURE PREVIEW, never the
+ // verified server subscription or an authenticated backend permission.
  const BETA_PREVIEWS_ENABLED=true;
  function access(user,owner,preference,enabled=BETA_PREVIEWS_ENABLED){
   const paidTier=verifiedTier(user,owner);
-  const beta=Boolean(enabled&&owner&&user?.id===owner&&user.app_metadata?.myliftcoach_beta===true);
-  const mode=beta?(preference==='pro'||preference==='free'?preference:paidTier==='free'?'free':'pro'):null;
+  const beta=Boolean(enabled);
+  const mode=beta?(preference==='pro'?'pro':'free'):null;
   return {paidTier,beta,mode,effectiveTier:mode??paidTier};
  }
  return Object.freeze({assess,verifiedTier,access});
