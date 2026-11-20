@@ -33,6 +33,8 @@ const assert = require('node:assert/strict');
    assert.equal(await page.locator('#existingCloudSessionsButton').isDisabled(),true,device.label+' deployed 2.0 RPC requires verified account');
    assert.equal(await page.locator('#scheduleBackupCheck').isDisabled(),true,device.label+' backup inspection requires signed-in account');
    assert.equal(await page.locator('#scheduleBackupRestore').isDisabled(),true,device.label+' cloud recovery must remain disabled without verified backup');
+   assert.equal(await page.evaluate(()=>typeof window.MLCScheduleBackupQueue.stage),'function');
+   assert.equal(await page.evaluate(()=>Object.keys(localStorage).some(k=>k.startsWith('mlc2-schedule-backup-pending-v1:guest'))),false);
    assert.match(await page.locator('#scheduleBackupStatus').textContent(),/Sign in to check your custom workout backup/);
    assert.equal(await page.evaluate(()=>window.MLCExistingScheduleBackup.ENABLED),false,device.label+' cloud schedule writes disabled');
    assert.equal(await page.evaluate(()=>typeof window.MLCExistingScheduleBackup.createReadOnly),'function');
