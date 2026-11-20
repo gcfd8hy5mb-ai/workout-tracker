@@ -728,10 +728,14 @@ function renderProgressChart(){
 }
 let verifiedCoachIdentity=null;
 let betaPreference=null;
-function betaPreferenceKey(owner){return 'mlc2-beta-mode-v1:'+owner}
+function betaPreferenceKey(owner){return 'mlc2-beta-mode-v1:'+(owner||'guest')}
 function coachAccess(){
  const valid=verifiedCoachIdentity&&verifiedCoachIdentity.token===auth?.access_token&&auth.expires_at>Date.now()/1000;
- return window.MLCCoachEntitlementBoundary.access(valid?verifiedCoachIdentity.user:null,account?.id,betaPreference);
+ // Match original beta switching: local Free/Pro display preferences are
+ // independent of the backend's verified paid subscription.
+ let preview=null;
+ try{preview=localStorage.getItem(betaPreferenceKey(account?.id))}catch{}
+ return window.MLCCoachEntitlementBoundary.access(valid?verifiedCoachIdentity.user:null,account?.id,preview);
 }
 function hasPro(){return ['pro','lifetime_pro'].includes(coachAccess().effectiveTier)}
 function refreshCoachAccess(){
@@ -747,7 +751,7 @@ function verifyCoachIdentity(user,token){
 }
 function switchBetaMode(mode){
  if(!coachAccess().beta||!['free','pro'].includes(mode))return;
- try{localStorage.setItem(betaPreferenceKey(account.id),mode)}
+ try{localStorage.setItem(betaPreferenceKey(account?.id),mode)}
  catch{notice('This browser could not save your beta mode.');renderSettings();return}
  betaPreference=mode;
  refreshCoachAccess();
@@ -1038,7 +1042,9 @@ function recordCoachProposalDecision(index,choice,expectedExerciseId,expectedSig
 function renderCoachProgression(){
  if(!hasPro())return;
  const boundary=window.MLCCoachEntitlementBoundary.assess({environment:'draft',accountId:account?.id||null});
- $('coachEntitlementStatus').textContent=hasPro()?(coachAccess().beta?'Pro beta preview active.':'Pro access verified for this account.'):boundary.reason+' No local account tier grants premium access.';
+ $('coachEntitlementStatus').textContent=coachAccess().beta?
+  (hasPro()?'Pro beta preview active.':'Free beta preview active · basic Coach remains available.'):
+  hasPro()?'Pro access verified for this account.':boundary.reason+' No local account tier grants premium access.';
  const status=$('coachProgressionStatus'),root=$('coachProgressionList'),start=$('coachOpenToday');
  if(!status||!root)return;
  const selected=resolvedWorkout();
