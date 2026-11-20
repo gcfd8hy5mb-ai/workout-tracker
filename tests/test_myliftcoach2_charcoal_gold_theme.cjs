@@ -8,7 +8,9 @@ const fidelity=fs.readFileSync('myliftcoach2/approved-video-fidelity.css','utf8'
 
 test('approved November emerald marble replaces charcoal skin as final stylesheet',()=>{
  const links=[...html.matchAll(/<link\s+[^>]*rel="stylesheet"[^>]*>/g)].map(m=>m[0]);
- assert.match(links.at(-1),/approved-video-fidelity\.css\?v=1/);
+ assert.match(links.at(-1),/approved-home-rebuild\.css\?v=20/);
+ assert.match(html,/<section id="home" class="page home-rebuilt">/);
+ assert.match(html,/id="homeWeekBoardDetails"/);
  assert.match(html,/premium-reference\.css\?v=20/);
  assert.doesNotMatch(html,/charcoal-gold\.css/);
  assert.match(html,/<meta name="theme-color" content="#06454c">/);
