@@ -98,3 +98,18 @@ test('existing Supabase custom-plan adapter integrates with revision-aware coord
  assert.equal(repeat.status,'already-saved');
  assert.equal(s.counts().writes,1);
 });
+
+test('browser-facing backup transport is read-only even with a verified session',async()=>{
+ const s=service();
+ const reader=mod.createReadOnly({endpoint:'https://example.supabase.co',publishableKey:'public-test-key',
+  getSession:async()=>({user:{id:owner},access_token:'test-token',expires_at:Math.floor(Date.now()/1000)+3600}),
+  fetcher:async(url,req)=>{
+   assert.match(url,/mlc2_v1_read$/);
+   assert.equal(JSON.parse(req.body).p_type,'custom-plan');
+   return {ok:true,json:async()=>null};
+  }});
+ assert.equal(typeof reader.read,'function');
+ assert.equal(typeof reader.save,'undefined');
+ assert.deepEqual(await reader.read(owner),{revision:0,document:null});
+ assert.deepEqual(s.counts(),{reads:0,writes:0});
+});
