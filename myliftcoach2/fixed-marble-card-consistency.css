@@ -44,3 +44,52 @@ body::before,body:has(#home:not([hidden]))::before{
  body::before,body:has(#home:not([hidden]))::before{background-position:center center!important;background-size:cover!important}
  .bottom-tabs{position:fixed;z-index:40}
 }
+
+
+/* iPhone walkthrough 2026-11-20: Nutrition/Hydration and history fields
+   were still rendered as white browser-default inputs and grey selectors.
+   Keep all editable controls visually consistent without changing their values. */
+.page:not(#welcome) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.page:not(#welcome) select,
+.page:not(#welcome) textarea,
+.modal-panel input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.modal-panel select,.modal-panel textarea{
+ background-color:#092a32!important;
+ background-image:none!important;
+ border:1px solid rgba(241,211,148,.82)!important;
+ border-radius:9px!important;
+ color:#fff3df!important;
+ caret-color:#f1d394;
+ box-shadow:inset 0 1px 3px rgba(0,0,0,.3)!important;
+ color-scheme:dark;
+ min-height:39px;
+ max-width:100%;
+}
+.page:not(#welcome) input::placeholder,
+.page:not(#welcome) textarea::placeholder,
+.modal-panel input::placeholder{
+ color:#b7cbc8!important;opacity:1!important;
+}
+.page:not(#welcome) input:disabled,.page:not(#welcome) select:disabled{
+ background-color:#183b43!important;
+ color:#b8cac7!important;
+ border-color:rgba(241,211,148,.4)!important;
+ opacity:.72;
+}
+.page:not(#welcome) input[type="checkbox"],
+.page:not(#welcome) input[type="radio"]{accent-color:#dfbb78}
+#nutrition .inputs,#nutrition .inputs label{min-width:0}
+#nutrition .inputs label{color:#f3e7d0}
+#nutrition .inputs input,#nutrition .inputs select{width:100%;min-width:0}
+#nutrition .inputs{display:flex;flex-wrap:wrap;gap:9px}
+#nutrition .inputs label{flex:1 1 112px}
+#nutrition form{margin-block:14px}
+#nutrition button.button-outline{
+ background:#0a2d34!important;
+ border:1px solid #f1d394!important;
+ color:#fff1d2!important;
+}
+#nutrition .metric{
+ background:linear-gradient(145deg,#0c343b,#051b24)!important;
+ border-color:#f1d394!important;
+}
