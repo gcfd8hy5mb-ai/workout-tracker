@@ -1333,6 +1333,13 @@ function openWorkout(id){
  let draft;
  try{draft=window.MLCSessionDraft.read(localStorage,owner)}
  catch(error){notice(String(error.message||error));return;}
+ // A completed session may have saved successfully before draft cleanup failed.
+ // Never offer that identical draft for a second completion.
+ if(draft&&demoSessions.some(done=>done.planId===draft.planId&&
+   done.startedAt===draft.startedAt&&JSON.stringify(done.sets)===JSON.stringify(draft.sets))){
+  try{window.MLCSessionDraft.clear(localStorage,owner);draft=null}
+  catch{notice('Previously completed workout is already saved. Could not clear stale draft; retry later.');return}
+ }
  if(draft&&draft.planId!==plan.id){
   if(!confirm('An unfinished workout is saved for this account. Discard it and start another workout?'))return;
   try{window.MLCSessionDraft.clear(localStorage,owner)}catch{notice('Cannot discard saved workout draft.');return;}
