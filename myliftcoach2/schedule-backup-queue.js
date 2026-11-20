@@ -98,5 +98,16 @@
    throw Error('Verified cloud backup could not be cleared from device');
   return Object.freeze({verified:true,cleared:true});
  }
- return Object.freeze({BASE,key,asDocument,read,stage,beginAttempt,finishVerified});
+ function finishMatchingPending(storage,owner,validIds,remoteDocument){
+  const item=read(storage,owner,validIds);
+  if(!item||item.status!=='pending'||canonical(item.document)!==canonical(asDocument(remoteDocument,validIds)))
+   throw Error('Verified cloud copy does not match pending workout edits');
+  const location=key(owner),before=storage.getItem(location);
+  if(!before||JSON.parse(before).fingerprint!==item.fingerprint)
+   throw Error('Cloud queue changed while comparing; retain pending backup');
+  storage.removeItem(location);
+  if(storage.getItem(location)!==null)throw Error('Could not clear already-saved backup');
+  return Object.freeze({verified:true,cleared:true,writeCount:0});
+ }
+ return Object.freeze({BASE,key,asDocument,read,stage,beginAttempt,finishVerified,finishMatchingPending});
 });
