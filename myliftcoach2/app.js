@@ -134,6 +134,7 @@ function inspectCompleteRecurringMigration(){
 }
 function activateCompleteRecurringLocally(){
  const status=$('recurringMigrationStatus');
+ if(!confirmDiscardWeekEdits())return;
  if(!account?.id||!fullMigrationPreview||fullMigrationPreview.owner!==account.id||importedCustomOwner!==account.id){
   status.textContent='Inspect the complete original schedule for this account before activating.';return;
  }
@@ -152,6 +153,7 @@ function activateCompleteRecurringLocally(){
  }catch(error){status.textContent='Activation blocked: '+String(error.message||error).slice(0,210)}
 }
 function copyOriginalToEditable(){
+ if(!confirmDiscardWeekEdits())return;
  if(activeRecurring){$('originalCustomStatus').textContent='Full recurring schedule is already active; do not replace it with a one-week copy.';return;}
  if(!originalPreviewActive()){notice('Load and preview the original schedule first.');return}
  try{
@@ -226,6 +228,7 @@ function refreshRestoreRepeating(){
 }
 function restoreRepeatingForDate(){
  try{
+  if(!confirmDiscardWeekEdits())return;
   if(!activeRecurring||originalPreviewActive()||weeklyDraftReadError)throw Error('Editable recurring schedule required');
   const date=selectedWeekDate();
   const result=recurringDraftAPI.restoreDate(activeRecurring,date,allowedExerciseIds);
