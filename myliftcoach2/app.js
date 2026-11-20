@@ -1,4 +1,4 @@
-/* MYLIFTCOACH 2.0 · Isolated development: authenticated custom-plan backup only; original records unchanged. */
+/* MYLIFTCOACH 2.0 · Isolated development: authenticated workout backup; original records unchanged. */
 (()=>{
 'use strict';
 const BACKEND='https://kirlpjflaoriiusfamsk.supabase.co';
@@ -447,6 +447,7 @@ function duplicateWeekWorkout(){
   if(originalPreviewActive()||weeklyDraftReadError)throw Error('Switch to a healthy editable schedule before copying');
   const sourceId=$('weekWorkoutSelect').value;
   if(!sourceId)throw Error('Select a workout to copy first');
+  requireCustomWorkoutSlot();
   const id='custom-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
   const candidate=weeklyAPI.duplicate(weekly,sourceId,id,allowedExerciseIds);
   commitWeekly(candidate);
@@ -460,6 +461,7 @@ function duplicateWeekWorkout(){
 function createWeekWorkout(){
  try{
   if(!confirmDiscardWeekEdits())return;
+  requireCustomWorkoutSlot();
   const id='custom-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
   const candidate=weeklyAPI.add(weekly,id,{title:'My Custom Workout',ids:[editorExercises[0].id]},allowedExerciseIds);
   commitWeekly(candidate);$('weekWorkoutSelect').innerHTML='<option value="">Rest day</option>'+weekly.plans.map(p=>'<option value="'+escapeHTML(p.id)+'">'+escapeHTML(p.title)+'</option>').join('');
@@ -708,7 +710,7 @@ function renderProgress(){
  $('sessionHistory').innerHTML=demoSessions.length?demoSessions.map((x,index)=>{
   const summary=window.MLCSessionSummary.summarize(x,demoSessions.slice(index+1),editorExercises);
   const debrief=window.MLCPostSessionCoach.review(x,demoSessions.slice(index+1),editorExercises);
-  const debriefHTML=debrief.status==='ready'?'<div class="panel"><strong>Coach · post-workout review</strong><p>'+escapeHTML(debrief.headline)+'</p>'+debrief.details.map(note=>'<p class="small">'+escapeHTML(note)+'</p>').join('')+debrief.suggestions.slice(0,8).map(row=>'<p class="small"><strong>'+escapeHTML(row.name)+'</strong> · '+escapeHTML(row.message)+'</p>').join('')+'<p class="small">'+escapeHTML(debrief.note)+'</p></div>':'';
+  const debriefHTML=canUseCoach()&&debrief.status==='ready'?'<div class="panel"><strong>Coach · post-workout review</strong><p>'+escapeHTML(debrief.headline)+'</p>'+debrief.details.map(note=>'<p class="small">'+escapeHTML(note)+'</p>').join('')+debrief.suggestions.slice(0,8).map(row=>'<p class="small"><strong>'+escapeHTML(row.name)+'</strong> · '+escapeHTML(row.message)+'</p>').join('')+'<p class="small">'+escapeHTML(debrief.note)+'</p></div>':'';
   const details=summary.movements.map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sets+' completed sets · Top '+ex.topWeight+' lb'+(ex.newPracticeRecord?' · Local practice record':'')+'</small></div><button type="button" class="button-outline" data-exercise-open="'+escapeHTML(ex.id)+'">Exercise</button><span>'+Math.round(ex.volume).toLocaleString()+' lb-reps</span></div>').join('');
   return '<details class="panel"><summary><strong>'+escapeHTML(x.title)+'</strong> · '+new Date(x.created).toLocaleDateString()+' · '+summary.sets+' sets · '+Math.round(summary.volume).toLocaleString()+' lb-reps</summary><p class="small">'+(summary.durationMinutes?summary.durationMinutes+' min · ':'')+escapeHTML(x.readiness||'No readiness recorded')+' · '+summary.recordCount+' new local practice weight records</p>'+debriefHTML+details+'</details>';
  }).join(''):'<div class="empty-note">No demo sessions recorded yet. Open Workouts to start your first practice session.</div>';
@@ -723,6 +725,80 @@ function renderProgressChart(){
  const points=xy.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
  const fill='22,184 '+points+' '+xy[xy.length-1].x.toFixed(1)+',184';
  root.innerHTML='<svg viewBox="0 0 320 220" role="img" aria-label="Training volume trend based on '+count+' locally saved practice sessions"><defs><linearGradient id="volumeFill" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#f6d88c" stop-opacity=".48"/><stop offset="1" stop-color="#f6d88c" stop-opacity=".02"/></linearGradient></defs><path d="M22 28 V184 H304" fill="none" stroke="#bbdfd2" stroke-opacity=".35"/><path d="M22 80 H304 M22 132 H304" fill="none" stroke="#bbdfd2" stroke-opacity=".2"/><polygon points="'+fill+'" fill="url(#volumeFill)"/><polyline points="'+points+'" fill="none" stroke="#ffe1a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+xy.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="#ffeba8"/>').join('')+'<text x="25" y="207" fill="#c9e5da" font-size="11">Earliest</text><text x="293" y="207" text-anchor="end" fill="#c9e5da" font-size="11">Latest</text></svg><p>'+count+' practice sessions · '+Math.round(values[values.length-1]).toLocaleString()+' lb-reps last session</p>';
+}
+let verifiedCoachIdentity=null;
+function coachTier(){
+ if(verifiedCoachIdentity?.token!==auth?.access_token||!(auth?.expires_at>Date.now()/1000))return 'free';
+ return window.MLCCoachEntitlementBoundary.verifiedTier(verifiedCoachIdentity.user,account?.id);
+}
+function hasPro(){return ['pro','lifetime_pro'].includes(coachTier())}
+function canUseCoach(){return !account||hasPro()}
+function verifyCoachIdentity(user,token){
+ if(auth?.access_token!==token||account?.id!==user?.id)return;
+ verifiedCoachIdentity={user,token};
+ renderCoach();renderSettings();renderProgress();
+ if(activePlan&&session)renderWorkoutLog(window.MLCSessionInputContinuity.capture($('workoutLog'),activePlan.ids));
+}
+function requireCustomWorkoutSlot(){
+ if(!hasPro()&&weekly.plans.filter(plan=>plan.id.startsWith('custom-')).length>=3)
+  throw Error('Free includes three custom workouts. Existing workouts can still be edited.');
+}
+function coachProgram(){
+ const {checkin,weekly:activity,verified}=coachTodayContext();
+ const profile=account?.id&&importedSettingsOwner===account.id?originalAccountSettings:null;
+ const customSchedule=Boolean(activeRecurring||weeklyStoredCheckpoint!==null||originalPreviewActive());
+ const dates=Array.from({length:7},(_,index)=>dayAtWeekIndex(index));
+ const scheduled=customSchedule?dates.map(date=>resolvedWorkout(date).plan):null;
+ const program=window.MLCAdaptiveProgram.generate({
+  catalog:editorExercises,local:demoSessions,legacy:verified?originalHistory:[],profile,checkin,scheduled,
+  prescription(plan){
+   const today=window.MLCTodayCoach.preview({
+    plan,catalog:editorExercises,localSessions:demoSessions,
+    legacySessions:verified?originalHistory:[],legacyVerified:verified
+   });
+   const adaptive=coachAdaptivePlan(today,checkin,activity);
+   return window.MLCCoachNextSession.prescribe({today,adaptive,decisions:[]}).items;
+  }
+ });
+ return {customSchedule,program};
+}
+function renderCoachBuilder(){
+ const status=$('coachBuilderStatus'),root=$('coachBuilderPlan');
+ root.replaceChildren();
+ if(!hasPro()){status.textContent='Adaptive program generation requires MYLIFTCOACH Pro.';return}
+ if(weeklyDraftReadError){status.textContent='Recover your saved schedule before generating workouts.';return}
+ const {customSchedule,program}=coachProgram();
+ status.textContent=customSchedule?'Your existing schedule takes priority. Coach follows its workout order and rest days.':
+  'Coach builds sessions from movements in your recent history. Start any available session as an optional workout.';
+ root.innerHTML=program.map((row,index)=>{
+  const label=customSchedule?weeklyAPI.DAYS[index]+' · ':'';
+  if(!row)return '<div class="recent-item">'+label+'Rest</div>';
+  const prescriptions=row.prescriptions.map(item=>'<li>'+escapeHTML(item.name)+
+   (item.weight===null?' · '+escapeHTML(item.warning||'Choose your working weight'):' · '+item.weight+' lb · '+item.reps.min+'–'+item.reps.max+' reps')+'</li>').join('');
+  return '<div class="recent-item"><div><strong>'+label+escapeHTML(row.title)+'</strong>'+
+   (row.ids.length?'<ul>'+prescriptions+'</ul>':'<p>Log more exercises that fit this session to generate it.</p>')+
+   (!customSchedule&&row.ids.length?'<button type="button" class="button-outline" data-adaptive-session="'+index+'">Start this workout</button>':'')+
+   '</div></div>';
+ }).join('');
+ try{
+  const draft=window.MLCSessionDraft.read(localStorage,account.id);
+  if(draft?.planId.startsWith('adaptive-'))
+   root.insertAdjacentHTML('afterbegin','<button type="button" class="button-outline" data-adaptive-session="-1">Resume unfinished Coach workout</button>');
+ }catch{status.textContent+=' Unfinished workout needs recovery.'}
+}
+function startAdaptiveSession(index){
+ if(!hasPro()||weeklyDraftReadError)return;
+ if(index===-1){
+  try{
+   const draft=window.MLCSessionDraft.read(localStorage,account.id);
+   if(draft?.planId.startsWith('adaptive-')&&draft.plan.ids.every(id=>allowedExerciseIds.includes(id)))
+    openWorkout(draft.planId,draft.plan);
+  }catch(error){notice(String(error.message||error))}
+  return;
+ }
+ const {customSchedule,program}=coachProgram();
+ const plan=program[index];
+ if(!customSchedule&&plan?.ids.length)openWorkout(plan.id,plan);
 }
 function coachCheckinSignal(){
  try{return window.MLCCoachCheckin.signal(window.MLCCoachCheckin.current(localStorage,account?.id||'guest'))}
@@ -740,6 +816,7 @@ function renderCoachCheckin(){
   'No check-in saved this week. Coach will not infer your recovery or availability.';
 }
 function saveCoachCheckin(){
+ if(!canUseCoach())return;
  const values={
   recovery:$('coachCheckinRecovery').value,energy:$('coachCheckinEnergy').value,
   difficulty:$('coachCheckinDifficulty').value,days:$('coachCheckinDays').value,
@@ -795,6 +872,7 @@ function coachAdaptivePlan(today,checkin,weekly){
  return window.MLCCoachAdaptive.compile({today,checkin,weekly,memories,declines});
 }
 function answerCoachQuestion(){
+ if(!canUseCoach())return;
  const question=$('coachAskInput')?.value||'';
  const {today,checkin,weekly}=coachTodayContext();
  const action=guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin,weekly}));
@@ -811,6 +889,7 @@ function currentCoachAction(){
  return guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin,weekly}));
 }
 function saveCoachFeedback(response){
+ if(!canUseCoach())return;
  try{
   const owner=account?.id||'guest',action=currentCoachAction();
   window.MLCCoachFeedback.save(localStorage,owner,response,action);
@@ -842,6 +921,7 @@ function renderCoachOutcomes(){
  }
 }
 function saveCoachOutcome(){
+ if(!canUseCoach())return;
  try{
   const {owner,feedback,candidates}=coachOutcomeData();
   const index=Number($('coachOutcomeCandidate').value);
@@ -855,6 +935,13 @@ function saveCoachOutcome(){
  }catch(error){$('coachOutcomeStatus').textContent='Outcome not saved: '+String(error.message||error).slice(0,120)}
 }
 function renderCoach(){
+ const coachAllowed=canUseCoach();
+ for(const panel of document.querySelectorAll('[data-premium-coach]'))panel.hidden=!coachAllowed;
+ renderCoachBuilder();
+ if(!coachAllowed){
+  for(const id of ['coachTodayList','coachAdaptiveProposals','coachNextSessionList','coachProgressionList'])
+   $(id).replaceChildren();
+ }
  renderCoachOutcomes();
  $('coachAskAnswer').textContent='Ask about your current training records. Answers are not stored or shared.';
  renderCoachCheckin();
@@ -892,6 +979,7 @@ function renderCoach(){
  renderOriginalCoachEvidence();
 }
 function recordCoachProposalDecision(index,choice,expectedExerciseId,expectedSignature){
+ if(!canUseCoach())return;
  try{
   const owner=account?.id||'guest',selected=resolvedWorkout();
   if(!selected.plan||weeklyDraftReadError)throw Error('Current schedule is unavailable');
@@ -912,8 +1000,9 @@ function recordCoachProposalDecision(index,choice,expectedExerciseId,expectedSig
  }catch(error){$('coachAdaptiveDecisionStatus').textContent='Decision not saved: '+String(error.message||error).slice(0,120)}
 }
 function renderCoachProgression(){
+ if(!canUseCoach())return;
  const boundary=window.MLCCoachEntitlementBoundary.assess({environment:'draft',accountId:account?.id||null});
- $('coachEntitlementStatus').textContent=boundary.reason+' No local account tier grants premium access.';
+ $('coachEntitlementStatus').textContent=hasPro()?'Pro access verified for this account.':boundary.reason+' No local account tier grants premium access.';
  const status=$('coachProgressionStatus'),root=$('coachProgressionList'),start=$('coachOpenToday');
  if(!status||!root)return;
  const selected=resolvedWorkout();
@@ -1445,6 +1534,54 @@ async function verifyManualCloudRecord(){
  }catch(error){status.textContent='Could not verify exact test workout: '+String(error.message||error).slice(0,180)}
  finally{button.disabled=!account?.id}
 }
+let workoutHistorySync=null,workoutHistoryStatus='',autoHistoryOwner=null;
+const workoutCloudFetch=(url,options)=>fetch(url,{...options,signal:AbortSignal.timeout(12000)});
+async function syncCompletedWorkouts(enable=false){
+ const owner=account?.id,token=auth?.access_token;
+ if(!owner||!token||localHistoryIssue||workoutHistorySync)return;
+ const operation={owner,token};
+ workoutHistorySync=operation;
+ const assertCurrent=()=>{
+  if(account?.id!==owner||auth?.access_token!==token||workoutHistorySync!==operation)
+   throw Error('Account changed during history sync');
+ };
+ workoutHistoryStatus='Syncing completed workouts…';renderSettings();
+ try{
+  const key=demoKey(owner),entries=window.MLCCompletedLocalHistory.read(localStorage,key);
+  const config={endpoint:BACKEND,publishableKey:PUBLIC_KEY,owner,
+   getSession:()=>{assertCurrent();return auth},
+   verifyUser:accessToken=>authRequest('user',null,accessToken,'GET'),fetcher:workoutCloudFetch};
+  const inventory=await window.MLCExistingCloudSessions.inspect(config);
+  const transport=window.MLCExistingSessionTransport.create(config);
+  const {uploaded,workouts}=await window.MLCSessionHistorySync.sync({
+   owner,entries,inventory:inventory.records,transport,cryptoAPI:window.crypto,assertCurrent
+  });
+  assertCurrent();
+  const latest=window.MLCCompletedLocalHistory.read(localStorage,key);
+  const merged=window.MLCSessionHistorySync.merge(latest,workouts);
+  const restored=merged.length-latest.length;
+  if(restored){
+   const serialized=JSON.stringify(merged);
+   localStorage.setItem(key,serialized);
+   if(localStorage.getItem(key)!==serialized)throw Error('Could not verify recovered history on this device');
+  }
+  demoSessions=restored?merged:latest;
+  if(enable)autoHistoryOwner=owner;
+  workoutHistoryStatus=uploaded+' backed up · '+restored+' restored. '+(autoHistoryOwner===owner?'New completions sync during this sign-in.':'');
+  renderHome();renderProgress();renderCoach();
+ }catch(error){
+  if(workoutHistorySync===operation)workoutHistoryStatus='Sync paused. '+String(error.message||error).slice(0,160);
+ }finally{
+  if(workoutHistorySync===operation){
+   workoutHistorySync=null;
+   renderSettings();
+   if(operation.syncAgain&&autoHistoryOwner===owner)void syncCompletedWorkouts();
+  }
+ }
+}
+function clearHistorySync(){
+ workoutHistorySync=null;workoutHistoryStatus='';autoHistoryOwner=null;
+}
 async function inspectExistingCloudSessions(){
  const button=$('existingCloudSessionsButton'),status=$('existingCloudSessionsStatus');
  const owner=account?.id,token=auth?.access_token;
@@ -1640,9 +1777,14 @@ async function restoreScheduleBackup(){
  }catch(error){status.textContent='Restore blocked or needs attention: '+String(error.message||error).slice(0,160);}
 }
 function renderSettings(){
+ $('accountTierStatus').textContent=hasPro()?(coachTier()==='lifetime_pro'?'Lifetime Pro':'Pro'):'Free';
  renderPendingScheduleBackup();
  $('scheduleBackupCheck').disabled=!account?.id;
  $('scheduleBackupRestore').disabled=!safeToRestoreSchedule();
+ $('historySyncButton').disabled=!account?.id||Boolean(workoutHistorySync||localHistoryIssue);
+ $('historySyncStatus').textContent=workoutHistoryStatus||(account?.id?
+  'Sync this account’s completed 2.0 workouts to back them up and recover workouts from another device.':
+  'Sign in to sync completed workouts.');
  $('existingCloudSessionsButton').disabled=!account?.id;
  renderManualCloudTest();
  renderLocalHistoryIntegrity();
@@ -1668,8 +1810,8 @@ function closeModal(){
  if(session&&activePlan)persistOpenSession();
  closeRest();$('modal').hidden=true;document.body.style.overflow='';activePlan=null;session=null;activeSessionOwner=null;sessionDirty=false;
 }
-function openWorkout(id){
- const plan=(originalPreviewActive()?originalCustomSchedule.plans:[]).find(x=>x.id===id)||weekly.plans.find(x=>x.id===id);
+function openWorkout(id,adaptivePlan=null){
+ const plan=adaptivePlan||(originalPreviewActive()?originalCustomSchedule.plans:[]).find(x=>x.id===id)||weekly.plans.find(x=>x.id===id);
  if(!plan)return;
  const owner=account?.id||'guest';
  let draft;
@@ -1690,7 +1832,7 @@ function openWorkout(id){
  activeSessionOwner=owner;sessionDirty=Boolean(draft);
  activePlan=draft?{...draft.plan,ids:draft.plan.ids.slice()}:{...plan,ids:plan.ids.slice()};
  session=draft?{sets:draft.sets.map(x=>({...x})),readiness:draft.readiness,startedAt:draft.startedAt||Date.now()}:{sets:[],readiness:'Normal',startedAt:Date.now()};
- openModal('<div class="modal-eyebrow">PRACTICE SESSION · LOCAL ONLY</div><h2>'+escapeHTML(activePlan.title)+'</h2><p>'+escapeHTML(activePlan.description)+' All entries stay in the isolated demo workspace and will not be uploaded to Supabase.</p><div class="panel"><strong>How are you feeling today?</strong><p class="small">Readiness check-in saved with this practice session only.</p><div class="hero-actions" id="sessionReadiness"><button type="button" class="button-outline" data-session-readiness="Great" aria-pressed="false">Great</button><button type="button" class="button-outline" data-session-readiness="Normal" aria-pressed="true">Normal</button><button type="button" class="button-outline" data-session-readiness="Tired" aria-pressed="false">Tired</button></div></div><div class="panel"><strong id="sessionSetProgressText">Ready to start</strong><progress id="sessionSetProgress" value="0" max="1" style="width:100%" aria-label="Completed practice sets"></progress><p class="small">Progress reflects logged sets in this practice session.</p></div><div id="workoutLog" class="workout-log"></div><div class="modal-footer"><button type="button" class="button-outline" id="cancelWorkout">Save for later</button><button type="button" class="button-outline" id="discardWorkout">Discard draft</button><button type="button" class="button-outline" id="startRest">Rest 1:30</button><button type="button" class="button-primary" id="finishWorkout">Finish session</button></div>');
+ openModal('<div class="modal-eyebrow">PRACTICE SESSION · LOCAL ONLY</div><h2>'+escapeHTML(activePlan.title)+'</h2><p>'+escapeHTML(activePlan.description)+' Completed sessions save on this device first. Signed-in users can back up 2.0 history from Settings.</p><div class="panel"><strong>How are you feeling today?</strong><p class="small">Readiness check-in saved with this practice session only.</p><div class="hero-actions" id="sessionReadiness"><button type="button" class="button-outline" data-session-readiness="Great" aria-pressed="false">Great</button><button type="button" class="button-outline" data-session-readiness="Normal" aria-pressed="true">Normal</button><button type="button" class="button-outline" data-session-readiness="Tired" aria-pressed="false">Tired</button></div></div><div class="panel"><strong id="sessionSetProgressText">Ready to start</strong><progress id="sessionSetProgress" value="0" max="1" style="width:100%" aria-label="Completed practice sets"></progress><p class="small">Progress reflects logged sets in this practice session.</p></div><div id="workoutLog" class="workout-log"></div><div class="modal-footer"><button type="button" class="button-outline" id="cancelWorkout">Save for later</button><button type="button" class="button-outline" id="discardWorkout">Discard draft</button><button type="button" class="button-outline" id="startRest">Rest 1:30</button><button type="button" class="button-primary" id="finishWorkout">Finish session</button></div>');
  renderWorkoutLog();
  updateSessionReadiness(session.readiness,false);
  for(const exerciseId of activePlan.ids)updateExerciseFeedback(exerciseId);
@@ -1720,6 +1862,10 @@ function openWorkout(id){
    catch{notice('Workout saved, but an old unfinished draft could not be cleared. Do not finish it again.')}
    closeModal();renderHome();setPage('progress');renderCoach();renderSettings();
    notice('Practice session saved in this browser.');
+   if(autoHistoryOwner===completedOwner){
+    if(workoutHistorySync)workoutHistorySync.syncAgain=true;
+    else void syncCompletedWorkouts();
+   }
   }catch(error){
    if(historySaved){notice('Workout was saved, but the screen could not update. Do not repeat completion.');return}
    notice('Could not finish saving this workout. Your unfinished draft is retained.')
@@ -1772,7 +1918,7 @@ function renderWorkoutLog(inputSnapshot=null){
   const coachSource=localCoachResult.status==='ready'?'2.0 completed workouts':originalCoachResult?.status==='ready'?'Original completed history':null;
   const coachResult=localCoachResult.status==='ready'?localCoachResult:originalCoachResult;
   const caution=(coachCheckinSignal().load==='conservative'||['review','unavailable'].includes(coachMemoryFor(id).signal)||coachDeclineFor(id).status==='review-decline')&&coachResult?.action==='increase';
-  const coachHint=coachResult?.status==='ready'?
+  const coachHint=canUseCoach()&&coachResult?.status==='ready'?
     '<div class="panel"><strong>Coach progression · '+escapeHTML(coachSource)+'</strong><p class="small">'+escapeHTML(coachResult.action.toUpperCase()+': '+coachResult.reason)+'</p>'+(caution?'<p class="small">Check-in or repeated weaker user-rated outcomes favor reviewing this increase; increase button paused.</p>':'<button class="button-outline" type="button" data-use-coach="'+id+'">Use suggested '+coachResult.weight+' lb for this set</button>')+'</div>':'';
   let savedTarget=null,targetError=false;
   try{savedTarget=window.MLCCoachTargets.get(localStorage,activeSessionOwner,id)}
@@ -1833,6 +1979,7 @@ function useCoachTarget(id){
  }catch(error){notice('Target unavailable: '+String(error.message||error).slice(0,120))}
 }
 function useCoachWeight(id){
+ if(!canUseCoach())return;
  if(!activePlan?.ids.includes(id))return;
  const ex=exerciseById(id),field=document.querySelector('[data-weight="'+id+'"]');
  if(!ex||!field)return;
@@ -1987,7 +2134,7 @@ async function authRequest(path,body,token,method='POST'){
  }finally{clearTimeout(timer)}
 }
 function saveAuth(data){
- if(account?.id!==data.user?.id)clearScheduleBackupPreview();
+ if(account?.id!==data.user?.id){clearScheduleBackupPreview();clearHistorySync();}
  cloudReadVerifiedOwner=null; // Revalidate preflight after every login or token refresh.
  if($('cloudScheduleComparisonStatus'))$('cloudScheduleComparisonStatus').textContent='Account session changed. Run a fresh comparison before trusting the result.';
  // A session already in progress belongs to its original account.
@@ -1995,33 +2142,37 @@ function saveAuth(data){
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
  if(account?.id&&account.id!==data.user?.id){cloudReadVerifiedOwner=null;combinedLoadEpoch++;$('loadAllOriginalStatus').textContent='Account changed. Load records for the current account.';clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;demoSessions=loadDemo(account.id);renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings();renderOriginalHistory();void synchronizePhoneWorkoutBackup();
 }
-function clearAuth(){clearScheduleBackupPreview();cloudReadVerifiedOwner=null;for(const id of ['manualCloudTestStatus','manualCloudVerifyStatus']){if($(id))$(id).textContent='Sign in to use the cloud test.';}if($('existingCloudSessionsStatus'))$('existingCloudSessionsStatus').textContent='Sign in to inspect existing 2.0 cloud sessions.';for(const id of ['cloudSessionPreviewStatus','cloudBatchPreviewStatus','cloudFreshCheckpointStatus']){
+function clearAuth(){verifiedCoachIdentity=null;clearHistorySync();clearScheduleBackupPreview();cloudReadVerifiedOwner=null;for(const id of ['manualCloudTestStatus','manualCloudVerifyStatus']){if($(id))$(id).textContent='Sign in to use the cloud test.';}if($('existingCloudSessionsStatus'))$('existingCloudSessionsStatus').textContent='Sign in to inspect existing 2.0 cloud sessions.';for(const id of ['cloudSessionPreviewStatus','cloudBatchPreviewStatus','cloudFreshCheckpointStatus']){
  const node=$(id);if(node)node.textContent='Sign in and load this account’s original history before cloud review.';
 }if($('cloudScheduleComparisonStatus'))$('cloudScheduleComparisonStatus').textContent='Sign in and run a new comparison to view this account’s cloud status.';if(activePlan)closeModal();combinedLoadEpoch++;if($('loadAllOriginalStatus'))$('loadAllOriginalStatus').textContent='Sign in to load original account records.';if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;demoSessions=loadDemo('guest');renderLocalDailyTracking();clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings()}
 async function validateStoredAuth(){
+ const snapshot=sessionStorage.getItem(AUTH_KEY);
+ let token;
  try{
-  const saved=JSON.parse(sessionStorage.getItem(AUTH_KEY)||'null');
+  const saved=JSON.parse(snapshot||'null');
   if(!saved?.access_token||!saved?.user?.id)return;
-  let token=saved.access_token;
+  token=saved.access_token;
   if(saved.expires_at<Date.now()/1000+45&&saved.refresh_token){
     const refreshed=await authRequest('token?grant_type=refresh_token',{refresh_token:saved.refresh_token});
+    if(sessionStorage.getItem(AUTH_KEY)!==snapshot)return;
     saveAuth(refreshed);token=refreshed.access_token;
   }else{auth=saved;account=saved.user;demoSessions=loadDemo(account.id);renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach()}
   const user=await authRequest('user',null,token,'GET');
-  if(!user?.id||user.id!==account.id)clearAuth();
-  else void synchronizePhoneWorkoutBackup();
- }catch{clearAuth()}
+  if(auth?.access_token!==token)return;
+  if(!user?.id||user.id!==account?.id)clearAuth();
+  else{verifyCoachIdentity(user,token);void synchronizePhoneWorkoutBackup();}
+ }catch{if(auth?.access_token===token||sessionStorage.getItem(AUTH_KEY)===snapshot)clearAuth()}
  renderSettings();renderOriginalHistory();
 }
 function openSignIn(){
- openModal('<div class="modal-eyebrow">EXISTING SUPABASE ACCOUNT</div><h2>Welcome back</h2><p>Use the email and password from your original MYLIFTCOACH account. This only verifies your identity; it will not import, overwrite, or modify workout records.</p><form id="loginForm" class="login-form"><label>Email<input name="email" type="email" autocomplete="email" autocapitalize="none" required></label><label>Password<input name="password" type="password" autocomplete="current-password" minlength="6" required></label><button class="button-primary" id="loginSubmit" type="submit">Sign in securely</button></form><p id="loginMessage" role="status"></p><p class="small">The training area stays in demo mode until the legacy data mapping is verified.</p>');
+ openModal('<div class="modal-eyebrow">EXISTING SUPABASE ACCOUNT</div><h2>Welcome back</h2><p>Use the email and password from your original MYLIFTCOACH account. Sign-in verifies your identity. You can sync completed 2.0 workouts from Settings.</p><form id="loginForm" class="login-form"><label>Email<input name="email" type="email" autocomplete="email" autocapitalize="none" required></label><label>Password<input name="password" type="password" autocomplete="current-password" minlength="6" required></label><button class="button-primary" id="loginSubmit" type="submit">Sign in securely</button></form><p id="loginMessage" role="status"></p><p class="small">The training area stays in demo mode until the legacy data mapping is verified.</p>');
  $('loginForm').addEventListener('submit',async event=>{
   event.preventDefault();const submit=$('loginSubmit');submit.disabled=true;submit.textContent='Connecting…';$('loginMessage').textContent='';
   const form=new FormData(event.currentTarget);
   try{
    const response=await authRequest('token?grant_type=password',{email:String(form.get('email')).trim(),password:String(form.get('password'))});
    if(!response?.access_token||!response?.user?.id)throw Error('No verified account was returned.');
-   saveAuth(response);closeModal();notice('Account verified. Custom workout backups use your existing account.');setPage('home');
+   saveAuth(response);void validateStoredAuth();closeModal();notice('Account verified. Custom workout backups use your existing account.');setPage('home');
   }catch(err){$('loginMessage').className='auth-error';$('loginMessage').textContent=err.name==='AbortError'?'The account service timed out.':/invalid/i.test(err.message)?'Email or password was not accepted.':'Could not sign in: '+String(err.message).slice(0,120)}
   finally{submit.disabled=false;submit.textContent='Sign in securely'}
  });
@@ -2216,6 +2367,11 @@ function bind(){
  $('cloudFreshCheckpointButton').addEventListener('click',previewFreshCloudCheckpoint);
  $('scheduleBackupCheck').addEventListener('click',checkScheduleBackup);
  $('scheduleBackupRestore').addEventListener('click',restoreScheduleBackup);
+ $('coachBuilderPlan').addEventListener('click',event=>{
+  const button=event.target.closest('[data-adaptive-session]');
+  if(button)startAdaptiveSession(Number(button.dataset.adaptiveSession));
+ });
+ $('historySyncButton').addEventListener('click',()=>void syncCompletedWorkouts(true));
  $('existingCloudSessionsButton').addEventListener('click',inspectExistingCloudSessions);
  $('manualCloudTestButton').addEventListener('click',uploadManualCloudTest);
  $('manualCloudVerifyButton').addEventListener('click',verifyManualCloudRecord);

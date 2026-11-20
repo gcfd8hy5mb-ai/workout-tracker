@@ -1,17 +1,10 @@
-/* MYLIFTCOACH 2.0 — existing deployed v1 session RPC transport.
- * Deliberately OFF in the browser. No app imports this module yet.
- * This is a testable adapter to the deployed mlc2_v1_* RPC contract, NOT
- * an authorization to send production writes or overwrite original records.
- */
+/* Authenticated transport for the isolated 2.0 session RPCs. */
 (function(root,factory){
- const node=typeof module==='object'&&module.exports;
- const api=factory(node);
- if(node)module.exports=api;else root.MLCExistingSessionTransport=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(node){
+ const api=factory();
+ if(typeof module==='object'&&module.exports)module.exports=api;else root.MLCExistingSessionTransport=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
- const ENABLED=false;
- function create(args){if(!ENABLED)throw Error('Production MLC2 completed-session writes are disabled pending explicit release approval');return build(args)}
- function build({endpoint,publishableKey,getSession,fetcher}={}){
+ function create({endpoint,publishableKey,getSession,fetcher}={}){
   if(!/^https:\/\//.test(endpoint||'')||!publishableKey||typeof getSession!=='function'||typeof fetcher!=='function')
    throw Error('Authenticated HTTPS session transport required');
   function owner(session,expected,token){
@@ -52,8 +45,9 @@
    },
    async commit(id,{opId,recordId,baseRevision,payload}={}){
     if(typeof opId!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(opId)||
-       typeof recordId!=='string'||!recordId||recordId.length>160||
-       !Number.isSafeInteger(baseRevision)||baseRevision<0||!payload||typeof payload!=='object'||Array.isArray(payload))
+       typeof recordId!=='string'||!/^mlc2-history-[\w-]{1,140}$/.test(recordId)||
+       baseRevision!==0||payload?.format!=='mlc2-completed-workout-v1'||
+       recordId!=='mlc2-history-'+payload?.workout?.id)
      throw Error('Valid immutable operation, session identity, expected revision and payload required');
     const receipt=await rpc('mlc2_v1_commit',id,{p_op_id:opId,p_type:'session',p_record_id:recordId,
      p_base_revision:baseRevision,p_deleted:false,p_payload:payload});
@@ -64,5 +58,5 @@
    }
   });
  }
- return Object.freeze({ENABLED,create,...(node?{createTestTransport:build}:{})});
+ return Object.freeze({create});
 });

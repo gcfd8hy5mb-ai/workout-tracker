@@ -135,3 +135,4 @@ jobs:
           node tests/run_myliftcoach2_browser_coach.cjs
           node tests/run_myliftcoach2_private_context.cjs
           node tests/run_myliftcoach2_two_device_cloud_test.cjs
+          node tests/run_myliftcoach2_history_and_entitlements.cjs

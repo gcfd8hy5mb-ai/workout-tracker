@@ -32,3 +32,9 @@
 - Existing-v1 save adapter: test-only, **not connected** to browser.
 - Dedicated schedule RPC migration: **not deployed** and **not required** for legacy completed-session sync.
 - PR #373: draft, not merged; no production sync or cross-device recovery is claimed.
+
+## November 20 development integration
+
+Settings → Sync and recover history opts the signed-in session into completed-workout backup. It uses the same verified-user and paginated v1 inventory paths. The writer creates only new revision-zero `mlc2-history-*` records, with stable operation IDs and independent read-back. Recovery merges matching v1 2.0 entries into the signed-in device's history and preserves local entries and conflicting records. Manual test copies and original PRISM history are outside the new backup namespace. This is development-only until an approved release.
+
+The 2.0 client recognizes Free, Pro and Lifetime Pro. It checks paid access against the authenticated Supabase user response using administrator-managed `app_metadata.myliftcoach_entitlement`. Pro requires `tier: "pro"` and a future ISO `expires_at`; Lifetime Pro uses `tier: "lifetime_pro"`. The original app's browser tier and beta preference cannot grant paid access. Existing subscriptions still need an authorized account-side source to supply the server claim. No subscription grants or production records were changed in this batch.

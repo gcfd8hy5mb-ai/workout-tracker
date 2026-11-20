@@ -1,8 +1,3 @@
-/* MYLIFTCOACH 2.0 entitlement boundary.
- * Never trust localStorage, imported user profile or client flags as paid access.
- * This preview has no server-verified entitlement provider. Returning DENIED for
- * production is intentional until an authenticated server check is integrated.
- */
 (function(root,factory){
  const api=factory();
  if(typeof module==='object'&&module.exports)module.exports=api;
@@ -22,5 +17,12 @@
    accountScoped:Boolean(typeof accountId==='string'&&accountId)
   });
  }
- return Object.freeze({assess});
+ function verifiedTier(user,owner,now=Date.now()){
+  if(!owner||user?.id!==owner)return 'free';
+  const entitlement=user.app_metadata?.myliftcoach_entitlement;
+  if(entitlement?.tier==='lifetime_pro')return 'lifetime_pro';
+  if(entitlement?.tier==='pro'&&Date.parse(entitlement.expires_at)>now)return 'pro';
+  return 'free';
+ }
+ return Object.freeze({assess,verifiedTier});
 });
