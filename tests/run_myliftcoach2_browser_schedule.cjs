@@ -27,6 +27,16 @@ const assert = require('node:assert/strict');
     // Regression: More must reveal the drawer, not just its dark backdrop.
     await page.locator('#moreMenuBtn').click();
     assert.equal(await page.locator('#sidebar').evaluate(el=>getComputedStyle(el).display),'flex','More drawer must be rendered');
+    await page.waitForFunction(()=>{
+      const el=document.querySelector('#sidebar'),r=el.getBoundingClientRect(),style=getComputedStyle(el);
+      return el.classList.contains('open')&&style.display!=='none'&&style.visibility==='visible'&&r.right>0&&r.width>0;
+    },null,{timeout:3000}).catch(async error=>{
+      console.error('More drawer diagnostics:',await page.locator('#sidebar').evaluate(el=>{
+        const r=el.getBoundingClientRect(),s=getComputedStyle(el);
+        return {class:el.className,display:s.display,visibility:s.visibility,transform:s.transform,rect:r.toJSON(),inert:el.inert};
+      }));
+      throw error;
+    });
     assert.equal(await page.locator('#sidebar').isVisible(),true,'More drawer must actually appear');
     assert.equal(await page.locator('#sidebarScrim').isVisible(),true,'backdrop visible behind open menu');
     await page.locator('#sidebarClose').click();
