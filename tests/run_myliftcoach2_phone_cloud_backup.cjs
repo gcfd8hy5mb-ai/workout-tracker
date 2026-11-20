@@ -58,8 +58,7 @@ const assert=require('node:assert/strict');
   assert.equal(writes,1,'first save uploads precisely once');
   assert.equal(row.revision,1);
   assert.equal(row.payload.document.plans.some(p=>p.title==='Phone Backed Up Session'),true);
-  assert.equal(await page.evaluate(()=>window.MLCScheduleBackupQueue.read(localStorage,'11111111-1111-4111-8111-111111111111',
-   window.MLCV2ExerciseCatalog.merge(window.MLCCompleteOriginalExercises,[]).map(x=>x.id))),null);
+  assert.equal(await page.evaluate(()=>localStorage.getItem(window.MLCScheduleBackupQueue.key('11111111-1111-4111-8111-111111111111'))),null);
   await page.locator('#weekWorkoutName').fill('Phone Edited Again');
   await page.locator('#weekSaveButton').evaluate(el=>el.click());
   await page.waitForFunction(()=>document.querySelector('#scheduleBackupPendingStatus')?.textContent?.includes('revision 2'),{timeout:15000});
