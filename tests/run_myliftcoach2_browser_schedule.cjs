@@ -161,7 +161,7 @@ const assert = require('node:assert/strict');
    // The checkbox is a proposed edit only. Leaving without saving must not alter the plan.
    await page.locator('.sidebar [data-page="home"]').first().evaluate(el=>el.click());
    assert.doesNotMatch(await page.locator('#todayExercises').textContent(),/Dead Bug/);
-   assert.match(await page.evaluate(()=>getComputedStyle(document.body).backgroundImage),/approved-vertical-marble-sharp\\.webp/);
+   assert.match(await page.evaluate(()=>getComputedStyle(document.body).backgroundImage),/approved-vertical-marble-sharp\.webp/);
    const palette=await page.evaluate(()=>{
     const root=getComputedStyle(document.documentElement);
     return {bg:root.getPropertyValue('--bg').trim(),gold:root.getPropertyValue('--gold').trim(),body:getComputedStyle(document.body).backgroundImage};
