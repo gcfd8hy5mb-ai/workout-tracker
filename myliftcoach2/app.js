@@ -132,7 +132,7 @@ function activateCompleteRecurringLocally(){
   if(weeklyDraftReadError)throw Error('Existing saved schedule requires recovery');
   if(activeRecurring)throw Error('A complete recurring schedule is already active. Original document was not overwritten.');
   const candidate=fullMigrationPreview.prepared.document;
-  recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),candidate,allowedExerciseIds);
+  recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),candidate,allowedExerciseIds,null);
   activeRecurring=candidate;
   weekly={plans:candidate.plans.map(p=>({...p,ids:p.ids.slice()})),assigned:candidate.assigned.slice()};
   originalSchedulePreview=false;
@@ -167,7 +167,7 @@ function commitWeekly(candidate,explicitDay=null){
    const date=[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
    document={...document,overrides:{...document.overrides,[date]:explicitDay.id}};
   }
-  recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),document,allowedExerciseIds);
+  recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),document,allowedExerciseIds,activeRecurring);
   activeRecurring=document;weekly=candidate;
  }else{
   weekly=weeklyAPI.commitOwned(localStorage,WEEKLY_KEY,scheduleOwner(),candidate,plans.map(p=>p.id));
@@ -218,7 +218,7 @@ function restoreRepeatingForDate(){
   if(!activeRecurring||originalPreviewActive()||weeklyDraftReadError)throw Error('Editable recurring schedule required');
   const date=selectedWeekDate();
   const result=recurringDraftAPI.restoreDate(activeRecurring,date,allowedExerciseIds);
-  recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),result,allowedExerciseIds);
+  recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),result,allowedExerciseIds,activeRecurring);
   activeRecurring=result;
   const plan=resolvedWorkout(dayAtWeekIndex(Number($('weekEditor').dataset.day))).plan;
   $('weekWorkoutSelect').value=plan?.id||'';
