@@ -23,6 +23,16 @@ const assert = require('node:assert/strict');
    await page.goto(base,{waitUntil:'load'});
    await page.waitForFunction(()=>document.querySelector('#todayTitle')?.textContent==='My Custom Session',{timeout:15000});
    assert.deepEqual(errors,[],device.label+' bootstrap errors: '+errors.join('; '));
+   if(device.isMobile){
+    // Regression: More must reveal the drawer, not just its dark backdrop.
+    await page.locator('#moreMenuBtn').click();
+    assert.equal(await page.locator('#sidebar').evaluate(el=>getComputedStyle(el).display),'flex','More drawer must be rendered');
+    assert.equal(await page.locator('#sidebar').isVisible(),true,'More drawer must actually appear');
+    assert.equal(await page.locator('#sidebarScrim').isVisible(),true,'backdrop visible behind open menu');
+    await page.locator('#sidebarClose').click();
+    assert.equal(await page.locator('#sidebarScrim').isVisible(),false,'backdrop must disappear after closing More');
+   }
+
    await page.locator('#cloudInventoryButton').evaluate(el=>el.click());
    assert.match(await page.locator('#cloudInventoryStatus').textContent(),/0 of 4 original sections loaded read-only/,device.label+' unsigned inventory');
    assert.match(await page.locator('#cloudInventoryStatus').textContent(),/Replacement status: BLOCKED/,device.label+' release safeguard');
