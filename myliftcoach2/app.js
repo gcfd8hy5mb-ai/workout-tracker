@@ -772,30 +772,42 @@ function guardedCoachAction(action){
    why:'Three comparable-load training sessions show declining repetitions. This is not a recovery diagnosis and never changes your schedule.'});
  return memoryGuarded;
 }
-function answerCoachQuestion(){
- const question=$('coachAskInput')?.value||'';
- const selected=resolvedWorkout(),verified=Boolean(account?.id&&importedHistoryOwner===account.id);
- let targets={};
- try{targets=window.MLCCoachTargets.read(localStorage,account?.id||'guest').targets}catch{}
+function coachTodayContext(selected=resolvedWorkout()){
+ const owner=account?.id||'guest';
+ const verified=Boolean(account?.id&&importedHistoryOwner===account.id);
+ let personalTargets={},targetReadError=false;
+ try{personalTargets=window.MLCCoachTargets.read(localStorage,owner).targets}
+ catch{targetReadError=true}
  const today=window.MLCTodayCoach.preview({
-  plan:selected.plan,catalog:editorExercises,localSessions:demoSessions,
-  legacySessions:verified?originalHistory:[],legacyVerified:verified,personalTargets:targets
- });
- const checkin=coachCheckinSignal(),weekly=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin});
- const action=guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin,weekly}));
- const recent=demoSessions.filter(x=>Number.isFinite(Date.parse(x?.created||''))&&Date.parse(x.created)<=Date.now())
-  .slice().sort((a,b)=>Date.parse(b.created)-Date.parse(a.created))[0]||null;
- const result=window.MLCCoachAsk.answer(question,{today,checkin,weekly,action,lastSession:recent});
- $('coachAskAnswer').textContent=result.text+' Source: '+result.source+'. No workout data changed.';
-}
-function currentCoachAction(){
- const selected=resolvedWorkout(),verified=Boolean(account?.id&&importedHistoryOwner===account.id);
- const today=window.MLCTodayCoach.preview({
-  plan:selected.plan,catalog:editorExercises,localSessions:demoSessions,
-  legacySessions:verified?originalHistory:[],legacyVerified:verified
+  plan:weeklyDraftReadError?null:selected.plan,catalog:editorExercises,localSessions:demoSessions,
+  legacySessions:verified?originalHistory:[],legacyVerified:verified,personalTargets
  });
  const checkin=coachCheckinSignal();
  const weekly=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin});
+ return {today,checkin,weekly,verified,targetReadError};
+}
+function coachAdaptivePlan(today,checkin,weekly){
+ const memories=Object.create(null),declines=Object.create(null);
+ for(const row of today.items){
+  memories[row.id]=coachMemoryFor(row.id);
+  declines[row.id]=coachDeclineFor(row.id);
+ }
+ return window.MLCCoachAdaptive.compile({today,checkin,weekly,memories,declines});
+}
+function answerCoachQuestion(){
+ const question=$('coachAskInput')?.value||'';
+ const {today,checkin,weekly}=coachTodayContext();
+ const action=guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin,weekly}));
+ const recent=demoSessions.filter(x=>Number.isFinite(Date.parse(x?.created||''))&&Date.parse(x.created)<=Date.now())
+  .slice().sort((a,b)=>Date.parse(b.created)-Date.parse(a.created))[0]||null;
+ const profile=account?.id&&importedSettingsOwner===account.id?originalAccountSettings:null;
+ const result=window.MLCCoachAsk.answer(question,{
+  today,checkin,weekly,action,lastSession:recent,profile,adaptive:coachAdaptivePlan(today,checkin,weekly)
+ });
+ $('coachAskAnswer').textContent=result.text+' Source: '+result.source+'. No workout data changed.';
+}
+function currentCoachAction(){
+ const {today,checkin,weekly}=coachTodayContext();
  return guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin,weekly}));
 }
 function saveCoachFeedback(response){
@@ -906,34 +918,21 @@ function renderCoachProgression(){
  if(!status||!root)return;
  const selected=resolvedWorkout();
  start.disabled=!selected.plan||Boolean(weeklyDraftReadError);
- const checkinSignal=coachCheckinSignal();
- const verified=Boolean(account?.id&&importedHistoryOwner===account.id);
- let personalTargets={};
- let targetReadError=false;
- try{personalTargets=window.MLCCoachTargets.read(localStorage,account?.id||'guest').targets}
- catch{targetReadError=true}
- const today=window.MLCTodayCoach.preview({
-  plan:selected.plan,catalog:editorExercises,localSessions:demoSessions,
-  legacySessions:verified?originalHistory:[],legacyVerified:verified,personalTargets
- });
+ const {today,checkin:checkinSignal,weekly,verified,targetReadError}=coachTodayContext(selected);
+ const adaptive=coachAdaptivePlan(today,checkinSignal,weekly);
  const todayStatus=$('coachTodayStatus'),todayList=$('coachTodayList');
  if(todayStatus&&todayList){
   todayStatus.textContent=today.status==='rest'?
    'No scheduled workout today (or no exercises assigned). Coach will not substitute a preset.':
    today.title+' · '+today.items.length+' scheduled exercises · '+today.ready+' eligible weight suggestions. '+(targetReadError?'Personal targets need local storage recovery. ':'')+'No automatic changes.';
   todayList.innerHTML=today.items.map(row=>{
-   const memory=coachMemoryFor(row.id),decline=coachDeclineFor(row.id);
-   const paused=row.status==='ready'&&row.action==='increase'&&
-    (checkinSignal.load==='conservative'||['review','unavailable'].includes(memory.signal)||decline.status==='review-decline');
-   const label=paused?'INCREASE PAUSED FOR REVIEW · '+row.reason:
+   const proposal=adaptive.items.find(item=>item.exerciseId===row.id);
+   const paused=proposal?.status==='review-increase';
+   const label=paused?'INCREASE PAUSED FOR REVIEW':
     row.status==='ready'?row.action.toUpperCase()+' · '+row.weight+' lb · '+row.reason:
     row.status==='unavailable'?row.reason:'Keep your current working weight until enough completed history is available.';
    const personal=row.personalTarget===null?'':'Personal target: '+row.personalTarget+' lb (set manually; not automatically applied).';
-   const caution=paused?(checkinSignal.load==='conservative'?
-    'Your weekly check-in favors a cautious approach.':
-    memory.signal==='unavailable'?'Saved Coach outcome history needs recovery.':
-    memory.signal==='review'?'Repeated worse user-rated outcomes require review.':
-    'Repeated declining repetitions at comparable loads require review.'):'';
+   const caution=paused?proposal.reason:'';
 
    const observed=window.MLCCoachConsistency.review(demoSessions,row.id);
    const evidence=observed.status==='steady-load'?
@@ -945,10 +944,6 @@ function renderCoachProgression(){
    return '<div class="recent-item"><div><strong>'+escapeHTML(row.name)+'</strong><small>'+escapeHTML(label)+'</small><small>'+escapeHTML(row.source||'No verified recommendation')+'</small>'+(evidence?'<small>'+escapeHTML(evidence)+'</small>':'')+(personal?'<small>'+escapeHTML(personal)+'</small>':'')+(caution?'<small>'+escapeHTML(caution)+'</small>':'')+'</div></div>';
   }).join('')||'<p class="small">No exercises scheduled for today.</p>';
  }
- const weekly=window.MLCCoachWeeklyPlan.summarize({sessions:demoSessions,checkin:checkinSignal});
- let memories={},declines={};
- for(const row of today.items||[])if(row?.id){memories[row.id]=coachMemoryFor(row.id);declines[row.id]=coachDeclineFor(row.id)}
- const adaptive=window.MLCCoachAdaptive.compile({today,checkin:checkinSignal,weekly,memories,declines});
  $('coachAdaptiveStatus').textContent=adaptive.status==='rest'?adaptive.note:
   adaptive.items.length+' scheduled movements assessed · '+adaptive.items.filter(row=>row.status==='review-increase').length+
   ' suggested increases paused for review · '+adaptive.items.filter(row=>row.status==='increase'||row.status==='reduce').length+

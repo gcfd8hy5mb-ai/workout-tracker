@@ -30,3 +30,20 @@ test('missing saved target does not invent a user-defined weight',()=>{
  const x=answer('What is my personal target for Leg Press?',{today});
  assert.equal(x.kind,'needs-data');
 });
+
+test('Ask Coach honors the same progression pause as the adaptive plan',()=>{
+ const adaptive={items:[{exerciseId:'leg-press',status:'review-increase',reason:'Repeated declining repetitions.'}]};
+ const result=answer('Should I increase weight for Leg Press?',{today,adaptive});
+ assert.equal(result.kind,'caution');
+ assert.match(result.text,/declining repetitions/);
+ assert.doesNotMatch(result.text,/165 lb/);
+});
+
+test('training goal and recovery questions use their specific context',()=>{
+ const profile={trainingGoal:'Build muscle',trainingFocus:'Legs',days:4};
+ const result=answer('What is my training goal?',{today,profile});
+ assert.equal(result.kind,'goal');
+ assert.match(result.text,/Build muscle.*Legs.*4/);
+ assert.equal(answer('What is my training goal?',{today}).kind,'needs-data');
+ assert.equal(answer('How is my recovery this week?',{checkin:{status:'recorded',load:'conservative',reason:'Low energy'}}).kind,'checkin');
+});
