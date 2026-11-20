@@ -13,12 +13,12 @@
   if(value&&typeof value==='object')return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+canonical(value[k])).join(',')+'}';
   return JSON.stringify(value);
  }
- async function verify({owner,expectedRevision,document,transport}={}){
+ async function verify({owner,expectedRevision,document,transport,operationId}={}){
   if(typeof owner!=='string'||!owner||!Number.isSafeInteger(expectedRevision)||expectedRevision<0||
    !document||typeof transport?.save!=='function'||typeof transport?.read!=='function')
    throw Error('Explicit authenticated save verification requires a valid owner, revision, document and transport');
   const before=canonical(document);
-  const saved=await transport.save(owner,expectedRevision,document);
+  const saved=await transport.save(owner,expectedRevision,document,operationId);
   if(canonical(document)!==before)throw Error('Local draft changed during cloud save; stop and review');
   if(!saved||saved.revision!==expectedRevision+1||canonical(saved.document)!==before)
    throw Error('Save response did not match the local draft; do not retry automatically');
