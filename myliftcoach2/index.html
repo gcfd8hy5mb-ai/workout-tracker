@@ -14,8 +14,19 @@
 <link rel="stylesheet" href="../liftova-anatomy.css?v=1">
 <link rel="stylesheet" href="./approved-refinement.css?v=12">
 <link rel="stylesheet" href="./approved-video-fidelity.css?v=1">
+<link rel="stylesheet" href="./approved-home-rebuild.css?v=20">
 </head>
 <body>
+<svg class="icon-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+ <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M6.5 6.5v11M4 9v6M2 10v4m20-4v4m-2-5v6m-2.5-8.5v11M6.5 12h11" /></symbol>
+ <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 7c-2-2-5-2.5-9-2v14c4-.5 7 0 9 2 2-2 5-2.5 9-2V5c-4-.5-7 0-9 2Zm0 0v14" /></symbol>
+ <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V13h4v7M10 20V9h4v11m2 0V4h4v16M2 20h20" /></symbol>
+ <symbol id="i-coach" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0M19 3l1-2m-17 6L1 6" /></symbol>
+ <symbol id="i-nutrition" viewBox="0 0 24 24"><path d="M12 8C8 4 3 7 3 13c0 5 4 9 8 8l1-1 1 1c4 1 8-3 8-8 0-6-5-9-9-5m0 0c0-4 2-6 5-6M12 8c-1-3-3-5-6-5" /></symbol>
+ <symbol id="i-more" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" /></symbol>
+ <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v11h-7v-7h-4v7H3Z"/></symbol>
+ <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="m10 2-.5 2.5-2 1-2.5-1-2 3.5 2 1.5v4L3 15l2 3.5 2.5-1 2 1L10 21h4l.5-2.5 2-1 2.5 1 2-3.5-2-1.5v-4L21 8l-2-3.5-2.5 1-2-1L14 2Z"/></symbol>
+</svg>
 <div class="app-shell">
 <aside class="sidebar" id="sidebar" aria-label="MYLIFTCOACH navigation">
   <div class="sidebar-top">
@@ -91,32 +102,34 @@
     <small>Existing MYLIFTCOACH accounts use the same Supabase backend.<br>Preview workout records remain separate.</small>
   </div>
  </section>
- <section id="home" class="page">
-  <div class="mobile-brand"><img class="brand-mark" src="./assets/myliftcoach-mark.svg" alt=""><span>MYLIFTCOACH <small>2.0</small></span></div>
-  <div class="home-welcome">Good Morning <h1>Let's Train <span>💪</span></h1></div>
-  <div class="hero">
-    <div class="hero-art"><img class="hero-workout-image" src="./assets/hero-dumbbell.svg" alt=""></div>
+ <section id="home" class="page home-rebuilt">
+  <div class="reference-home-header"><div class="reference-home-brand"><img src="./assets/myliftcoach-mark.svg" alt=""><span>MYLIFTCOACH <small>2.0</small></span></div></div>
+  <div class="home-welcome"><span>Good Morning</span><h1>Let's Train <span class="muscle-symbol" aria-hidden="true">💪</span></h1></div>
+  <div class="reference-todays-workout hero">
+    <div class="workout-photo" aria-hidden="true"></div>
     <div class="hero-copy">
-      <div class="hero-kicker">TODAY'S WORKOUT</div>
+      <div class="hero-kicker">Today's Workout</div>
       <h1 id="todayTitle">Upper Body A</h1>
-      <p class="hero-meta" id="todayDescription">4 Exercises · 12 Sets · Approx. 45 min</p>
-      <div class="hero-actions"><button class="button-primary" id="heroStart">Start Workout <span>▶</span></button><button class="button-ghost" id="heroViewPlan">Training plan</button></div>
+      <p class="hero-meta" id="todayDescription">4 exercises · 12 sets · ~45 min</p>
+      <div class="hero-actions"><button class="button-primary" id="heroStart">Start Workout <span aria-hidden="true">▶</span></button><button hidden class="button-ghost" id="heroViewPlan">Training plan</button></div>
     </div>
   </div>
-  <article class="panel"><div class="panel-heading"><h3>Weekly Workout Board</h3><span class="micro-tag">TAP TO EDIT</span></div><div class="weekly-board" id="weeklyBoardHome"></div></article>
   <div class="quick-grid" aria-label="Training shortcuts">
-    <button type="button" data-shortcut="workouts"><span class="shortcut-symbol">▣</span><strong>Workouts</strong></button>
-    <button type="button" data-shortcut="library"><span class="shortcut-symbol">♧</span><strong>Exercise Library</strong></button>
-    <button type="button" data-shortcut="progress"><span class="shortcut-symbol">▥</span><strong>Progress</strong></button>
-    <button type="button" data-shortcut="coaching"><span class="shortcut-symbol">◎</span><strong>Coaching</strong></button>
-    <button type="button" data-shortcut="nutrition"><span class="shortcut-symbol">◉</span><strong>Nutrition</strong></button>
-    <button type="button" data-sidebar-open="true"><span class="shortcut-symbol">▦</span><strong>More</strong></button>
+    <button type="button" data-shortcut="workouts"><span class="shortcut-symbol"><svg class="app-icon"><use href="#i-dumbbell"></use></svg></span><strong>Workouts</strong></button>
+    <button type="button" data-shortcut="library"><span class="shortcut-symbol"><svg class="app-icon"><use href="#i-book"></use></svg></span><strong>Exercise Library</strong></button>
+    <button type="button" data-shortcut="progress"><span class="shortcut-symbol"><svg class="app-icon"><use href="#i-chart"></use></svg></span><strong>Progress</strong></button>
+    <button type="button" data-shortcut="coaching"><span class="shortcut-symbol"><svg class="app-icon"><use href="#i-coach"></use></svg></span><strong>Coaching</strong></button>
+    <button type="button" data-shortcut="nutrition"><span class="shortcut-symbol"><svg class="app-icon"><use href="#i-nutrition"></use></svg></span><strong>Nutrition</strong></button>
+    <button type="button" data-sidebar-open="true"><span class="shortcut-symbol"><svg class="app-icon"><use href="#i-more"></use></svg></span><strong>More</strong></button>
   </div>
-  <div class="section-top"><div><div class="eyebrow">YOUR TRAINING</div><h2>Your progress</h2></div><span class="muted">Demo workspace</span></div>
-  <div class="metrics"><article class="metric"><span>WORKOUTS LOGGED</span><strong id="metricWorkouts">0</strong><small>In this demo workspace</small></article><article class="metric"><span>SETS COMPLETED</span><strong id="metricSets">0</strong><small>Across saved sessions</small></article><article class="metric"><span>YOUR TRAINING PLAN</span><strong>4-day</strong><small>Strength-based split</small></article></div>
+  <div class="home-below-fold">
+  <details class="panel home-week-board" id="homeWeekBoardDetails"><summary><strong>Weekly Workout Board</strong><span class="micro-tag">TAP TO EXPAND</span></summary><article class="panel"><div class="panel-heading"><h3>Weekly Workout Board</h3><span class="micro-tag">TAP TO EDIT</span></div><div class="weekly-board" id="weeklyBoardHome"></div></article></details>
   <article class="panel" id="homeOriginalRecentPanel"><div class="panel-heading"><h3>Original Recent Workouts</h3><span class="micro-tag">ACCOUNT HISTORY · READ ONLY</span></div><p class="small" id="homeOriginalRecentStatus" role="status">Sign in and load original history to see actual completed workouts.</p><div id="homeOriginalRecent" class="recent-list"></div><div class="hero-actions"><button type="button" id="homeLoadOriginalHistory" class="button-outline" disabled>Load original workout history</button><button type="button" class="button-outline" data-home-original-progress="true">View original progress</button></div></article>
-  <div class="home-grid"><article class="panel next-panel"><div class="panel-heading"><div><div class="eyebrow">YOUR NEXT SESSION</div><h3>Session outline</h3></div><span class="micro-tag">NEXT SESSION</span></div><div id="todayExercises" class="exercise-preview"></div><button id="todayStart" class="text-action" type="button">Begin this session <span>↗</span></button></article><article class="panel activity-panel"><div class="eyebrow">YOUR MOMENTUM</div><h3>Recently completed</h3><div id="recentActivity" class="recent-list"></div></article></div>
-  <p class="safety-note"><strong>Development workspace.</strong> Practice sessions are saved only in this browser. Original workout data and Supabase records remain unchanged.</p>
+    <div class="section-top"><div><div class="eyebrow">YOUR TRAINING</div><h2>Training overview</h2></div></div>
+    <div class="metrics"><article class="metric"><span>WORKOUTS LOGGED</span><strong id="metricWorkouts">0</strong><small>Demo sessions</small></article><article class="metric"><span>SETS COMPLETED</span><strong id="metricSets">0</strong><small>All sessions</small></article><article class="metric"><span>YOUR TRAINING PLAN</span><strong>4-day</strong><small>Strength split</small></article></div>
+    <div class="home-grid"><article class="panel next-panel"><div class="panel-heading"><div><div class="eyebrow">YOUR NEXT SESSION</div><h3>Session outline</h3></div><span class="micro-tag">NEXT SESSION</span></div><div id="todayExercises" class="exercise-preview"></div><button id="todayStart" class="text-action" type="button">Begin this session <span>↗</span></button></article><article class="panel activity-panel"><div class="eyebrow">YOUR MOMENTUM</div><h3>Recently completed</h3><div id="recentActivity" class="recent-list"></div></article></div>
+    <p class="safety-note"><strong>Development preview.</strong> Demo workout entries stay in this browser. Original workout history remains unchanged.</p>
+  </div>
  </section>
  <section id="workouts" class="page" hidden><div class="page-heading"><div class="eyebrow">YOUR ROUTINE</div><h1>Training plan</h1><p>Four purposeful sessions. Select one to open its exercise list and record a practice workout.</p></div><article class="panel"><div class="panel-heading"><h3>My Weekly Schedule</h3><span class="micro-tag">EDIT ANY DAY</span></div><p class="small">Your assignments take priority over default workouts. Tap a weekday to choose, rename, or edit its exercises. These changes are saved to this browser only during the preview.</p><p id="weeklyDraftError" class="small" role="alert"></p><div class="weekly-board" id="weeklyBoardWorkouts"></div></article>
  <article class="panel" id="weekEditor" hidden><div class="panel-heading"><h3>Edit <span id="weekEditingDay">Monday</span></h3><span class="micro-tag">PERSONAL WORKOUT</span></div>
