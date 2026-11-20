@@ -208,3 +208,13 @@ Direct JavaScript regression harness passed the new targeted modules (33 cases b
 - Account settings now offer an opt-in **Check fresh cloud history** dry run. It compares original display session identities to the freshly restored raw history and passes exact raw cloud rows and revisions to the existing bulk planner. It reports number of possible appended sessions and normalized row changes as *hypothetical counts* only, never as a successful save.
 - Added six focused reader tests and unsigned-user desktop/iPhone-sized browser gate assertions. The full exact-head CI result still needs confirmation.
 - **No production writes:** the separate v2 schedule RPC is still not activated. This fresh raw read is only a checkpoint inspection and is not an approved backup, account migration, cloud synchronization, or guarantee that rows will remain unchanged after the read.
+
+## November 19 — double-read cloud checkpoint consistency and Account UI activation
+
+- Previous exact-head CI run `44649011864` completed successfully. Continued from the same unmerged private draft branch.
+- Added `MLCFreshHistoryCheckpoint.readStable()`: two complete authenticated, bounded, read-only cloud history scans must match in every source row ID, revision, payload, parent relation, position, and slot. If any row changes (including a new session or changed revision), the checker rejects the combined checkpoint instead of presenting a potentially mixed-device snapshot as safe.
+- Added three dedicated tests for the matching case and concurrent new-session/revision changes; all network calls remain GET only.
+- Wired the Account **Check fresh cloud history** button to use the new two-pass check before attempting the existing owner-verified hypothetical bulk-history planner.
+- Fixed an actual Account UI integration issue: the cloud history review buttons now rerender when original history loads or fails; without this, their disabled states could persist after a successful load.
+- Clear stale cloud-review status messages when original account history or authentication is cleared, preventing a previous sign-in's statistics from appearing as a current verification.
+- A double-read match is **not** a transactionally consistent snapshot and cannot authorize a write. Atomic owner/revision checks, the approved isolated RPC deployment, and real cross-device acceptance remain separate release gates. Production writes stayed disabled.
