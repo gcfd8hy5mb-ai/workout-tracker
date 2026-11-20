@@ -1572,7 +1572,8 @@ function safeToRestoreSchedule(){
  if(!account?.id||!scheduleBackupPreview||scheduleBackupPreview.owner!==account.id||
     !scheduleBackupPreview.document||activeRecurring||weeklyDraftReadError)return false;
  try{return localStorage.getItem(weeklyAPI.ownerKey(WEEKLY_KEY,account.id))===null&&
-  localStorage.getItem(weeklyAPI.ownerKey(RECURRING_KEY,account.id))===null;}
+  localStorage.getItem(weeklyAPI.ownerKey(RECURRING_KEY,account.id))===null&&
+  window.MLCScheduleBackupQueue.read(localStorage,account.id,allowedExerciseIds)===null;}
  catch{return false;}
 }
 async function checkScheduleBackup(){
@@ -1606,21 +1607,32 @@ async function checkScheduleBackup(){
   $('scheduleBackupRestoreStatus').textContent='No recovery performed. Local data retained.';
  }finally{if(epoch===scheduleBackupEpoch)button.disabled=!account?.id;}
 }
-function restoreScheduleBackup(){
+async function restoreScheduleBackup(){
  const status=$('scheduleBackupRestoreStatus');
+ const owner=account?.id,token=auth?.access_token,preview=scheduleBackupPreview;
  try{
   if(!safeToRestoreSchedule())throw Error('A local schedule already exists; recovery blocked');
   if(!confirmDiscardWeekEdits())return;
   if(!confirm('Restore this cloud workout schedule to this phone? No cloud records will change.'))return;
-  if(!safeToRestoreSchedule())throw Error('Local schedule changed; recovery canceled');
-  recurringDraftAPI.guard(scheduleBackupPreview.document,allowedExerciseIds);
-  recurringDraftAPI.commit(localStorage,RECURRING_KEY,account.id,scheduleBackupPreview.document,allowedExerciseIds,null);
+  status.textContent='Verifying cloud backup again before restoring…';
+  const readOnly=window.MLCExistingScheduleBackup.createReadOnly({
+   endpoint:BACKEND,publishableKey:PUBLIC_KEY,getSession:async()=>auth,fetcher:fetch.bind(window)
+  });
+  const remote=await readOnly.read(owner);
+  if(account?.id!==owner||auth?.access_token!==token||!safeToRestoreSchedule()||
+     scheduleBackupPreview!==preview||remote.revision!==preview.revision||
+     canonicalCloudWorkout(remote.document)!==canonicalCloudWorkout(preview.document))
+   throw Error('Account or cloud backup changed; no recovery performed');
+  recurringDraftAPI.guard(remote.document,allowedExerciseIds);
+  recurringDraftAPI.commit(localStorage,RECURRING_KEY,owner,remote.document,allowedExerciseIds,null);
+  // This verified checkpoint is required for future edits on the recovered phone.
+  persistCloudWorkoutCheckpoint(owner,remote);
   refreshWeeklyOwner();
   scheduleBackupPreview=null;
   renderHome();renderWorkouts();renderSettings();
-  status.textContent='Cloud workout backup restored locally. No cloud records changed.';
-  notice('Custom workout schedule restored on this phone.');
- }catch(error){status.textContent='Restore blocked: '+String(error.message||error).slice(0,160);}
+  status.textContent='Custom workouts restored and cloud revision verified on this phone.';
+  notice('Custom workouts restored on your phone using your existing account.');
+ }catch(error){status.textContent='Restore blocked or needs attention: '+String(error.message||error).slice(0,160);}
 }
 function renderSettings(){
  renderPendingScheduleBackup();
