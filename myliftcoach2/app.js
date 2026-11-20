@@ -1398,6 +1398,54 @@ async function loadAllOriginalRecords(){
   if(account?.id===owner&&combinedLoadEpoch===epoch)status.textContent='Could not complete original record loading: '+String(error.message||error).slice(0,140);
  }finally{if(combinedLoadEpoch===epoch)button.disabled=!account}
 }
+let workoutHistorySync=null,workoutHistoryStatus='',autoHistoryOwner=null;
+const workoutCloudFetch=(url,options)=>fetch(url,{...options,signal:AbortSignal.timeout(12000)});
+async function syncCompletedWorkouts(enable=false){
+ const owner=account?.id,token=auth?.access_token;
+ if(!owner||!token||localHistoryIssue||workoutHistorySync)return;
+ const operation={owner,token};
+ workoutHistorySync=operation;
+ const assertCurrent=()=>{
+  if(account?.id!==owner||auth?.access_token!==token||workoutHistorySync!==operation)
+   throw Error('Account changed during history sync');
+ };
+ workoutHistoryStatus='Syncing completed workouts…';renderSettings();
+ try{
+  const key=demoKey(owner),entries=window.MLCCompletedLocalHistory.read(localStorage,key);
+  const config={endpoint:BACKEND,publishableKey:PUBLIC_KEY,owner,
+   getSession:()=>{assertCurrent();return auth},
+   verifyUser:accessToken=>authRequest('user',null,accessToken,'GET'),fetcher:workoutCloudFetch};
+  const inventory=await window.MLCExistingCloudSessions.inspect(config);
+  const transport=window.MLCExistingSessionTransport.create(config);
+  const {uploaded,workouts}=await window.MLCSessionHistorySync.sync({
+   owner,entries,inventory:inventory.records,transport,cryptoAPI:window.crypto,assertCurrent
+  });
+  assertCurrent();
+  const latest=window.MLCCompletedLocalHistory.read(localStorage,key);
+  const merged=window.MLCSessionHistorySync.merge(latest,workouts);
+  const restored=merged.length-latest.length;
+  if(restored){
+   const serialized=JSON.stringify(merged);
+   localStorage.setItem(key,serialized);
+   if(localStorage.getItem(key)!==serialized)throw Error('Could not verify recovered history on this device');
+  }
+  demoSessions=restored?merged:latest;
+  if(enable)autoHistoryOwner=owner;
+  workoutHistoryStatus=uploaded+' backed up · '+restored+' restored. '+(autoHistoryOwner===owner?'New completions sync during this sign-in.':'');
+  renderHome();renderProgress();renderCoach();
+ }catch(error){
+  if(workoutHistorySync===operation)workoutHistoryStatus='Sync paused. '+String(error.message||error).slice(0,160);
+ }finally{
+  if(workoutHistorySync===operation){
+   workoutHistorySync=null;
+   renderSettings();
+   if(operation.syncAgain&&autoHistoryOwner===owner)void syncCompletedWorkouts();
+  }
+ }
+}
+function clearHistorySync(){
+ workoutHistorySync=null;workoutHistoryStatus='';autoHistoryOwner=null;
+}
 async function runCloudReadinessCheck(){
  const button=$('cloudReadinessButton'),status=$('cloudReadinessStatus');
  if(!button||!status)return;
@@ -1533,54 +1581,6 @@ async function verifyManualCloudRecord(){
    ' · '+sets.length+' sets · '+detail+'. Read-only: local workouts were not replaced.';
  }catch(error){status.textContent='Could not verify exact test workout: '+String(error.message||error).slice(0,180)}
  finally{button.disabled=!account?.id}
-}
-let workoutHistorySync=null,workoutHistoryStatus='',autoHistoryOwner=null;
-const workoutCloudFetch=(url,options)=>fetch(url,{...options,signal:AbortSignal.timeout(12000)});
-async function syncCompletedWorkouts(enable=false){
- const owner=account?.id,token=auth?.access_token;
- if(!owner||!token||localHistoryIssue||workoutHistorySync)return;
- const operation={owner,token};
- workoutHistorySync=operation;
- const assertCurrent=()=>{
-  if(account?.id!==owner||auth?.access_token!==token||workoutHistorySync!==operation)
-   throw Error('Account changed during history sync');
- };
- workoutHistoryStatus='Syncing completed workouts…';renderSettings();
- try{
-  const key=demoKey(owner),entries=window.MLCCompletedLocalHistory.read(localStorage,key);
-  const config={endpoint:BACKEND,publishableKey:PUBLIC_KEY,owner,
-   getSession:()=>{assertCurrent();return auth},
-   verifyUser:accessToken=>authRequest('user',null,accessToken,'GET'),fetcher:workoutCloudFetch};
-  const inventory=await window.MLCExistingCloudSessions.inspect(config);
-  const transport=window.MLCExistingSessionTransport.create(config);
-  const {uploaded,workouts}=await window.MLCSessionHistorySync.sync({
-   owner,entries,inventory:inventory.records,transport,cryptoAPI:window.crypto,assertCurrent
-  });
-  assertCurrent();
-  const latest=window.MLCCompletedLocalHistory.read(localStorage,key);
-  const merged=window.MLCSessionHistorySync.merge(latest,workouts);
-  const restored=merged.length-latest.length;
-  if(restored){
-   const serialized=JSON.stringify(merged);
-   localStorage.setItem(key,serialized);
-   if(localStorage.getItem(key)!==serialized)throw Error('Could not verify recovered history on this device');
-  }
-  demoSessions=restored?merged:latest;
-  if(enable)autoHistoryOwner=owner;
-  workoutHistoryStatus=uploaded+' backed up · '+restored+' restored. '+(autoHistoryOwner===owner?'New completions sync during this sign-in.':'');
-  renderHome();renderProgress();renderCoach();
- }catch(error){
-  if(workoutHistorySync===operation)workoutHistoryStatus='Sync paused. '+String(error.message||error).slice(0,160);
- }finally{
-  if(workoutHistorySync===operation){
-   workoutHistorySync=null;
-   renderSettings();
-   if(operation.syncAgain&&autoHistoryOwner===owner)void syncCompletedWorkouts();
-  }
- }
-}
-function clearHistorySync(){
- workoutHistorySync=null;workoutHistoryStatus='';autoHistoryOwner=null;
 }
 async function inspectExistingCloudSessions(){
  const button=$('existingCloudSessionsButton'),status=$('existingCloudSessionsStatus');
