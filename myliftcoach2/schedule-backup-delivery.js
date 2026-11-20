@@ -53,5 +53,24 @@
     String(error.message||error));
   }
  }
- return Object.freeze({deliver});
+ async function reconcileAttempt({storage,owner,validIds,transport}={}){
+  if(!storage||typeof transport?.read!=='function')
+   throw Error('Read-only verified cloud transport required');
+  const item=queue.read(storage,owner,validIds);
+  if(!item||item.status!=='attempted')
+   return Object.freeze({status:'nothing-to-reconcile',writeCount:0});
+  const fresh=await transport.read(owner);
+  sync.validCheckpoint(fresh);
+  if(fresh.revision===item.expectedRevision+1&&
+     fingerprint(fresh.document)===item.fingerprint){
+   queue.finishVerified(storage,owner,validIds,item.operationId,fresh.document);
+   return Object.freeze({status:'verified-after-interruption',revision:fresh.revision,
+    writeCount:0,message:'Original phone upload confirmed without repeating the write.'});
+  }
+  // A missing record may mean the original request failed, but absence is not
+  // approval to create a new operation ID or overwrite newer cloud state.
+  return Object.freeze({status:'manual-review',revision:fresh.revision,writeCount:0,
+   message:'Could not confirm original upload; preserve operation ID and both versions.'});
+ }
+ return Object.freeze({deliver,reconcileAttempt});
 });
