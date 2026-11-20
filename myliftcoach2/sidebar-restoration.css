@@ -32,3 +32,25 @@ body.sidebar-is-open{overflow:hidden}
  .mobile-menu{color:#e8bf74!important}
 }
 @media(prefers-reduced-motion:reduce){.sidebar,.sidebar-scrim,.section-chevron{transition:none!important}}
+
+
+/* More-menu regression: the older mobile simplification hid #sidebar with
+   display:none!important while JS still opened its backdrop. Restore the
+   existing accessible drawer; closed state stays offscreen and inert. */
+@media(max-width:760px){
+ #sidebar{
+  display:flex!important;
+  position:fixed!important;
+  top:0;left:0;
+  height:100dvh;
+  z-index:105;
+  transform:translateX(-110%);
+  visibility:hidden;
+ }
+ #sidebar.open{
+  display:flex!important;
+  transform:translateX(0);
+  visibility:visible;
+ }
+ #sidebarScrim.open{z-index:104}
+}
