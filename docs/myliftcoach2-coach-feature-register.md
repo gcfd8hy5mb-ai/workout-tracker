@@ -235,3 +235,13 @@ Direct JavaScript regression harness passed the new targeted modules (33 cases b
 - Each new practice completion now uses `crypto.randomUUID()` plus a timestamp so different sessions finished in the same millisecond cannot collide. Missing secure ID generation blocks completion rather than inventing a potentially duplicate ID.
 - Updated the cloud history batch-review guard from 100 to 2,000 sessions (safe ceiling for costly review only; no automatic deletion), and added regression tests for 126-session retention, same-millisecond IDs, stale tabs, storage quota errors, duplicate identifiers, and larger batch history previews.
 - This is a draft-only local workout data-preservation fix. It does not connect production cloud saving or migrate data.
+
+## November 19 — protect unreadable local history and completed-session recovery
+
+- The previous exact-head CI run `44655354471` passed migration, disposable PostgreSQL and browser checks.
+- Fixed the existing `loadDemo()` failure state: corrupted/duplicated/unreadable completed workouts are **not** treated as a harmless empty history for editing. The raw localStorage value stays untouched; Account settings now warns that data cannot be verified and disables the Clear demo action.
+- Completing a workout also checks that the original local history loaded successfully before attempting a new save. The UI retains the unfinished draft when the history append fails.
+- Corrected the completion sequence so a **successful completed-history append is never reported as a failed save merely because clearing the old unfinished draft fails**. The completed session is no longer in the active form after the append.
+- On opening a session, a previously saved completed session is compared against the unfinished draft's plan, start timestamp and logged sets; an identical stale draft is cleared (or opening is blocked if cleanup fails), not offered as a second completion.
+- Added desktop and iPhone-sized browser assertions: corrupt completed storage is preserved verbatim, clearly warned about, and unavailable for destructive Clear demo action.
+- Production cloud saving, original app storage and live Supabase tables are unchanged.
