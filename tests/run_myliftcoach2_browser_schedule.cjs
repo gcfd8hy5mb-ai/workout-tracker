@@ -31,6 +31,8 @@ const assert = require('node:assert/strict');
    assert.equal(await page.locator('#cloudBatchPreviewButton').isDisabled(),true,device.label+' all-workout review requires verified account history');
    assert.equal(await page.locator('#cloudFreshCheckpointButton').isDisabled(),true,device.label+' fresh cloud read requires verified sign-in and history');
    assert.equal(await page.locator('#existingCloudSessionsButton').isDisabled(),true,device.label+' deployed 2.0 RPC requires verified account');
+   assert.equal(await page.locator('#manualCloudTestButton').isDisabled(),true,device.label+' manual cloud upload requires verified account and a completed local workout');
+   assert.equal(await page.locator('#manualCloudVerifyButton').isDisabled(),true,device.label+' test readback requires account');
    assert.match(await page.locator('#existingCloudSessionsStatus').textContent(),/Sign in to inspect existing 2.0 cloud sessions/,device.label+' read-only 2.0 inventory status');
    assert.match(await page.locator('#cloudFreshCheckpointStatus').textContent(),/Sign in, load original history/,device.label+' no unverified checkpoint');
    assert.match(await page.locator('#cloudBatchPreviewStatus').textContent(),/Sign in and load original workout history/,device.label+' all-workout review not started');
