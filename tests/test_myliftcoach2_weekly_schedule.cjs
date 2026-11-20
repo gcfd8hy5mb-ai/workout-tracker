@@ -211,3 +211,15 @@ test('deleted weekly draft cannot be silently recreated from stale tab',()=>{
  assert.throws(()=>s.commitOwned(store,'weekly',owner,state,ids,old),/changed in another tab/);
  assert.equal(store.getItem(key),null);
 });
+
+test('editor rejects unknown or duplicated exercises instead of silently removing them',()=>{
+ const baseline=s.normalize(null,preset,allowed);
+ const savedBefore=JSON.stringify(baseline);
+ assert.throws(()=>s.edit(baseline,'upper-a',{ids:['press','missing-id']},allowed),/unavailable or duplicate/);
+ assert.throws(()=>s.edit(baseline,'upper-a',{ids:['press','press']},allowed),/unavailable or duplicate/);
+ assert.throws(()=>s.add(baseline,'custom-invalid-001',{title:'Invalid',ids:['row','missing-id']},allowed),/unavailable or duplicate/);
+ assert.throws(()=>s.add(baseline,'custom-invalid-002',{title:'Duplicate',ids:['row','row']},allowed),/unavailable or duplicate/);
+ assert.equal(JSON.stringify(baseline),savedBefore);
+ const valid=s.edit(baseline,'upper-a',{title:'Updated name only'},allowed);
+ assert.deepEqual(valid.plans.find(p=>p.id==='upper-a').ids,['press']);
+});
