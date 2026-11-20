@@ -314,7 +314,7 @@ let muscleFilter='';
 let libraryVisibleOffset=0;
 let restSeconds=90,restPaused=true,restClock=null;
 function demoKey(owner=account?.id||'guest'){return owner==='guest'?DEMO_KEY:DEMO_KEY+':'+owner;}
-function loadDemo(owner='guest'){try{const a=JSON.parse(localStorage.getItem(demoKey(owner))||'[]');return Array.isArray(a)?a.filter(x=>x&&Array.isArray(x.sets)).slice(0,100):[]}catch{return []}}
+function loadDemo(owner='guest'){try{return window.MLCCompletedLocalHistory.read(localStorage,demoKey(owner))}catch{return []}}
 function storeDemo(){localStorage.setItem(demoKey(),JSON.stringify(demoSessions))}
 function escapeHTML(text){return String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function notice(message){const t=$('toast');t.textContent=message;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,3400)}
@@ -1343,11 +1343,9 @@ function openWorkout(id){
  $('startRest').addEventListener('click',openRest);
  $('finishWorkout').addEventListener('click',()=>{
   if(!session?.sets.length){notice('Add at least one practice set first.');return}
-  const entry={id:'demo-'+Date.now(),created:new Date().toISOString(),title:activePlan.title,planId:activePlan.id,sets:session.sets.map(x=>({...x})),readiness:session.readiness,startedAt:session.startedAt};
-  const updated=[entry,...demoSessions].slice(0,100);
   try{
-   localStorage.setItem(demoKey(activeSessionOwner),JSON.stringify(updated));
-   if(localStorage.getItem(demoKey(activeSessionOwner))!==JSON.stringify(updated))throw Error('Save verification failed');
+   const entry={id:window.MLCCompletedLocalHistory.newId(window.crypto),created:new Date().toISOString(),title:activePlan.title,planId:activePlan.id,sets:session.sets.map(x=>({...x})),readiness:session.readiness,startedAt:session.startedAt};
+   const updated=window.MLCCompletedLocalHistory.append(localStorage,demoKey(activeSessionOwner),demoSessions,entry);
    demoSessions=updated;
    window.MLCSessionDraft.clear(localStorage,activeSessionOwner);
    // Completion must not recreate the in-progress draft.
