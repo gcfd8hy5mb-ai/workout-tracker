@@ -1297,8 +1297,13 @@ async function inspectExistingCloudSessions(){
    }
   });
   if(account?.id!==owner||auth?.access_token!==token)throw Error('Account changed during cloud read');
+  const testRecord=result.records.filter(row=>!row.deleted&&row.payload?.cloudTest===true&&
+    row.id.startsWith('mlc2-test-')).at(-1);
+  if(testRecord)$('manualCloudVerifyId').value=testRecord.id;
   status.textContent='Verified 2.0 cloud inventory: '+result.active+' active completed records, '+
    result.deleted+' deleted markers · '+result.total+' owner-scoped records read. '+
+   (testRecord?'Test workout found: '+testRecord.id+'. Use Verify cloud workout below. ':
+    'No identified manual cloud test record in this inventory. ')+
    'This did not upload, import, delete or overwrite workouts.';
  }catch(error){
   status.textContent='2.0 cloud inventory incomplete: '+String(error.message||error).slice(0,180)+
