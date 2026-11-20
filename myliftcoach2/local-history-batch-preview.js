@@ -18,7 +18,7 @@
   if(!owner||owner!==verifiedOwner)throw Error('Verified account owner required');
   if(!Array.isArray(history)||!Array.isArray(localWorkouts)||!Array.isArray(catalog))
    throw Error('Verified original history, local workouts, and exercise catalog required');
-  if(localWorkouts.length>100)throw Error('Too many local workouts to review safely');
+  if(localWorkouts.length>2000)throw Error('More than 2,000 workouts require a separate review; no local history was trimmed');
   const originals=new Map(),seen=new Set(),items=[],toAppend=[];
   for(const original of history){
    if(!original||typeof original.id!=='string'||!original.id||originals.has(original.id))
