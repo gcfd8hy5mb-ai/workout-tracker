@@ -1,0 +1,46 @@
+/* The November 16 marble stays fixed while all pages scroll on top. */
+:root{--mlc-card:#071b22;--mlc-gold:#f1d394}
+html{background-color:#063f45!important}
+body{background:#063f45!important;min-height:100dvh}
+body::before,body:has(#home:not([hidden]))::before{
+ content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+ background:#063f45 url("./assets/approved-vertical-marble-sharp.webp?v=11") center center/cover no-repeat!important;
+}
+.app-shell,.main-wrap,.content{background:transparent!important}
+.app-shell{position:relative;z-index:1}
+.content{position:relative}
+.page{background:transparent!important}
+/* Match dark emerald cards and thin bright-gold frames throughout all non-Home routes.
+   The approved Home hero and six photographic shortcut tiles remain untouched. */
+.page:not(#home):not(#welcome) .panel,
+.page:not(#home):not(#welcome) .settings-panel,
+.page:not(#home):not(#welcome) .workout-card,
+.page:not(#home):not(#welcome) .library-card,
+.page:not(#home):not(#welcome) .metric,
+.page:not(#home):not(#welcome) .coach-card,
+.page:not(#home):not(#welcome) .log-card,
+.page:not(#home):not(#welcome) .week-exercise,
+.page:not(#home):not(#welcome) .week-day-card,
+.page:not(#home):not(#welcome) .preview-exercise,
+.page:not(#home):not(#welcome) .account-menu button,
+.page:not(#home):not(#welcome) .coach-links button,
+.page:not(#home):not(#welcome) .library-recent-actions button,
+.page:not(#home):not(#welcome) .history-entry,
+.page:not(#home):not(#welcome) .recent-item,
+#home .home-week-board,
+#home .home-week-board .week-day-card{
+ background-color:var(--mlc-card)!important;
+ background-image:linear-gradient(145deg,#0c343b,#051b24)!important;
+ border:1px solid var(--mlc-gold)!important;
+ color:#fff3df!important;
+ box-shadow:inset 0 1px 0 rgba(255,240,200,.13),0 5px 13px rgba(0,13,20,.37)!important;
+}
+.page .week-day-card.is-today{border-color:#ffe4a6!important}
+.page:not(#welcome) .panel p{color:#d8e8df!important}
+.page:not(#welcome) .preview-exercise small,
+.page:not(#welcome) .recent-item small{color:#d7e3d9!important}
+.page:not(#welcome) .setting-line{border-color:rgba(241,211,148,.35)}
+@media(max-width:760px){
+ body::before,body:has(#home:not([hidden]))::before{background-position:center center!important;background-size:cover!important}
+ .bottom-tabs{position:fixed;z-index:40}
+}
