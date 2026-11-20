@@ -50,14 +50,23 @@ function readWeekly(owner=scheduleOwner()){
 let weekly=weeklyAPI.normalize(null,plans,allowedExerciseIds);
 let activeRecurring=null;
 let weeklyDraftReadError=null;
+let weeklyStoredCheckpoint=null;
 function refreshWeeklyOwner(){
+ weeklyStoredCheckpoint=null;
  activeRecurring=null;
  try{
   const recurring=recurringDraftAPI.read(localStorage,RECURRING_KEY,scheduleOwner(),allowedExerciseIds);
   if(recurring){
    activeRecurring=recurring;
    weekly={plans:recurring.plans.map(p=>({...p,ids:p.ids.slice()})),assigned:recurring.assigned.slice()};
-  }else weekly=readWeekly();
+  }else{
+   // Preserve the exact account-scoped persisted value for stale-tab detection.
+   const key=weeklyAPI.ownerKey(WEEKLY_KEY,scheduleOwner());
+   const checkpoint=localStorage.getItem(key);
+   weekly=readWeekly();
+   if(localStorage.getItem(key)!==checkpoint)throw Error('Workout schedule changed while loading; reload before editing');
+   weeklyStoredCheckpoint=checkpoint;
+  }
   weeklyDraftReadError=null;
  }catch(error){
   // Preserve bytes of the unreadable record and block changes until recovered.
@@ -170,7 +179,8 @@ function commitWeekly(candidate,explicitDay=null){
   recurringDraftAPI.commit(localStorage,RECURRING_KEY,scheduleOwner(),document,allowedExerciseIds,activeRecurring);
   activeRecurring=document;weekly=candidate;
  }else{
-  weekly=weeklyAPI.commitOwned(localStorage,WEEKLY_KEY,scheduleOwner(),candidate,plans.map(p=>p.id));
+  weekly=weeklyAPI.commitOwned(localStorage,WEEKLY_KEY,scheduleOwner(),candidate,plans.map(p=>p.id),weeklyStoredCheckpoint);
+  weeklyStoredCheckpoint=localStorage.getItem(weeklyAPI.ownerKey(WEEKLY_KEY,scheduleOwner()));
   fullMigrationPreview=null;
   renderOriginalCustomSchedule();
  }
