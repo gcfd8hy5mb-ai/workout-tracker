@@ -108,7 +108,17 @@ const assert = require('node:assert/strict');
    assert.equal(await page.locator('[data-reps="leg-press"]').inputValue(),'9',device.name+' rep continuity');
    const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('mlc2-coach-manual-targets-v1:beta-tester')));
    assert.equal(saved.targets['leg-press'],165,device.name+' isolated local target');
-   await page.locator('#cancelWorkout').click();
+   const saveLater=page.locator('#cancelWorkout');
+   try{await saveLater.click({timeout:5000})}
+   catch(error){
+    console.error(device.name,await saveLater.evaluate(button=>{
+     const r=button.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
+     return {bounds:r.toJSON(),hit:hit?.outerHTML.slice(0,200),viewport:[innerWidth,innerHeight],
+      scale:visualViewport?.scale,offset:[visualViewport?.offsetLeft,visualViewport?.offsetTop],
+      modal:document.querySelector('.modal-panel').getBoundingClientRect().toJSON()};
+    }));
+    throw error;
+   }
    const snapshot=()=>page.evaluate(()=>Object.fromEntries(Object.keys(localStorage)
     .filter(key=>key.startsWith('mlc2-')&&!key.startsWith('mlc2-beta-mode')).sort()
     .map(key=>[key,localStorage.getItem(key)])));

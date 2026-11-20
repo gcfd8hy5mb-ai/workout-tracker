@@ -100,29 +100,29 @@ input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visi
 #weekExerciseCount{color:#efd0a0}
 @media(max-width:640px){.week-exercise.library-editor-row{padding:9px;gap:6px}.library-editor-row>button{padding:6px 8px}}
 
-/* Keep the session actions reachable while the set editor scrolls. */
-.modal-panel:has(#workoutLog) {
+/* Scroll only the session body. The action row has its own grid track. */
+.modal-panel:has(.workout-session-body) {
  display:flex;
  flex-direction:column;
  overflow:hidden;
 }
-#modalContent:has(#workoutLog) {
- overflow-y:auto;
+#modalContent:has(.workout-session-body) {
+ display:grid;
+ grid-template-rows:minmax(0,1fr) auto;
+ min-height:0;
+ min-width:0;
+}
+.workout-session-body {
+ overflow:auto;
  min-height:0;
  overscroll-behavior:contain;
 }
-#workoutLog,
-#workoutLog .log-card,
-#workoutLog .inputs label {
- min-width:0;
-}
+#workoutLog, #workoutLog .log-card, #workoutLog .inputs label {min-width:0}
 #workoutLog select {max-width:100%}
-#workoutLog + .modal-footer {
- position:sticky;
- bottom:0;
- z-index:2;
+.workout-session-body + .modal-footer {
  background:#192228;
  border-top:1px solid rgba(223,180,103,.54);
- padding:8px 0;
+ padding:8px 0 0;
+ margin-top:4px;
 }
-.modal-panel:has(#workoutLog) .modal-close {z-index:3}
+.modal-panel:has(.workout-session-body) .modal-close {z-index:3}
