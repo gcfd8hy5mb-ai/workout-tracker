@@ -32,7 +32,7 @@
  function access(user,owner,preference,enabled=BETA_PREVIEWS_ENABLED){
   const paidTier=verifiedTier(user,owner);
   const beta=Boolean(enabled);
-  const mode=beta?(preference==='pro'?'pro':'free'):null;
+  const mode=beta?(preference==='pro'||preference==='free'?preference:paidTier==='free'?'free':'pro'):null;
   return {paidTier,beta,mode,effectiveTier:mode??paidTier};
  }
  return Object.freeze({assess,verifiedTier,access});
