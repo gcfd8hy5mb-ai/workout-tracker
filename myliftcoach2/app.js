@@ -175,7 +175,8 @@ function queueWorkoutCloudBackup(){
   const entry=window.MLCScheduleBackupQueue.stage(localStorage,account.id,
    activeRecurring||weekly,allowedExerciseIds);
   if($('scheduleBackupPendingStatus'))
-   $('scheduleBackupPendingStatus').textContent='Workout changes saved on this phone · cloud backup pending ('+entry.updatedAt+').';
+   $('scheduleBackupPendingStatus').textContent='Workout saved on this phone · preparing verified cloud backup…';
+  void synchronizePhoneWorkoutBackup();
  }catch(error){
   const message='Workout saved locally, but cloud backup could not be queued: '+String(error.message||error).slice(0,110);
   if($('scheduleBackupPendingStatus'))$('scheduleBackupPendingStatus').textContent=message;
@@ -193,6 +194,92 @@ function renderPendingScheduleBackup(){
    queued?'Latest custom workout edits saved on this phone · cloud backup pending ('+queued.updatedAt+').':
    'No pending custom workout cloud backup on this phone.';
  }catch(error){status.textContent='Pending backup requires local recovery: '+String(error.message||error).slice(0,130);}
+}
+const CLOUD_WORKOUT_CHECKPOINT_KEY='mlc2-custom-workout-cloud-checkpoint-v1';
+let cloudWorkoutUploadBusy=false;
+function cloudWorkoutCheckpoint(owner){
+ const key=weeklyAPI.ownerKey(CLOUD_WORKOUT_CHECKPOINT_KEY,owner);
+ const value=localStorage.getItem(key);
+ if(value===null)return {revision:0,document:null};
+ let parsed;
+ try{parsed=JSON.parse(value)}catch{throw Error('Saved cloud checkpoint unreadable; do not overwrite remote workouts');}
+ if(parsed?.owner!==owner)throw Error('Cloud checkpoint belongs to another account');
+ window.MLCV2ScheduleSyncCoordinator.validCheckpoint(parsed);
+ return {revision:parsed.revision,document:parsed.document};
+}
+function persistCloudWorkoutCheckpoint(owner,remote){
+ window.MLCV2ScheduleSyncCoordinator.validCheckpoint(remote);
+ const key=weeklyAPI.ownerKey(CLOUD_WORKOUT_CHECKPOINT_KEY,owner);
+ const serialized=JSON.stringify({owner,revision:remote.revision,document:remote.document});
+ localStorage.setItem(key,serialized);
+ if(localStorage.getItem(key)!==serialized)throw Error('Cloud checkpoint not safely retained');
+}
+async function synchronizePhoneWorkoutBackup(){
+ // Only the isolated 2.0 signed-in account may use the dedicated custom-plan record.
+ if(cloudWorkoutUploadBusy||!account?.id||!auth?.access_token)return;
+ const owner=account.id,token=auth.access_token;
+ cloudWorkoutUploadBusy=true;
+ const status=$('scheduleBackupPendingStatus');
+ try{
+  const queue=window.MLCScheduleBackupQueue;
+  const pending=queue.read(localStorage,owner,allowedExerciseIds);
+  if(!pending)return;
+  const user=await authRequest('user',null,token,'GET');
+  if(user?.id!==owner||account?.id!==owner||auth?.access_token!==token)
+   throw Error('Signed-in account changed; local workout remains saved');
+  const transport=window.MLCExistingScheduleBackup.create({
+   endpoint:BACKEND,publishableKey:PUBLIC_KEY,getSession:async()=>auth,fetcher:fetch.bind(window)
+  });
+  const delivery=window.MLCScheduleBackupDelivery;
+  if(pending.status==='attempted'){
+   const recovered=await delivery.reconcileAttempt({
+    storage:localStorage,owner,validIds:allowedExerciseIds,transport
+   });
+   if(recovered.status!=='verified-after-interruption')
+    throw Error('Previous upload requires review; no duplicate write attempted');
+   const verified=await transport.read(owner);
+   if(account?.id!==owner||auth?.access_token!==token)
+    throw Error('Account switched after backup recovery');
+   persistCloudWorkoutCheckpoint(owner,verified);
+   if(status)status.textContent='Cloud backup recovered and verified · revision '+verified.revision+'.';
+   return;
+  }
+  const checkpoint=cloudWorkoutCheckpoint(owner);
+  const fresh=await transport.read(owner);
+  if(account?.id!==owner||auth?.access_token!==token)
+   throw Error('Account changed while inspecting cloud workouts');
+  if(fresh.revision===checkpoint.revision&&
+     JSON.stringify(fresh.document)===JSON.stringify(pending.document)){
+   queue.finishMatchingPending(localStorage,owner,allowedExerciseIds,fresh.document);
+   persistCloudWorkoutCheckpoint(owner,fresh);
+   if(status)status.textContent='Custom workout backup already verified in Supabase.';
+   return;
+  }
+  // Never assume a foreign/older cloud revision belongs to this phone.
+  if(fresh.revision!==checkpoint.revision||
+     JSON.stringify(fresh.document)!==JSON.stringify(checkpoint.document))
+   throw Error('Cloud schedule differs from this phone’s verified checkpoint; local workouts protected');
+  const result=await delivery.deliver({
+   storage:localStorage,owner,validIds:allowedExerciseIds,checkpoint,
+   transport,operationId:crypto.randomUUID(),explicitApproval:true
+  });
+  if(result.status!=='verified')
+   throw Error('Cloud upload still needs verification; local workout retained');
+  if(account?.id!==owner||auth?.access_token!==token)
+   throw Error('Account changed following upload; verify before saving again');
+  const verified=await transport.read(owner);
+  if(verified.revision!==result.revision)
+   throw Error('Cloud revision changed after backup; keep local copy');
+  persistCloudWorkoutCheckpoint(owner,verified);
+  if(status)status.textContent='Custom workouts saved and verified in Supabase · revision '+result.revision+'.';
+ }catch(error){
+  if(account?.id===owner){
+   if(status)status.textContent='Workouts saved on phone; cloud backup requires attention: '+
+    String(error.message||error).slice(0,170);
+  }
+ }finally{
+  cloudWorkoutUploadBusy=false;
+ }
 }
 function commitWeekly(candidate,explicitDay=null){
  if(weeklyDraftReadError)throw Error('Saved schedule needs recovery before editing: '+weeklyDraftReadError);
@@ -1878,7 +1965,7 @@ function saveAuth(data){
  // A session already in progress belongs to its original account.
  if(activePlan&&activeSessionOwner&&activeSessionOwner!==data.user?.id)closeModal();
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
- if(account?.id&&account.id!==data.user?.id){cloudReadVerifiedOwner=null;combinedLoadEpoch++;$('loadAllOriginalStatus').textContent='Account changed. Load records for the current account.';clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;demoSessions=loadDemo(account.id);renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings();renderOriginalHistory();
+ if(account?.id&&account.id!==data.user?.id){cloudReadVerifiedOwner=null;combinedLoadEpoch++;$('loadAllOriginalStatus').textContent='Account changed. Load records for the current account.';clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;demoSessions=loadDemo(account.id);renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings();renderOriginalHistory();void synchronizePhoneWorkoutBackup();
 }
 function clearAuth(){clearScheduleBackupPreview();cloudReadVerifiedOwner=null;for(const id of ['manualCloudTestStatus','manualCloudVerifyStatus']){if($(id))$(id).textContent='Sign in to use the cloud test.';}if($('existingCloudSessionsStatus'))$('existingCloudSessionsStatus').textContent='Sign in to inspect existing 2.0 cloud sessions.';for(const id of ['cloudSessionPreviewStatus','cloudBatchPreviewStatus','cloudFreshCheckpointStatus']){
  const node=$(id);if(node)node.textContent='Sign in and load this account’s original history before cloud review.';
