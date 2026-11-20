@@ -38,3 +38,12 @@ test('no local workouts round-trips existing history without creating a save',as
  const r=await batch.inspect(input({localWorkouts:[]}));
  assert.equal(r.newCount,0);assert.equal(r.originalCount,1);assert.equal(r.candidateCount,1);
 });
+
+test('previously stored workout history above 100 sessions can be reviewed without truncation',async()=>{
+ const many=Array.from({length:101},(_,i)=>({
+  ...a,id:'demo-'+(1000+i),created:new Date(Date.parse('2026-11-20T12:00:00Z')-i*3600000).toISOString()
+ }));
+ const r=await batch.inspect(input({localWorkouts:many}));
+ assert.equal(r.localCount,101);assert.equal(r.newCount,101);assert.equal(r.candidateCount,102);
+ assert.equal(many.length,101);
+});
