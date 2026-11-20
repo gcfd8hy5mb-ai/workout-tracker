@@ -142,3 +142,13 @@ test('custom workout capacity blocks non-restorable drafts instead of silently l
  assert.throws(()=>s.add(state,'custom-overflow-001',{title:'Overflow',ids:['press']},allowed),/limit reached/);
  assert.equal(state.plans.length,55);
 });
+
+
+test('oversized saved workout library is rejected without dropping unassigned custom workouts',()=>{
+ const owner='11111111-1111-4111-8111-111111111111';
+ const entries=Array.from({length:52},(_,i)=>({id:'custom-saved-'+String(i).padStart(3,'0'),title:'Workout '+i,ids:['press']}));
+ const raw={version:1,plans:entries,assigned:['upper-a','lower-a',null,'upper-b','lower-b',null,null]};
+ const original=JSON.stringify(raw),key=s.ownerKey('weekly',owner),memory=new Map([[key,original]]);
+ assert.throws(()=>s.loadOwned({getItem:k=>memory.get(k)},'weekly',owner,preset,allowed),/exceeds supported capacity/);
+ assert.equal(memory.get(key),original);
+});
