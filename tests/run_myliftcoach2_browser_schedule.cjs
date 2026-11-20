@@ -196,6 +196,15 @@ const assert = require('node:assert/strict');
    // Editing the exact scheduled plan must update Home, modal and persisted copy.
    const today=(new Date().getDay()+6)%7;
    await page.locator('#weeklyBoardHome [data-week-day="'+today+'"]').evaluate(el=>el.click());
+   // Unsaved workout edits cannot vanish silently when navigating between days.
+   await page.locator('#weekWorkoutName').fill('Unsaved session name');
+   const other=(today+1)%7;
+   page.once('dialog',dialog=>dialog.dismiss());
+   await page.locator('#weeklyBoardWorkouts [data-week-day="'+other+'"]').evaluate(el=>el.click());
+   assert.equal(await page.locator('#weekWorkoutName').inputValue(),'Unsaved session name');
+   page.once('dialog',dialog=>dialog.accept());
+   await page.locator('#weeklyBoardWorkouts [data-week-day="'+today+'"]').evaluate(el=>el.click());
+   assert.equal(await page.locator('#weekWorkoutName').inputValue(),'My Custom Session');
    // The same complete library drives the workout editor; search cannot lose checked draft selections.
    assert.equal(await page.locator('#weekExerciseOptions input').count(),344);
    assert.ok(await page.locator('#weekExerciseMuscle option').count()>5);
