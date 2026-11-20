@@ -52,3 +52,43 @@ test('failed network request fails closed without a partial result',async()=>{
  const h=harness(await fixture(),{failPage:true});
  await assert.rejects(moduleUnderTest.read(h.input),/read failed/);
 });
+
+test('stable checkpoint scans all history tables twice with matching raw revisions',async()=>{
+ const rows=await fixture(),h=harness(rows);
+ const result=await moduleUnderTest.readStable(h.input);
+ assert.equal(result.stableAcrossTwoReads,true);
+ assert.deepEqual(h.calls.map(x=>x.table),[...moduleUnderTest.TABLES,...moduleUnderTest.TABLES]);
+ assert.ok(h.calls.every(c=>c.options.method==='GET'));
+ assert.equal(result.readyForProduction,false);
+});
+test('a changed row revision between full reads blocks checkpoint and preserves both',async()=>{
+ const rows=await fixture(),h=harness(rows);
+ let reads=0;
+ const fetcher=async(url,options)=>{
+  const response=await h.fetcher(url,options);
+  const table=new URL(url).pathname.split('prism_account_')[1];
+  reads++;
+  if(reads>4&&table==='sessions'){
+   const data=await response.json();
+   return {ok:true,status:200,json:async()=>data.map(x=>({...x,revision:x.revision+1}))};
+  }
+  return response;
+ };
+ await assert.rejects(moduleUnderTest.readStable({...h.input,fetcher}),/changed during checkpoint reads/);
+ assert.equal(rows.find(r=>r.table==='sessions').revision,2);
+});
+test('a session inserted between reads blocks even with consistent other tables',async()=>{
+ const rows=await fixture(),h=harness(rows);
+ let scans=0;
+ const fetcher=async(url,options)=>{
+  const response=await h.fetcher(url,options);
+  const table=new URL(url).pathname.split('prism_account_')[1];
+  if(table==='sources')scans++;
+  if(scans===2&&table==='sessions'){
+   const data=await response.json();
+   return {ok:true,status:200,json:async()=>[...data,{...data[0],id:'new-session-row',revision:1}]};
+  }
+  return response;
+ };
+ await assert.rejects(moduleUnderTest.readStable({...h.input,fetcher}),/changed during checkpoint reads/);
+});
