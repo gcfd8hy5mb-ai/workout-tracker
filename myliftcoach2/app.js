@@ -1202,7 +1202,7 @@ async function previewFreshCloudCheckpoint(){
  try{
   if(!owner||importedHistoryOwner!==owner||!sessionToken||!Array.isArray(originalHistory))
    throw Error('Sign in and load the original workout history first');
-  const checkpoint=await window.MLCFreshHistoryCheckpoint.read({
+  const checkpoint=await window.MLCFreshHistoryCheckpoint.readStable({
    endpoint:BACKEND,publishableKey:PUBLIC_KEY,owner,getSession:async()=>auth,
    verifyUser:token=>authRequest('user',null,token,'GET'),
    fetcher:async(url,options)=>{
@@ -1228,7 +1228,7 @@ async function previewFreshCloudCheckpoint(){
   if(account?.id!==owner||auth?.access_token!==sessionToken||importedHistoryOwner!==owner||
     JSON.stringify(demoSessions)!==localFingerprint||JSON.stringify(originalHistory)!==loadedFingerprint)
    throw Error('Account or workouts changed during fresh checkpoint; repeat verification');
-  status.textContent='Fresh cloud checkpoint verified read-only: '+planned.baselineCount+
+  status.textContent='Two matching cloud reads · Fresh checkpoint verified read-only: '+planned.baselineCount+
    ' original sessions, '+planned.localCount+' local 2.0 sessions · '+
    planned.newCount+' absent, '+planned.alreadySavedCount+' already identical · '+
    planned.createRows+' new normalized rows and '+planned.updateRows+
