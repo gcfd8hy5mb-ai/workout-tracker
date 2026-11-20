@@ -301,6 +301,7 @@ function createWeekWorkout(){
 
 const $=(id)=>document.getElementById(id);
 let page='home',activePlan=null,session=null,guest=true,account=null,auth=null;
+let localHistoryIssue=null;
 let demoSessions=loadDemo();
 let activeSessionOwner=null,sessionDirty=false;
 let originalHistory=[];
@@ -314,7 +315,6 @@ let muscleFilter='';
 let libraryVisibleOffset=0;
 let restSeconds=90,restPaused=true,restClock=null;
 function demoKey(owner=account?.id||'guest'){return owner==='guest'?DEMO_KEY:DEMO_KEY+':'+owner;}
-let localHistoryIssue=null;
 function loadDemo(owner='guest'){
  try{const history=window.MLCCompletedLocalHistory.read(localStorage,demoKey(owner));
   localHistoryIssue=null;return history}
