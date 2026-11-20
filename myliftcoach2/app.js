@@ -1193,6 +1193,52 @@ function renderCloudInventory(){
   '. Replacement status: BLOCKED. '+inventory.blockers.join('; ')+'. No data changed.';
  return inventory;
 }
+async function previewFreshCloudCheckpoint(){
+ const button=$('cloudFreshCheckpointButton'),status=$('cloudFreshCheckpointStatus');
+ const owner=account?.id,sessionToken=auth?.access_token;
+ const localFingerprint=JSON.stringify(demoSessions),loadedFingerprint=JSON.stringify(originalHistory);
+ button.disabled=true;
+ status.textContent='Reading fresh account-owned cloud history rows and checking exact revisions (no writes)…';
+ try{
+  if(!owner||importedHistoryOwner!==owner||!sessionToken||!Array.isArray(originalHistory))
+   throw Error('Sign in and load the original workout history first');
+  const checkpoint=await window.MLCFreshHistoryCheckpoint.read({
+   endpoint:BACKEND,publishableKey:PUBLIC_KEY,owner,getSession:async()=>auth,
+   verifyUser:token=>authRequest('user',null,token,'GET'),
+   fetcher:async(url,options)=>{
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+    try{return await fetch(url,{...options,signal:controller.signal})}
+    finally{clearTimeout(timer)}
+   }
+  });
+  const raw=window.PRISMStorageModel.restoreSnapshot(checkpoint.rows).workoutHistoryV52;
+  if(typeof raw!=='string')throw Error('Original workout history is not present in the fresh snapshot');
+  const baseline=JSON.parse(raw);
+  if(!Array.isArray(baseline))throw Error('Unexpected cloud workout history format');
+  // The original-history viewer is a normalized, sorted display; compare
+  // identities only. Never substitute display records for the raw checkpoint.
+  const displayed=originalHistory.map(row=>String(row.id)).sort();
+  const remoteIds=baseline.map(row=>String(row.id)).sort();
+  if(JSON.stringify(displayed)!==JSON.stringify(remoteIds))
+   throw Error('Loaded history and fresh cloud session identities differ. Reload original history before proceeding');
+  const planned=await window.MLCBulkHistoryCloudPlanner.plan({
+   owner,verifiedOwner:checkpoint.owner,baseline,cloudRows:checkpoint.rows,
+   localWorkouts:demoSessions,catalog:editorExercises
+  });
+  if(account?.id!==owner||auth?.access_token!==sessionToken||importedHistoryOwner!==owner||
+    JSON.stringify(demoSessions)!==localFingerprint||JSON.stringify(originalHistory)!==loadedFingerprint)
+   throw Error('Account or workouts changed during fresh checkpoint; repeat verification');
+  status.textContent='Fresh cloud checkpoint verified read-only: '+planned.baselineCount+
+   ' original sessions, '+planned.localCount+' local 2.0 sessions · '+
+   planned.newCount+' absent, '+planned.alreadySavedCount+' already identical · '+
+   planned.createRows+' new normalized rows and '+planned.updateRows+
+   ' existing rows would change in a hypothetical append. '+
+   'No write was performed; a new checkpoint is required before any later production save.';
+ }catch(error){
+  status.textContent='Fresh cloud checkpoint blocked: '+String(error.message||error).slice(0,180)+
+   '. No workout data was changed.';
+ }finally{button.disabled=!(account?.id&&importedHistoryOwner===account.id)}
+}
 async function previewAllLocalCloudSessions(){
  const button=$('cloudBatchPreviewButton'),status=$('cloudBatchPreviewStatus');
  const owner=account?.id,localIds=demoSessions.map(x=>x?.id).join('|');
@@ -1248,6 +1294,7 @@ function renderSettings(){
  $('loadAllOriginalRecords').disabled=!account;
  $('cloudSessionPreviewButton').disabled=!(account?.id&&importedHistoryOwner===account.id&&demoSessions.length>0);
  $('cloudBatchPreviewButton').disabled=!(account?.id&&importedHistoryOwner===account.id);
+ $('cloudFreshCheckpointButton').disabled=!(account?.id&&importedHistoryOwner===account.id);
  renderCloudInventory();
 }
 function openModal(content){$('modalContent').innerHTML=content;$('modal').hidden=false;document.body.style.overflow='hidden';$('closeModal').focus()}
@@ -1772,6 +1819,7 @@ function bind(){
  $('cloudInventoryButton').addEventListener('click',renderCloudInventory);
  $('cloudSessionPreviewButton').addEventListener('click',previewLatestCloudSession);
  $('cloudBatchPreviewButton').addEventListener('click',previewAllLocalCloudSessions);
+ $('cloudFreshCheckpointButton').addEventListener('click',previewFreshCloudCheckpoint);
  $('authAction').addEventListener('click',()=>{if(!account){openSignIn();return}clearAuth();notice('Signed out of 2.0. Original app session remains unchanged.')});
 }
 refreshWeeklyOwner();bind();renderOriginalCustomSchedule();renderHome();renderWorkouts();renderLibrary();renderProgress();renderCoach();renderLocalDailyTracking();renderOriginalTracking();renderSettings();renderOriginalAccountSettings();validateStoredAuth();
