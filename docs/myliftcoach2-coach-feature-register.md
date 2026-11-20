@@ -190,3 +190,12 @@ Direct JavaScript regression harness passed the new targeted modules (33 cases b
 - Account settings now offer an explicit **Review all local workouts** action, requiring owner-verified imported original history. The preview reports counts only and performs no cloud writes, local mutations, automatic merges or retries.
 - Added six targeted batch tests and desktop/iPhone-sized browser assertions. The test result is a *compatibility preview*, not proof of an up-to-date remote checkpoint: future production writes must re-read authenticated cloud rows immediately before the transaction, enforce atomic revisions, and independently read back the result.
 - Live production synchronization remains disabled pending explicit approval and independent authorization review.
+
+## November 19 — owner/revision-checked bulk legacy cloud history planning
+
+- The previous exact-head workflow run `44628061096` passed all migration, disposable PostgreSQL/PostgREST and desktop/iPhone-sized browser jobs.
+- Added `bulk-history-cloud-planner.js` and six regression cases as an **isolated read-only planning contract**, not loaded into the browser and never connected to live Supabase.
+- It checks every supplied cloud row for matching account owner and positive server revision; rejects duplicate row identities, missing source records, stale original-history baselines and missing/corrupt normalized session/set children.
+- Before producing any proposed write counts, it uses the existing local batch reconciliation to recognize identical saved sessions, reject same-ID content conflicts, and preserve newest-first local sessions plus the exact prior original history. It verifies the complete candidate by legacy normalize/restore round-trip and checks proposed changes with the existing three-way reconciliation engine.
+- All-new local workouts are counted, identical already-uploaded sessions are a no-op, and incomplete/unknown/other-owner checkpoints fail closed. The output exposes **counts only**, never an executable write or implicit migration flag; `readyForProduction` remains false.
+- The input checkpoint must still be obtained freshly through a trusted authenticated transport before any approved future production write; no production transport or database writes were enabled. Original production and PR #373 release gates remain unchanged.
