@@ -79,6 +79,10 @@ function loadOwned(storage,base,owner,presets,validExercises){
  let input;
  try{input=JSON.parse(serialized)}catch{throw Error('Saved account schedule is unreadable; refuse preset overwrite')}
  if(!input||input.version!==1||!Array.isArray(input.plans)||!Array.isArray(input.assigned)||input.assigned.length!==7)throw Error('Saved schedule format invalid');
+ // normalize() caps the combined library at 55. Refuse a partial restore
+ // rather than discarding overflow custom plans, even if unassigned.
+ if(input.plans.length>55||new Set([...presets.map(p=>p.id),...input.plans.map(p=>p?.id)]).size>55)
+  throw Error('Saved workout library exceeds supported capacity; original draft preserved');
  // Every saved plan must survive exactly: never silently remove even an unassigned
  // custom workout (or filter out an exercise) when the catalog changes.
  const persistedIds=new Set();
