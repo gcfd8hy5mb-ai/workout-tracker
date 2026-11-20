@@ -109,7 +109,20 @@ function loadOwned(storage,base,owner,presets,validExercises){
  return restored;
 }
 function commitOwned(storage,base,owner,state,presetIds){
- return commit(storage,ownerKey(base,owner),state,presetIds);
+ const key=ownerKey(base,owner);
+ // An unreadable existing draft must never be erased by a subsequent edit.
+ // Keep it intact for deliberate recovery instead of replacing it with defaults.
+ const existing=storage.getItem(key);
+ if(existing!==null){
+  let previous;
+  try{previous=JSON.parse(existing)}catch{
+   throw Error('Existing account schedule is unreadable; original draft preserved');
+  }
+  if(!previous||previous.version!==1||!Array.isArray(previous.plans)||
+     !Array.isArray(previous.assigned)||previous.assigned.length!==7)
+   throw Error('Existing account schedule is incomplete; original draft preserved');
+ }
+ return commit(storage,key,state,presetIds);
 }
 function commit(storage,key,state,presetIds){
  // Reject states that cannot round-trip through loadOwned. Never write a
