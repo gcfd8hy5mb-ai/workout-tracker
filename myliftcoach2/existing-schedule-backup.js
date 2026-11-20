@@ -17,6 +17,12 @@ function canonical(x){
  return JSON.stringify(x);
 }
 function create(args){if(!ENABLED)throw Error('Production custom schedule cloud writes are disabled pending release approval');return build(args)}
+function createReadOnly(args){
+ const transport=build(args);
+ // Only the read capability can be reached from the browser. The write gate
+ // remains false even when an authenticated user inspects an existing backup.
+ return Object.freeze({read:owner=>transport.read(owner)});
+}
 function build({endpoint,publishableKey,getSession,fetcher}={}){
  if(!/^https:\/\//.test(endpoint||'')||!publishableKey||
     typeof getSession!=='function'||typeof fetcher!=='function')
@@ -82,5 +88,5 @@ function build({endpoint,publishableKey,getSession,fetcher}={}){
   }
  });
 }
-return Object.freeze({ENABLED,RECORD_ID,create,...(node?{createTestTransport:build}:{})});
+return Object.freeze({ENABLED,RECORD_ID,create,createReadOnly,...(node?{createTestTransport:build}:{})});
 });
