@@ -182,3 +182,32 @@ test('account save preserves an unreadable or incomplete prior schedule instead 
   assert.equal(writes,0);
  }
 });
+
+test('two tabs cannot overwrite newer account-scoped weekly workout edits',()=>{
+ const owner='11111111-1111-4111-8111-111111111111',key=s.ownerKey('weekly',owner);
+ const map=new Map(),store={getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v)};
+ const presetIds=preset.map(p=>p.id);
+ const first=s.loadOwned(store,'weekly',owner,preset,allowed);
+ const stale=s.loadOwned(store,'weekly',owner,preset,allowed);
+ const initialSnapshot=store.getItem(key);
+ const newer=s.assign(s.add(first,'custom-tab-a',{title:'Tab A workout',ids:['row']},allowed),0,'custom-tab-a');
+ s.commitOwned(store,'weekly',owner,newer,presetIds,initialSnapshot);
+ const actualSaved=store.getItem(key);
+ const older=s.assign(s.add(stale,'custom-tab-b',{title:'Tab B workout',ids:['squat']},allowed),0,'custom-tab-b');
+ assert.throws(()=>s.commitOwned(store,'weekly',owner,older,presetIds,initialSnapshot),/changed in another tab/);
+ assert.equal(store.getItem(key),actualSaved);
+ assert.equal(s.resolve(s.loadOwned(store,'weekly',owner,preset,allowed),'2026-11-16T12:00:00').plan.id,'custom-tab-a');
+ const current=s.loadOwned(store,'weekly',owner,preset,allowed);
+ const edited=s.edit(current,'custom-tab-a',{title:'Tab A updated'},allowed);
+ s.commitOwned(store,'weekly',owner,edited,presetIds,actualSaved);
+ assert.equal(s.loadOwned(store,'weekly',owner,preset,allowed).plans.find(x=>x.id==='custom-tab-a').title,'Tab A updated');
+});
+test('deleted weekly draft cannot be silently recreated from stale tab',()=>{
+ const owner='11111111-1111-4111-8111-111111111111',key=s.ownerKey('weekly',owner);
+ const map=new Map(),store={getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,v)};
+ const state=s.normalize(null,preset,allowed),ids=preset.map(p=>p.id);
+ s.commitOwned(store,'weekly',owner,state,ids,null);
+ const old=store.getItem(key);map.delete(key);
+ assert.throws(()=>s.commitOwned(store,'weekly',owner,state,ids,old),/changed in another tab/);
+ assert.equal(store.getItem(key),null);
+});
