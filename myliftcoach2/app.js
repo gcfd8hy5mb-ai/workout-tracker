@@ -1213,10 +1213,10 @@ function renderCloudInventory(){
 function renderManualCloudTest(){
  const upload=$('manualCloudTestButton'),verify=$('manualCloudVerifyButton');
  if(!upload||!verify)return;
- let pending=null;
+ let pending=null,pendingError=false;
  try{if(account?.id)pending=window.MLCManualCloudTest.getPending(localStorage,account.id)}
- catch(error){$('manualCloudTestStatus').textContent='Uncertain pending test operation. Preserve local data: '+String(error.message).slice(0,100);}
- upload.disabled=!account?.id||Boolean(localHistoryIssue)||(!pending&&!demoSessions.length);
+ catch(error){pendingError=true;$('manualCloudTestStatus').textContent='Uncertain pending test operation. Preserve local data: '+String(error.message).slice(0,100);}
+ upload.disabled=!account?.id||Boolean(localHistoryIssue)||pendingError||(!pending&&!demoSessions.length);
  upload.textContent=pending?'Verify pending upload':'Upload one test workout';
  verify.disabled=!account?.id;
  if(!account?.id){$('manualCloudTestStatus').textContent='Sign in and finish a local practice workout to enable a manual cloud test.';}
