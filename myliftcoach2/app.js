@@ -1040,11 +1040,11 @@ function recordCoachProposalDecision(index,choice,expectedExerciseId,expectedSig
  }catch(error){$('coachAdaptiveDecisionStatus').textContent='Decision not saved: '+String(error.message||error).slice(0,120)}
 }
 function renderCoachProgression(){
- if(!hasPro())return;
  const boundary=window.MLCCoachEntitlementBoundary.assess({environment:'draft',accountId:account?.id||null});
  $('coachEntitlementStatus').textContent=coachAccess().beta?
   (hasPro()?'Pro beta preview active.':'Free beta preview active · basic Coach remains available.'):
   hasPro()?'Pro access verified for this account.':boundary.reason+' No local account tier grants premium access.';
+ if(!hasPro())return; // Status still updates when leaving Pro beta; advanced actions stay gated.
  const status=$('coachProgressionStatus'),root=$('coachProgressionList'),start=$('coachOpenToday');
  if(!status||!root)return;
  const selected=resolvedWorkout();
