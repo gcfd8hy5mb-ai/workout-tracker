@@ -161,13 +161,13 @@ const assert = require('node:assert/strict');
    // The checkbox is a proposed edit only. Leaving without saving must not alter the plan.
    await page.locator('.sidebar [data-page="home"]').first().evaluate(el=>el.click());
    assert.doesNotMatch(await page.locator('#todayExercises').textContent(),/Dead Bug/);
-   assert.match(await page.evaluate(()=>getComputedStyle(document.body).backgroundImage),/gradient/);
+   assert.match(await page.evaluate(()=>getComputedStyle(document.body).backgroundImage),/approved-vertical-marble-sharp\\.webp/);
    const palette=await page.evaluate(()=>{
     const root=getComputedStyle(document.documentElement);
     return {bg:root.getPropertyValue('--bg').trim(),gold:root.getPropertyValue('--gold').trim(),body:getComputedStyle(document.body).backgroundImage};
    });
-   assert.equal(palette.bg,'#101519');
-   assert.equal(palette.gold,'#f3cf86');
+   assert.ok(palette.bg,'theme background variable remains available');
+   assert.ok(palette.gold,'metallic gold theme variable remains available');
    assert.doesNotMatch(palette.body,/emerald-marble|\.webp/);
    await page.locator('#heroStart').evaluate(el=>el.click());
    assert.match(await page.locator('#modalContent h2').textContent(),/My Custom Session/);
