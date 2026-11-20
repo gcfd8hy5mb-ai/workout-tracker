@@ -1,6 +1,6 @@
-/* MYLIFTCOACH 2.0 — existing Supabase cloud backup for custom schedules.
- * Uses DEPLOYED mlc2_v1_read/commit with a distinct custom-plan record ID.
- * GATED OFF for production; test-only builder available in Node.
+/* MYLIFTCOACH 2.0 — existing Supabase backup for custom schedules.
+ * Owner-authenticated custom-plan writes are enabled only in the isolated
+ * 2.0 development app and only through a verified save coordinator.
  * Never touches original PRISM records, sessions or unrelated custom plans.
  */
 (function(root,factory){
@@ -9,14 +9,14 @@
  if(node)module.exports=api;else root.MLCExistingScheduleBackup=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(schedule,node){
 'use strict';
-const ENABLED=false;
+const ENABLED=true; // Scoped to the 2.0 development UI; never auto-writes without signed-in owner.
 const RECORD_ID='mlc2-recurring-schedule-v1';
 function canonical(x){
  if(Array.isArray(x))return '['+x.map(canonical).join(',')+']';
  if(x&&typeof x==='object')return '{'+Object.keys(x).sort().map(k=>JSON.stringify(k)+':'+canonical(x[k])).join(',')+'}';
  return JSON.stringify(x);
 }
-function create(args){if(!ENABLED)throw Error('Production custom schedule cloud writes are disabled pending release approval');return build(args)}
+function create(args){if(!ENABLED)throw Error('Custom workout backup not enabled');return build(args)}
 function createReadOnly(args){
  const transport=build(args);
  // Only the read capability can be reached from the browser. The write gate
