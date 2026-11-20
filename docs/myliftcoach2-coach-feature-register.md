@@ -226,3 +226,12 @@ Direct JavaScript regression harness passed the new targeted modules (33 cases b
 - The coordinator requires explicit approval for *each* invocation; denies missing account ownership, invalid schedule documents, untrusted checkpoints and changed cloud revisions/documents before any write. A matching cloud schedule short-circuits with zero writes; an ambiguous read-back is not retried automatically.
 - Added eight isolated tests for first-save/read-back, idempotent no-op, two-device revisions, intervening first save, missing approval, altered same-revision response, malformed inputs, and uncertain read-back. These use fake transports only.
 - No production cloud transport was enabled, live Supabase RPCs deployed or existing app data changed. The coordinator remains an **unconnected staging component** until a separate reviewed security migration and explicit production release decision.
+
+## November 19 — stop silent local workout loss after 100 completions
+
+- Prior exact-head GitHub Actions run `44653989025` passed migration, disposable PostgreSQL and desktop/phone-sized browser jobs.
+- Found a data-loss risk unrelated to cloud permissions: `app.js` truncated every completed session list to the newest 100 on both load and finish. Those old sessions could disappear from the live in-memory copy and be overwritten by the next completed workout.
+- Added `completed-local-history.js`, an owner-scoped local storage helper that **retains the complete saved session array**, rejects duplicate IDs and stale-tab replacements, verifies write-back, and refuses malformed storage without overwriting it.
+- Each new practice completion now uses `crypto.randomUUID()` plus a timestamp so different sessions finished in the same millisecond cannot collide. Missing secure ID generation blocks completion rather than inventing a potentially duplicate ID.
+- Updated the cloud history batch-review guard from 100 to 2,000 sessions (safe ceiling for costly review only; no automatic deletion), and added regression tests for 126-session retention, same-millisecond IDs, stale tabs, storage quota errors, duplicate identifiers, and larger batch history previews.
+- This is a draft-only local workout data-preservation fix. It does not connect production cloud saving or migrate data.
