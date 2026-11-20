@@ -12,7 +12,7 @@ function summarize(history,exerciseCatalog,now=Date.now()){
   validSessions.push(session);
   if(Object.prototype.hasOwnProperty.call(checkins,session.readiness))checkins[session.readiness]++;
   for(const exercise of session.exercises){
-   if(!exercise||!Array.isArray(exercise.sets)||!exercise.sets.some(s=>Number(s?.weight)>0&&Number(s?.reps)>0))continue;
+   if(!exercise||!Array.isArray(exercise.sets)||!exercise.sets.some(s=>s?.completed!==false&&Number(s?.weight)>0&&Number(s?.reps)>0))continue;
    const muscle=names.get(String(exercise.id||''));
    if(!muscle)continue;
    if(!groups.has(muscle)||groups.get(muscle)<at)groups.set(muscle,at);

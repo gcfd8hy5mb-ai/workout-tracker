@@ -12,12 +12,14 @@
 }
 html{background:#064348}
 body{
- background:#063f45 url("./assets/emerald-marble.svg") center top / cover fixed!important;
+ background:#063f45 url("./assets/approved-vertical-marble-sharp.webp?v=11") center top / cover fixed!important;
+
  color:#fff6df;
 }
 .app-shell,.main-wrap,.content{background:transparent!important}
 .sidebar{
- background:#053f45 url("./assets/emerald-marble.svg") 25% center / cover!important;
+ background:#053f45 url("./assets/approved-vertical-marble-sharp.webp?v=11") 25% center / cover!important;
+
  border-right:1px solid var(--metal)!important;
  box-shadow:inset -20px 0 45px rgba(1,23,27,.38);
 }
@@ -34,7 +36,7 @@ body{
 .hero{
  background:
  linear-gradient(88deg,rgba(1,43,47,.98) 0%,rgba(2,39,45,.74) 60%,rgba(4,48,51,.05) 100%),
- url("./assets/hero-dumbbell.svg") center / cover no-repeat!important;
+ url("./assets/hero-dumbbells-photo.jpg?v=7") center / cover no-repeat!important;
  border:1px solid rgba(247,205,131,.84)!important;
  box-shadow:0 0 0 1px rgba(0,0,0,.22),0 9px 25px rgba(0,0,0,.32)!important;
 }
@@ -48,21 +50,92 @@ body{
  text-shadow:0 1px 0 rgba(255,247,210,.75);
 }
 .quick-grid button,.coach-links button{
- background:linear-gradient(150deg,rgba(21,114,116,.95),rgba(3,53,59,.96))!important;
- border:1px solid rgba(198,232,220,.65)!important;
- box-shadow:inset 0 1px 0 rgba(241,250,220,.19),0 2px 7px #001f227a!important;
+ background-color:#06333a!important;
+ background-image:linear-gradient(110deg,rgba(3,37,43,.90),rgba(3,45,51,.78)),url("./assets/hero-dumbbells-photo.jpg?v=7")!important;
+ background-position:center,center 46%;
+ background-size:cover;
+ border:1.5px solid #f1d394!important;border-radius:11px!important;
+ box-shadow:inset 0 1.5px 0 rgba(255,247,209,.35),inset 0 -1px 0 rgba(0,21,25,.65),0 5px 13px rgba(0,15,22,.43)!important;
 }
 .quick-grid button .shortcut-symbol{color:#ffdc93;text-shadow:0 0 8px rgba(238,200,125,.16)}
 .metric,.panel,.workout-card,.library-card,.settings-panel,.log-card{
- background:linear-gradient(145deg,rgba(7,85,89,.97),rgba(3,55,62,.97))!important;
- border:1px solid rgba(192,234,221,.59)!important;
- box-shadow:inset 0 1px 0 rgba(213,243,231,.09),0 6px 14px rgba(0,17,22,.21)!important;
+ background-color:#06333a!important;
+ background-image:linear-gradient(110deg,rgba(3,37,43,.93),rgba(3,45,51,.85)),url("./assets/hero-dumbbells-photo.jpg?v=7")!important;
+ background-position:center,center 46%;
+ background-size:cover;
+ border:1.5px solid #f1d394!important;border-radius:12px!important;
+ box-shadow:inset 0 1.5px 0 rgba(255,247,209,.33),inset 0 -1px 0 rgba(0,21,25,.65),0 6px 14px rgba(0,15,22,.39)!important;
 }
 .metric>strong{color:#fff5d8!important}
 .metric>span,.metric>small{color:#d1e3dc!important}
 .micro-tag{background:#155b60!important;color:#ffdf9e!important;border-color:#dab473!important}
 .panel h3,.workout-card h3,.library-card h3{color:#fff4d9!important}
-.sidebar .nav-item.selected{border-color:#f4ce88;color:#fff4d5;background:linear-gradient(145deg,#176d6f,#044a51)}
+/* Approved Home shortcut surface is the shared design standard for other views.
+   Keep Home's already-approved specific styles untouched. */
+#workouts .workout-card,#library .library-card,#progress .metric,
+#progress .progress-chart-panel,#coaching .coach-card,#nutrition .panel,
+#settings .settings-panel,.account-menu button,.coach-links button{
+ color:#fff8e9;
+}
+#workouts .workout-card:active,#library .library-card:active,
+.account-menu button:active,.coach-links button:active{
+ filter:brightness(1.12);transform:scale(.995);
+}
+.button-outline,.button-ghost,.text-action,.log-card .button-outline,
+.settings-panel .button-outline,.welcome-preview-link{
+ background-color:#06333a!important;
+ background-image:linear-gradient(110deg,rgba(3,37,43,.90),rgba(3,45,51,.82)),url("./assets/hero-dumbbells-photo.jpg?v=7")!important;
+ background-position:center!important;background-size:cover!important;
+ border:1.5px solid #f1d394!important;border-radius:11px!important;
+ color:#fff0cf!important;
+ box-shadow:inset 0 1px 0 rgba(255,247,209,.28),0 3px 8px rgba(0,15,22,.32)!important;
+}
+.button-primary:not(#heroStart),.filter-chips button.selected{
+ background:linear-gradient(180deg,#fff9df 0%,#ffefb8 17%,#f2d28d 47%,#daa85e 84%,#ba8240 100%)!important;
+ color:#14353a!important;border:1px solid #ffefbf!important;
+ border-radius:12px!important;
+ box-shadow:inset 0 2px 2px rgba(255,255,255,.9),inset 0 -2px 2px rgba(90,54,12,.31),0 4px 10px rgba(0,16,23,.45)!important;
+}
+/* Sidebar: same source card treatment as the six approved Home buttons. */
+.sidebar .side-nav{gap:10px}
+.sidebar .nav-item,
+.sidebar .nav-item:hover,
+.sidebar .nav-item.selected,
+.sidebar .nav-item:focus-visible{
+ background-color:#06333a!important;
+ background-image:linear-gradient(110deg,rgba(3,37,43,.90),rgba(3,45,51,.78)),url("./assets/hero-dumbbells-photo.jpg?v=7")!important;
+ background-position:center,center 46%!important;
+ background-size:cover!important;
+ background-repeat:no-repeat!important;
+ border:1.5px solid #f1d394!important;
+ border-radius:11px!important;
+ box-shadow:inset 0 1.5px 0 rgba(255,247,209,.35),inset 0 -1px 0 rgba(0,21,25,.65),0 5px 13px rgba(0,15,22,.43)!important;
+ color:#fff5df!important;
+ min-height:54px;
+ padding:12px 14px;
+ text-shadow:0 1px 2px rgba(0,15,21,.65);
+}
+.sidebar .nav-item span{color:#f8d79b!important}
+.sidebar .nav-item:hover{filter:brightness(1.12)}
+.sidebar .nav-item.selected{
+ background-image:linear-gradient(110deg,rgba(3,45,50,.75),rgba(7,68,73,.58)),url("./assets/hero-dumbbells-photo.jpg?v=7")!important;
+ box-shadow:inset 0 1.5px 0 rgba(255,247,209,.45),0 0 0 1px rgba(255,224,156,.23),0 5px 13px rgba(0,15,22,.43)!important;
+ color:#ffe6ac!important;
+}
+.sidebar .nav-item:focus-visible{outline:2px solid #ffedbe;outline-offset:2px}
+.sidebar .side-support{
+ background-color:#06333a!important;
+ background-image:linear-gradient(110deg,rgba(3,37,43,.90),rgba(3,45,51,.78)),url("./assets/hero-dumbbells-photo.jpg?v=7")!important;
+ background-position:center!important;background-size:cover!important;
+ border:1.5px solid #f1d394!important;border-radius:11px!important;
+ box-shadow:inset 0 1.5px 0 rgba(255,247,209,.25),0 4px 10px rgba(0,15,22,.35)!important;
+}
+@media(max-width:760px){
+ .sidebar{padding:27px 15px 18px}
+ .sidebar .wordmark{margin-bottom:45px}
+ .sidebar .side-nav{gap:9px}
+ .sidebar .nav-item{min-height:55px;padding:12px 13px}
+}
 .text-action{color:#ffe0a0!important}
 .preview-exercise{border-color:#448f8b!important}
 .account-brand{
@@ -75,8 +148,11 @@ body{
 .account-menu{display:grid;gap:7px;margin:0 0 21px}
 .account-menu button{
  display:flex;align-items:center;gap:13px;
- background:linear-gradient(130deg,rgba(15,105,109,.95),rgba(3,59,66,.95));
- color:#fdf4df;border:1px solid #7eb1aa;border-radius:10px;
+ background-color:#06333a;
+ background-image:linear-gradient(110deg,rgba(3,37,43,.91),rgba(3,45,51,.81)),url("./assets/hero-dumbbells-photo.jpg?v=7");
+ background-position:center,center 46%;background-size:cover;
+ color:#fdf4df;border:1.5px solid #f1d394;border-radius:11px;
+ box-shadow:inset 0 1.5px 0 rgba(255,247,209,.3),0 4px 10px rgba(0,15,22,.32);
  min-height:55px;padding:8px 14px;text-align:left;font-size:14px;font-weight:550
 }
 .account-menu button span{width:25px;color:#ffdb8b;font-size:20px;text-align:center}
@@ -99,9 +175,11 @@ body{
 }
 .filter-chips::-webkit-scrollbar{display:none}
 .filter-chips button{
- flex:0 0 auto;background:rgba(6,55,59,.96);color:#f4f3e7;
- border:1px solid rgba(169,223,213,.7);border-radius:22px;
- font-size:12px;min-height:34px;padding:5px 15px
+ flex:0 0 auto;
+ background:linear-gradient(110deg,#063039,#083f45);color:#f4f3e7;
+ border:1.5px solid #f1d394;border-radius:11px;
+ box-shadow:inset 0 1px 0 rgba(255,247,209,.24),0 2px 6px rgba(0,14,20,.25);
+ font-size:12px;min-height:36px;padding:5px 15px
 }
 .filter-chips button.selected{
  color:#103b40;border-color:#ffe6aa;
@@ -125,7 +203,8 @@ body{
 .coach-links button{font-size:12px}
 .coach-links button span{color:#f6d38d}
 .modal-panel{
- background:#0b5056 url("./assets/emerald-marble.svg") center center / cover!important;
+ background:#0b5056 url("./assets/approved-vertical-marble-sharp.webp?v=11") center center / cover!important;
+
  border:1px solid #f8d69e!important;
  box-shadow:0 12px 50px #001419a6;
 }
@@ -135,7 +214,8 @@ body{
 .modal-eyebrow{color:#ffe1a9!important}
 .rest-screen{
  position:fixed;inset:0;z-index:200;
- background:#064549 url("./assets/emerald-marble.svg") center center / cover;
+ background:#064549 url("./assets/approved-vertical-marble-sharp.webp?v=11") center center / cover;
+
  display:flex;flex-direction:column;align-items:center;
  color:#fff5e3;padding:calc(28px + env(safe-area-inset-top)) 20px calc(27px + env(safe-area-inset-bottom));
  overflow-y:auto;
@@ -169,15 +249,18 @@ body{
 .rest-controls button+button{background:rgba(1,53,60,.92);color:#ffe4ad;border:2px solid #b1d9c8}
 .rest-next{
  width:min(100%,480px);margin-top:auto;
- background:linear-gradient(135deg,rgba(25,117,120,.97),rgba(2,57,66,.96));
- border:1px solid #efca84;border-radius:13px;
+ background-color:#06333a;
+ background-image:linear-gradient(110deg,rgba(3,37,43,.90),rgba(3,45,51,.80)),url("./assets/hero-dumbbells-photo.jpg?v=7");
+ background-position:center;background-size:cover;
+ border:1.5px solid #f1d394;border-radius:12px;
+ box-shadow:inset 0 1px 0 rgba(255,247,209,.32),0 5px 13px rgba(0,15,22,.42);
  padding:18px 20px;display:grid;gap:8px
 }
 .rest-next strong{font-size:20px}
 .rest-next small{font-size:13px;color:#d9e6dc}
 .rest-demo{font-size:11px;color:#ccdbd1;text-align:center;margin:22px 0 4px}
 @media(max-width:760px){
- html,body{background:#063f45 url("./assets/emerald-marble.svg") 51% top / auto 100vh fixed!important}
+ html,body{background:#063f45 url("./assets/approved-vertical-marble-sharp.webp?v=11") 51% top / auto 100vh fixed!important}
  .topbar{
   background:rgba(2,51,56,.88)!important;
   backdrop-filter:blur(12px);
@@ -188,7 +271,7 @@ body{
  #home .hero{
   background:
     linear-gradient(90deg,#05373f 0%,rgba(2,41,45,.86) 59%,rgba(2,37,41,.22) 100%),
-    url("./assets/hero-dumbbell.svg") center right / auto 100% no-repeat!important;
+    url("./assets/hero-dumbbells-photo.jpg?v=7") center right / auto 100% no-repeat!important;
   min-height:145px!important;
  }
  #home .hero-copy{padding:15px 14px 14px!important}
@@ -230,7 +313,8 @@ body{
 .welcome-view .bottom-tabs,.welcome-view .topbar{display:none!important}
 .welcome-view .content{padding-top:0!important}
 .welcome-panel{
- background:#05363b url("./assets/emerald-marble.svg") center center /cover;
+ background:#05363b url("./assets/approved-vertical-marble-sharp.webp?v=11") center center /cover;
+
  max-width:560px;min-height:min(850px,95dvh);width:100%;
  margin:0 auto;padding:34px 25px 30px;display:flex;flex-direction:column;
  align-items:center;text-align:center;
@@ -260,4 +344,245 @@ body{
  .welcome-panel h1{font-size:28px}
  .welcome-features{margin-top:18px}
  .welcome-actions{margin-top:auto}
+}
+
+
+/* MATCHED DARK EMERALD CARD SYSTEM — all app views, 2026-11-15 */
+:root{
+ --mlc-card-ink:#03262e;
+ --mlc-card-gold:#f1d394;
+ --mlc-card-text:#fff6e7;
+ --mlc-card-shadow:inset 0 1.5px 0 rgba(255,247,209,.35),inset 0 -1px 0 rgba(0,21,25,.65),0 5px 13px rgba(0,15,22,.43);
+}
+/* Source style: exactly the dark, photographic teal and bright gold frame of the approved Home shortcuts. */
+#workouts .workout-card,
+#library .library-card,
+#progress .metric,
+#progress .panel,
+#coaching .coach-card,
+#nutrition .panel,
+#settings .settings-panel,
+#settings .account-menu button,
+#coaching .coach-links button,
+#home .home-below-fold .metric,
+#home .home-below-fold .panel,
+.modal-panel .log-card,
+.rest-next{
+ background-color:#06333a!important;
+ background-image:linear-gradient(110deg,rgba(3,37,43,.90),rgba(3,45,51,.78)),url("./assets/hero-dumbbells-photo.jpg?v=7")!important;
+ background-position:center,center 46%!important;
+ background-size:cover!important;
+ background-repeat:no-repeat!important;
+ border:1.5px solid var(--mlc-card-gold)!important;
+ border-radius:11px!important;
+ color:var(--mlc-card-text)!important;
+ box-shadow:var(--mlc-card-shadow)!important;
+}
+/* Keep exercise illustrations visible and cards legible. */
+#library .library-card .library-info,
+#workouts .workout-card h3,
+#library .library-card h3,
+#progress .panel h3,
+#coaching .coach-card h3,
+#nutrition .panel h3,
+#settings .settings-panel strong,
+#home .home-below-fold .panel h3{color:#fff3d8!important}
+#workouts .workout-card p,
+#library .library-card p,
+#progress .panel p,
+#coaching .coach-card p,
+#nutrition .panel p,
+#settings .setting-line p,
+#home .home-below-fold .panel p{color:#d8e8df!important}
+#workouts .workout-meta,#settings .setting-line{
+ border-color:rgba(241,211,148,.44)!important;
+}
+#workouts .workout-meta,
+#workouts .workout-card .number,
+#library .library-chevron,
+#progress .metric>strong,
+#home .home-below-fold .metric>strong,
+#coaching .coach-links button span,
+#settings .account-menu button span{color:#ffe0a0!important}
+/* Other button classes previously inherited lighter outlines and solid teal. */
+#library .filter-chips button:not(.selected),
+#settings .welcome-preview-link,
+#settings .button-outline,
+#coaching .coach-links button,
+#settings .account-menu button,
+#home .text-action,
+#workouts button.button-outline,
+#progress button.button-outline,
+.modal-panel .button-outline,
+.modal-panel .undo-set,
+#library button.button-outline{
+ background-color:#06333a!important;
+ background-image:linear-gradient(110deg,rgba(3,37,43,.90),rgba(3,45,51,.78)),url("./assets/hero-dumbbells-photo.jpg?v=7")!important;
+ background-position:center,center 46%!important;
+ background-size:cover!important;
+ border:1.5px solid var(--mlc-card-gold)!important;
+ border-radius:11px!important;
+ box-shadow:var(--mlc-card-shadow)!important;
+ color:#fff3d8!important;
+ text-decoration:none;
+}
+#library .filter-chips button{
+ min-height:37px;
+}
+#library .filter-chips button.selected,
+#settings .button-primary,
+#workouts .button-primary,
+.modal-panel .button-primary{
+ background:linear-gradient(180deg,#fff9df 0%,#ffefb8 17%,#f2d28d 47%,#daa85e 84%,#ba8240 100%)!important;
+ border:1px solid #ffefbf!important;
+ border-radius:11px!important;
+ box-shadow:inset 0 2px 2px rgba(255,255,255,.9),inset 0 -2px 2px rgba(90,54,12,.31),0 4px 10px rgba(0,16,23,.45)!important;
+ color:#13363b!important;
+ font-weight:750;
+}
+/* Dark input surfaces match the same border system; no white entry fields. */
+#library .search-bar,
+.modal-panel .login-form input,
+.modal-panel .log-card input{
+ background:#06333a!important;
+ border:1.5px solid var(--mlc-card-gold)!important;
+ border-radius:11px!important;
+ color:#fff8ec!important;
+ box-shadow:inset 0 1px 0 rgba(255,247,209,.15)!important;
+}
+#library .search-bar input{color:#fff8ec!important;background:transparent!important}
+#library .search-bar input::placeholder,
+.modal-panel input::placeholder{color:#c7ddd8!important;opacity:1}
+#settings .account-menu button,
+#coaching .coach-links button{min-height:51px;transition:filter .16s,transform .16s}
+#settings .account-menu button:active,
+#coaching .coach-links button:active,
+#library .filter-chips button:active,
+#workouts .workout-card:active{filter:brightness(1.12);transform:scale(.99)}
+/* This is intentionally NOT applied to the approved Home hero, the six shortcuts,
+   the Welcome background or the gold rest timer ring. */
+@media(max-width:760px){
+ #workouts .workout-card,#library .library-card,
+ #progress .metric,#progress .panel,
+ #coaching .coach-card,#nutrition .panel,
+ #settings .settings-panel,
+ #home .home-below-fold .metric,#home .home-below-fold .panel{
+  border-radius:11px!important;
+ }
+ #library .filter-chips button{padding:7px 12px}
+}
+
+/* Sidebar X is physically inside the same visible header row as the logo.
+   Do not place a dismiss button above the logo: Safari may hide it under browser chrome. */
+.sidebar .wordmark{position:relative;min-height:48px}
+.sidebar .wordmark > div{min-width:0}
+.sidebar .sidebar-close{
+ position:absolute!important;
+ top:0!important;right:0!important;left:auto!important;
+ display:grid!important;place-items:center!important;
+ width:42px!important;height:42px!important;min-height:42px!important;
+ padding:0!important;margin:0!important;
+ background-color:#06333a!important;
+ background-image:linear-gradient(110deg,rgba(3,37,43,.93),rgba(3,45,51,.84)),url("./assets/hero-dumbbells-photo.jpg?v=7")!important;
+ background-position:center!important;background-size:cover!important;
+ border:1.5px solid #f1d394!important;border-radius:11px!important;
+ box-shadow:inset 0 1.5px 0 rgba(255,247,209,.35),0 4px 10px rgba(0,15,22,.37)!important;
+ color:#ffe6ac!important;
+ font:500 29px/1 Arial,sans-serif!important;
+ opacity:1!important;visibility:visible!important;z-index:5!important;
+}
+.sidebar .sidebar-close span{line-height:1;display:block}
+.sidebar .sidebar-close:active{filter:brightness(1.15)}
+.sidebar .sidebar-close:focus-visible{outline:2px solid #fff0bc;outline-offset:2px}
+@media(min-width:761px){.sidebar .sidebar-close{display:none!important}}
+@media(max-width:760px){
+ .sidebar{position:fixed}
+ .sidebar .wordmark{padding-right:48px!important;gap:7px!important;margin-bottom:37px!important}
+ .sidebar .wordmark strong{font-size:12px!important;letter-spacing:.055em!important;white-space:nowrap}
+ .sidebar .wordmark small{font-size:8px!important;letter-spacing:.10em!important;white-space:nowrap}
+ .sidebar .sidebar-logo{width:33px!important;height:33px!important;flex:0 0 33px!important}
+}
+
+/* Mobile navigation simplification: one primary navigation instead of duplicated sidebar. */
+@media(max-width:760px){
+ #sidebar{display:none!important}
+ #menuBtn,#homeMenuBtn{display:none!important}
+ .home-rebuilt .reference-home-header{justify-content:center;position:relative}
+ .home-rebuilt #homeAccountBtn{position:absolute;right:0;top:50%;transform:translateY(-50%)}
+ .bottom-tabs{z-index:40}
+}
+/* Secondary cards: same emerald-gold material, without repeating the identical gym photo everywhere.
+   Home's six approved shortcut tiles and Today's Workout photo remain unchanged. */
+#workouts .workout-card,#library .library-card,
+#progress .metric,#progress .panel,#coaching .coach-card,
+#nutrition .panel,#settings .settings-panel,#settings .account-menu button,
+#coaching .coach-links button,#home .home-below-fold .metric,
+#home .home-below-fold .panel,.modal-panel .log-card,
+.rest-next,#library .filter-chips button:not(.selected),
+#settings .button-outline,#settings .welcome-preview-link{
+ background-color:#052e36!important;
+ background-image:linear-gradient(145deg,#0a4249 0%,#052b33 100%)!important;
+ background-position:center!important;
+ background-size:auto!important;
+}
+
+
+/* Functional-parity batch: original workout archive + local daily tracking. */
+#history .panel,#tracking .panel,#workouts .original-plan-panel{
+ background:linear-gradient(145deg,#0a4249 0%,#052b33 100%)!important;
+ border:1.5px solid #f1d394!important;
+ border-radius:12px!important;
+ box-shadow:inset 0 1.5px 0 rgba(255,247,209,.30),0 5px 13px rgba(0,15,22,.42)!important;
+ margin-bottom:16px;
+}
+#workouts .original-plan-panel{margin-top:22px}
+#history .panel p,#tracking .panel p,#workouts .original-plan-panel p{color:#d8e8df;font-size:12px;line-height:1.6}
+.legacy-status,.tracking-footnote{font-size:11px!important;color:#d6e7de!important;margin:12px 0}
+.legacy-summary{color:#ffe0a0;font-size:13px;font-weight:700;padding:10px 0}
+.legacy-list{display:grid;gap:8px;margin-top:10px;min-width:0}
+.history-entry{
+ display:block;background:rgba(3,37,43,.84);
+ border:1px solid rgba(241,211,148,.68);border-radius:10px;
+ color:#fff3df;padding:11px 13px;min-width:0;
+}
+.history-entry summary{cursor:pointer;display:flex;gap:8px;align-items:center;justify-content:space-between;list-style:none}
+.history-entry summary::-webkit-details-marker{display:none}
+.history-entry summary::after{content:'+';color:#ffe2a3;font-size:19px;margin-left:5px}
+.history-entry[open] summary::after{content:'−'}
+.history-entry strong{font-size:12px;font-weight:750;min-width:0}
+.history-entry small{font-size:10px;color:#c9dfd7}
+.history-entry summary small{text-align:right}
+.history-entry .history-exercise{
+ display:flex;justify-content:space-between;align-items:center;gap:12px;
+ padding:8px 0;border-top:1px solid rgba(241,211,148,.28);margin-top:6px
+}
+.history-exercise b,.history-exercise span{font-size:11px}
+.history-exercise small{text-align:right}
+.tracking-entry-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.tracking-form{display:grid;align-content:start;gap:8px;min-width:0}
+.tracking-form label{font-size:12px;color:#ffebc2}
+.tracking-form input{
+ min-width:0;width:100%;height:43px;padding:9px 11px;
+ border:1px solid #f1d394;border-radius:10px;
+ background:#052f37;color:#fff7e9;font-size:14px;
+ color-scheme:dark;
+}
+.tracking-form .button-primary{margin-top:8px;min-height:44px}
+.tracking-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tracking-row>div{display:grid;gap:4px}
+.tracking-delete{
+ min-height:38px;border:1px solid #f1d394;border-radius:9px;padding:6px 10px;
+ background:#06333a;color:#ffe6ac;font-size:11px
+}
+#history button.button-outline,#tracking button.button-outline,
+#workouts .original-plan-panel button.button-outline{
+ min-height:44px;border:1.5px solid #f1d394!important;border-radius:11px!important;
+ background:linear-gradient(145deg,#0b454b,#052b34)!important;
+ color:#fff3dc!important;box-shadow:inset 0 1px 0 rgba(255,247,209,.24),0 4px 9px rgba(0,15,22,.31)!important
+}
+@media(max-width:600px){
+ .tracking-entry-grid{grid-template-columns:1fr}
+ .history-entry summary{align-items:start;flex-wrap:wrap}
+ .history-entry summary small{margin-left:auto}
+ #history .panel,#tracking .panel,#workouts .original-plan-panel{padding:17px 14px}
 }

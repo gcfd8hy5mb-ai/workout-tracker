@@ -51,5 +51,46 @@
   if(result.length!==parsed.length)throw Error('Original history has unsupported records; import not displayed');
   return result.sort((a,b)=>Date.parse(b.date)-Date.parse(a.date));
  }
- return Object.freeze({load,normalizedSession});
+ function filterSessions(sessions,term){
+  const query=String(term||'').trim().toLocaleLowerCase();
+  if(!Array.isArray(sessions))return [];
+  if(!query)return sessions.slice();
+  return sessions.filter(item=>
+   String(item.workoutTitle||'').toLocaleLowerCase().includes(query)||
+   (Array.isArray(item.exercises)&&item.exercises.some(ex=>String(ex.name||'').toLocaleLowerCase().includes(query)))
+  );
+ }
+ function sessionTotals(session){
+  let sets=0,volume=0;
+  for(const exercise of Array.isArray(session?.exercises)?session.exercises:[]){
+   for(const set of Array.isArray(exercise?.sets)?exercise.sets:[]){
+    const weight=Number(set?.weight),reps=Number(set?.reps);
+    if(set?.completed===false||!Number.isFinite(weight)||weight<=0||!Number.isFinite(reps)||reps<=0)continue;
+    sets++;volume+=weight*reps;
+   }
+  }
+  return {sets,volume};
+ }
+ function recentCompleted(sessions,limit=3){
+  if(!Array.isArray(sessions))return [];
+  const count=Number.isInteger(limit)&&limit>0&&limit<=100?limit:3;
+  return sessions.filter(item=>Number.isFinite(Date.parse(item?.date||''))&&sessionTotals(item).sets>0)
+   .slice().sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).slice(0,count);
+ }
+ function latestWorkingWeight(history,exerciseId){
+  if(!exerciseId||!Array.isArray(history))return null;
+  for(const session of history.slice().sort((a,b)=>Date.parse(b?.date||'')-Date.parse(a?.date||''))){
+   if(!Number.isFinite(Date.parse(session?.date||''))||!Array.isArray(session?.exercises))continue;
+   const matches=session.exercises.filter(ex=>ex?.id===exerciseId&&Array.isArray(ex.sets));
+   let best=null;
+   for(const ex of matches)for(const set of ex.sets){
+    const weight=Number(set?.weight),reps=Number(set?.reps);
+    if(set?.completed===false||!Number.isFinite(weight)||weight<=0||!Number.isFinite(reps)||reps<=0)continue;
+    best=Math.max(best??0,weight);
+   }
+   if(best!==null)return {weight:best,date:new Date(Date.parse(session.date)).toISOString().slice(0,10)};
+  }
+  return null;
+ }
+ return Object.freeze({load,normalizedSession,filterSessions,sessionTotals,recentCompleted,latestWorkingWeight});
 });

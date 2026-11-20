@@ -18,6 +18,7 @@
     if(!work){work={id:String(ex.id),name:String(ex.name||ex.id),sessions:0,sets:0,lastDate:null,bestWeight:0};exercises.set(ex.id,work)}
     let counted=false;
     for(const s of ex.sets){
+     if(s?.completed===false)continue;
      const weight=Number(s?.weight),reps=Number(s?.reps);
      if(!Number.isFinite(weight)||weight<=0||!Number.isFinite(reps)||reps<=0)continue;
      counted=true;sets++;volume+=weight*reps;work.sets++;work.bestWeight=Math.max(work.bestWeight,weight);
@@ -29,5 +30,14 @@
   return {completedSessions:sessions.length,trainingDays:days.size,loggedSets:sets,totalVolume:volume,
    latestDate:latest?.date||null,latestTitle:String(latest?.workoutTitle||''),movements:[...exercises.values()].filter(x=>x.sets>0).sort((a,b)=>b.sessions-a.sessions||a.name.localeCompare(b.name))};
  }
- return Object.freeze({summarize});
+ function filterMovements(movements,term){
+  const query=String(term||'').trim().toLocaleLowerCase();
+  const list=Array.isArray(movements)?movements:[];
+  if(!query)return list.slice();
+  return list.filter(item=>
+   String(item?.name||'').toLocaleLowerCase().includes(query)||
+   String(item?.id||'').toLocaleLowerCase().includes(query)
+  );
+ }
+ return Object.freeze({summarize,filterMovements});
 });

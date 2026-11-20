@@ -32,3 +32,56 @@ test('rejects missing authentication and invalid session records',async()=>{
  await assert.rejects(importer.load({endpoint:'http://insecure.test',publishableKey:'public',accessToken:'token',userId:'owner'}),/Authenticated account required/);
  assert.equal(importer.normalizedSession({date:'bad',exercises:[]}),null);
 });
+
+test('read-only original history search matches workout titles and exercise names without mutation',()=>{
+ const input=[importer.normalizedSession(session),importer.normalizedSession({
+  ...session,id:102,workoutTitle:'Legs',exercises:[{id:'leg-press',name:'Leg Press',sets:[{weight:150,reps:8}]}]
+ })];
+ const raw=JSON.stringify(input);
+ assert.equal(importer.filterSessions(input,'chest').length,1);
+ assert.equal(importer.filterSessions(input,'leg press')[0].workoutTitle,'Legs');
+ assert.equal(importer.filterSessions(input,'  LEGS  ')[0].workoutTitle,'Legs');
+ assert.equal(importer.filterSessions(input,'')[0].workoutTitle,'Chest');
+ assert.equal(importer.filterSessions(input,'missing').length,0);
+ assert.equal(JSON.stringify(input),raw);
+});
+
+test('original workout history detail excludes unfinished sets without altering source history',()=>{
+ const input={date:'2026-11-13',exercises:[
+  {id:'press',sets:[{weight:100,reps:8,completed:true},{weight:180,reps:10,completed:false}]},
+  {id:'row',sets:[{weight:80,reps:12},{weight:0,reps:10}]}
+ ]};
+ const before=JSON.stringify(input);
+ assert.deepEqual(importer.sessionTotals(input),{sets:2,volume:1760});
+ assert.deepEqual(importer.sessionTotals({exercises:[input.exercises[0]]}),{sets:1,volume:800});
+ assert.deepEqual(importer.sessionTotals(null),{sets:0,volume:0});
+ assert.equal(JSON.stringify(input),before);
+});
+
+test('Home original activity shows latest three actual workouts without incomplete or mixed records',()=>{
+ const sessions=[
+  {date:'2026-11-09T12:00:00Z',workoutTitle:'Older',exercises:[{sets:[{weight:50,reps:10}]}]},
+  {date:'2026-11-16T12:00:00Z',workoutTitle:'Unfinished',exercises:[{sets:[{weight:500,reps:10,completed:false}]}]},
+  {date:'2026-11-15T12:00:00Z',workoutTitle:'Newest',exercises:[{sets:[{weight:90,reps:10}]}]},
+  {date:'2026-11-13T12:00:00Z',workoutTitle:'Middle',exercises:[{sets:[{weight:80,reps:10}]}]},
+  {date:'2026-11-11T12:00:00Z',workoutTitle:'Earlier',exercises:[{sets:[{weight:70,reps:10}]}]}
+ ];
+ const before=JSON.stringify(sessions);
+ assert.deepEqual(importer.recentCompleted(sessions,3).map(s=>s.workoutTitle),['Newest','Middle','Earlier']);
+ assert.deepEqual(importer.recentCompleted(sessions,1).map(s=>s.workoutTitle),['Newest']);
+ assert.deepEqual(importer.recentCompleted([]),[]);
+ assert.equal(JSON.stringify(sessions),before);
+});
+
+test('explicit last working weight comes from latest real completed original session',()=>{
+ const original=[
+  {date:'2026-11-11T12:00:00Z',exercises:[{id:'press',sets:[{weight:200,reps:8}]}]},
+  {date:'2026-11-15T12:00:00Z',exercises:[{id:'press',sets:[{weight:500,reps:10,completed:false},{weight:175,reps:10},{weight:190,reps:8}]},{id:'row',sets:[{weight:90,reps:12}]}]},
+  {date:'bad-date',exercises:[{id:'press',sets:[{weight:900,reps:8}]}]}
+ ];
+ const before=JSON.stringify(original);
+ assert.deepEqual(importer.latestWorkingWeight(original,'press'),{weight:190,date:'2026-11-15'});
+ assert.deepEqual(importer.latestWorkingWeight(original,'row'),{weight:90,date:'2026-11-15'});
+ assert.equal(importer.latestWorkingWeight(original,'squat'),null);
+ assert.equal(JSON.stringify(original),before);
+});

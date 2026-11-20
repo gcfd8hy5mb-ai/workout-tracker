@@ -4,14 +4,17 @@
  */
 (function(root,factory){
  const node=typeof module==='object'&&module.exports;
- const api=factory(node?require('./v2-schedule-cas.js'):root.MLCV2ScheduleCAS,node);
+ const api=factory(node?require('./v2-recurring-schedule.js'):root.MLCV2RecurringSchedule,node);
  if(node)module.exports=api;else root.MLCV2CloudTransport=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(cas,node){
+})(typeof globalThis!=='undefined'?globalThis:this,function(schedule,node){
 'use strict';
 const ENABLED=false; // SECURITY RELEASE GATE — do not flip as part of ordinary UI work.
 function create({endpoint,publishableKey,getSession,fetcher,enabled=false}){
  if(enabled!==true||ENABLED!==true)throw Error('Live custom workout sync is disabled pending release approval');
  return buildTransport({endpoint,publishableKey,getSession,fetcher});
+}
+function validRemoteDocument(document){
+ try{return schedule.validate(document)===true}catch{return false}
 }
 function buildTransport({endpoint,publishableKey,getSession,fetcher}){
  if(typeof getSession!=='function'||typeof fetcher!=='function'||!publishableKey)throw Error('Session and network transport required');
@@ -41,14 +44,14 @@ function buildTransport({endpoint,publishableKey,getSession,fetcher}){
   async read(owner){
    const result=await rpc('prism_v2_schedule_read',owner,{});
    if(result===null)return Object.freeze({revision:0,document:null});
-   if(!result||!Number.isSafeInteger(result.revision)||result.revision<1||!cas.validate(result.document))throw Error('Invalid cloud schedule response');
+   if(!result||!Number.isSafeInteger(result.revision)||result.revision<1||!validRemoteDocument(result.document))throw Error('Invalid cloud schedule response');
    return Object.freeze({revision:result.revision,document:result.document});
   },
   async save(owner,expectedRevision,document){
    if(!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw Error('Verified cloud revision required');
-   cas.validate(document);
+   schedule.validate(document);
    const result=await rpc('prism_v2_schedule_save',owner,{expected_revision:expectedRevision,new_document:document});
-   if(!result||result.revision!==expectedRevision+1||!cas.validate(result.document)||canonical(result.document)!==canonical(document))
+   if(!result||result.revision!==expectedRevision+1||!schedule.validate(result.document)||canonical(result.document)!==canonical(document))
     throw Error('Cloud save could not be verified; keep local draft');
    return Object.freeze({revision:result.revision,document:result.document});
   }

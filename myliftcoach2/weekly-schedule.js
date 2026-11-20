@@ -44,13 +44,32 @@ function assign(state,day,id){
 function edit(state,id,changes,validExercises){
  const index=state.plans.findIndex(p=>p.id===id);
  if(index<0)throw Error('Workout not found');
+ if(!Array.isArray(changes?.ids)&&changes?.ids!==undefined)
+  throw Error('Workout exercise selection is invalid; existing workout preserved');
+ if(Array.isArray(changes?.ids)&&
+    (changes.ids.some(x=>typeof x!=='string'||!validExercises.includes(x))||
+     new Set(changes.ids).size!==changes.ids.length))
+  throw Error('Workout contains unavailable or duplicate exercises; existing workout preserved');
  const plan=cleanPlan({...state.plans[index],...changes,id},validExercises);
  return {...state,plans:state.plans.map((p,i)=>i===index?plan:p)};
 }
 function add(state,id,changes,validExercises){
+ if(state.plans.length>=55)throw Error('Workout library limit reached; existing workouts preserved');
  if(state.plans.some(p=>p.id===id)||!/^custom-[a-zA-Z0-9-]{3,90}$/.test(id))throw Error('Unique custom workout ID required');
+ if(!Array.isArray(changes?.ids)||changes.ids.some(x=>typeof x!=='string'||!validExercises.includes(x))||
+    new Set(changes.ids).size!==changes.ids.length)
+  throw Error('Workout contains unavailable or duplicate exercises; existing workout preserved');
  const plan=cleanPlan({...changes,id,kind:'Custom'},validExercises);
  return {...state,plans:[...state.plans,plan]};
+}
+function duplicate(state,sourceId,newId,validExercises){
+ const source=state.plans.find(p=>p.id===sourceId);
+ if(!source)throw Error('Workout to copy not found');
+ return add(state,newId,{
+  title:(source.title+' Copy').slice(0,80),
+  description:source.description||'Your personal workout',
+  ids:source.ids.slice()
+ },validExercises);
 }
 function saved(state,presetIds){
  return {version:1,plans:state.plans.map(p=>({...p,ids:p.ids.slice()})),assigned:state.assigned.slice()};
@@ -69,22 +88,78 @@ function loadOwned(storage,base,owner,presets,validExercises){
  let input;
  try{input=JSON.parse(serialized)}catch{throw Error('Saved account schedule is unreadable; refuse preset overwrite')}
  if(!input||input.version!==1||!Array.isArray(input.plans)||!Array.isArray(input.assigned)||input.assigned.length!==7)throw Error('Saved schedule format invalid');
- const allowed=new Set(presets.map(x=>x.id));
- for(const p of input.plans||[])if(p&&typeof p.id==='string')allowed.add(p.id);
+ // normalize() caps the combined library at 55. Refuse a partial restore
+ // rather than discarding overflow custom plans, even if unassigned.
+ if(input.plans.length>55||new Set([...presets.map(p=>p.id),...input.plans.map(p=>p?.id)]).size>55)
+  throw Error('Saved workout library exceeds supported capacity; original draft preserved');
+ // Every saved plan must survive exactly: never silently remove even an unassigned
+ // custom workout (or filter out an exercise) when the catalog changes.
+ const persistedIds=new Set();
+ const presetIds=new Set(presets.map(x=>x.id));
+ for(const raw of input.plans){
+  if(!raw||typeof raw.id!=='string'||persistedIds.has(raw.id)||
+     (!presetIds.has(raw.id)&&!/^custom-[a-zA-Z0-9-]{3,90}$/.test(raw.id)))
+   throw Error('Saved workout plan is invalid; original draft preserved');
+  persistedIds.add(raw.id);
+  if(!Array.isArray(raw.ids)||raw.ids.length===0||raw.ids.length>40||
+     raw.ids.some(id=>typeof id!=='string'||!validExercises.includes(id))||
+     new Set(raw.ids).size!==raw.ids.length)
+   throw Error('Saved workout exercises are unavailable or invalid; original draft preserved');
+  const clean=cleanPlan(raw,validExercises);
+  if(clean.ids.length!==raw.ids.length||!String(raw.title||'').trim()||
+     String(raw.title).trim().length>80)
+   throw Error('Saved workout content is invalid; original draft preserved');
+ }
+ const allowed=new Set([...presetIds,...persistedIds]);
  // Refuse silent replacement when a linked custom plan was removed/corrupted.
  for(const id of input.assigned)if(id!=null&&!allowed.has(id))throw Error('Saved workout assignment is missing');
  const restored=normalize(input,presets,validExercises);
  for(const id of input.assigned)if(id!=null&&!restored.plans.some(p=>p.id===id))throw Error('Saved assigned workout is invalid; original draft preserved');
  return restored;
 }
-function commitOwned(storage,base,owner,state,presetIds){
- return commit(storage,ownerKey(base,owner),state,presetIds);
+function commitOwned(storage,base,owner,state,presetIds,expectedStored){
+ const key=ownerKey(base,owner);
+ // Optional exact snapshot from the editor's last load/save. Detect writes
+ // from another open tab before replacing the locally stored schedule.
+ if(arguments.length>=6&&storage.getItem(key)!==expectedStored)
+  throw Error('Workout schedule changed in another tab; original draft preserved');
+ // An unreadable existing draft must never be erased by a subsequent edit.
+ // Keep it intact for deliberate recovery instead of replacing it with defaults.
+ const existing=storage.getItem(key);
+ if(existing!==null){
+  let previous;
+  try{previous=JSON.parse(existing)}catch{
+   throw Error('Existing account schedule is unreadable; original draft preserved');
+  }
+  if(!previous||previous.version!==1||!Array.isArray(previous.plans)||
+     !Array.isArray(previous.assigned)||previous.assigned.length!==7)
+   throw Error('Existing account schedule is incomplete; original draft preserved');
+ }
+ return commit(storage,key,state,presetIds);
 }
 function commit(storage,key,state,presetIds){
+ // Reject states that cannot round-trip through loadOwned. Never write a
+ // partial or dangling schedule over an existing account's local draft.
+ if(!state||!Array.isArray(state.plans)||!Array.isArray(state.assigned)||
+    state.assigned.length!==7||state.plans.length>55)
+  throw Error('Workout schedule cannot be restored; existing draft preserved');
+ const ids=new Set(),knownPresets=new Set(presetIds||[]);
+ for(const plan of state.plans){
+  if(!plan||typeof plan.id!=='string'||ids.has(plan.id)||
+     (!knownPresets.has(plan.id)&&!/^custom-[a-zA-Z0-9-]{3,90}$/.test(plan.id))||
+     typeof plan.title!=='string'||!plan.title.trim()||plan.title.trim().length>80||
+     !Array.isArray(plan.ids)||!plan.ids.length||plan.ids.length>40||
+     plan.ids.some(id=>typeof id!=='string'||!id)||
+     new Set(plan.ids).size!==plan.ids.length)
+   throw Error('Workout schedule contains an invalid plan; existing draft preserved');
+  ids.add(plan.id);
+ }
+ if(state.assigned.some(id=>id!==null&&!ids.has(id)))
+  throw Error('Workout schedule references a missing plan; existing draft preserved');
  const serialized=JSON.stringify(saved(state,presetIds));
  storage.setItem(key,serialized);
  if(storage.getItem(key)!==serialized)throw Error('Workout schedule was not saved');
  return state;
 }
-return Object.freeze({DAYS,normalize,dayIndex,resolve,assign,edit,add,saved,commit,ownerKey,loadOwned,commitOwned});
+return Object.freeze({DAYS,normalize,dayIndex,resolve,assign,edit,add,duplicate,saved,commit,ownerKey,loadOwned,commitOwned});
 });

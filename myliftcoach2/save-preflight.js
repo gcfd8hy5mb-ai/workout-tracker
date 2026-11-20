@@ -25,7 +25,13 @@
    if(!ex){ex={id,name:String(names.get(id)),sets:[]};exercises.push(ex)}
    ex.sets.push({set:ex.sets.length+1,weight,reps});
   }
-  const session={id:proposedId,date:now,workoutKey:String(previewWorkout.planId||'myliftcoach2'),workoutTitle:String(previewWorkout.title||'Workout').slice(0,120),durationMinutes:null,readiness:'Normal',exercises};
+  const start=Number(previewWorkout.startedAt),end=Date.parse(now);
+  const durationMinutes=Number.isFinite(start)&&start>0&&end>=start&&end-start<=86400000?
+    Math.max(1,Math.round((end-start)/60000)):null;
+  const readiness=['Great','Normal','Tired'].includes(previewWorkout.readiness)?previewWorkout.readiness:'Normal';
+  const session={id:proposedId,date:now,workoutKey:String(previewWorkout.planId||'myliftcoach2'),
+   workoutTitle:String(previewWorkout.title||'Workout').slice(0,120),
+   durationMinutes,readiness,exercises};
   const candidate=[session,...latestHistory];
   return Object.freeze({owner,session,candidate,sourceKey:'workoutHistoryV52',readyForProduction:false});
  }

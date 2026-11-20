@@ -164,4 +164,20 @@ assert p.returncode == 0, stderr
 assert stale.returncode != 0, "Concurrent stale write incorrectly succeeded"
 assert json.loads(exec_sql(signed(A, read()))[0])["document"]["plans"][0]["title"] == "Transaction One"
 assert json.loads(exec_sql(signed(A, read()))[0])["revision"] == 4
-print("PASS: isolated PG owner isolation, permissions, stale CAS, first-save race, malformed input, concurrent update")
+# A dated rest exception must round-trip without deleting the repeating rule.
+rest = dict(scheduled, overrides={"2026-11-20": "custom-a", "2026-11-27": None})
+output,_=exec_sql(signed(A, "select public.prism_v2_schedule_save(4, '" + json.dumps(rest) + "'::jsonb);"))
+assert json.loads(output)["revision"] == 5
+saved = json.loads(exec_sql(signed(A, read()))[0])["document"]
+assert saved["overrides"]["2026-11-27"] is None
+assert saved["recurring"] == scheduled["recurring"]
+# Removing only the date exception returns control to the recurring rule.
+output,_=exec_sql(signed(A, "select public.prism_v2_schedule_save(5, '" + json.dumps(scheduled) + "'::jsonb);"))
+assert json.loads(output)["revision"] == 6
+assert "2026-11-27" not in json.loads(exec_sql(signed(A, read()))[0])["document"]["overrides"]
+# Malformed override values still reject without changing revision.
+bad_rest = dict(scheduled, overrides={"2026-11-27": False})
+exec_sql(signed(A, "select public.prism_v2_schedule_save(6, '" + json.dumps(bad_rest) + "'::jsonb);"), ok=False)
+assert json.loads(exec_sql(signed(A, read()))[0])["revision"] == 6
+
+print("PASS: isolated PG owner isolation, permissions, stale CAS, first-save race, malformed input, concurrent update, rest-day restore")

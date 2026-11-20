@@ -1,36 +1,14 @@
-# MYLIFTCOACH 2.0 — independent GitHub Pages site
+# MYLIFTCOACH 2.0 GitHub Pages release
 
-This is the standalone frontend source for MYLIFTCOACH 2.0. The original workout app lives at `https://gcfd8hy5mb-ai.github.io/workout-tracker/` and must remain unchanged.
+The original app is served at the root of the workout-tracker GitHub Pages site. Its published 2.0 preview lives at [`/workout-tracker/myliftcoach2/`](https://gcfd8hy5mb-ai.github.io/workout-tracker/myliftcoach2/). Development takes place on the 2.0 feature branch. The branch and the published preview can be at different revisions.
 
-## Recommended separate repository
-`gcfd8hy5mb-ai/MYLIFTCOACH-2.0`
+## Verify the release candidate
 
-Expected Pages URL (not active until the repository is created and publishing is enabled):
-`https://gcfd8hy5mb-ai.github.io/MYLIFTCOACH-2.0/`
+1. Run **MYLIFTCOACH 2.0 Migration Verification** on the exact candidate commit. It checks the staged JavaScript regressions, the disposable PostgreSQL and PostgREST integration, and Chromium workout, Coach, backup, recovery, and account-boundary flows.
+2. Review the candidate against `main`. Verify that original app entry points, persistence behavior, and production data are preserved. Keep draft SQL out of any production migration.
+3. Review signed-in backup and recovery separately from the read-only history, profile and tracking imports. Check account ownership, conflict behavior, and the supported scope of each write.
+4. Verify the charcoal-and-gold preview on phone and desktop and reconcile the approved demonstration manifest and assets before release sign-off.
 
-## Publishing
-1. Create an empty **public** repository named `MYLIFTCOACH-2.0` under `gcfd8hy5mb-ai`.
-2. Copy the **contents** of the existing `workout-tracker/myliftcoach2/` directory from branch `build/myliftcoach-2-v1` into the **root** of the new repository. Do not copy or merge the old `workout-tracker/index.html`.
-3. In the new repository, go to Settings → Pages → Build and deployment → Deploy from a branch; select `main` / `/ (root)`; Save.
-4. Check the Pages build and publication status. Do not announce the URL as live until it actually loads.
-5. Test sign-in and demo features on iPhone Safari and desktop.
+## Publish only after approval
 
-## Contents
-- `index.html`: app screens, navigation and markup.
-- `app.js`: local demo workout flow and **authentication-only** PRISM Supabase access.
-- `styles.css`, `theme-option-one.css`, `reference-mobile.css`, `premium-reference.css`: premium visual design.
-- `assets/`: custom original emerald-marble, logo, workout and equipment SVG images.
-- `.nojekyll`: serve assets without Jekyll processing.
-- `FUNCTIONAL-PARITY.md`, `REFERENCE-IMPLEMENTATION-STATUS.md`: audit and feature plan.
-
-## Data protections
-- Existing PRISM Supabase project is used **for existing account authentication only**. This version does not write to legacy workout tables.
-- Demo logs use browser-local `mlc2-demo-workouts-v1`; 2.0's own auth token uses sessionStorage `mlc2-auth-session-v1`.
-- Do not copy production localStorage into the new domain or import training history until reconciled and independently backed up.
-- The Pages hostname might need to be added to Supabase's Auth redirect allowlist **if** future magic links, OAuth or password reset redirects are implemented. Simple email/password API login does not need an OAuth redirect.
-
-## Known limitations
-- This is still a feature-incomplete preview: not yet equivalent to the original app.
-- Most exercise art is placeholder; photographic mockup cannot be duplicated exactly through CSS alone.
-- The new preview build has not yet passed physical-device testing.
-- No original app or production Supabase configuration should be overwritten.
+Open or update the existing pull request for review. The GitHub Pages workflow publishes on a push to `main`, so a merge is the deployment trigger. Keep the 2.0 folder and the shared files referenced by its HTML in the same artifact. After an approved merge, verify the Pages run, the original root entry point, and the 2.0 preview URL. Roll back a faulty preview with an approved revert of its release commit.

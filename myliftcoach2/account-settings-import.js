@@ -42,6 +42,7 @@ async function load({endpoint,publishableKey,accessToken,userId,fetcher=fetch,ma
   if(typeof restored[key]!=='string')throw Error('Incomplete original account settings');
   snapshot[key]=JSON.parse(restored[key]);
  }
+ if(!Object.keys(snapshot).length)return null; // No original record is not a restored profile.
  return clean(snapshot.prismLocalProfileV1,snapshot.workoutGoalsV1);
 }
 return Object.freeze({clean,load});

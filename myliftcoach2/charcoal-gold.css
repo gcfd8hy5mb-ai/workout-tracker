@@ -1,0 +1,261 @@
+/* MYLIFTCOACH 2.0 — charcoal and bright gold finishing palette.
+ * Layered last to replace original purple/emerald treatments without
+ * changing layout, storage, or exercise media. */
+:root{
+ --bg:#101519;--nav:#11191e;--navdark:#0c1217;
+ --teal:#e4bb70;--aqua:#ead196;--cream:#fff1d2;
+ --gold:#f3cf86;--goldmuted:#d2a75d;--metal:#f5cf86;
+ --metal-highlight:#fff2c3;--metal-deep:#b47d30;
+ --deep:#141d22;--card-rich:#202b30;--glass:rgba(22,30,35,.95);
+ --ink:#f8eeda;--muted:#c5bba9;--border:rgba(239,195,111,.52);
+}
+html{background:#0e1418!important}
+body{
+ background:radial-gradient(ellipse at 86% 13%,rgba(141,113,61,.12),transparent 46%),linear-gradient(155deg,#151c21,#0e1418 70%) fixed!important;
+ color:#f8edda!important;
+}
+.sidebar{background:linear-gradient(155deg,#1c262b,#0e161b)!important;border-right:1px solid rgba(236,187,98,.55)!important}
+.topbar{background:rgba(19,27,32,.96)!important;border-bottom:1px solid rgba(233,184,100,.46)!important}
+.hero{background:linear-gradient(94deg,rgba(12,19,23,.97) 0%,rgba(16,24,28,.83) 57%,rgba(20,25,28,.27) 100%),url("./assets/hero-dumbbell.svg") center/cover no-repeat!important;border-color:rgba(250,210,136,.82)!important}
+.metric,.panel,.workout-card,.library-card,.settings-panel,.log-card,.recent-item,.quick-grid button,.coach-links button,.account-menu button{
+ background:linear-gradient(145deg,#263137,#192228)!important;
+ border-color:rgba(223,180,103,.54)!important;
+ color:#f9ebd0!important;
+ box-shadow:inset 0 1px 0 rgba(255,242,205,.07),0 6px 19px rgba(0,0,0,.28)!important;
+}
+.sidebar .nav-item,.sidebar .nav-item.selected,.sidebar .nav-item:hover{
+ background:linear-gradient(145deg,#252e33,#151d22)!important;
+ border-color:rgba(234,185,96,.38)!important;
+ color:#f6e7cf!important;
+}
+.sidebar .nav-item.selected{background:linear-gradient(145deg,#403a2d,#1b252a)!important;border-color:#ecc47e!important}
+.button-outline,.button-ghost,.modal-close,.sidebar-close{
+ background:linear-gradient(145deg,#2c3437,#171f25)!important;
+ border:1px solid rgba(237,188,102,.69)!important;color:#ffdf9d!important;
+}
+.button-primary{background:linear-gradient(180deg,#ffedb0,#e3b762 60%,#b98539)!important;color:#1b1a17!important;border-color:#ffe1a2!important}
+.stage-pill,.micro-tag{background:#272c2a!important;border-color:#d7a963!important;color:#f8d58c!important}
+:where(.panel,.log-card,.library-card,.metric,.recent-item) :where(p,small,span,label){color:#e7dac5}
+:where(.panel,.log-card,.library-card) :where(h2,h3,h4,strong){color:#fff0d2!important}
+input,select,textarea{
+ background:#141e23!important;
+ color:#fff4df!important;
+ border:1px solid rgba(213,172,102,.54)!important;
+}
+input::placeholder{color:#a9a294!important}
+input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{
+ outline:2px solid #f8ce7f!important;outline-offset:2px;
+}
+.liftova-anatomy{
+ background:radial-gradient(ellipse at 50% 20%,rgba(208,164,83,.13),transparent 67%),#121a20!important;
+ border:1px solid rgba(240,193,108,.57)!important;
+ box-shadow:0 10px 28px rgba(0,0,0,.29)!important;
+}
+.library-anatomy{width:100%;max-width:300px;margin:0 auto 10px}
+.library-anatomy .liftova-anatomy{max-height:220px;overflow:hidden}
+.library-anatomy .liftova-anatomy svg{height:auto;max-height:212px;object-fit:contain}
+.exercise-detail-visuals{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start;margin:14px 0}
+.exercise-detail-visuals img{width:100%;max-height:300px;object-fit:contain;border:1px solid rgba(240,193,108,.48);border-radius:14px;background:#11191d}
+.exercise-detail-visuals .liftova-anatomy{max-width:100%}
+.library-card .exercise-open{margin-top:12px}
+.library-card .library-thumb{object-fit:contain}
+.exercise-detail-modal h2{margin:4px 0 12px}
+.exercise-detail-modal li{margin:5px 0}
+@media(max-width:640px){.exercise-detail-visuals{grid-template-columns:1fr}.library-anatomy .liftova-anatomy{max-height:165px}.library-anatomy .liftova-anatomy svg{max-height:160px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Full library: compact, accessible filters and anatomy references. */
+.library-toolbar{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin:12px 0}
+.library-toolbar>label{display:flex;flex-direction:column;gap:5px;min-width:170px;font-size:.84rem}
+.library-toolbar select{min-height:40px}
+.library-toolbar .library-checkbox{flex-direction:row;align-items:center;gap:8px;min-width:0;padding:10px 0}
+.library-toolbar .library-checkbox input{width:18px;height:18px;accent-color:#d8af69}
+#libraryResultCount{margin:5px 0 12px;color:#f4d296}
+.library-grid .library-anatomy{display:flex;align-items:center;justify-content:center;min-height:140px;padding:5px}
+.library-grid .library-anatomy .liftova-anatomy{width:100%;max-width:230px;border-radius:12px}
+.exercise-detail-modal .hero-actions{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0}
+.exercise-detail-modal .hero-actions button{white-space:normal;min-height:42px}
+@media(max-width:640px){
+ .library-toolbar{align-items:stretch;gap:10px}
+ .library-toolbar>label{flex:1 1 150px}
+ .library-toolbar .library-checkbox{flex:1 1 100%;padding:4px 0}
+ .library-toolbar #libraryReset{width:100%}
+ .library-grid .library-anatomy{min-height:110px}
+}
+
+/* Canonical exercise library inside the custom workout editor */
+.week-exercise.library-editor-row{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;
+ background:linear-gradient(145deg,#263137,#192228)!important;
+ border:1px solid rgba(223,180,103,.52)!important;border-radius:12px;
+ padding:9px 12px;min-width:0;
+}
+.week-exercise.library-editor-row[hidden]{display:none!important}
+.week-exercise-choice{display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:pointer}
+.week-exercise-choice>input{width:19px;height:19px;flex:none;accent-color:#e7bb72}
+.week-exercise-choice span{display:flex;flex-direction:column;gap:4px;min-width:0}
+.week-exercise-choice strong{color:#ffedca;font-size:.9rem;overflow-wrap:anywhere}
+.week-exercise-choice small{font-size:.77rem;color:#d7c4a3}
+.library-editor-row>button{flex:none;min-height:34px;font-size:.78rem;padding:6px 10px}
+#weekExerciseCount{color:#efd0a0}
+@media(max-width:640px){.week-exercise.library-editor-row{padding:9px;gap:6px}.library-editor-row>button{padding:6px 8px}}
+
+/* Scroll only the session body. The action row has its own grid track. */
+.modal-panel:has(.workout-session-body) {
+ display:flex;
+ flex-direction:column;
+ overflow:hidden;
+}
+#modalContent:has(.workout-session-body) {
+ display:grid;
+ grid-template-rows:minmax(0,1fr) auto;
+ min-height:0;
+ min-width:0;
+}
+.workout-session-body {
+ overflow:auto;
+ min-height:0;
+ overscroll-behavior:contain;
+}
+#workoutLog, #workoutLog .log-card, #workoutLog .inputs label {min-width:0}
+#workoutLog select {max-width:100%}
+.workout-session-body + .modal-footer {
+ background:#192228;
+ border-top:1px solid rgba(223,180,103,.54);
+ padding:8px 0 0;
+ margin-top:4px;
+}
+.modal-panel:has(.workout-session-body) .modal-close {z-index:3}
+
+@media (max-width:760px) {
+ html, body, .app-shell {max-width:100%;overflow-x:clip}
+ .modal {
+  inset:0 auto auto 0;
+  width:100vw;
+  height:100dvh;
+ }
+ .modal-panel input, .modal-panel select {font-size:16px}
+}
+
+
+/* 2026-11 iPhone beta: finish the approved slate / metallic-gold theme.
+ * More specific than legacy #home mobile rules in reference-mobile.css
+ * and premium-reference.css. Presentation-only: preserve all layout,
+ * workout management, Coach, and cloud behavior.
+ */
+:root {
+ color-scheme:dark;
+ --reference-ink:#11191e;
+ --reference-gold:#f3cf86;
+ --reference-ivory:#fff0d2;
+ --deep:#151d22;
+ --card-rich:#222c32;
+ --glass:rgba(26,34,40,.97);
+}
+html,body {
+ background-color:#0e1418!important;
+}
+html body {
+ background-image:radial-gradient(ellipse at 86% 12%,rgba(198,150,73,.11),transparent 47%),linear-gradient(155deg,#151d22,#0e1418 70%)!important;
+ color:#f8edda!important;
+}
+.app-shell,.main-wrap,.content {background:transparent!important}
+#home .hero {
+ background:linear-gradient(90deg,rgba(12,18,22,.97),rgba(21,29,33,.89) 59%,rgba(24,32,36,.35)),url("./assets/hero-dumbbell.svg") center right/cover no-repeat!important;
+ background-color:#182227!important;
+ border-color:rgba(247,201,118,.83)!important;
+ box-shadow:0 9px 28px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,232,185,.12)!important;
+}
+#home .hero .hero-kicker,#home .hero .hero-meta{color:#f9edd7!important}
+#home .hero .button-primary,.button-primary {
+ background:linear-gradient(180deg,#ffefb8 0%,#f0c97c 44%,#cd9849 100%)!important;
+ border-color:#ffe3a2!important;
+ color:#201c16!important;
+ box-shadow:inset 0 1px 0 rgba(255,250,218,.8),0 5px 14px rgba(0,0,0,.36)!important;
+}
+.quick-grid button,.coach-links button,.account-menu button {
+ background:linear-gradient(150deg,#283238,#192127)!important;
+ border:1px solid rgba(232,182,98,.59)!important;
+ color:#f9ecd6!important;
+ box-shadow:inset 0 1px 0 rgba(255,238,202,.09),0 5px 18px rgba(0,0,0,.27)!important;
+}
+.quick-grid button:active,.coach-links button:active {background:linear-gradient(150deg,#34383a,#21252a)!important}
+.metric,.panel,.workout-card,.library-card,.settings-panel,.log-card,.recent-item,.coach-card {
+ background:linear-gradient(150deg,#293339,#1a2228)!important;
+ border-color:rgba(226,181,104,.58)!important;
+ color:#f8edda!important;
+}
+.week-day-card,#weekEditor select,#weekEditor input[type=text],.preview-exercise {
+ background:#151d22!important;
+ border-color:rgba(226,181,104,.53)!important;
+ color:#f8edd8!important;
+}
+.week-day-card.is-today {
+ background:linear-gradient(145deg,#34332e,#1b2227)!important;
+ border-color:#f3cf86!important;
+ box-shadow:0 0 0 1px rgba(240,196,116,.3),inset 0 1px 0 rgba(255,230,175,.11)!important;
+}
+.bottom-tabs {
+ background:linear-gradient(135deg,rgba(26,35,40,.99),rgba(14,21,26,.99))!important;
+ border-top:1px solid rgba(239,192,110,.73)!important;
+ box-shadow:0 -5px 22px rgba(0,0,0,.31)!important;
+}
+.bottom-tabs button {color:#d5cbbb!important}
+.bottom-tabs button.active {color:#ffe0a0!important}
+.bottom-tabs button svg,.bottom-tabs button .shortcut-symbol{color:inherit!important}
+.topbar {
+ background:rgba(19,27,32,.97)!important;
+ border-color:rgba(235,188,102,.55)!important;
+}
+.mobile-brand,.mobile-brand small,.page-heading h1 {color:#f5d798!important}
+.modal {background:rgba(5,9,13,.84)!important}
+.modal-panel {
+ background:linear-gradient(145deg,#263037,#151d23)!important;
+ border:1px solid rgba(245,199,116,.72)!important;
+ color:#fff0d8!important;
+}
+.modal-panel p,.modal-panel .modal-eyebrow,.modal-panel .log-card small,.login-form label {color:#ddd0b9!important}
+.rest-screen {
+ background:linear-gradient(150deg,#1d272d,#0c1419)!important;
+ color:#fff2d9!important;
+}
+.rest-face {
+ background:radial-gradient(ellipse at 45% 32%,#303b40,#141b20 76%)!important;
+ border-color:rgba(245,197,110,.59)!important;
+}
+.rest-controls button+button {
+ background:#1b252b!important;
+ border-color:#cba35f!important;
+ color:#ffe1a6!important;
+}
+.rest-next,.welcome-panel {
+ background:linear-gradient(150deg,#283239,#151d23)!important;
+ border-color:rgba(244,196,110,.74)!important;
+ color:#f9edda!important;
+}
+.welcome-preview-link {
+ background:rgba(29,37,43,.96)!important;
+ color:#ffe1a6!important;
+ border-color:#d8ac62!important;
+}
+.coach-emblem {background:radial-gradient(circle at 50% 35%,#414039,#1b252a)!important}
+.sidebar .nav-item.selected {
+ background:linear-gradient(135deg,#40392d,#1b242a)!important;
+ border-color:#f2c778!important;
+}
+@media(max-width:760px){
+ html,body {
+  background:#10161b!important;
+  background-image:radial-gradient(ellipse at 82% 10%,rgba(214,171,94,.1),transparent 48%),linear-gradient(160deg,#172026,#10161b)!important;
+ }
+ #home .hero {
+  background:linear-gradient(90deg,rgba(14,21,25,.97),rgba(23,30,34,.87) 59%,rgba(26,33,37,.26)),url("./assets/hero-dumbbell.svg") center right/auto 100% no-repeat!important;
+ }
+ .topbar {background:rgba(18,26,31,.97)!important}
+ .bottom-tabs {
+  background:linear-gradient(130deg,rgba(29,37,42,.99),rgba(14,21,25,.99))!important;
+  border-color:#e8bc74!important;
+ }
+ .quick-grid button {background:linear-gradient(145deg,#293339,#192127)!important}
+ .modal-panel {background:linear-gradient(150deg,#252f35,#151d23)!important}
+}

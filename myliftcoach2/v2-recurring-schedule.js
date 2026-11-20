@@ -60,7 +60,7 @@ function validate(doc){
  if(doc.assigned.some(id=>id!==null&&!ids.has(id)))throw Error('Unknown default workout');
  if(!doc.overrides||Array.isArray(doc.overrides)||typeof doc.overrides!=='object')throw Error('Invalid dated overrides');
  if(!Array.isArray(doc.recurring))throw Error('Invalid recurring rules');
- for(const [d,id] of Object.entries(doc.overrides))if(day(d)!==d||!ids.has(id))throw Error('Unmatched dated workout');
+ for(const [d,id] of Object.entries(doc.overrides))if(day(d)!==d||(id!==null&&!ids.has(id)))throw Error('Unmatched dated workout');
  for(const rule of doc.recurring){
   if(!rule||!ids.has(rule.workoutId))throw Error('Unmatched recurring workout');
   if(day(rule.start)!==rule.start)throw Error('Invalid start');
@@ -79,7 +79,9 @@ function resolve(doc,when){
   const stamp=dateStamp(date);
   const matches=doc.recurring.filter(r=>{
    const start=dateStamp(r.start),end=r.end==null?Infinity:dateStamp(r.end);
-   return stamp>=start&&stamp<=end&&(stamp-start)%604800000===0;
+   const elapsed=stamp-start;
+   return elapsed>=0&&stamp<=end&&elapsed%604800000===0&&
+     (r.weeks===undefined||elapsed/604800000<r.weeks);
   }).sort((a,b)=>b.start.localeCompare(a.start));
   if(matches.length){workoutId=matches[0].workoutId;source='recurring'}
   else{const d=new Date(date+'T12:00:00Z');workoutId=doc.assigned[(d.getUTCDay()+6)%7]}

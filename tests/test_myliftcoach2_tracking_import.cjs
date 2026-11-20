@@ -20,3 +20,38 @@ test('does not invent missing food macros or change input',()=>{
  const before=JSON.stringify(raw),result=adapter.normalize(raw);
  assert.equal(result.food[0].protein,null);assert.equal(result.food[0].carbs,null);assert.equal(JSON.stringify(raw),before);
 });
+
+test('historical month summary separates months and never fabricates missing records',()=>{
+ const input=adapter.normalize({
+  waterUnit:'oz',water:[{day:'2026-11-12',amount:12},{day:'2026-11-14',amount:16},{day:'2026-10-12',amount:9}],
+  food:[{day:'2026-11-12',name:'Eggs',calories:200},{day:'2026-11-14',name:'Lunch',calories:400}],
+  weight:[{day:'2026-11-02',value:183},{day:'2026-11-15',value:181},{day:'2026-10-02',value:185}]
+ });
+ const raw=JSON.stringify(input),nov=adapter.monthSummary(input,'2026-11');
+ assert.equal(nov.totalWater,28);
+ assert.equal(nov.waterEntries,2);
+ assert.equal(nov.calories,600);
+ assert.equal(nov.foodEntries,2);
+ assert.deepEqual(nov.latestWeight,{date:'2026-11-15',value:181});
+ assert.equal(adapter.monthSummary(input,'2026-10').totalWater,9);
+ assert.equal(adapter.monthSummary(input,'2026-13'),null);
+ assert.equal(JSON.stringify(input),raw);
+});
+
+test('malformed and impossible tracking dates never enter monthly totals',()=>{
+ const raw={
+  water:[{day:'2026-11-31',amount:99},{day:'2026-11-13',amount:12},{day:'2026-11-1',amount:20}],
+  food:[{day:'2026-02-30',calories:400},{day:'2026-11-13',calories:160}],
+  weight:[{day:'2026-11-00',value:190},{day:'2026-11-13',value:185}]
+ };
+ const snapshot=JSON.stringify(raw),normal=adapter.normalize(raw);
+ assert.equal(normal.water.length,1);
+ assert.equal(normal.food.length,1);
+ assert.equal(normal.weight.length,1);
+ const sum=adapter.monthSummary(normal,'2026-11');
+ assert.equal(sum.waterEntries,1);
+ assert.equal(sum.totalWater,12);
+ assert.equal(sum.calories,160);
+ assert.deepEqual(sum.latestWeight,{date:'2026-11-13',value:185});
+ assert.equal(JSON.stringify(raw),snapshot);
+});
