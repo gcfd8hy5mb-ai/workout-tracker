@@ -161,14 +161,15 @@ const assert = require('node:assert/strict');
    // The checkbox is a proposed edit only. Leaving without saving must not alter the plan.
    await page.locator('.sidebar [data-page="home"]').first().evaluate(el=>el.click());
    assert.doesNotMatch(await page.locator('#todayExercises').textContent(),/Dead Bug/);
-   assert.match(await page.evaluate(()=>getComputedStyle(document.body).backgroundImage),/approved-vertical-marble-sharp\.webp/);
+   const effectiveMarble=await page.evaluate(()=>[getComputedStyle(document.body).backgroundImage,getComputedStyle(document.body,'::before').backgroundImage].join(' '));
+   assert.match(effectiveMarble,/approved-vertical-marble-sharp\.webp/);
    const palette=await page.evaluate(()=>{
     const root=getComputedStyle(document.documentElement);
     return {bg:root.getPropertyValue('--bg').trim(),gold:root.getPropertyValue('--gold').trim(),body:getComputedStyle(document.body).backgroundImage};
    });
    assert.ok(palette.bg,'theme background variable remains available');
    assert.ok(palette.gold,'metallic gold theme variable remains available');
-   assert.match(palette.body,/approved-vertical-marble-sharp\.webp/);
+   assert.match(effectiveMarble,/approved-vertical-marble-sharp\.webp/);
    await page.locator('#heroStart').evaluate(el=>el.click());
    assert.match(await page.locator('#modalContent h2').textContent(),/My Custom Session/);
    assert.ok(await page.locator('[data-exercise-card="leg-press"] .liftova-anatomy svg').count()>0);
