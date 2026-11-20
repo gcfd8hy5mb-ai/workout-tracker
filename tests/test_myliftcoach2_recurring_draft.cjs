@@ -90,3 +90,28 @@ test('restore only the selected dated exception, preserving other overrides and 
  assert.equal(migrate.resolve(changed,date).plan,null);
  assert.throws(()=>storeAPI.restoreDate(restored,date,ids),/exception not found/);
 });
+
+test('stale recurring editor cannot overwrite a newer saved workout from another tab',()=>{
+ const db=storage(),initial=doc();
+ storeAPI.commit(db,'recurring',owner,initial,ids,null);
+ const tabA=storeAPI.read(db,'recurring',owner,ids);
+ const tabB=storeAPI.read(db,'recurring',owner,ids);
+ const id=initial.recurring[0].workoutId;
+ const changedA=storeAPI.edited(tabA,{plans:tabA.plans.map(p=>p.id===id?{...p,title:'Tab A Legs'}:p),assigned:tabA.assigned},ids);
+ storeAPI.commit(db,'recurring',owner,changedA,ids,tabA);
+ const persisted=db.getItem(week.ownerKey('recurring',owner));
+ const changedB=storeAPI.edited(tabB,{plans:tabB.plans.map(p=>p.id===id?{...p,title:'Tab B Legs'}:p),assigned:tabB.assigned},ids);
+ assert.throws(()=>storeAPI.commit(db,'recurring',owner,changedB,ids,tabB),/changed in another tab/);
+ assert.equal(db.getItem(week.ownerKey('recurring',owner)),persisted);
+ assert.equal(storeAPI.read(db,'recurring',owner,ids).plans.find(p=>p.id===id).title,'Tab A Legs');
+});
+test('recurring schedule activation refuses replacing an existing or unreadable document',()=>{
+ const db=storage(),initial=doc(),key=week.ownerKey('recurring',owner);
+ storeAPI.commit(db,'recurring',owner,initial,ids,null);
+ const first=db.getItem(key);
+ assert.throws(()=>storeAPI.commit(db,'recurring',owner,initial,ids,null),/changed in another tab/);
+ assert.equal(db.getItem(key),first);
+ db.setItem(key,'{corrupt');
+ assert.throws(()=>storeAPI.commit(db,'recurring',owner,initial,ids,null),/unreadable/);
+ assert.equal(db.getItem(key),'{corrupt');
+});
