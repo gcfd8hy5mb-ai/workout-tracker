@@ -27,7 +27,7 @@ test('rest day and invalid exercise protections',()=>{
  let state=s.normalize(null,preset,allowed);
  state=s.assign(state,0,null);
  assert.equal(s.resolve(state,'2026-11-16T12:00:00').plan,null);
- assert.throws(()=>s.edit(state,'upper-a',{ids:['unknown']},allowed),/Choose at least one/);
+ assert.throws(()=>s.edit(state,'upper-a',{ids:['unknown']},allowed),/unavailable or duplicate/);
  assert.throws(()=>s.assign(state,9,'upper-a'),/Invalid weekday/);
 });
 test('original workout and schedule source are not mutated',()=>{
