@@ -44,12 +44,21 @@ function assign(state,day,id){
 function edit(state,id,changes,validExercises){
  const index=state.plans.findIndex(p=>p.id===id);
  if(index<0)throw Error('Workout not found');
+ if(!Array.isArray(changes?.ids)&&changes?.ids!==undefined)
+  throw Error('Workout exercise selection is invalid; existing workout preserved');
+ if(Array.isArray(changes?.ids)&&
+    (changes.ids.some(x=>typeof x!=='string'||!validExercises.includes(x))||
+     new Set(changes.ids).size!==changes.ids.length))
+  throw Error('Workout contains unavailable or duplicate exercises; existing workout preserved');
  const plan=cleanPlan({...state.plans[index],...changes,id},validExercises);
  return {...state,plans:state.plans.map((p,i)=>i===index?plan:p)};
 }
 function add(state,id,changes,validExercises){
  if(state.plans.length>=55)throw Error('Workout library limit reached; existing workouts preserved');
  if(state.plans.some(p=>p.id===id)||!/^custom-[a-zA-Z0-9-]{3,90}$/.test(id))throw Error('Unique custom workout ID required');
+ if(!Array.isArray(changes?.ids)||changes.ids.some(x=>typeof x!=='string'||!validExercises.includes(x))||
+    new Set(changes.ids).size!==changes.ids.length)
+  throw Error('Workout contains unavailable or duplicate exercises; existing workout preserved');
  const plan=cleanPlan({...changes,id,kind:'Custom'},validExercises);
  return {...state,plans:[...state.plans,plan]};
 }
