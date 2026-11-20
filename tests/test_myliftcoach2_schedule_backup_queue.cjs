@@ -60,6 +60,36 @@ test('unknown pending operation state is retained rather than rewritten',()=>{
   fingerprint:'not-a-snapshot',document:weekly()
  }}));
  const original=db.getItem(key);
- assert.throws(()=>queue.stage(db,owner,weekly(),valid),/incomplete/);
+ assert.throws(()=>queue.stage(db,owner,weekly(),valid),/changed unexpectedly/);
  assert.equal(db.getItem(key),original);
+});
+
+test('one-device backup write retains operation ID and blocks edits until independently verified',()=>{
+ const db=storage(),key=queue.key(owner),op='d3826f8f-5655-4f8f-aed2-0999c5f761c1';
+ queue.stage(db,owner,weekly(),valid);
+ const started=queue.beginAttempt(db,owner,valid,0,op);
+ assert.equal(started.status,'attempted');
+ assert.equal(started.expectedRevision,0);
+ assert.equal(started.operationId,op);
+ const savedBytes=db.getItem(key);
+ assert.throws(()=>queue.stage(db,owner,{...weekly(),plans:[{...weekly().plans[0],title:'Edited during upload'}]},valid),
+  /needs verification/);
+ assert.throws(()=>queue.beginAttempt(db,owner,valid,0,'07c2bcf0-42fe-4bda-8950-420538cb5f13'),
+  /unattempted/);
+ assert.equal(db.getItem(key),savedBytes,'ambiguous write cannot be overwritten');
+ assert.throws(()=>queue.finishVerified(db,owner,valid,'07c2bcf0-42fe-4bda-8950-420538cb5f13',started.document),
+  /does not match/);
+ assert.equal(db.getItem(key),savedBytes);
+ assert.deepEqual(queue.finishVerified(db,owner,valid,op,started.document),{verified:true,cleared:true});
+ assert.equal(db.getItem(key),null);
+ queue.stage(db,owner,weekly(),valid);
+ assert.ok(queue.read(db,owner,valid));
+});
+test('attempt metadata must persist before future cloud writes can start',()=>{
+ const db=storage(),op='d3826f8f-5655-4f8f-aed2-0999c5f761c1';
+ assert.throws(()=>queue.beginAttempt(db,owner,valid,0,op),/unattempted/);
+ queue.stage(db,owner,weekly(),valid);
+ const before=db.getItem(queue.key(owner));
+ assert.throws(()=>queue.beginAttempt(db,owner,valid,0,'bad-id'),/operation UUID/);
+ assert.equal(db.getItem(queue.key(owner)),before);
 });
