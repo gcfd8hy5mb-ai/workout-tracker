@@ -108,8 +108,12 @@ function loadOwned(storage,base,owner,presets,validExercises){
  for(const id of input.assigned)if(id!=null&&!restored.plans.some(p=>p.id===id))throw Error('Saved assigned workout is invalid; original draft preserved');
  return restored;
 }
-function commitOwned(storage,base,owner,state,presetIds){
+function commitOwned(storage,base,owner,state,presetIds,expectedStored){
  const key=ownerKey(base,owner);
+ // Optional exact snapshot from the editor's last load/save. Detect writes
+ // from another open tab before replacing the locally stored schedule.
+ if(arguments.length>=6&&storage.getItem(key)!==expectedStored)
+  throw Error('Workout schedule changed in another tab; original draft preserved');
  // An unreadable existing draft must never be erased by a subsequent edit.
  // Keep it intact for deliberate recovery instead of replacing it with defaults.
  const existing=storage.getItem(key);
