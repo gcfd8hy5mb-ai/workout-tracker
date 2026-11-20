@@ -168,7 +168,7 @@ const assert = require('node:assert/strict');
    });
    assert.ok(palette.bg,'theme background variable remains available');
    assert.ok(palette.gold,'metallic gold theme variable remains available');
-   assert.doesNotMatch(palette.body,/emerald-marble|\.webp/);
+   assert.match(palette.body,/approved-vertical-marble-sharp\.webp/);
    await page.locator('#heroStart').evaluate(el=>el.click());
    assert.match(await page.locator('#modalContent h2').textContent(),/My Custom Session/);
    assert.ok(await page.locator('[data-exercise-card="leg-press"] .liftova-anatomy svg').count()>0);
