@@ -82,3 +82,19 @@ test('expired or changed session blocks read-back and does not report success',a
  await assert.rejects(unstable.save(owner,0,doc(),uuid),/Account changed/);
  assert.equal(typeof original,'function');
 });
+
+test('existing Supabase custom-plan adapter integrates with revision-aware coordinator',async()=>{
+ const {synchronize}=require('../myliftcoach2/v2-schedule-sync-coordinator.js');
+ const s=service(),local=doc();
+ const result=await synchronize({owner,localDocument:local,checkpoint:{revision:0,document:null},
+  transport:s.transport,operationId:uuid,explicitApproval:true});
+ assert.equal(result.status,'verified');
+ assert.equal(result.revision,1);
+ assert.equal(result.readBackMatches,true);
+ assert.equal(s.counts().writes,1);
+ assert.deepEqual(s.row().payload.document,local);
+ const repeat=await synchronize({owner,localDocument:local,
+  checkpoint:{revision:1,document:local},transport:s.transport,operationId:uuid,explicitApproval:true});
+ assert.equal(repeat.status,'already-saved');
+ assert.equal(s.counts().writes,1);
+});
