@@ -36,7 +36,7 @@ const assert = require('node:assert/strict');
    assert.equal(await page.evaluate(()=>typeof window.MLCScheduleBackupQueue.stage),'function');
    assert.equal(await page.evaluate(()=>Object.keys(localStorage).some(k=>k.startsWith('mlc2-schedule-backup-pending-v1:guest'))),false);
    assert.match(await page.locator('#scheduleBackupStatus').textContent(),/Sign in to check your custom workout backup/);
-   assert.equal(await page.evaluate(()=>window.MLCExistingScheduleBackup.ENABLED),false,device.label+' cloud schedule writes disabled');
+   assert.equal(await page.evaluate(()=>window.MLCExistingScheduleBackup.ENABLED),true,device.label+' custom-plan transport enabled for authenticated writes');
    assert.equal(await page.evaluate(()=>typeof window.MLCExistingScheduleBackup.createReadOnly),'function');
    assert.equal(await page.locator('#manualCloudTestButton').isDisabled(),true,device.label+' manual cloud upload requires verified account and a completed local workout');
    assert.equal(await page.locator('#manualCloudVerifyButton').isDisabled(),true,device.label+' test readback requires account');
