@@ -172,3 +172,15 @@ body::before,body:has(#home:not([hidden]))::before{
  .modal-panel .workout-session-body + .modal-footer{padding:9px 4px max(10px,env(safe-area-inset-bottom))!important}
  #progress #loadOriginalHistory{width:auto}
 }
+
+
+/* Status notices are informational only: never obstruct workout action taps. */
+.toast{
+ pointer-events:none!important;
+ max-width:min(90vw,440px);
+ text-align:center;
+}
+body:has(.modal:not([hidden])) .toast{
+ bottom:auto!important;
+ top:calc(74px + env(safe-area-inset-top))!important;
+}
