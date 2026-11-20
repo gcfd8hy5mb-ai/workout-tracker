@@ -1,0 +1,100 @@
+/* Visual fidelity pass matched to the user-approved 2026-11-16 iPhone recording.
+   Presentation only. Do not modify app state, Coach, entitlements or Supabase. */
+:root {
+ --reference-gold:#f1c77c;
+ --reference-ivory:#f5edda;
+ --reference-ink:#062c32;
+ --deep:#07151a;
+ --card-rich:#08191e;
+}
+html,body {
+ background-color:#064247!important;
+ background-image:url("./assets/approved-vertical-marble-sharp.webp")!important;
+ background-position:center top!important;
+ background-repeat:no-repeat!important;
+ background-size:100% auto!important;
+ background-attachment:fixed!important;
+}
+.app-shell,.main-wrap,.content{background:transparent!important}
+.topbar {
+ background:rgba(2,48,54,.63)!important;
+ border-bottom:1px solid rgba(232,185,106,.33)!important;
+ -webkit-backdrop-filter:blur(10px);
+ backdrop-filter:blur(10px);
+}
+/* The approved cards look almost black against vivid real marble, not turquoise. */
+#home .panel,
+#home .quick-grid button,
+#library .library-card,
+#workouts .workout-card,
+#coaching .panel,
+#progress .panel,
+#settings .settings-panel,
+.panel,.metric,.log-card,.recent-item,.library-card,.workout-card,.settings-panel {
+ background-color:#08191e!important;
+ background-image:linear-gradient(155deg,rgba(10,23,28,.985),rgba(5,16,21,.985))!important;
+ border:1px solid rgba(235,181,98,.9)!important;
+ box-shadow:inset 0 1px rgba(255,230,174,.055),0 6px 18px rgba(0,0,0,.29)!important;
+ color:#f5ead7!important;
+}
+#home .quick-grid button {
+ background:linear-gradient(145deg,#0b2127,#07171c)!important;
+ border-radius:11px;
+}
+#home .quick-grid button strong,
+#home .quick-grid .shortcut-symbol {color:#f0d5a4!important}
+#home .quick-grid button:active {background:#102a30!important}
+#home .weekly-board .week-day-card {
+ background:rgba(7,20,25,.96)!important;
+ border-color:rgba(231,181,104,.68)!important;
+}
+#home .weekly-board .week-day-card.is-today {
+ background:linear-gradient(145deg,#203339,#101d23)!important;
+ border-color:#f6d594!important;
+}
+#home .hero {
+ background-color:#072329!important;
+ background-image:linear-gradient(100deg,rgba(5,27,32,.93),rgba(4,30,36,.83) 58%,rgba(4,32,39,.34)),url("./assets/hero-dumbbells-photo.jpg")!important;
+ background-position:center,center center!important;
+ background-size:cover!important;
+ border-color:#f0c47b!important;
+}
+#library .reference-exercise,
+#library .library-card {
+ background-image:linear-gradient(145deg,#0b1920,#071319)!important;
+ background-color:#071319!important;
+ border-color:#d9a759!important;
+}
+#library .reference-exercise .library-thumb{
+ background:#0a2229!important;
+ border-color:rgba(235,188,119,.48)!important;
+}
+.bottom-tabs {
+ background:rgba(2,41,47,.97)!important;
+ border-top:1px solid rgba(237,183,95,.57)!important;
+ -webkit-backdrop-filter:blur(9px);
+ backdrop-filter:blur(9px);
+}
+.bottom-tabs button {color:#e0e6e2!important}
+.bottom-tabs button.active {color:#f5d59a!important}
+.modal-panel {
+ background-color:#08191f!important;
+ background-image:linear-gradient(150deg,rgba(13,35,41,.98),rgba(5,19,25,.99))!important;
+ border-color:#e9ba70!important;
+}
+@media(max-width:760px){
+ html,body{
+  background-image:url("./assets/approved-vertical-marble-sharp.webp")!important;
+  background-size:100% auto!important;
+  background-position:center top!important;
+  background-attachment:fixed!important;
+ }
+ #home .quick-grid button,
+ #home .panel,
+ #library .library-card {
+  background-color:#08191e!important;
+  background-image:linear-gradient(150deg,#0b1c22,#071319)!important;
+ }
+ .topbar{background:rgba(2,48,54,.63)!important}
+ .bottom-tabs{background:rgba(2,41,47,.97)!important}
+}
