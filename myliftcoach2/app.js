@@ -939,6 +939,9 @@ function renderOriginalProgress(){
 function clearOriginalHistory(){
  historyLoadEpoch++;
  originalHistory=[];importedHistoryOwner=null;
+ for(const id of ['cloudSessionPreviewStatus','cloudBatchPreviewStatus','cloudFreshCheckpointStatus']){
+  const node=$(id);if(node)node.textContent='Original account history has been cleared. Reload it before checking local-to-cloud compatibility.';
+ }
  if($('originalCalendarMonth'))$('originalCalendarMonth').value='';
  renderOriginalHistory();
  renderOriginalProgress();
@@ -973,10 +976,10 @@ async function loadOriginalHistory(){
   if(account?.id!==owner||!auth?.access_token)throw Error('Account session is no longer valid');
   const history=await window.MLCOriginalHistory.load({endpoint:BACKEND,publishableKey:PUBLIC_KEY,accessToken:auth.access_token,userId:owner});
   if(account?.id!==owner||historyLoadEpoch!==epoch)return;
-  originalHistory=history;importedHistoryOwner=owner;renderOriginalHistory();renderOriginalProgress();renderOriginalCoachEvidence();renderHomeOriginalRecent();
+  originalHistory=history;importedHistoryOwner=owner;renderOriginalHistory();renderOriginalProgress();renderOriginalCoachEvidence();renderHomeOriginalRecent();renderSettings();
  }catch(error){
   if(account?.id!==owner||historyLoadEpoch!==epoch)return;
-  originalHistory=[];importedHistoryOwner=null;renderOriginalHistory();renderOriginalProgress();renderOriginalCoachEvidence();renderHomeOriginalRecent();
+  originalHistory=[];importedHistoryOwner=null;renderOriginalHistory();renderOriginalProgress();renderOriginalCoachEvidence();renderHomeOriginalRecent();renderSettings();
   status.textContent='Could not load original history: '+String(error.message||error).slice(0,180);
  }finally{if(historyLoadEpoch===epoch)button.disabled=!account}
 }
@@ -1621,7 +1624,9 @@ function saveAuth(data){
  const session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,expires_at:Math.floor(Date.now()/1000)+(data.expires_in||3600)};
  if(account?.id&&account.id!==data.user?.id){cloudReadVerifiedOwner=null;combinedLoadEpoch++;$('loadAllOriginalStatus').textContent='Account changed. Load records for the current account.';clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();}sessionStorage.setItem(AUTH_KEY,JSON.stringify(session));auth=session;account=data.user;demoSessions=loadDemo(account.id);renderLocalDailyTracking();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings();renderOriginalHistory();
 }
-function clearAuth(){cloudReadVerifiedOwner=null;if($('cloudScheduleComparisonStatus'))$('cloudScheduleComparisonStatus').textContent='Sign in and run a new comparison to view this account’s cloud status.';if(activePlan)closeModal();combinedLoadEpoch++;if($('loadAllOriginalStatus'))$('loadAllOriginalStatus').textContent='Sign in to load original account records.';if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;demoSessions=loadDemo('guest');renderLocalDailyTracking();clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings()}
+function clearAuth(){cloudReadVerifiedOwner=null;for(const id of ['cloudSessionPreviewStatus','cloudBatchPreviewStatus','cloudFreshCheckpointStatus']){
+ const node=$(id);if(node)node.textContent='Sign in and load this account’s original history before cloud review.';
+}if($('cloudScheduleComparisonStatus'))$('cloudScheduleComparisonStatus').textContent='Sign in and run a new comparison to view this account’s cloud status.';if(activePlan)closeModal();combinedLoadEpoch++;if($('loadAllOriginalStatus'))$('loadAllOriginalStatus').textContent='Sign in to load original account records.';if($('cloudReadinessStatus'))$('cloudReadinessStatus').textContent='Sign in and activate a complete local schedule before checking cloud readiness.';sessionStorage.removeItem(AUTH_KEY);auth=null;account=null;demoSessions=loadDemo('guest');renderLocalDailyTracking();clearOriginalHistory();clearOriginalTracking();clearOriginalAccountSettings();clearOriginalCustomSchedule();refreshWeeklyOwner();renderHome();renderWorkouts();renderProgress();renderCoach();renderSettings()}
 async function validateStoredAuth(){
  try{
   const saved=JSON.parse(sessionStorage.getItem(AUTH_KEY)||'null');
