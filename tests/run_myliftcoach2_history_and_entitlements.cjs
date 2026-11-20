@@ -63,7 +63,7 @@ const assert=require('node:assert/strict');
   await recovered.waitForFunction(()=>document.querySelector('#accountTierStatus').textContent==='Lifetime Pro');
   await runSync(recovered,'0 backed up · 1 restored');
   assert.equal(await recovered.locator('#progressSessions').textContent(),'1');
-  assert.match(await recovered.locator('#coachBuilderPlan').textContent(),/Coach|Leg Press/);
+  assert.match(await recovered.locator('#coachBuilderPlan').textContent(),/Machine Chest Press.*Seated Row/);
   assert.ok(await recovered.locator('[data-adaptive-session]').count()>0);
   await recovered.locator('[data-adaptive-session]').first().evaluate(button=>button.click());
   assert.equal(await recovered.locator('#workoutLog').isVisible(),true);
