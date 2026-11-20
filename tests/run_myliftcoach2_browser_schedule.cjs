@@ -29,6 +29,8 @@ const assert = require('node:assert/strict');
    assert.match(await page.locator('#cloudScheduleComparisonStatus').textContent(),/No cloud-to-device comparison completed/,device.label+' no unverified comparison');
    assert.equal(await page.locator('#cloudSessionPreviewButton').isDisabled(),true,device.label+' requires verified original history');
    assert.equal(await page.locator('#cloudBatchPreviewButton').isDisabled(),true,device.label+' all-workout review requires verified account history');
+   assert.equal(await page.locator('#cloudFreshCheckpointButton').isDisabled(),true,device.label+' fresh cloud read requires verified sign-in and history');
+   assert.match(await page.locator('#cloudFreshCheckpointStatus').textContent(),/Sign in, load original history/,device.label+' no unverified checkpoint');
    assert.match(await page.locator('#cloudBatchPreviewStatus').textContent(),/Sign in and load original workout history/,device.label+' all-workout review not started');
    assert.match(await page.locator('#cloudSessionPreviewStatus').textContent(),/Sign in, load original workout history/,device.label+' no unverified upload');
 
