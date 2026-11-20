@@ -93,3 +93,82 @@ body::before,body:has(#home:not([hidden]))::before{
  background:linear-gradient(145deg,#0c343b,#051b24)!important;
  border-color:#f1d394!important;
 }
+
+
+/* 15:27 iPhone screen-recording corrections. Avoid the old light teal surfaces. */
+:root{--mlc-card:#071a20;--mlc-gold:#f1d394}
+.page:not(#welcome) .panel,
+.page:not(#welcome) .settings-panel,
+.page:not(#welcome) .metric,
+.page:not(#welcome) .coach-card,
+.page:not(#welcome) .workout-card,
+.page:not(#welcome) .library-card,
+.page:not(#welcome) .history-entry,
+.page:not(#welcome) .recent-item,
+.page:not(#welcome) .week-day-card,
+.page:not(#welcome) .week-exercise,
+.page:not(#welcome) .preview-exercise,
+.page:not(#welcome) .account-menu button,
+.page:not(#welcome) .coach-links button{
+ background:#071a20!important;
+ background-image:linear-gradient(145deg,#0b252c,#06141b)!important;
+ border-color:#f1d394!important;
+ color:#fff4e0!important;
+}
+/* The workout overlay was using the MARBLE IMAGE as its own panel background;
+   keeping it opaque prevents distracting wallpaper behind exercise controls. */
+.modal-panel,
+.modal-panel:has(.workout-session-body){
+ background:#07171e!important;
+ background-image:linear-gradient(155deg,#0c272e,#06141c)!important;
+ border:1.5px solid #f1d394!important;
+ color:#fff2db!important;
+ box-shadow:0 20px 65px rgba(0,0,0,.7)!important;
+}
+.modal-panel .panel,.modal-panel .log-card,.modal-panel .workout-session-body .panel{
+ background:#0a2028!important;
+ background-image:linear-gradient(150deg,#0c252d,#06171d)!important;
+ border:1px solid rgba(241,211,148,.78)!important;
+ color:#fff2df!important;
+}
+.modal-panel .panel p,.modal-panel .log-card p,.modal-panel .log-card small{
+ color:#d6e3df!important;
+}
+/* Prevent footer from slipping under the scrollable exercise area on iPhone. */
+.modal-panel:has(.workout-session-body){min-height:0;isolation:isolate}
+.modal-panel:has(.workout-session-body) #modalContent{min-height:0;width:100%}
+.modal-panel .workout-session-body{overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}
+.modal-panel .workout-session-body + .modal-footer{
+ background:#07171e!important;
+ border-top:1px solid #f1d394!important;
+ position:relative;
+ z-index:5;
+ padding-bottom:max(8px,env(safe-area-inset-bottom));
+}
+.modal-panel .modal-close{
+ background:#08252b!important;
+ border:1.5px solid #f1d394!important;
+ color:#ffe1a9!important;
+}
+/* The history button and search label were inline and visually collided. */
+#progress #loadOriginalHistory{display:block;margin:10px 0 15px;max-width:100%}
+#progress label[for="originalHistorySearch"]{
+ display:block!important;
+ margin:8px 0 6px!important;
+ line-height:1.5!important;
+ color:#f5e4c3!important;
+}
+#progress #originalHistorySearch{
+ display:block!important;
+ width:100%!important;
+ max-width:100%;
+ margin-bottom:10px;
+}
+#progress .panel-heading{min-width:0;flex-wrap:wrap}
+#progress .panel-heading h3{min-width:0;overflow-wrap:anywhere}
+#progress .panel-heading .micro-tag{max-width:100%;flex-shrink:0}
+@media(max-width:760px){
+ .modal-panel:has(.workout-session-body){max-height:calc(100dvh - max(14px,env(safe-area-inset-top)));padding-bottom:0}
+ .modal-panel .workout-session-body + .modal-footer{padding:9px 4px max(10px,env(safe-area-inset-bottom))!important}
+ #progress #loadOriginalHistory{width:auto}
+}
