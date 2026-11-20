@@ -131,6 +131,7 @@ jobs:
       - name: Check schedule and restored Coach flows in Chromium
         run: |
           node tests/run_myliftcoach2_browser_schedule.cjs
+          node tests/run_myliftcoach2_phone_cloud_backup.cjs
           node tests/run_myliftcoach2_browser_coach.cjs
           node tests/run_myliftcoach2_private_context.cjs
           node tests/run_myliftcoach2_two_device_cloud_test.cjs
