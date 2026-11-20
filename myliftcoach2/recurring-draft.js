@@ -25,9 +25,16 @@
   if(!parsed||parsed.version!==1||!Object.hasOwn(parsed,'overrides')||!Array.isArray(parsed.recurring))throw Error('Incomplete recurring schedule; do not replace with presets');
   return guard(parsed,validIds);
  }
- function commit(storage,base,owner,doc,validIds){
+ function commit(storage,base,owner,doc,validIds,expectedDocument){
   guard(doc,validIds);
   const key=weekly.ownerKey(base,owner),serialized=JSON.stringify(doc);
+  // Check against the version this editor actually opened. A stale tab
+  // must not silently replace a different locally saved recurring schedule.
+  if(arguments.length>=6){
+   const current=read(storage,base,owner,validIds);
+   if(JSON.stringify(current)!==JSON.stringify(expectedDocument))
+    throw Error('Recurring schedule changed in another tab; original record preserved. Reload to review before editing.');
+  }
   storage.setItem(key,serialized);
   if(storage.getItem(key)!==serialized)throw Error('Recurring schedule did not save');
   return doc;
