@@ -169,3 +169,16 @@ test('refuse invalid schedule saves without changing existing saved custom worko
  }
  assert.equal(writes,0);
 });
+
+test('account save preserves an unreadable or incomplete prior schedule instead of replacing it',()=>{
+ const owner='11111111-1111-4111-8111-111111111111';
+ const key=s.ownerKey('weekly',owner),state=s.normalize(null,preset,allowed);
+ for(const original of ['{bad-json',JSON.stringify({version:1,plans:[]})]){
+  const records=new Map([[key,original]]);
+  let writes=0;
+  const storage={getItem:k=>records.get(k)??null,setItem:(k,v)=>{writes++;records.set(k,v)}};
+  assert.throws(()=>s.commitOwned(storage,'weekly',owner,state,preset.map(p=>p.id)),/original draft preserved/);
+  assert.equal(records.get(key),original);
+  assert.equal(writes,0);
+ }
+});
