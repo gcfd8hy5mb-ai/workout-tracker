@@ -1,0 +1,54 @@
+/* MYLIFTCOACH 2.0 — iPhone reference refinement
+   Visual only. Existing workouts, authentication, and training data are untouched. */
+:root { --cream-gold:#f5d79c; --glow-gold:#ffebae; }
+.icon-sprite{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
+.app-icon{width:25px;height:25px;display:block;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+.shortcut-symbol{display:grid;place-items:center}
+.shortcut-symbol .app-icon{width:25px;height:25px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.22))}
+.bottom-tabs .app-icon{width:23px;height:23px;flex-shrink:0}
+body{background-color:#08484b!important}
+.hero .button-primary{background:linear-gradient(180deg,#fff4bf 0%,#f8d68c 45%,#d4a35b 100%)!important}
+.brand-mark{filter:drop-shadow(0 2px 5px #00191e) drop-shadow(0 0 4px rgba(255,220,143,.22))}
+.mobile-brand{gap:9px!important}
+.quick-grid button{background:linear-gradient(140deg,rgba(12,97,99,.96),rgba(5,67,74,.94))!important}
+.quick-grid button strong{font-weight:600}
+.quick-grid button:focus-visible,.bottom-tabs button:focus-visible{outline:2px solid #ffe5a8;outline-offset:2px}
+@media (max-width:760px){
+  html,body{
+    background:#064a4c url("./assets/approved-vertical-marble-sharp.webp?v=11") center top/cover no-repeat fixed!important;
+
+  }
+  .topbar{
+    height:47px!important;min-height:47px!important;
+    background:rgba(3,59,64,.50)!important;
+    border:0!important;box-shadow:none!important;
+    backdrop-filter:blur(7px);
+  }
+  .topbar .mobile-menu{font-size:20px!important;line-height:1;padding:7px!important;color:#f5d79c}
+  .topbar .avatar{height:30px;width:30px;font-size:11px;color:#ffe6af}
+  .topbar .top-actions{gap:4px}
+  .content{padding:4px 14px calc(84px + env(safe-area-inset-bottom))!important}
+  .mobile-brand{margin:0 0 12px!important;font-size:19px!important;letter-spacing:.005em}
+  .brand-mark{width:55px!important;height:55px!important}
+  .mobile-brand small{font-size:13px!important}
+  #home .home-welcome{margin-top:0}
+  #home .home-welcome h1{font-size:27px!important;margin:3px 0 11px!important}
+  #home .hero{min-height:150px!important;border-radius:12px}
+  #home .hero .hero-copy{padding:15px 15px 15px!important}
+  #home .hero .button-primary{min-height:43px!important}
+  .quick-grid{gap:8px!important;margin:12px 0 15px!important}
+  .quick-grid button{min-height:75px!important;padding:9px 7px!important;gap:5px!important;border-radius:11px}
+  .quick-grid button strong{font-size:12px!important}
+  .quick-grid .shortcut-symbol .app-icon{width:24px;height:24px}
+  #home .section-top{margin-top:13px!important}
+  #home .section-top h2{margin:4px 0 0;font-size:20px!important}
+  .bottom-tabs{padding:7px 6px max(7px,env(safe-area-inset-bottom))!important;background:rgba(2,47,54,.96)!important}
+  .bottom-tabs button{font-size:13px!important;gap:5px!important}
+  .bottom-tabs .app-icon{width:22px;height:22px}
+  .bottom-tabs button small{font-size:10px!important}
+  .sidebar-logo{filter:drop-shadow(0 0 4px rgba(247,214,151,.3))}
+}
+@media (min-width:761px){
+  body{background:#074449 url("./assets/approved-vertical-marble-sharp.webp?v=11") center center / cover fixed!important}
+  .mobile-brand{display:flex;margin:0 0 17px}
+}
