@@ -200,6 +200,7 @@ function renderWeekBoard(){
 function chooseWeekday(day){
  const target=$('weekEditor'),choice=$('weekWorkoutSelect');
  if(!Number.isInteger(day)||day<0||day>6)return;
+ if(!confirmDiscardWeekEdits())return;
  if(originalPreviewActive()){notice('Original schedule is read-only. Switch to editable preview first.');return;}
  target.hidden=false;target.dataset.day=String(day);
  $('weekEditingDay').textContent=weeklyAPI.DAYS[day];
@@ -259,6 +260,19 @@ function filterWeekEditorExercises(){
  const selected=$('weekExerciseOptions').querySelectorAll('input:checked').length;
  $('weekExerciseCount').textContent=shown+' of '+editorExercises.length+' exercises shown · '+selected+' selected · not saved until you press Save day and workout.';
 }
+let weekEditorSnapshot=null;
+function weekEditorValues(){
+ const editor=$('weekEditor');
+ if(!editor||editor.hidden)return null;
+ return JSON.stringify({day:editor.dataset.day,planId:$('weekWorkoutSelect').value,
+  title:$('weekWorkoutName').value,
+  ids:[...$('weekExerciseOptions').querySelectorAll('input:checked')].map(el=>el.value)});
+}
+function confirmDiscardWeekEdits(){
+ const current=weekEditorValues();
+ return !weekEditorSnapshot||current===null||current===weekEditorSnapshot||
+  confirm('You have unsaved workout changes. Discard those changes?');
+}
 function updateWeekEditor(){
  const id=$('weekWorkoutSelect').value,p=weekly.plans.find(p=>p.id===id);
  $('weekWorkoutName').value=p?.title||'';
@@ -268,6 +282,7 @@ function updateWeekEditor(){
  ).join('');
  $('weekExerciseSearch').value='';$('weekExerciseMuscle').value='';$('weekExerciseEquipment').value='';$('weekExerciseFavorites').checked=false;
  filterWeekEditorExercises();
+ weekEditorSnapshot=weekEditorValues();
 }
 function saveWeekEditor(){
  const day=Number($('weekEditor').dataset.day),id=$('weekWorkoutSelect').value||null;
@@ -281,11 +296,13 @@ function saveWeekEditor(){
   candidate=weeklyAPI.assign(candidate,day,id);
   commitWeekly(candidate,{day,id});
   renderWeekBoard();renderHome();renderWorkouts();renderOriginalProgress();refreshRestoreRepeating();
+  weekEditorSnapshot=weekEditorValues();
   notice('Saved '+weeklyAPI.DAYS[day]+' workout. Home and workout details now match.');
  }catch(error){notice(error.message)}
 }
 function duplicateWeekWorkout(){
  try{
+  if(!confirmDiscardWeekEdits())return;
   if(originalPreviewActive()||weeklyDraftReadError)throw Error('Switch to a healthy editable schedule before copying');
   const sourceId=$('weekWorkoutSelect').value;
   if(!sourceId)throw Error('Select a workout to copy first');
@@ -301,6 +318,7 @@ function duplicateWeekWorkout(){
 }
 function createWeekWorkout(){
  try{
+  if(!confirmDiscardWeekEdits())return;
   const id='custom-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
   const candidate=weeklyAPI.add(weekly,id,{title:'My Custom Workout',ids:[editorExercises[0].id]},allowedExerciseIds);
   commitWeekly(candidate);$('weekWorkoutSelect').innerHTML='<option value="">Rest day</option>'+weekly.plans.map(p=>'<option value="'+escapeHTML(p.id)+'">'+escapeHTML(p.title)+'</option>').join('');
@@ -1847,7 +1865,15 @@ function bind(){
  $('todayStart').addEventListener('click',()=>openWorkout(nextPlan().id));
  $('workoutGrid').addEventListener('click',e=>{const el=e.target.closest('[data-workout]');if(el)openWorkout(el.dataset.workout)});
  for(const key of ['weeklyBoardHome','weeklyBoardWorkouts'])$(key).addEventListener('click',e=>{const btn=e.target.closest('[data-week-day]');if(btn)chooseWeekday(Number(btn.dataset.weekDay))});
- $('weekWorkoutSelect').addEventListener('change',updateWeekEditor);
+ $('weekWorkoutSelect').addEventListener('change',()=>{
+  const select=$('weekWorkoutSelect');
+  const next=select.value;
+  const previous=weekEditorSnapshot?JSON.parse(weekEditorSnapshot).planId:'';
+  select.value=previous;
+  if(!confirmDiscardWeekEdits())return;
+  select.value=next;
+  updateWeekEditor();
+ });
  prepareWeekLibraryFilters();
  $('weekExerciseSearch').addEventListener('input',filterWeekEditorExercises);
  $('weekExerciseMuscle').addEventListener('change',filterWeekEditorExercises);
