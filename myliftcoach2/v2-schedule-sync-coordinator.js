@@ -23,6 +23,32 @@
   schedule.validate(value.document);
   return true;
  }
+ async function inspect({owner,localDocument,checkpoint,transport}={}){
+  if(typeof owner!=='string'||!owner||typeof transport?.read!=='function')
+   throw Error('Authenticated owner and read-only schedule transport required');
+  schedule.validate(localDocument);
+  validCheckpoint(checkpoint);
+  const localSnapshot=canonical(localDocument);
+  // Fresh cloud read is deliberately the only network operation here.
+  const fresh=await transport.read(owner);
+  validCheckpoint(fresh);
+  if(canonical(localDocument)!==localSnapshot)
+   throw Error('Local schedule changed during comparison; compare again');
+  const checkpointSnapshot=canonical(checkpoint.document);
+  const remoteSnapshot=canonical(fresh.document);
+  const remoteChanged=fresh.revision!==checkpoint.revision||remoteSnapshot!==checkpointSnapshot;
+  const localChanged=localSnapshot!==checkpointSnapshot;
+  const status=!remoteChanged&&!localChanged?'in-sync':
+   remoteChanged&&localChanged?'conflict':remoteChanged?'cloud-newer':'local-only';
+  return Object.freeze({status,owner,revision:fresh.revision,writeCount:0,
+   safeToOfferSave:status==='local-only',
+   // The remote document is returned for review, never applied to local state.
+   remoteDocument:fresh.document===null?null:JSON.parse(JSON.stringify(fresh.document)),
+   message:status==='conflict'?'Both local and cloud schedules changed; preserve both for review.':
+    status==='cloud-newer'?'Cloud schedule changed; do not overwrite local draft.':
+    status==='local-only'?'Local changes found; a new explicit save requires fresh approval.':
+    'Local and cloud schedules match the verified checkpoint.'});
+ }
  async function synchronize({owner,localDocument,checkpoint,transport,explicitApproval=false}={}){
   if(explicitApproval!==true)throw Error('Explicit user approval required for isolated cloud save');
   if(typeof owner!=='string'||!owner||typeof transport?.read!=='function'||typeof transport?.save!=='function')
@@ -46,5 +72,5 @@
    readBackMatches:result.readBackMatches,
    message:'An explicit save and independent read-back matched. Local schedule was not modified.'});
  }
- return Object.freeze({synchronize,validCheckpoint});
+ return Object.freeze({inspect,synchronize,validCheckpoint});
 });
