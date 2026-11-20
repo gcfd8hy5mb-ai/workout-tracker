@@ -136,3 +136,126 @@ input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visi
  }
  .modal-panel input, .modal-panel select {font-size:16px}
 }
+
+
+/* 2026-11 iPhone beta: finish the approved slate / metallic-gold theme.
+ * More specific than legacy #home mobile rules in reference-mobile.css
+ * and premium-reference.css. Presentation-only: preserve all layout,
+ * workout management, Coach, and cloud behavior.
+ */
+:root {
+ color-scheme:dark;
+ --reference-ink:#11191e;
+ --reference-gold:#f3cf86;
+ --reference-ivory:#fff0d2;
+ --deep:#151d22;
+ --card-rich:#222c32;
+ --glass:rgba(26,34,40,.97);
+}
+html,body {
+ background-color:#0e1418!important;
+}
+html body {
+ background-image:radial-gradient(ellipse at 86% 12%,rgba(198,150,73,.11),transparent 47%),linear-gradient(155deg,#151d22,#0e1418 70%)!important;
+ color:#f8edda!important;
+}
+.app-shell,.main-wrap,.content {background:transparent!important}
+#home .hero {
+ background:linear-gradient(90deg,rgba(12,18,22,.97),rgba(21,29,33,.89) 59%,rgba(24,32,36,.35)),url("./assets/hero-dumbbell.svg") center right/cover no-repeat!important;
+ background-color:#182227!important;
+ border-color:rgba(247,201,118,.83)!important;
+ box-shadow:0 9px 28px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,232,185,.12)!important;
+}
+#home .hero .hero-kicker,#home .hero .hero-meta{color:#f9edd7!important}
+#home .hero .button-primary,.button-primary {
+ background:linear-gradient(180deg,#ffefb8 0%,#f0c97c 44%,#cd9849 100%)!important;
+ border-color:#ffe3a2!important;
+ color:#201c16!important;
+ box-shadow:inset 0 1px 0 rgba(255,250,218,.8),0 5px 14px rgba(0,0,0,.36)!important;
+}
+.quick-grid button,.coach-links button,.account-menu button {
+ background:linear-gradient(150deg,#283238,#192127)!important;
+ border:1px solid rgba(232,182,98,.59)!important;
+ color:#f9ecd6!important;
+ box-shadow:inset 0 1px 0 rgba(255,238,202,.09),0 5px 18px rgba(0,0,0,.27)!important;
+}
+.quick-grid button:active,.coach-links button:active {background:linear-gradient(150deg,#34383a,#21252a)!important}
+.metric,.panel,.workout-card,.library-card,.settings-panel,.log-card,.recent-item,.coach-card {
+ background:linear-gradient(150deg,#293339,#1a2228)!important;
+ border-color:rgba(226,181,104,.58)!important;
+ color:#f8edda!important;
+}
+.week-day-card,#weekEditor select,#weekEditor input[type=text],.preview-exercise {
+ background:#151d22!important;
+ border-color:rgba(226,181,104,.53)!important;
+ color:#f8edd8!important;
+}
+.week-day-card.is-today {
+ background:linear-gradient(145deg,#34332e,#1b2227)!important;
+ border-color:#f3cf86!important;
+ box-shadow:0 0 0 1px rgba(240,196,116,.3),inset 0 1px 0 rgba(255,230,175,.11)!important;
+}
+.bottom-tabs {
+ background:linear-gradient(135deg,rgba(26,35,40,.99),rgba(14,21,26,.99))!important;
+ border-top:1px solid rgba(239,192,110,.73)!important;
+ box-shadow:0 -5px 22px rgba(0,0,0,.31)!important;
+}
+.bottom-tabs button {color:#d5cbbb!important}
+.bottom-tabs button.active {color:#ffe0a0!important}
+.bottom-tabs button svg,.bottom-tabs button .shortcut-symbol{color:inherit!important}
+.topbar {
+ background:rgba(19,27,32,.97)!important;
+ border-color:rgba(235,188,102,.55)!important;
+}
+.mobile-brand,.mobile-brand small,.page-heading h1 {color:#f5d798!important}
+.modal {background:rgba(5,9,13,.84)!important}
+.modal-panel {
+ background:linear-gradient(145deg,#263037,#151d23)!important;
+ border:1px solid rgba(245,199,116,.72)!important;
+ color:#fff0d8!important;
+}
+.modal-panel p,.modal-panel .modal-eyebrow,.modal-panel .log-card small,.login-form label {color:#ddd0b9!important}
+.rest-screen {
+ background:linear-gradient(150deg,#1d272d,#0c1419)!important;
+ color:#fff2d9!important;
+}
+.rest-face {
+ background:radial-gradient(ellipse at 45% 32%,#303b40,#141b20 76%)!important;
+ border-color:rgba(245,197,110,.59)!important;
+}
+.rest-controls button+button {
+ background:#1b252b!important;
+ border-color:#cba35f!important;
+ color:#ffe1a6!important;
+}
+.rest-next,.welcome-panel {
+ background:linear-gradient(150deg,#283239,#151d23)!important;
+ border-color:rgba(244,196,110,.74)!important;
+ color:#f9edda!important;
+}
+.welcome-preview-link {
+ background:rgba(29,37,43,.96)!important;
+ color:#ffe1a6!important;
+ border-color:#d8ac62!important;
+}
+.coach-emblem {background:radial-gradient(circle at 50% 35%,#414039,#1b252a)!important}
+.sidebar .nav-item.selected {
+ background:linear-gradient(135deg,#40392d,#1b242a)!important;
+ border-color:#f2c778!important;
+}
+@media(max-width:760px){
+ html,body {
+  background:#10161b!important;
+  background-image:radial-gradient(ellipse at 82% 10%,rgba(214,171,94,.1),transparent 48%),linear-gradient(160deg,#172026,#10161b)!important;
+ }
+ #home .hero {
+  background:linear-gradient(90deg,rgba(14,21,25,.97),rgba(23,30,34,.87) 59%,rgba(26,33,37,.26)),url("./assets/hero-dumbbell.svg") center right/auto 100% no-repeat!important;
+ }
+ .topbar {background:rgba(18,26,31,.97)!important}
+ .bottom-tabs {
+  background:linear-gradient(130deg,rgba(29,37,42,.99),rgba(14,21,25,.99))!important;
+  border-color:#e8bc74!important;
+ }
+ .quick-grid button {background:linear-gradient(145deg,#293339,#192127)!important}
+ .modal-panel {background:linear-gradient(150deg,#252f35,#151d23)!important}
+}
