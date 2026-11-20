@@ -1,0 +1,68 @@
+name: Prepare MYLIFTCOACH 2.0 beta preview package (NO DEPLOY)
+
+on:
+  push:
+    branches:
+      - preview/myliftcoach2-beta-iphone-prepared
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate static site entry points
+        run: |
+          set -euo pipefail
+          test -f myliftcoach2/index.html
+          test -f persistence/storage-model.js
+          test -f persistence/reconcile.js
+          test -f liftova-anatomy.css
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class Sources(HTMLParser):
+              def __init__(self):
+                  super().__init__();self.urls=[]
+              def handle_starttag(self,tag,attrs):
+                  values=dict(attrs)
+                  if tag=='script' and values.get('src'):self.urls.append(values['src'])
+                  if tag=='link' and values.get('href') and values.get('rel')=='stylesheet':self.urls.append(values['href'])
+                  if tag=='img' and values.get('src'):self.urls.append(values['src'])
+          file=Path('myliftcoach2/index.html')
+          parser=Sources()
+          parser.feed(file.read_text())
+          missing=[]
+          for url in parser.urls:
+              path=url.split('?',1)[0]
+              if path.startswith(('http:', 'https:', 'data:', '#', '/')):continue
+              if not (file.parent/path).is_file():missing.append(path)
+          if missing:raise SystemExit('Missing relative static dependencies: '+repr(missing))
+          print(f'Validated {len(parser.urls)} HTML asset references')
+          PY
+      - name: Assemble separate-repository preview source
+        run: |
+          set -euo pipefail
+          mkdir -p staging
+          cp -a myliftcoach2 staging/myliftcoach2
+          cp -a persistence staging/persistence
+          cp -a liftova-anatomy.css staging/liftova-anatomy.css
+          cat > staging/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+          <title>MYLIFTCOACH 2.0 Beta</title>
+          <meta http-equiv="refresh" content="0;url=./myliftcoach2/">
+          <a href="./myliftcoach2/">Open MYLIFTCOACH 2.0 Beta</a>
+          HTML
+          touch staging/.nojekyll
+          cd staging
+          zip -qr ../myliftcoach2-beta-preview.zip .
+      - name: Store preview ZIP for authorized manual deployment
+        uses: actions/upload-artifact@v4
+        with:
+          name: myliftcoach2-beta-preview-static
+          path: myliftcoach2-beta-preview.zip
+          retention-days: 7
