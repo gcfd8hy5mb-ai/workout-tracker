@@ -65,5 +65,23 @@
    readOnly:true,readyForProduction:false,
    message:'Fresh raw cloud snapshot only. No writes, reconciliation or local replacement.'});
  }
- return Object.freeze({read,TABLES,SOURCE});
+ function canonical(value){
+  if(Array.isArray(value))return '['+value.map(canonical).join(',')+']';
+  if(value&&typeof value==='object')return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+canonical(value[k])).join(',')+'}';
+  return JSON.stringify(value);
+ }
+ function fingerprint(rows){
+  return canonical(rows.map(row=>({table:row.table,id:row.id,revision:row.revision,
+   source_key:row.source_key,position:row.position??null,parent_id:row.parent_id??null,
+   slot:row.slot??null,payload:row.payload})).sort((a,b)=>a.table.localeCompare(b.table)||a.id.localeCompare(b.id)));
+ }
+ async function readStable(input){
+  const first=await read(input);
+  const second=await read(input);
+  if(first.owner!==second.owner||fingerprint(first.rows)!==fingerprint(second.rows))
+   throw Error('Original workout history changed during checkpoint reads; reload before reviewing');
+  return Object.freeze({...second,stableAcrossTwoReads:true,
+   message:'Two authenticated read-only history scans matched. This is not an atomic database snapshot or permission to write.'});
+ }
+ return Object.freeze({read,readStable,TABLES,SOURCE});
 });
