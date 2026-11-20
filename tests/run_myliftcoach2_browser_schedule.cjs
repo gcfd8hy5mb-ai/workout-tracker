@@ -366,6 +366,13 @@ const assert = require('node:assert/strict');
    page.once('dialog',dialog=>dialog.accept());
    await page.locator('#discardWorkout').evaluate(el=>el.click());
    console.log('PASS '+device.label+': workout completion and Coach local weekly activity/previous-set feedback');
+   // Corrupt completed-session history must remain untouched, visibly warn,
+   // and disable the destructive clear action on both desktop and mobile.
+   await page.evaluate(()=>localStorage.setItem('mlc2-demo-workouts-v1','{"corrupt":true}'));
+   await page.reload({waitUntil:'load'});
+   assert.match(await page.locator('#localHistoryIntegrityStatus').textContent(),/could not be read safely/i,device.label+' corrupt-history warning');
+   assert.equal(await page.locator('#clearDemo').isDisabled(),true,device.label+' corrupt-history erase blocked');
+   assert.equal(await page.evaluate(()=>localStorage.getItem('mlc2-demo-workouts-v1')),'{"corrupt":true}',device.label+' corrupt history preserved');
    await context.close();
   }
  }finally{await browser.close()}
