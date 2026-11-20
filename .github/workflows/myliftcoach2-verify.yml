@@ -124,7 +124,7 @@ jobs:
       - name: Install browser test dependencies
         run: |
           npm install --no-save --no-package-lock playwright@1.58.2
-          npx playwright install chromium --with-deps
+          npx playwright install chromium webkit --with-deps
       - name: Start local development preview
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/myliftcoach2-browser-server.log 2>&1 &
@@ -133,6 +133,7 @@ jobs:
           node tests/run_myliftcoach2_browser_schedule.cjs
           node tests/run_myliftcoach2_phone_cloud_backup.cjs
           node tests/run_myliftcoach2_browser_coach.cjs
+          MLC_BROWSER=webkit node tests/run_myliftcoach2_browser_coach.cjs
           node tests/run_myliftcoach2_private_context.cjs
           node tests/run_myliftcoach2_two_device_cloud_test.cjs
           node tests/run_myliftcoach2_history_and_entitlements.cjs

@@ -710,7 +710,7 @@ function renderProgress(){
  $('sessionHistory').innerHTML=demoSessions.length?demoSessions.map((x,index)=>{
   const summary=window.MLCSessionSummary.summarize(x,demoSessions.slice(index+1),editorExercises);
   const debrief=window.MLCPostSessionCoach.review(x,demoSessions.slice(index+1),editorExercises);
-  const debriefHTML=canUseCoach()&&debrief.status==='ready'?'<div class="panel"><strong>Coach · post-workout review</strong><p>'+escapeHTML(debrief.headline)+'</p>'+debrief.details.map(note=>'<p class="small">'+escapeHTML(note)+'</p>').join('')+debrief.suggestions.slice(0,8).map(row=>'<p class="small"><strong>'+escapeHTML(row.name)+'</strong> · '+escapeHTML(row.message)+'</p>').join('')+'<p class="small">'+escapeHTML(debrief.note)+'</p></div>':'';
+  const debriefHTML=hasPro()&&debrief.status==='ready'?'<div class="panel"><strong>Coach · post-workout review</strong><p>'+escapeHTML(debrief.headline)+'</p>'+debrief.details.map(note=>'<p class="small">'+escapeHTML(note)+'</p>').join('')+debrief.suggestions.slice(0,8).map(row=>'<p class="small"><strong>'+escapeHTML(row.name)+'</strong> · '+escapeHTML(row.message)+'</p>').join('')+'<p class="small">'+escapeHTML(debrief.note)+'</p></div>':'';
   const details=summary.movements.map(ex=>'<div class="recent-item"><div><strong>'+escapeHTML(ex.name)+'</strong><small>'+ex.sets+' completed sets · Top '+ex.topWeight+' lb'+(ex.newPracticeRecord?' · Local practice record':'')+'</small></div><button type="button" class="button-outline" data-exercise-open="'+escapeHTML(ex.id)+'">Exercise</button><span>'+Math.round(ex.volume).toLocaleString()+' lb-reps</span></div>').join('');
   return '<details class="panel"><summary><strong>'+escapeHTML(x.title)+'</strong> · '+new Date(x.created).toLocaleDateString()+' · '+summary.sets+' sets · '+Math.round(summary.volume).toLocaleString()+' lb-reps</summary><p class="small">'+(summary.durationMinutes?summary.durationMinutes+' min · ':'')+escapeHTML(x.readiness||'No readiness recorded')+' · '+summary.recordCount+' new local practice weight records</p>'+debriefHTML+details+'</details>';
  }).join(''):'<div class="empty-note">No demo sessions recorded yet. Open Workouts to start your first practice session.</div>';
@@ -727,17 +727,52 @@ function renderProgressChart(){
  root.innerHTML='<svg viewBox="0 0 320 220" role="img" aria-label="Training volume trend based on '+count+' locally saved practice sessions"><defs><linearGradient id="volumeFill" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#f6d88c" stop-opacity=".48"/><stop offset="1" stop-color="#f6d88c" stop-opacity=".02"/></linearGradient></defs><path d="M22 28 V184 H304" fill="none" stroke="#bbdfd2" stroke-opacity=".35"/><path d="M22 80 H304 M22 132 H304" fill="none" stroke="#bbdfd2" stroke-opacity=".2"/><polygon points="'+fill+'" fill="url(#volumeFill)"/><polyline points="'+points+'" fill="none" stroke="#ffe1a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+xy.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="3.5" fill="#ffeba8"/>').join('')+'<text x="25" y="207" fill="#c9e5da" font-size="11">Earliest</text><text x="293" y="207" text-anchor="end" fill="#c9e5da" font-size="11">Latest</text></svg><p>'+count+' practice sessions · '+Math.round(values[values.length-1]).toLocaleString()+' lb-reps last session</p>';
 }
 let verifiedCoachIdentity=null;
-function coachTier(){
- if(verifiedCoachIdentity?.token!==auth?.access_token||!(auth?.expires_at>Date.now()/1000))return 'free';
- return window.MLCCoachEntitlementBoundary.verifiedTier(verifiedCoachIdentity.user,account?.id);
+let betaPreference=null;
+function betaPreferenceKey(owner){return 'mlc2-beta-mode-v1:'+owner}
+function coachAccess(){
+ const valid=verifiedCoachIdentity&&verifiedCoachIdentity.token===auth?.access_token&&auth.expires_at>Date.now()/1000;
+ return window.MLCCoachEntitlementBoundary.access(valid?verifiedCoachIdentity.user:null,account?.id,betaPreference);
 }
-function hasPro(){return ['pro','lifetime_pro'].includes(coachTier())}
-function canUseCoach(){return !account||hasPro()}
+function hasPro(){return ['pro','lifetime_pro'].includes(coachAccess().effectiveTier)}
+function refreshCoachAccess(){
+ renderCoach();renderSettings();renderProgress();
+ if(activePlan&&session)renderWorkoutLog(window.MLCSessionInputContinuity.capture($('workoutLog'),activePlan.ids));
+}
 function verifyCoachIdentity(user,token){
  if(auth?.access_token!==token||account?.id!==user?.id)return;
  verifiedCoachIdentity={user,token};
- renderCoach();renderSettings();renderProgress();
- if(activePlan&&session)renderWorkoutLog(window.MLCSessionInputContinuity.capture($('workoutLog'),activePlan.ids));
+ try{betaPreference=localStorage.getItem(betaPreferenceKey(user.id))}
+ catch{betaPreference=null}
+ refreshCoachAccess();
+}
+function switchBetaMode(mode){
+ if(!coachAccess().beta||!['free','pro'].includes(mode))return;
+ try{localStorage.setItem(betaPreferenceKey(account.id),mode)}
+ catch{notice('This browser could not save your beta mode.');renderSettings();return}
+ betaPreference=mode;
+ refreshCoachAccess();
+}
+function renderBasicCoach(){
+ const plan=weeklyDraftReadError?null:resolvedWorkout().plan;
+ const profile=account?.id&&account.id===importedSettingsOwner?originalAccountSettings:null;
+ const goal=profile?.trainingGoal;
+ $('basicCoachGoal').textContent=goal?'Training goal: '+goal:account?'Load your training goal from Settings to see it here.':'';
+ $('basicCoachTitle').textContent=weeklyDraftReadError?'Your saved schedule needs recovery':plan?plan.title:'Scheduled rest day';
+ $('basicCoachStart').hidden=!plan;
+ const history=demoSessions.filter(row=>Date.parse(row.created)<=Date.now());
+ const verified=account?.id&&account.id===importedHistoryOwner;
+ $('basicCoachExercises').replaceChildren();
+ for(const id of plan?.ids||[]){
+  const ex=exerciseById(id);
+  const prior=window.MLCCoachReview.priorSet(history,id);
+  const legacy=verified&&!prior?window.MLCOriginalHistory.latestWorkingWeight(originalHistory,id):null;
+  const item=document.createElement('li');
+  const target=ex?.reps?' · Target '+ex.reps+' reps':'';
+  item.textContent=(ex?.name||id)+target+(prior?' · Last logged: '+prior.weight+' lb × '+prior.reps+
+   '. Compare today’s reps at the same load.':legacy?' · Last recorded weight: '+legacy.weight+' lb.':
+   ' · Log your first set to establish a baseline.');
+  $('basicCoachExercises').append(item);
+ }
 }
 function requireCustomWorkoutSlot(){
  if(!hasPro()&&weekly.plans.filter(plan=>plan.id.startsWith('custom-')).length>=3)
@@ -816,7 +851,7 @@ function renderCoachCheckin(){
   'No check-in saved this week. Coach will not infer your recovery or availability.';
 }
 function saveCoachCheckin(){
- if(!canUseCoach())return;
+ if(!hasPro())return;
  const values={
   recovery:$('coachCheckinRecovery').value,energy:$('coachCheckinEnergy').value,
   difficulty:$('coachCheckinDifficulty').value,days:$('coachCheckinDays').value,
@@ -872,7 +907,7 @@ function coachAdaptivePlan(today,checkin,weekly){
  return window.MLCCoachAdaptive.compile({today,checkin,weekly,memories,declines});
 }
 function answerCoachQuestion(){
- if(!canUseCoach())return;
+ if(!hasPro())return;
  const question=$('coachAskInput')?.value||'';
  const {today,checkin,weekly}=coachTodayContext();
  const action=guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin,weekly}));
@@ -889,7 +924,7 @@ function currentCoachAction(){
  return guardedCoachAction(window.MLCCoachActions.prioritize({today,checkin,weekly}));
 }
 function saveCoachFeedback(response){
- if(!canUseCoach())return;
+ if(!hasPro())return;
  try{
   const owner=account?.id||'guest',action=currentCoachAction();
   window.MLCCoachFeedback.save(localStorage,owner,response,action);
@@ -921,7 +956,7 @@ function renderCoachOutcomes(){
  }
 }
 function saveCoachOutcome(){
- if(!canUseCoach())return;
+ if(!hasPro())return;
  try{
   const {owner,feedback,candidates}=coachOutcomeData();
   const index=Number($('coachOutcomeCandidate').value);
@@ -935,7 +970,8 @@ function saveCoachOutcome(){
  }catch(error){$('coachOutcomeStatus').textContent='Outcome not saved: '+String(error.message||error).slice(0,120)}
 }
 function renderCoach(){
- const coachAllowed=canUseCoach();
+ renderBasicCoach();
+ const coachAllowed=hasPro();
  for(const panel of document.querySelectorAll('[data-premium-coach]'))panel.hidden=!coachAllowed;
  renderCoachBuilder();
  if(!coachAllowed){
@@ -979,7 +1015,7 @@ function renderCoach(){
  renderOriginalCoachEvidence();
 }
 function recordCoachProposalDecision(index,choice,expectedExerciseId,expectedSignature){
- if(!canUseCoach())return;
+ if(!hasPro())return;
  try{
   const owner=account?.id||'guest',selected=resolvedWorkout();
   if(!selected.plan||weeklyDraftReadError)throw Error('Current schedule is unavailable');
@@ -1000,9 +1036,9 @@ function recordCoachProposalDecision(index,choice,expectedExerciseId,expectedSig
  }catch(error){$('coachAdaptiveDecisionStatus').textContent='Decision not saved: '+String(error.message||error).slice(0,120)}
 }
 function renderCoachProgression(){
- if(!canUseCoach())return;
+ if(!hasPro())return;
  const boundary=window.MLCCoachEntitlementBoundary.assess({environment:'draft',accountId:account?.id||null});
- $('coachEntitlementStatus').textContent=hasPro()?'Pro access verified for this account.':boundary.reason+' No local account tier grants premium access.';
+ $('coachEntitlementStatus').textContent=hasPro()?(coachAccess().beta?'Pro beta preview active.':'Pro access verified for this account.'):boundary.reason+' No local account tier grants premium access.';
  const status=$('coachProgressionStatus'),root=$('coachProgressionList'),start=$('coachOpenToday');
  if(!status||!root)return;
  const selected=resolvedWorkout();
@@ -1349,6 +1385,7 @@ function clearOriginalAccountSettings(){
  originalAccountSettings=null;importedSettingsOwner=null;renderOriginalAccountSettings();
 }
 function renderOriginalAccountSettings(){
+ renderBasicCoach();
  const button=$('loadOriginalSettings'),status=$('originalSettingsStatus'),details=$('originalSettingsDetails');
  if(!button||!status||!details)return;
  button.disabled=!account;
@@ -1777,7 +1814,11 @@ async function restoreScheduleBackup(){
  }catch(error){status.textContent='Restore blocked or needs attention: '+String(error.message||error).slice(0,160);}
 }
 function renderSettings(){
- $('accountTierStatus').textContent=hasPro()?(coachTier()==='lifetime_pro'?'Lifetime Pro':'Pro'):'Free';
+ const access=coachAccess();
+ $('accountTierStatus').textContent=access.paidTier==='lifetime_pro'?'Lifetime Pro':access.paidTier==='pro'?'Pro':'Free';
+ $('betaAccessControl').hidden=!access.beta;
+ $('betaMode').disabled=!access.beta;
+ $('betaMode').value=access.mode||'free';
  renderPendingScheduleBackup();
  $('scheduleBackupCheck').disabled=!account?.id;
  $('scheduleBackupRestore').disabled=!safeToRestoreSchedule();
@@ -1918,7 +1959,7 @@ function renderWorkoutLog(inputSnapshot=null){
   const coachSource=localCoachResult.status==='ready'?'2.0 completed workouts':originalCoachResult?.status==='ready'?'Original completed history':null;
   const coachResult=localCoachResult.status==='ready'?localCoachResult:originalCoachResult;
   const caution=(coachCheckinSignal().load==='conservative'||['review','unavailable'].includes(coachMemoryFor(id).signal)||coachDeclineFor(id).status==='review-decline')&&coachResult?.action==='increase';
-  const coachHint=canUseCoach()&&coachResult?.status==='ready'?
+  const coachHint=hasPro()&&coachResult?.status==='ready'?
     '<div class="panel"><strong>Coach progression · '+escapeHTML(coachSource)+'</strong><p class="small">'+escapeHTML(coachResult.action.toUpperCase()+': '+coachResult.reason)+'</p>'+(caution?'<p class="small">Check-in or repeated weaker user-rated outcomes favor reviewing this increase; increase button paused.</p>':'<button class="button-outline" type="button" data-use-coach="'+id+'">Use suggested '+coachResult.weight+' lb for this set</button>')+'</div>':'';
   let savedTarget=null,targetError=false;
   try{savedTarget=window.MLCCoachTargets.get(localStorage,activeSessionOwner,id)}
@@ -1979,7 +2020,7 @@ function useCoachTarget(id){
  }catch(error){notice('Target unavailable: '+String(error.message||error).slice(0,120))}
 }
 function useCoachWeight(id){
- if(!canUseCoach())return;
+ if(!hasPro())return;
  if(!activePlan?.ids.includes(id))return;
  const ex=exerciseById(id),field=document.querySelector('[data-weight="'+id+'"]');
  if(!ex||!field)return;
@@ -2161,7 +2202,20 @@ async function validateStoredAuth(){
   if(auth?.access_token!==token)return;
   if(!user?.id||user.id!==account?.id)clearAuth();
   else{verifyCoachIdentity(user,token);void synchronizePhoneWorkoutBackup();}
- }catch{if(auth?.access_token===token||sessionStorage.getItem(AUTH_KEY)===snapshot)clearAuth()}
+ }catch(error){
+  if(error instanceof SyntaxError){clearAuth();return}
+  if(auth?.access_token!==token&&sessionStorage.getItem(AUTH_KEY)!==snapshot)return;
+  if(error.status===400||error.status===401||error.status===403){clearAuth();return}
+  verifiedCoachIdentity=null;betaPreference=null;
+  if(!account&&snapshot){
+   const cached=JSON.parse(snapshot);
+   if(cached?.user?.id){
+    auth=cached;account=cached.user;demoSessions=loadDemo(account.id);refreshWeeklyOwner();
+    renderLocalDailyTracking();renderHome();renderWorkouts();
+   }
+  }
+  refreshCoachAccess();
+ }
  renderSettings();renderOriginalHistory();
 }
 function openSignIn(){
@@ -2371,6 +2425,8 @@ function bind(){
   const button=event.target.closest('[data-adaptive-session]');
   if(button)startAdaptiveSession(Number(button.dataset.adaptiveSession));
  });
+ $('betaMode').addEventListener('change',()=>switchBetaMode($('betaMode').value));
+ $('basicCoachStart').addEventListener('click',()=>{if(!weeklyDraftReadError)openToday()});
  $('historySyncButton').addEventListener('click',()=>void syncCompletedWorkouts(true));
  $('existingCloudSessionsButton').addEventListener('click',inspectExistingCloudSessions);
  $('manualCloudTestButton').addEventListener('click',uploadManualCloudTest);

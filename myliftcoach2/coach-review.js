@@ -22,7 +22,7 @@ function week(history,now=Date.now()){
 function priorSet(history,exerciseId,excludeId=null){
  const ordered=(Array.isArray(history)?history:[]).filter(s=>s?.id!==excludeId&&Number.isFinite(Date.parse(s?.created||''))).slice()
   .sort((a,b)=>Date.parse(b.created)-Date.parse(a.created));
- for(const session of ordered){const rows=(Array.isArray(session.sets)?session.sets:[]).filter(x=>x?.exerciseId===exerciseId&&Number(x.weight)>0&&Number(x.reps)>0);
+ for(const session of ordered){const rows=(Array.isArray(session.sets)?session.sets:[]).filter(x=>x?.completed!==false&&x?.exerciseId===exerciseId&&Number.isFinite(Number(x.weight))&&Number(x.weight)>=0&&Number.isFinite(Number(x.reps))&&Number(x.reps)>0);
   if(rows.length)return {weight:Number(rows[rows.length-1].weight),reps:Number(rows[rows.length-1].reps),date:session.created};
  }
  return null;

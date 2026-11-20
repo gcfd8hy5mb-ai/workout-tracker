@@ -38,3 +38,11 @@
 Settings → Sync and recover history opts the signed-in session into completed-workout backup. It uses the same verified-user and paginated v1 inventory paths. The writer creates only new revision-zero `mlc2-history-*` records, with stable operation IDs and independent read-back. Recovery merges matching v1 2.0 entries into the signed-in device's history and preserves local entries and conflicting records. Manual test copies and original PRISM history are outside the new backup namespace. This is development-only until an approved release.
 
 The 2.0 client recognizes Free, Pro and Lifetime Pro. It checks paid access against the authenticated Supabase user response using administrator-managed `app_metadata.myliftcoach_entitlement`. Pro requires `tier: "pro"` and a future ISO `expires_at`; Lifetime Pro uses `tier: "lifetime_pro"`. The original app's browser tier and beta preference cannot grant paid access. Existing subscriptions still need an authorized account-side source to supply the server claim. No subscription grants or production records were changed in this batch.
+
+## Private beta access
+
+Settings → Beta Access Mode appears after Supabase Auth verifies a user with the administrator-managed boolean `app_metadata.myliftcoach_beta=true`. Free and Pro are device preferences scoped to that account. A fresh sign-in verifies authorization before applying the saved preference. The Account tier field always shows the underlying subscription. Set `BETA_PREVIEWS_ENABLED=false` in the 2.0 entitlement module for public release to ignore beta preferences and honor the paid tier.
+
+The original subscription adapter keeps `prismEntitlementV1` local-only. The inspected Supabase project had no billing/entitlement table or verification RPC, and its existing users had only provider keys in app metadata. A trusted issuer for paid grants and a beta grant for the intended tester are outstanding. Beta enrollment must preserve other app metadata.
+
+The deployed v1 database RPCs passed an authenticated-role transaction with two synthetic subjects covering immutable session commit, exact payload read and paginated recovery, idempotent retry, rejection of a conflicting write, record-type separation and account isolation. Test subjects, records and receipts were rolled back and their absence verified.

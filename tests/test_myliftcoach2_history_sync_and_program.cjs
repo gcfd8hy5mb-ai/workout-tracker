@@ -60,3 +60,14 @@ test('only a matching verified paid tier can unlock Pro',()=>{
  assert.equal(entitlement.verifiedTier({id:owner,user_metadata:user('lifetime_pro').app_metadata},owner,now),'free');
  assert.equal(entitlement.verifiedTier(user('beta'),owner,now),'free');
 });
+
+test('beta previews require an authorized owner and preserve a genuine paid tier when disabled',()=>{
+ const user={id:owner,app_metadata:{myliftcoach_beta:true,myliftcoach_entitlement:{tier:'lifetime_pro'}}};
+ assert.deepEqual(entitlement.access(user,owner,'free'),{paidTier:'lifetime_pro',effectiveTier:'free',mode:'free',beta:true});
+ assert.equal(entitlement.access(user,owner,'pro').effectiveTier,'pro');
+ assert.equal(entitlement.access(user,owner,'free',false).effectiveTier,'lifetime_pro');
+ assert.equal(entitlement.access(user,'other','pro').effectiveTier,'free');
+ assert.equal(entitlement.access({id:owner,user_metadata:{myliftcoach_beta:true}},owner,'pro').beta,false);
+ assert.equal(entitlement.access({id:owner,app_metadata:{myliftcoach_beta:true}},owner,'pro').effectiveTier,'pro');
+ assert.equal(entitlement.access({id:owner,app_metadata:{}},owner,'pro').effectiveTier,'free');
+});
