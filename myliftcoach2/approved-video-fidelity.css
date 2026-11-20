@@ -98,3 +98,41 @@ html,body {
  .topbar{background:rgba(2,48,54,.63)!important}
  .bottom-tabs{background:rgba(2,41,47,.97)!important}
 }
+
+
+/* Keep workout action buttons touchable on narrow iPhones.
+ * This structural layout was present before the approved skin replaced
+ * charcoal-gold.css; it must not affect the appearance of ordinary modals. */
+.modal-panel:has(.workout-session-body){
+ display:flex;
+ flex-direction:column;
+ overflow:hidden;
+}
+#modalContent:has(.workout-session-body){
+ display:grid;
+ grid-template-rows:minmax(0,1fr) auto;
+ min-height:0;
+ min-width:0;
+ flex:1 1 auto;
+}
+.workout-session-body{
+ overflow:auto;
+ min-height:0;
+ overscroll-behavior:contain;
+}
+.workout-session-body + .modal-footer{
+ position:relative;
+ z-index:2;
+ flex-shrink:0;
+ background:#08191f;
+ border-top:1px solid rgba(235,181,98,.7);
+ padding:9px 0 0;
+ margin-top:4px;
+}
+.modal-panel:has(.workout-session-body) .modal-close{z-index:3}
+#workoutLog,#workoutLog .log-card,#workoutLog .inputs label{min-width:0}
+#workoutLog select{max-width:100%}
+@media(max-width:760px){
+ .modal-panel:has(.workout-session-body){max-height:min(90dvh,820px)}
+ .modal-panel input,.modal-panel select{font-size:16px}
+}
