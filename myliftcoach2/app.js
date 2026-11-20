@@ -195,6 +195,11 @@ function renderPendingScheduleBackup(){
    'No pending custom workout cloud backup on this phone.';
  }catch(error){status.textContent='Pending backup requires local recovery: '+String(error.message||error).slice(0,130);}
 }
+function canonicalCloudWorkout(value){
+ if(Array.isArray(value))return '['+value.map(canonicalCloudWorkout).join(',')+']';
+ if(value&&typeof value==='object')return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+canonicalCloudWorkout(value[k])).join(',')+'}';
+ return JSON.stringify(value);
+}
 const CLOUD_WORKOUT_CHECKPOINT_KEY='mlc2-custom-workout-cloud-checkpoint-v1';
 let cloudWorkoutUploadBusy=false;
 function cloudWorkoutCheckpoint(owner){
@@ -249,7 +254,7 @@ async function synchronizePhoneWorkoutBackup(){
   if(account?.id!==owner||auth?.access_token!==token)
    throw Error('Account changed while inspecting cloud workouts');
   if(fresh.revision===checkpoint.revision&&
-     JSON.stringify(fresh.document)===JSON.stringify(pending.document)){
+     canonicalCloudWorkout(fresh.document)===canonicalCloudWorkout(pending.document)){
    queue.finishMatchingPending(localStorage,owner,allowedExerciseIds,fresh.document);
    persistCloudWorkoutCheckpoint(owner,fresh);
    if(status)status.textContent='Custom workout backup already verified in Supabase.';
@@ -257,7 +262,7 @@ async function synchronizePhoneWorkoutBackup(){
   }
   // Never assume a foreign/older cloud revision belongs to this phone.
   if(fresh.revision!==checkpoint.revision||
-     JSON.stringify(fresh.document)!==JSON.stringify(checkpoint.document))
+     canonicalCloudWorkout(fresh.document)!==canonicalCloudWorkout(checkpoint.document))
    throw Error('Cloud schedule differs from this phone’s verified checkpoint; local workouts protected');
   const result=await delivery.deliver({
    storage:localStorage,owner,validIds:allowedExerciseIds,checkpoint,
@@ -271,7 +276,13 @@ async function synchronizePhoneWorkoutBackup(){
   if(verified.revision!==result.revision)
    throw Error('Cloud revision changed after backup; keep local copy');
   persistCloudWorkoutCheckpoint(owner,verified);
-  if(status)status.textContent='Custom workouts saved and verified in Supabase · revision '+result.revision+'.';
+  // If a workout was edited while the previous upload was being verified,
+  // prepare that newer local version instead of silently calling it backed up.
+  const current=window.MLCScheduleBackupQueue.asDocument(activeRecurring||weekly,allowedExerciseIds);
+  if(canonicalCloudWorkout(current)!==canonicalCloudWorkout(verified.document)){
+   window.MLCScheduleBackupQueue.stage(localStorage,owner,current,allowedExerciseIds);
+   if(status)status.textContent='Earlier backup verified · newer workout changes remain queued on this phone.';
+  }else if(status)status.textContent='Custom workouts saved and verified in Supabase · revision '+result.revision+'.';
  }catch(error){
   if(account?.id===owner){
    if(status)status.textContent='Workouts saved on phone; cloud backup requires attention: '+
