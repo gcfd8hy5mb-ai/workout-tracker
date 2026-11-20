@@ -108,6 +108,8 @@ const assert = require('node:assert/strict');
    assert.equal(await page.locator('[data-reps="leg-press"]').inputValue(),'9',device.name+' rep continuity');
    const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('mlc2-coach-manual-targets-v1:beta-tester')));
    assert.equal(saved.targets['leg-press'],165,device.name+' isolated local target');
+   // Dismiss the software keyboard to expose the workout footer as on a real iPhone.
+   await page.evaluate(()=>document.activeElement?.blur());
    const saveLater=page.locator('#cancelWorkout');
    try{if(device.isMobile)await saveLater.tap({timeout:8000});else await saveLater.click({timeout:8000})}
    catch(error){
