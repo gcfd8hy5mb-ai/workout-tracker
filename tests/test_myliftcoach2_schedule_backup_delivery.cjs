@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const queue=require('../myliftcoach2/schedule-backup-queue.js');
-const {deliver}=require('../myliftcoach2/schedule-backup-delivery.js');
+const {deliver,reconcileAttempt}=require('../myliftcoach2/schedule-backup-delivery.js');
 const owner='11111111-1111-4111-8111-111111111111',valid=['press'];
 const op='d3826f8f-5655-4f8f-aed2-0999c5f761c1';
 const schedule=()=>({plans:[{id:'upper-a',title:'My upper workout',kind:'Preset',ids:['press']}],
@@ -65,4 +65,28 @@ test('explicit approval and verified remote snapshot required before upload',asy
   transport:backend.transport,operationId:op,explicitApproval:true}),/Invalid existing cloud checkpoint/);
  assert.equal(queue.read(db,owner,valid).status,'pending');
  assert.equal(backend.counts().writes,0);
+});
+
+test('same phone confirms interrupted upload with cloud read only, never retries',async()=>{
+ const db=storage(),backend=cloud({onSave:()=>{throw Error('network lost after commit')}});
+ queue.stage(db,owner,schedule(),valid);
+ const args={storage:db,owner,validIds:valid,checkpoint:{revision:0,document:null},
+  transport:backend.transport,operationId:op,explicitApproval:true};
+ await assert.rejects(deliver(args),/may have been written/);
+ assert.equal(queue.read(db,owner,valid).status,'attempted');
+ const result=await reconcileAttempt({storage:db,owner,validIds:valid,transport:backend.transport});
+ assert.equal(result.status,'verified-after-interruption');
+ assert.equal(result.writeCount,0);
+ assert.equal(backend.counts().writes,1,'the upload is never sent a second time');
+ assert.equal(queue.read(db,owner,valid),null);
+});
+test('unresolved interrupted upload remains retained without a second device',async()=>{
+ const db=storage(),backend=cloud();
+ queue.stage(db,owner,schedule(),valid);
+ queue.beginAttempt(db,owner,valid,0,op);
+ const result=await reconcileAttempt({storage:db,owner,validIds:valid,transport:backend.transport});
+ assert.equal(result.status,'manual-review');
+ assert.equal(result.writeCount,0);
+ assert.equal(backend.counts().writes,0);
+ assert.equal(queue.read(db,owner,valid).operationId,op);
 });
