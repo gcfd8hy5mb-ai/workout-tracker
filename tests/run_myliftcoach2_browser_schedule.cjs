@@ -40,7 +40,8 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#sidebar').isVisible(),true,'More drawer must actually appear');
     assert.equal(await page.locator('#sidebarScrim').isVisible(),true,'backdrop visible behind open menu');
     await page.locator('#sidebarClose').click();
-    assert.equal(await page.locator('#sidebarScrim').isVisible(),false,'backdrop must disappear after closing More');
+    await page.locator('#sidebarScrim').waitFor({state:'hidden',timeout:3000});
+    assert.equal(await page.locator('#moreMenuBtn').getAttribute('aria-expanded'),'false','More returns to closed state');
    }
 
    await page.locator('#cloudInventoryButton').evaluate(el=>el.click());
