@@ -28,9 +28,9 @@ function service(){
   getSession:async()=>session,fetcher});
  return {transport,calls,counts:()=>({reads,writes}),setSession:s=>{session=s},setRow:r=>{row=r},row:()=>row};
 }
-test('production schedule backup remains disabled',()=>{
- assert.equal(mod.ENABLED,false);
- assert.throws(()=>mod.create({}),/disabled/);
+test('2.0 custom-plan transport is enabled but requires authenticated configuration',()=>{
+ assert.equal(mod.ENABLED,true);
+ assert.throws(()=>mod.create({}),/Authenticated HTTPS/);
  assert.equal(mod.RECORD_ID,'mlc2-recurring-schedule-v1');
 });
 test('new phone reads empty backup, writes verified custom-plan and reads it back',async()=>{
