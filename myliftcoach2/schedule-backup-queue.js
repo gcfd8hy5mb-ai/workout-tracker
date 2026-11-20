@@ -45,6 +45,10 @@
  }
  function stage(storage,owner,schedule,validIds){
   const document=asDocument(schedule,validIds);
+  // Match the existing deployed backend payload limit before allocating an
+  // outbox entry that a later cloud write could never successfully upload.
+  if(canonical(document).length>90000)
+   throw Error('Custom workout backup too large for cloud upload; local workout remains saved');
   const prior=read(storage,owner,validIds);
   const entry={version:1,owner,status:'pending',
    updatedAt:new Date().toISOString(),operationId:null,expectedRevision:null,
