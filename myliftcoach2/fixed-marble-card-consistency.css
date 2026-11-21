@@ -184,3 +184,40 @@ body:has(.modal:not([hidden])) .toast{
  bottom:auto!important;
  top:calc(74px + env(safe-area-inset-top))!important;
 }
+
+
+/* 19:12 user recording: enforce a single near-black card material on every
+   content page (including nested editor/history cards). Previously some
+   pages inherited brighter teal gradients from older theme stylesheets. */
+:is(#workouts,#library,#progress,#nutrition,#coaching,#settings,#history,#tracking) :is(
+ .panel,.settings-panel,.metric,.workout-card,.library-card,.coach-card,
+ .log-card,.history-entry,.recent-item,.week-day-card,.week-exercise,
+ .preview-exercise,.original-plan-panel,.tracking-form,.tracking-row,
+ .progress-chart-panel,.chart-frame,.account-menu button,.coach-links button
+),
+#home .home-below-fold :is(.panel,.metric,.preview-exercise,.week-day-card,.recent-item){
+ background-color:#061419!important;
+ background-image:none!important;
+ border-color:#ebc783!important;
+ color:#f6ebd7!important;
+}
+:is(#workouts,#library,#progress,#nutrition,#coaching,#settings,#history,#tracking)
+ :is(.micro-tag,.button-outline,.filter-chips button:not(.selected)),
+#home .home-below-fold :is(.micro-tag,.button-outline){
+ background-color:#0a2026!important;
+ background-image:none!important;
+ border:1px solid #d7b377!important;
+ color:#f6ddaa!important;
+}
+/* Selected weekdays and filters indicate state through gold, never bright teal. */
+:is(#workouts,#home) .week-day-card.is-today{
+ background-color:#122126!important;
+ background-image:none!important;
+ box-shadow:inset 0 0 0 1px #f5d99e!important;
+}
+:is(#workouts,#library,#progress,#nutrition,#coaching,#settings,#history,#tracking) :is(
+ .panel,.workout-card,.library-card,.metric,.coach-card,.history-entry
+) :is(h2,h3,h4,strong){
+ color:#f7ebd4;
+}
+/* Keep iPhone's original photo-backed Home hero and six shortcut tiles unchanged. */
