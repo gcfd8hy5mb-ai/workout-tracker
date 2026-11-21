@@ -8,7 +8,7 @@ const consistent=fs.readFileSync('myliftcoach2/fixed-marble-card-consistency.css
 
 test('approved November emerald marble replaces charcoal skin as final stylesheet',()=>{
  const links=[...html.matchAll(/<link\s+[^>]*rel="stylesheet"[^>]*>/g)].map(m=>m[0]);
- assert.match(links.at(-1),/fixed-marble-card-consistency\.css\?v=7/);
+ assert.match(links.at(-1),/fixed-marble-card-consistency\.css\?v=8/);
  assert.match(html,/approved-home-rebuild\.css\?v=21/);
  assert.match(html,/<section id="home" class="page home-rebuilt">/);
  assert.match(html,/id="homeWeekBoardDetails"/);
@@ -33,8 +33,8 @@ test('video-approved reference CSS references original gold-veined marble and ph
 });
 
 test('all secondary pages use the approved near-black card finish',()=>{
- assert.match(consistent,/19:12 user recording/);
+ assert.match(consistent,/--mlc-card:#061419/);
  assert.match(consistent,/background-color:#061419!important/);
  assert.match(consistent,/background-image:none!important/);
- assert.match(consistent,/selected weekdays and filters/i);
+ assert.match(consistent,/\.page:not\(#home\):not\(#welcome\) \.panel/);
 });
