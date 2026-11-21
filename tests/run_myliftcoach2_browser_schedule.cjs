@@ -38,7 +38,7 @@ const assert = require('node:assert/strict');
      const s=getComputedStyle(el);return {background:s.backgroundColor,image:s.backgroundImage};
     });
     if(surface.background!=='rgb(6, 20, 25)'){
-      console.error('PALETTE DIAGNOSTICS',await page.evaluate(()=>{
+      console.error('PALETTE DIAGNOSTICS',JSON.stringify(await page.evaluate(()=>{
        const el=document.querySelector('#workouts .panel');
        return {classes:el?.className,htmlClass:document.querySelector('#workouts')?.className,
         sheets:[...document.styleSheets].map(sheet=>{
@@ -49,7 +49,7 @@ const assert = require('node:assert/strict');
          }}catch(e){matches=['inaccessible']}
          return {href:sheet.href,matchCount:matches.length,lastMatches:matches.slice(-5)};
         })};
-      }));
+      }),null,2));
     }
     assert.equal(surface.background,'rgb(6, 20, 25)',device.label+' '+tab+' panel must be nearly black');
     assert.equal(surface.image,'none',device.label+' '+tab+' panel must not have teal gradient or photograph');
