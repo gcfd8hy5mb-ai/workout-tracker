@@ -37,7 +37,7 @@ const assert = require('node:assert/strict');
     const surface=await page.locator(selector).first().evaluate(el=>{
      const s=getComputedStyle(el);return {background:s.backgroundColor,image:s.backgroundImage};
     });
-    if(surface.background!=='rgb(6, 20, 25)'){
+    if(surface.background!=='rgb(11, 48, 55)'){
       console.error('PALETTE DIAGNOSTICS',JSON.stringify(await page.evaluate(()=>{
        const el=document.querySelector('#workouts .panel');
        return {classes:el?.className,htmlClass:document.querySelector('#workouts')?.className,
@@ -51,7 +51,7 @@ const assert = require('node:assert/strict');
         })};
       }),null,2));
     }
-    assert.equal(surface.background,'rgb(6, 20, 25)',device.label+' '+tab+' panel must be nearly black');
+    assert.equal(surface.background,'rgb(11, 48, 55)',device.label+' '+tab+' panel must have dark teal surface');
     assert.equal(surface.image,'none',device.label+' '+tab+' panel must not have teal gradient or photograph');
    }
    await page.evaluate(()=>document.querySelector('.sidebar [data-page="home"]').click());
