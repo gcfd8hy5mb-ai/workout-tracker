@@ -34,7 +34,7 @@ test('video-approved reference CSS references original gold-veined marble and ph
 
 test('all secondary pages use the approved near-black card finish',()=>{
  assert.match(consistent,/--mlc-card:#061419/);
- assert.match(consistent,/background-color:#061419!important/);
+ assert.match(consistent,/background:#061419!important/);
  assert.match(consistent,/background-image:none!important/);
  assert.match(consistent,/\.page:not\(#home\):not\(#welcome\) \.panel/);
 });
