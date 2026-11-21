@@ -23,6 +23,25 @@ const assert = require('node:assert/strict');
    await page.goto(base,{waitUntil:'load'});
    await page.waitForFunction(()=>document.querySelector('#todayTitle')?.textContent==='My Custom Session',{timeout:15000});
    assert.deepEqual(errors,[],device.label+' bootstrap errors: '+errors.join('; '));
+   // Check computed styling, not just CSS source: the user reported mixed teal
+   // cards across tabs even though earlier stylesheet checks had passed.
+   for(const [tab,selector] of [
+    ['workouts','#workouts .panel'],
+    ['progress','#progress .panel'],
+    ['nutrition','#nutrition .panel'],
+    ['coaching','#coaching .coach-card'],
+    ['settings','#settings .settings-panel']
+   ]){
+    await page.evaluate(tab=>document.querySelector('.sidebar [data-page="'+tab+'"]')?.click(),tab);
+    await page.waitForFunction(tab=>!document.querySelector('#'+tab).hidden,tab);
+    const surface=await page.locator(selector).first().evaluate(el=>{
+     const s=getComputedStyle(el);return {background:s.backgroundColor,image:s.backgroundImage};
+    });
+    assert.equal(surface.background,'rgb(6, 20, 25)',device.label+' '+tab+' panel must be nearly black');
+    assert.equal(surface.image,'none',device.label+' '+tab+' panel must not have teal gradient or photograph');
+   }
+   await page.evaluate(()=>document.querySelector('.sidebar [data-page="home"]').click());
+
    if(device.isMobile){
     // Regression: More must reveal the drawer, not just its dark backdrop.
     await page.locator('#moreMenuBtn').click();
