@@ -8,7 +8,7 @@ const consistent=fs.readFileSync('myliftcoach2/fixed-marble-card-consistency.css
 
 test('approved November emerald marble replaces charcoal skin as final stylesheet',()=>{
  const links=[...html.matchAll(/<link\s+[^>]*rel="stylesheet"[^>]*>/g)].map(m=>m[0]);
- assert.match(links.at(-1),/fixed-marble-card-consistency\.css\?v=6/);
+ assert.match(links.at(-1),/fixed-marble-card-consistency\.css\?v=7/);
  assert.match(html,/approved-home-rebuild\.css\?v=21/);
  assert.match(html,/<section id="home" class="page home-rebuilt">/);
  assert.match(html,/id="homeWeekBoardDetails"/);
