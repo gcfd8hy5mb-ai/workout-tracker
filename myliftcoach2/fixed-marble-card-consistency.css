@@ -1,5 +1,5 @@
 /* The November 16 marble stays fixed while all pages scroll on top. */
-:root{--mlc-card:#071b22;--mlc-gold:#f1d394}
+:root{--mlc-card:#061419;--mlc-gold:#f1d394}
 html{background-color:#063f45!important}
 body{background:#063f45!important;min-height:100dvh}
 body::before,body:has(#home:not([hidden]))::before{
@@ -30,7 +30,7 @@ body::before,body:has(#home:not([hidden]))::before{
 #home .home-week-board,
 #home .home-week-board .week-day-card{
  background-color:var(--mlc-card)!important;
- background-image:linear-gradient(145deg,#0c343b,#051b24)!important;
+ background-image:none!important;
  border:1px solid var(--mlc-gold)!important;
  color:#fff3df!important;
  box-shadow:inset 0 1px 0 rgba(255,240,200,.13),0 5px 13px rgba(0,13,20,.37)!important;
@@ -90,13 +90,13 @@ body::before,body:has(#home:not([hidden]))::before{
  color:#fff1d2!important;
 }
 #nutrition .metric{
- background:linear-gradient(145deg,#0c343b,#051b24)!important;
+ background:#061419!important;
  border-color:#f1d394!important;
 }
 
 
 /* 15:27 iPhone screen-recording corrections. Avoid the old light teal surfaces. */
-:root{--mlc-card:#071a20;--mlc-gold:#f1d394}
+:root{--mlc-card:#061419;--mlc-gold:#f1d394}
 .page:not(#welcome) .panel,
 .page:not(#welcome) .settings-panel,
 .page:not(#welcome) .metric,
@@ -110,8 +110,8 @@ body::before,body:has(#home:not([hidden]))::before{
 .page:not(#welcome) .preview-exercise,
 .page:not(#welcome) .account-menu button,
 .page:not(#welcome) .coach-links button{
- background:#071a20!important;
- background-image:linear-gradient(145deg,#0b252c,#06141b)!important;
+ background:#061419!important;
+ background-image:none!important;
  border-color:#f1d394!important;
  color:#fff4e0!important;
 }
@@ -186,200 +186,3 @@ body:has(.modal:not([hidden])) .toast{
 }
 
 
-/* 19:12 user recording: enforce a single near-black card material on every
-   content page (including nested editor/history cards). Previously some
-   pages inherited brighter teal gradients from older theme stylesheets. */
- .app-shell .page:is(#workouts,#library,#progress,#nutrition,#coaching,#settings,#history,#tracking) :is(
- .panel,.settings-panel,.metric,.workout-card,.library-card,.coach-card,
- .log-card,.history-entry,.recent-item,.week-day-card,.week-exercise,
- .preview-exercise,.original-plan-panel,.tracking-form,.tracking-row,
- .progress-chart-panel,.chart-frame,.account-menu button,.coach-links button
-),
-#home .home-below-fold :is(.panel,.metric,.preview-exercise,.week-day-card,.recent-item){
- background-color:#061419!important;
- background-image:none!important;
- border-color:#ebc783!important;
- color:#f6ebd7!important;
-}
- .app-shell .page:is(#workouts,#library,#progress,#nutrition,#coaching,#settings,#history,#tracking)
- :is(.micro-tag,.button-outline,.filter-chips button:not(.selected)),
-#home .home-below-fold :is(.micro-tag,.button-outline){
- background-color:#0a2026!important;
- background-image:none!important;
- border:1px solid #d7b377!important;
- color:#f6ddaa!important;
-}
-/* Selected weekdays and filters indicate state through gold, never bright teal. */
-.app-shell .page:is(#workouts,#home) .week-day-card.is-today{
- background-color:#122126!important;
- background-image:none!important;
- box-shadow:inset 0 0 0 1px #f5d99e!important;
-}
- .app-shell .page:is(#workouts,#library,#progress,#nutrition,#coaching,#settings,#history,#tracking) :is(
- .panel,.workout-card,.library-card,.metric,.coach-card,.history-entry
-) :is(h2,h3,h4,strong){
- color:#f7ebd4;
-}
-/* Keep iPhone's original photo-backed Home hero and six shortcut tiles unchanged. */
-
-/* Explicit higher-specificity ID selectors: prevent legacy !important card
-   colors from winning the cascade on some tabs. */
-#workouts.page.page .panel,
-#workouts.page.page .settings-panel,
-#workouts.page.page .metric,
-#workouts.page.page .workout-card,
-#workouts.page.page .library-card,
-#workouts.page.page .coach-card,
-#workouts.page.page .log-card,
-#workouts.page.page .history-entry,
-#workouts.page.page .recent-item,
-#workouts.page.page .week-day-card,
-#workouts.page.page .week-exercise,
-#workouts.page.page .preview-exercise,
-#workouts.page.page .original-plan-panel,
-#workouts.page.page .tracking-form,
-#workouts.page.page .tracking-row,
-#workouts.page.page .progress-chart-panel,
-#workouts.page.page .chart-frame,
-#workouts.page.page .account-menu button,
-#workouts.page.page .coach-links button,
-#library.page.page .panel,
-#library.page.page .settings-panel,
-#library.page.page .metric,
-#library.page.page .workout-card,
-#library.page.page .library-card,
-#library.page.page .coach-card,
-#library.page.page .log-card,
-#library.page.page .history-entry,
-#library.page.page .recent-item,
-#library.page.page .week-day-card,
-#library.page.page .week-exercise,
-#library.page.page .preview-exercise,
-#library.page.page .original-plan-panel,
-#library.page.page .tracking-form,
-#library.page.page .tracking-row,
-#library.page.page .progress-chart-panel,
-#library.page.page .chart-frame,
-#library.page.page .account-menu button,
-#library.page.page .coach-links button,
-#progress.page.page .panel,
-#progress.page.page .settings-panel,
-#progress.page.page .metric,
-#progress.page.page .workout-card,
-#progress.page.page .library-card,
-#progress.page.page .coach-card,
-#progress.page.page .log-card,
-#progress.page.page .history-entry,
-#progress.page.page .recent-item,
-#progress.page.page .week-day-card,
-#progress.page.page .week-exercise,
-#progress.page.page .preview-exercise,
-#progress.page.page .original-plan-panel,
-#progress.page.page .tracking-form,
-#progress.page.page .tracking-row,
-#progress.page.page .progress-chart-panel,
-#progress.page.page .chart-frame,
-#progress.page.page .account-menu button,
-#progress.page.page .coach-links button,
-#nutrition.page.page .panel,
-#nutrition.page.page .settings-panel,
-#nutrition.page.page .metric,
-#nutrition.page.page .workout-card,
-#nutrition.page.page .library-card,
-#nutrition.page.page .coach-card,
-#nutrition.page.page .log-card,
-#nutrition.page.page .history-entry,
-#nutrition.page.page .recent-item,
-#nutrition.page.page .week-day-card,
-#nutrition.page.page .week-exercise,
-#nutrition.page.page .preview-exercise,
-#nutrition.page.page .original-plan-panel,
-#nutrition.page.page .tracking-form,
-#nutrition.page.page .tracking-row,
-#nutrition.page.page .progress-chart-panel,
-#nutrition.page.page .chart-frame,
-#nutrition.page.page .account-menu button,
-#nutrition.page.page .coach-links button,
-#coaching.page.page .panel,
-#coaching.page.page .settings-panel,
-#coaching.page.page .metric,
-#coaching.page.page .workout-card,
-#coaching.page.page .library-card,
-#coaching.page.page .coach-card,
-#coaching.page.page .log-card,
-#coaching.page.page .history-entry,
-#coaching.page.page .recent-item,
-#coaching.page.page .week-day-card,
-#coaching.page.page .week-exercise,
-#coaching.page.page .preview-exercise,
-#coaching.page.page .original-plan-panel,
-#coaching.page.page .tracking-form,
-#coaching.page.page .tracking-row,
-#coaching.page.page .progress-chart-panel,
-#coaching.page.page .chart-frame,
-#coaching.page.page .account-menu button,
-#coaching.page.page .coach-links button,
-#settings.page.page .panel,
-#settings.page.page .settings-panel,
-#settings.page.page .metric,
-#settings.page.page .workout-card,
-#settings.page.page .library-card,
-#settings.page.page .coach-card,
-#settings.page.page .log-card,
-#settings.page.page .history-entry,
-#settings.page.page .recent-item,
-#settings.page.page .week-day-card,
-#settings.page.page .week-exercise,
-#settings.page.page .preview-exercise,
-#settings.page.page .original-plan-panel,
-#settings.page.page .tracking-form,
-#settings.page.page .tracking-row,
-#settings.page.page .progress-chart-panel,
-#settings.page.page .chart-frame,
-#settings.page.page .account-menu button,
-#settings.page.page .coach-links button,
-#history.page.page .panel,
-#history.page.page .settings-panel,
-#history.page.page .metric,
-#history.page.page .workout-card,
-#history.page.page .library-card,
-#history.page.page .coach-card,
-#history.page.page .log-card,
-#history.page.page .history-entry,
-#history.page.page .recent-item,
-#history.page.page .week-day-card,
-#history.page.page .week-exercise,
-#history.page.page .preview-exercise,
-#history.page.page .original-plan-panel,
-#history.page.page .tracking-form,
-#history.page.page .tracking-row,
-#history.page.page .progress-chart-panel,
-#history.page.page .chart-frame,
-#history.page.page .account-menu button,
-#history.page.page .coach-links button,
-#tracking.page.page .panel,
-#tracking.page.page .settings-panel,
-#tracking.page.page .metric,
-#tracking.page.page .workout-card,
-#tracking.page.page .library-card,
-#tracking.page.page .coach-card,
-#tracking.page.page .log-card,
-#tracking.page.page .history-entry,
-#tracking.page.page .recent-item,
-#tracking.page.page .week-day-card,
-#tracking.page.page .week-exercise,
-#tracking.page.page .preview-exercise,
-#tracking.page.page .original-plan-panel,
-#tracking.page.page .tracking-form,
-#tracking.page.page .tracking-row,
-#tracking.page.page .progress-chart-panel,
-#tracking.page.page .chart-frame,
-#tracking.page.page .account-menu button,
-#tracking.page.page .coach-links button,
-#home.home-rebuilt .home-below-fold .panel,
-#home.home-rebuilt .home-below-fold .metric{
- background-color:#061419!important;
- background-image:none!important;
- border-color:#ebc783!important;
- color:#f6ebd7!important;
-}
