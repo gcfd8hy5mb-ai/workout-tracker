@@ -1,5 +1,5 @@
 /* The November 16 marble stays fixed while all pages scroll on top. */
-:root{--mlc-card:#061419;--mlc-gold:#f1d394}
+:root{--mlc-card:#0b3037;--mlc-gold:#f1d394}
 html{background-color:#063f45!important}
 body{background:#063f45!important;min-height:100dvh}
 body::before,body:has(#home:not([hidden]))::before{
@@ -90,13 +90,13 @@ body::before,body:has(#home:not([hidden]))::before{
  color:#fff1d2!important;
 }
 #nutrition .metric{
- background:#061419!important;
+ background:#0b3037!important;
  border-color:#f1d394!important;
 }
 
 
 /* 15:27 iPhone screen-recording corrections. Avoid the old light teal surfaces. */
-:root{--mlc-card:#061419;--mlc-gold:#f1d394}
+:root{--mlc-card:#0b3037;--mlc-gold:#f1d394}
 .page:not(#welcome) .panel,
 .page:not(#welcome) .settings-panel,
 .page:not(#welcome) .metric,
@@ -110,7 +110,7 @@ body::before,body:has(#home:not([hidden]))::before{
 .page:not(#welcome) .preview-exercise,
 .page:not(#welcome) .account-menu button,
 .page:not(#welcome) .coach-links button{
- background:#061419!important;
+ background:#0b3037!important;
  background-image:none!important;
  border-color:#f1d394!important;
  color:#fff4e0!important;
