@@ -37,6 +37,20 @@ const assert = require('node:assert/strict');
     const surface=await page.locator(selector).first().evaluate(el=>{
      const s=getComputedStyle(el);return {background:s.backgroundColor,image:s.backgroundImage};
     });
+    if(surface.background!=='rgb(6, 20, 25)'){
+      console.error('PALETTE DIAGNOSTICS',await page.evaluate(()=>{
+       const el=document.querySelector('#workouts .panel');
+       return {classes:el?.className,htmlClass:document.querySelector('#workouts')?.className,
+        sheets:[...document.styleSheets].map(sheet=>{
+         let matches=[];try{for(const rule of sheet.cssRules){
+          if(rule.selectorText&&rule.selectorText.includes('workouts')){
+           try{if(el.matches(rule.selectorText))matches.push({selector:rule.selectorText.slice(0,160),bg:rule.style.backgroundColor,important:rule.style.getPropertyPriority('background-color')})}catch(e){}
+          }
+         }}catch(e){matches=['inaccessible']}
+         return {href:sheet.href,matchCount:matches.length,lastMatches:matches.slice(-5)};
+        })};
+      }));
+    }
     assert.equal(surface.background,'rgb(6, 20, 25)',device.label+' '+tab+' panel must be nearly black');
     assert.equal(surface.image,'none',device.label+' '+tab+' panel must not have teal gradient or photograph');
    }
