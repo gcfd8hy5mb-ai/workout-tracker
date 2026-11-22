@@ -1193,6 +1193,7 @@ body.prism-onboarding-active .container{max-width:560px;min-height:100vh;min-hei
 </style>
 
 
+<link rel="stylesheet" href="integrations/mlc2/redesign-bridge.css?v=1">
 </head>
 
 <body>
@@ -1298,6 +1299,14 @@ Exercise Library
 <button onclick="showTrackingGoals()">Goals & calorie targets <span>›</span></button><button onclick="showWeight()">Body weight <span>›</span></button><button onclick="showWater()">Water intake <span>›</span></button><button onclick="showFood()">Food tracking <span>›</span></button><button onclick="showWorkoutCalendar()">Workout calendar <span>›</span></button><button onclick="showPersonalRecords()">Personal records <span>›</span></button><button onclick="showMeasurements()">Measurements <span>›</span></button><button onclick="showProgressPhotos()">Private progress photos <span>›</span></button><button onclick="showManageWorkouts()">Manage workouts & data <span>›</span></button>
 </div><div class="card prism-tier-card"><div class="prism-tier-heading"><h3>Explore MYLIFTCOACH Pro</h3><span class="prism-pro-badge">PRO ✦</span></div><p class="small">MYLIFTCOACH doesn’t just track your workouts. It tells you what to do next.</p><button type="button" class="prism-primary prism-wide" onclick="showPrismPro()">See what Pro can do</button></div><div class="card prism-tier-card" id="prismBetaAccess"><div class="prism-tier-heading"><h3>MYLIFTCOACH Beta Access</h3><span class="prism-pro-badge">BETA</span></div><p id="prismTierStatus" class="small" role="status"></p><div class="prism-tier-choices" role="group" aria-label="Beta experience"><button type="button" data-beta-mode="free" onclick="setBetaPreview('free')" aria-pressed="false">FREE</button><button type="button" data-beta-mode="pro" onclick="setBetaPreview('pro')" aria-pressed="false">PRO</button></div><p class="small">Beta preview only — no purchase required. Switching access never deletes your data.</p></div><div class="card" id="profileSettings"><h3>Rest timer</h3><p class="small">Choose a default rest time inside a workout. Your choice stays saved.</p><button onclick="showGlobalTimer()">Open timer</button></div></section>
 
+<section id="mlc2IntegrationScreen" class="hidden" aria-label="MYLIFTCOACH 2.0 integrated features">
+ <div class="prism-section-head"><div><span class="prism-eyebrow">INTEGRATED DEVELOPMENT BUILD</span><h2>MYLIFTCOACH 2.0</h2></div><button type="button" class="prism-icon-button" onclick="showWorkoutsBrowserRoot()" aria-label="Return to workouts">✕</button></div>
+ <p class="small">New 2.0 tools inside your approved redesign. Existing custom workouts and account data remain untouched.</p>
+ <div class="card"><h3>Suggested Training Program <span class="mlc2-integration-label">PRO BETA</span></h3><div id="mlc2RedesignProgram"></div></div>
+ <div class="card"><h3>Verified Training Volume</h3><div id="mlc2RedesignAudit"></div></div>
+ <p id="mlc2IntegrationStatus" class="small" role="status"></p>
+ </section>
+ 
 <section id="prismProScreen" class="hidden prism-pro-page" aria-label="MYLIFTCOACH Pro"><button type="button" class="pro-back" onclick="returnFromPrismPro()">← Back</button><div id="prismProPageContent"></div></section>
 
 <section id="helpScreen" class="hidden"><h2>Help &amp; Support</h2><div class="card"><h3>Workouts</h3><p class="small">Open a workout, enter weight and reps, and mark each set complete. Your active workout can be resumed from Home if you leave the app.</p></div><div class="card"><h3>Your saved data</h3><p class="small">Workouts and tracking are saved on this device. Download a backup before switching phones or clearing browser data.</p><button onclick="showDataBackup()">Open Data &amp; Backup</button></div><div class="card"><h3>Need more help?</h3><p class="small">Report an app issue through the project’s GitHub page. Please leave personal health information out of public issues.</p><a href="https://github.com/gcfd8hy5mb-ai/workout-tracker/issues" target="_blank" rel="noopener noreferrer">Open project support ↗</a></div></section>
@@ -1537,6 +1546,7 @@ placeholder="Search exercise library..." oninput="renderBuilderLibrary()">
 <section class="drawer-section" aria-label="Home"><div class="menu-group">HOME</div><button type="button" class="menu-link active" id="navHome" onclick="goHome()" aria-current="page"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-home"/></svg>Home</button></section>
 <section class="drawer-section" aria-label="Training"><button type="button" class="menu-group-toggle" aria-expanded="true" aria-controls="menuTrainingItems" onclick="toggleMenuSection('Training')">TRAINING <svg class="drawer-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button><div class="drawer-section-body" id="menuTrainingItems"><div class="drawer-section-inner">
 <button type="button" class="menu-link" id="navWorkout" onclick="showWorkoutsBrowserRoot()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-workout"/></svg>Workouts</button>
+<button type="button" class="menu-link" id="navMLC2Integration" onclick="showMLC2Integration()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-workout"/></svg>2.0 Integrated Features</button>
 <button type="button" class="menu-link" id="navLibrary" onclick="showLibrary()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-book"/></svg>Exercise Library</button>
 <button type="button" class="menu-link" id="navManage" onclick="showManageWorkouts()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-manage"/></svg>Manage Workouts</button>
 <button type="button" class="menu-link" id="navTimer" onclick="showGlobalTimer()"><svg class="menu-icon" aria-hidden="true"><use href="#drawer-timer"/></svg>Timer</button>
@@ -2210,7 +2220,7 @@ function allScreens(){
 
 return ["welcomeScreen","onboardingScreen","goalReviewScreen","home","workoutsScreen","workoutDetailScreen","exerciseInfoScreen","profileScreen","prismRestScreen","setupScreen","workoutScreen","libraryScreen","builderScreen",
 
-"overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen","calendarScreen","recordsScreen","measurementsScreen","photosScreen","completionScreen","helpScreen","prismProScreen"];
+"overallProgressScreen","globalHistoryScreen","globalTimerScreen","waterScreen","foodScreen","goalsScreen","weightScreen","manageWorkoutScreen","calendarScreen","recordsScreen","measurementsScreen","photosScreen","completionScreen","helpScreen","prismProScreen","mlc2IntegrationScreen"];
 
 }
 
@@ -5154,6 +5164,9 @@ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{u
 
 <script src="meal-planner.js?v=1"></script>
 <script src="online-food-lookup.js?v=1"></script>
+<script defer src="integrations/mlc2/exercise-catalog-344.js?v=1"></script>
+<script defer src="integrations/mlc2/coach-program-builder.js?v=1"></script>
+<script defer src="integrations/mlc2/redesign-bridge.js?v=1"></script>
 </body>
 
 </html>
