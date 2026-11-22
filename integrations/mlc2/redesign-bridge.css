@@ -16,3 +16,15 @@
 #mlc2IntegrationScreen .coach-program-exercises,#mlc2IntegrationScreen .mlc2-bridge-history ol{padding:5px 16px 12px 32px;margin:0;color:#dce7e2;font-size:12px;line-height:1.7}
 #mlc2IntegrationScreen .small{color:#c9d9d2;line-height:1.6}
 @media(max-width:350px){#mlc2IntegrationScreen .coach-program-options{grid-template-columns:1fr}#mlc2IntegrationScreen .coach-program-label:last-child{grid-column:auto}}
+
+#mlc2IntegrationScreen .mlc2-library-controls{display:grid;grid-template-columns:1fr;gap:7px;margin:8px 0 12px}
+#mlc2IntegrationScreen .mlc2-library-controls label{color:#f0d6a3;font-size:12px;font-weight:650}
+#mlc2IntegrationScreen .mlc2-library-controls input,#mlc2IntegrationScreen .mlc2-library-controls select{width:100%;min-height:44px;background:#05272d!important;color:#f4ebd7!important;border:1px solid #be9f68;border-radius:11px;padding:11px;font-size:13px}
+#mlc2IntegrationScreen .mlc2-exercise-list{display:grid;gap:7px;margin-top:12px}
+#mlc2IntegrationScreen .mlc2-exercise-item{border:1px solid rgba(203,166,101,.53);border-radius:10px;background:#06242b;overflow:hidden}
+#mlc2IntegrationScreen .mlc2-exercise-item summary{padding:13px 12px;color:#eecb90;font-size:13px;font-weight:700;line-height:1.5;cursor:pointer}
+#mlc2IntegrationScreen .mlc2-exercise-description{border-top:1px solid rgba(203,166,101,.28);padding:13px}
+#mlc2IntegrationScreen .mlc2-exercise-description strong{display:block;color:#f3d3a1;margin:10px 0 4px;font-size:12px}
+#mlc2IntegrationScreen .mlc2-exercise-description p,#mlc2IntegrationScreen .mlc2-exercise-description li{font-size:12px;line-height:1.6;color:#dce9e2}
+#mlc2IntegrationScreen .mlc2-exercise-description ul{margin:4px 0 8px;padding-left:20px}
+#mlc2IntegrationScreen .mlc2-exercise-list>.action-button{min-height:44px;background:#04252d!important;color:#f2d39c!important;border:1px solid #c7a56b;border-radius:10px}
