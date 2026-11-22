@@ -1,0 +1,18 @@
+
+/* MYLIFTCOACH 2.0 integration area — scoped, preserving original redesign palette. */
+#mlc2IntegrationScreen{max-width:100%;overflow-x:hidden}
+#mlc2IntegrationScreen .card{background:#04252d!important;color:#e5eeea!important;border:1px solid rgba(212,177,105,.55)!important;border-radius:15px!important;margin:12px 0!important;padding:16px!important}
+#mlc2IntegrationScreen h3{color:#f2d49b!important;font-size:16px;margin:0 0 12px}
+#mlc2IntegrationScreen .mlc2-integration-label{font-size:10px;letter-spacing:.05em;color:#ecd098}
+#mlc2IntegrationScreen .coach-program-disclaimer{font-size:12px;line-height:1.6;color:#d1dfd9}
+#mlc2IntegrationScreen .coach-program-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+#mlc2IntegrationScreen .coach-program-label{display:grid;gap:6px;font-weight:650;font-size:12px;color:#f1d6a2;min-width:0}
+#mlc2IntegrationScreen .coach-program-label:last-child{grid-column:1/-1}
+#mlc2IntegrationScreen .coach-program-select{width:100%;min-height:44px;background:#05272d!important;color:#f1ede6!important;border:1px solid #bfa06b;border-radius:10px;padding:10px;font-size:13px}
+#mlc2IntegrationScreen .coach-program-status,#mlc2IntegrationScreen .mlc2-bridge-volume{font-size:13px;line-height:1.55;color:#dbe6dd}
+#mlc2IntegrationScreen .coach-program-days{display:grid;gap:8px}
+#mlc2IntegrationScreen .coach-program-day,#mlc2IntegrationScreen .mlc2-bridge-history details{border:1px solid rgba(204,169,105,.5);border-radius:10px;background:#06242b;margin:8px 0}
+#mlc2IntegrationScreen .coach-program-day summary,#mlc2IntegrationScreen .mlc2-bridge-history summary{color:#e7c78e;padding:12px;cursor:pointer;font-size:13px}
+#mlc2IntegrationScreen .coach-program-exercises,#mlc2IntegrationScreen .mlc2-bridge-history ol{padding:5px 16px 12px 32px;margin:0;color:#dce7e2;font-size:12px;line-height:1.7}
+#mlc2IntegrationScreen .small{color:#c9d9d2;line-height:1.6}
+@media(max-width:350px){#mlc2IntegrationScreen .coach-program-options{grid-template-columns:1fr}#mlc2IntegrationScreen .coach-program-label:last-child{grid-column:auto}}
