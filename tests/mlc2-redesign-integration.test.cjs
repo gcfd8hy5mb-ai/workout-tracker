@@ -33,6 +33,6 @@ test('Preview adapter cannot write cloud, saved workout history or navigation se
 test('New integration CSS is scoped to MYLIFTCOACH redesign screen',()=>{
  for(const rule of css.split('}')){
   const trimmed=rule.trim();if(!trimmed||trimmed.startsWith('/*'))continue;
-  assert.ok(trimmed.startsWith('#mlc2IntegrationScreen'),trimmed.slice(0,70));
+  assert.ok(trimmed.startsWith('#mlc2IntegrationScreen')||trimmed.startsWith('@media(')&&trimmed.includes('#mlc2IntegrationScreen'),trimmed.slice(0,70));
  }
 });
