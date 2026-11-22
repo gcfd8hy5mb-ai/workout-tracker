@@ -41,11 +41,70 @@ function volumeAudit(saved){
  }
  root.append(list);
 }
+function catalogExercises(){
+ const entries=window.MLC2_EXERCISE_CATALOG;
+ return Array.isArray(entries)?entries.filter(e=>e&&typeof e.id==='string'&&typeof e.name==='string'&&typeof e.group==='string'):[];
+}
+let libraryVisible=24;
+function renderExerciseLibrary(){
+ const root=el('mlc2ExerciseList'),count=el('mlc2ExerciseCount');
+ if(!root||!count)return;
+ const all=catalogExercises();
+ const query=(el('mlc2ExerciseSearch')?.value||'').toLocaleLowerCase().trim();
+ const group=el('mlc2MuscleGroup')?.value||'all';
+ const found=all.filter(e=>(group==='all'||e.group===group)&&
+  (!query||(e.name+' '+e.group+' '+String(e.equipment||'')).toLocaleLowerCase().includes(query)));
+ count.textContent=found.length+' of '+all.length+' available exercises · text instructions only';
+ root.replaceChildren();
+ const preview=found.slice(0,libraryVisible);
+ if(!preview.length){
+  const empty=document.createElement('p');empty.className='small';empty.textContent='No exercises match your filters.';root.append(empty);return;
+ }
+ for(const exercise of preview){
+  const item=document.createElement('details');item.className='mlc2-exercise-item';
+  const title=document.createElement('summary');title.textContent=exercise.name+' · '+exercise.group+
+    (exercise.equipment?' · '+exercise.equipment:'');
+  item.append(title);
+  const description=document.createElement('div');description.className='mlc2-exercise-description';
+  const sections=[['How to perform',exercise.how],['Technique cue',exercise.cue],['Tips',exercise.tips],['Common mistakes',exercise.mistakes]];
+  for(const [label,value] of sections){
+   if(value==null||value==='')continue;
+   const h=document.createElement('strong');h.textContent=label;description.append(h);
+   if(Array.isArray(value)){
+    const list=document.createElement('ul');
+    for(const part of value.slice(0,12)){if(typeof part!=='string'||!part.trim())continue;
+      const li=document.createElement('li');li.textContent=part;list.append(li)}
+    if(list.children.length)description.append(list);
+   }else{
+    const p=document.createElement('p');p.textContent=String(value);description.append(p);
+   }
+  }
+  const imageStatus=document.createElement('p');imageStatus.className='small';
+  imageStatus.textContent='Approved exercise demonstration: awaiting secure media integration.';
+  description.append(imageStatus);item.append(description);root.append(item);
+ }
+ if(found.length>libraryVisible){
+  const more=document.createElement('button');more.type='button';more.className='action-button';
+  more.textContent='Show next '+Math.min(24,found.length-libraryVisible)+' exercises';
+  more.addEventListener('click',()=>{libraryVisible+=24;renderExerciseLibrary()});
+  root.append(more);
+ }
+}
+function initializeExerciseLibrary(){
+ const search=el('mlc2ExerciseSearch'),group=el('mlc2MuscleGroup');
+ if(search&&!search.dataset.mlc2Ready){
+  search.dataset.mlc2Ready='yes';
+  search.addEventListener('input',()=>{libraryVisible=24;renderExerciseLibrary()});
+  group?.addEventListener('change',()=>{libraryVisible=24;renderExerciseLibrary()});
+ }
+ renderExerciseLibrary();
+}
 window.showMLC2Integration=function(){
  if(typeof showScreen!=='function')return;
  showScreen('mlc2IntegrationScreen');
  if(typeof setBottomNav==='function')setBottomNav('Workout');
  const data=sessions();volumeAudit(data);
+ initializeExerciseLibrary();
  const root=el('mlc2RedesignProgram');root.replaceChildren();
  const isPro=typeof effectivePrismTier==='function'&&['pro','lifetime_pro'].includes(effectivePrismTier());
  const status=el('mlc2IntegrationStatus');
