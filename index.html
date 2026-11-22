@@ -1303,6 +1303,13 @@ Exercise Library
  <div class="prism-section-head"><div><span class="prism-eyebrow">INTEGRATED DEVELOPMENT BUILD</span><h2>MYLIFTCOACH 2.0</h2></div><button type="button" class="prism-icon-button" onclick="showWorkoutsBrowserRoot()" aria-label="Return to workouts">✕</button></div>
  <p class="small">New 2.0 tools inside your approved redesign. Existing custom workouts and account data remain untouched.</p>
  <div class="card"><h3>Suggested Training Program <span class="mlc2-integration-label">PRO BETA</span></h3><div id="mlc2RedesignProgram"></div></div>
+ <div class="card"><h3>Exercise Library <span class="mlc2-integration-label">344 EXERCISES</span></h3>
+  <p class="small">Browse the imported 2.0 exercise descriptions and instructions. Approved images will appear only after their original artwork has been safely integrated.</p>
+  <div class="mlc2-library-controls"><label class="small" for="mlc2ExerciseSearch">Find an exercise</label><input type="search" id="mlc2ExerciseSearch" placeholder="Search exercise name" autocomplete="off">
+  <label class="small" for="mlc2MuscleGroup">Muscle group</label><select id="mlc2MuscleGroup"><option value="all">All groups</option><option>Chest</option><option>Back</option><option>Shoulders</option><option>Arms</option><option>Legs</option><option>Core</option><option>Cardio</option></select></div>
+  <div id="mlc2ExerciseCount" class="small" role="status"></div>
+  <div id="mlc2ExerciseList" class="mlc2-exercise-list"></div>
+ </div>
  <div class="card"><h3>Verified Training Volume</h3><div id="mlc2RedesignAudit"></div></div>
  <p id="mlc2IntegrationStatus" class="small" role="status"></p>
  </section>
