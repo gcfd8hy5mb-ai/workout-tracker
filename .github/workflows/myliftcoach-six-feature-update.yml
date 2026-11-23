@@ -129,6 +129,7 @@ jobs:
           CANDIDATE: ${{ inputs.candidate_sha }}
           APPROVED_CANDIDATE: ${{ vars.MLC2_APPROVED_RELEASE_SHA }}
           MLC2_ACTIONS_READ_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           [[ "$CANDIDATE" == 'b567184c72a765fea8de7dcd8c16ee99c871983c' ]]
