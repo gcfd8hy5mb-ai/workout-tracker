@@ -1,0 +1,127 @@
+# Uninstalled template for gcfd8hy5mb-ai/workout-tracker. Review the runbook before use.
+name: MYLIFTCOACH approved production cutover
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Exact reviewed 2.0 commit
+        required: true
+        type: string
+      operation:
+        description: Release operation
+        required: true
+        type: choice
+        options: [dry-run, replacement, rollback]
+      approval:
+        description: Enter DRY RUN MYLIFTCOACH for packaging or RELEASE MYLIFTCOACH for publication
+        required: true
+        type: string
+permissions:
+  contents: read
+# The original repo's other Pages deploy workflows must be paused at cutover.
+concurrency:
+  group: pages-refs/heads/main
+  cancel-in-progress: false
+jobs:
+  package:
+    if: github.repository == 'gcfd8hy5mb-ai/workout-tracker' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Require explicit release operation and an immutable source
+        env:
+          CANDIDATE: ${{ inputs.candidate_sha }}
+          APPROVAL: ${{ inputs.approval }}
+          OPERATION: ${{ inputs.operation }}
+          APPROVED_CANDIDATE: ${{ vars.MLC2_APPROVED_RELEASE_SHA }}
+        run: |
+          set -euo pipefail
+          [[ "$CANDIDATE" == 'acf85b4f30fd1f6edb0fdd579758c5f976800d8e' && "$CANDIDATE" == "$APPROVED_CANDIDATE" ]]
+          case "$OPERATION" in
+            dry-run) [[ "$APPROVAL" == 'DRY RUN MYLIFTCOACH' ]] ;;
+            replacement|rollback) [[ "$APPROVAL" == 'RELEASE MYLIFTCOACH' ]] ;;
+            *) exit 1 ;;
+          esac
+      - uses: actions/checkout@v4
+        with:
+          ref: 24b3e3a40076f8d6aeb6fe6c603068652b268351
+          path: original
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: gcfd8hy5mb-ai/MYLIFTCOACH-2.0
+          ref: ${{ inputs.candidate_sha }}
+          path: source
+          persist-credentials: false
+          token: ${{ secrets.MLC2_SOURCE_READ_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Package and verify the exact approved release
+        env:
+          CANDIDATE: ${{ inputs.candidate_sha }}
+          OPERATION: ${{ inputs.operation }}
+          MLC2_REPLACEMENT_PACKAGE: ${{ github.workspace }}/output
+        run: |
+          set -euo pipefail
+          [[ "$(git -C source rev-parse HEAD)" == "$CANDIDATE" ]]
+          node source/review/production/package.cjs original output
+          node --test source/review/production/package-integration.test.cjs source/review/production/migration-preview.test.cjs source/review/production/pages-gate.test.cjs
+          tree_hash() {
+            (cd "$1" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)
+          }
+          [[ "$(tree_hash output/replacement)" == '621ec54f47726e8e7488ba07955ba5b8faf62e22a3cb6918f0bbbfc23c356819' ]]
+          [[ "$(tree_hash output/rollback)" == '8f6d5f706749e90aad4e312df8d94d149cc973cf374df35d13116582f7d8c9ea' ]]
+          if [[ "$OPERATION" == "replacement" || "$OPERATION" == "dry-run" ]]; then
+            for file in index.html manifest.json sw.js; do
+              curl -fsS "https://gcfd8hy5mb-ai.github.io/workout-tracker/$file" -o live-file
+              [[ "$(sha256sum live-file | cut -d' ' -f1)" == "$(git -C original show "HEAD:$file" | sha256sum | cut -d' ' -f1)" ]]
+            done
+          fi
+      - uses: actions/upload-pages-artifact@v3
+        if: inputs.operation == 'replacement' || inputs.operation == 'rollback'
+        with:
+          path: output/${{ inputs.operation }}
+  deploy:
+    if: inputs.operation == 'replacement' || inputs.operation == 'rollback'
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+      actions: read
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: gcfd8hy5mb-ai/MYLIFTCOACH-2.0
+          ref: ${{ inputs.candidate_sha }}
+          path: source
+          persist-credentials: false
+          token: ${{ secrets.MLC2_SOURCE_READ_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Block competing Pages publishers immediately before deployment
+        env:
+          CANDIDATE: ${{ inputs.candidate_sha }}
+          APPROVED_CANDIDATE: ${{ vars.MLC2_APPROVED_RELEASE_SHA }}
+          MLC2_ACTIONS_READ_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$(git -C source rev-parse HEAD)" == "$CANDIDATE" ]]
+          node source/review/production/pages-gate.cjs
+          [[ "$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type)" == 'workflow' ]]
+      - uses: actions/configure-pages@v5
+        id: pages
+      - name: Verify existing production Pages URL
+        env:
+          TARGET: ${{ steps.pages.outputs.base_url }}
+        run: test "${TARGET%/}" = 'https://gcfd8hy5mb-ai.github.io/workout-tracker'
+      - uses: actions/deploy-pages@v4
+        id: deployment
