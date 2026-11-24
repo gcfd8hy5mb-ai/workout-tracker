@@ -1,0 +1,151 @@
+# Manual, test-only workout history cleanup release. Installing this workflow never deploys or erases data.
+name: MYLIFTCOACH approved test-history cleanup update
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Exact reviewed MYLIFTCOACH 2.0 test-history cleanup commit
+        required: true
+        type: string
+      operation:
+        description: Prepare package, publish cleanup control, or restore currently live recovery release
+        required: true
+        type: choice
+        options: [dry-run, replacement, rollback]
+      approval:
+        description: DRY RUN MYLIFTCOACH for dry-run or RELEASE MYLIFTCOACH for publication/rollback
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: pages-refs/heads/main
+  cancel-in-progress: false
+jobs:
+  package:
+    if: github.repository == 'gcfd8hy5mb-ai/workout-tracker' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Require pinned candidate and explicit approval
+        env:
+          CANDIDATE: ${{ inputs.candidate_sha }}
+          OPERATION: ${{ inputs.operation }}
+          APPROVAL: ${{ inputs.approval }}
+          APPROVED_CANDIDATE: ${{ vars.MLC2_APPROVED_CLEANUP_RELEASE_SHA }}
+        run: |
+          set -euo pipefail
+          [[ "$CANDIDATE" == '3a0e9055cedcfd0df3822daa5f78ddfd3f5cf206' ]]
+          [[ "$CANDIDATE" == "$APPROVED_CANDIDATE" ]]
+          case "$OPERATION" in
+            dry-run) [[ "$APPROVAL" == 'DRY RUN MYLIFTCOACH' ]] ;;
+            replacement|rollback) [[ "$APPROVAL" == 'RELEASE MYLIFTCOACH' ]] ;;
+            *) exit 1 ;;
+          esac
+      - uses: actions/checkout@v4
+        with:
+          repository: gcfd8hy5mb-ai/workout-tracker
+          ref: 24b3e3a40076f8d6aeb6fe6c603068652b268351
+          path: original
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: gcfd8hy5mb-ai/MYLIFTCOACH-2.0
+          ref: 79c7a3d413aae0ed90a16c36693e3027b7519dbd
+          path: previous
+          persist-credentials: false
+          token: ${{ secrets.MLC2_SOURCE_READ_TOKEN || github.token }}
+      - uses: actions/checkout@v4
+        with:
+          repository: gcfd8hy5mb-ai/MYLIFTCOACH-2.0
+          ref: ${{ inputs.candidate_sha }}
+          path: source
+          persist-credentials: false
+          token: ${{ secrets.MLC2_SOURCE_READ_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Package and verify exact replacement and live 2.0 rollback
+        env:
+          CANDIDATE: ${{ inputs.candidate_sha }}
+          OPERATION: ${{ inputs.operation }}
+          MLC2_REPLACEMENT_PACKAGE: ${{ github.workspace }}/output
+        run: |
+          set -euo pipefail
+          [[ "$(git -C source rev-parse HEAD)" == "$CANDIDATE" ]]
+          [[ "$(git -C previous rev-parse HEAD)" == '79c7a3d413aae0ed90a16c36693e3027b7519dbd' ]]
+          node source/review/production/package-update.cjs original previous output
+          node --test source/review/production/package-integration.test.cjs source/review/production/migration-preview.test.cjs source/review/production/pages-gate.test.cjs
+          tree_hash() {
+            (cd "$1" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)
+          }
+          [[ "$(tree_hash output/replacement)" == '82d3a234130addea4f2a2e1c843409ab68e8d4781c4ed60823789a9fb4507940' ]]
+          [[ "$(tree_hash output/update-rollback)" == 'd5f764df009dc32fc53f86a7e3b4fcc295eaffc640864cabe66ddd228027a421' ]]
+          test -f output/replacement/schedule-library.js
+          test -f output/replacement/sync/account-signup.js
+          test -f output/replacement/sync/program-transfer.js
+          test -f output/replacement/sync/test-history-cleanup.js
+          grep -Fq 'Review and download test backup' output/replacement/index.html
+          grep -Fq 'Delete reviewed test workouts' output/replacement/index.html
+          grep -Fq 'Download my programs and Coach settings' output/replacement/index.html
+          test -f output/replacement/assets/myliftcoach-2-icon-180.png
+          # Reject a stale or intervening publication: update only from the
+          # reviewed current recovery release; rollback only from reviewed new release.
+          if [[ "$OPERATION" == 'rollback' ]]; then
+            EXPECTED=output/replacement
+          else
+            EXPECTED=output/update-rollback
+          fi
+          for file in index.html manifest.json sw.js; do
+            curl --fail --silent --show-error --location "https://gcfd8hy5mb-ai.github.io/workout-tracker/$file" -o live-file
+            cmp "$EXPECTED/$file" live-file
+          done
+          echo "Pinned release packages and current production state verified."
+      - uses: actions/upload-pages-artifact@v3
+        if: inputs.operation == 'replacement' || inputs.operation == 'rollback'
+        with:
+          path: output/${{ inputs.operation == 'rollback' && 'update-rollback' || 'replacement' }}
+  deploy:
+    if: inputs.operation == 'replacement' || inputs.operation == 'rollback'
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+      actions: read
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: gcfd8hy5mb-ai/MYLIFTCOACH-2.0
+          ref: ${{ inputs.candidate_sha }}
+          path: source
+          persist-credentials: false
+          token: ${{ secrets.MLC2_SOURCE_READ_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify approved release and disabled competing Pages workflows
+        env:
+          CANDIDATE: ${{ inputs.candidate_sha }}
+          APPROVED_CANDIDATE: ${{ vars.MLC2_APPROVED_CLEANUP_RELEASE_SHA }}
+          MLC2_ACTIONS_READ_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$CANDIDATE" == '3a0e9055cedcfd0df3822daa5f78ddfd3f5cf206' ]]
+          [[ "$(git -C source rev-parse HEAD)" == "$CANDIDATE" ]]
+          node source/review/production/pages-gate.cjs
+          [[ "$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type)" == 'workflow' ]]
+      - uses: actions/configure-pages@v5
+        id: pages
+      - name: Confirm current production URL
+        env:
+          TARGET: ${{ steps.pages.outputs.base_url }}
+        run: test "${TARGET%/}" = 'https://gcfd8hy5mb-ai.github.io/workout-tracker'
+      - uses: actions/deploy-pages@v4
+        id: deployment
