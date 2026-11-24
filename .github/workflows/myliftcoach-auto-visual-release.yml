@@ -1,0 +1,166 @@
+# MYLIFTCOACH 2.0: visual-only releases are automatic after a reviewed manifest change.
+# This workflow deploys only from production main; no user-data or backend changes allowed.
+name: MYLIFTCOACH automatic visual release
+on:
+  push:
+    branches: [main]
+    paths: [.github/visual-release.json]
+permissions:
+  contents: read
+concurrency:
+  group: pages-refs/heads/main
+  cancel-in-progress: false
+jobs:
+  package:
+    if: github.repository == 'gcfd8hy5mb-ai/workout-tracker' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      candidate: ${{ steps.manifest.outputs.candidate }}
+      previous: ${{ steps.manifest.outputs.previous }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate reviewed visual-release manifest
+        id: manifest
+        run: |
+          set -euo pipefail
+          file=.github/visual-release.json
+          jq -e 'type=="object" and (keys|sort)==(["candidate","previous","replacement_hash","rollback_hash"]|sort) and
+           (.candidate|type=="string" and test("^[0-9a-f]{40}$")) and
+           (.previous|type=="string" and test("^[0-9a-f]{40}$")) and
+           (.replacement_hash|type=="string" and test("^[0-9a-f]{64}$")) and
+           (.rollback_hash|type=="string" and test("^[0-9a-f]{64}$"))' "$file"
+          candidate=$(jq -r .candidate "$file")
+          previous=$(jq -r .previous "$file")
+          [[ "$candidate" != "$previous" ]]
+          echo "candidate=$candidate" >> "$GITHUB_OUTPUT"
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          repository: gcfd8hy5mb-ai/workout-tracker
+          ref: 24b3e3a40076f8d6aeb6fe6c603068652b268351
+          path: original
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: gcfd8hy5mb-ai/MYLIFTCOACH-2.0
+          ref: ${{ steps.manifest.outputs.previous }}
+          path: previous
+          token: ${{ secrets.MLC2_SOURCE_READ_TOKEN || github.token }}
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: gcfd8hy5mb-ai/MYLIFTCOACH-2.0
+          ref: ${{ steps.manifest.outputs.candidate }}
+          path: source
+          fetch-depth: 0
+          token: ${{ secrets.MLC2_SOURCE_READ_TOKEN || github.token }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Reject any code, data, API, authentication or storage change
+        env:
+          CANDIDATE: ${{ steps.manifest.outputs.candidate }}
+          PREVIOUS: ${{ steps.manifest.outputs.previous }}
+        run: |
+          set -euo pipefail
+          [[ "$(git -C source rev-parse HEAD)" == "$CANDIDATE" ]]
+          [[ "$(git -C previous rev-parse HEAD)" == "$PREVIOUS" ]]
+          git -C source cat-file -e "$PREVIOUS^{commit}"
+          git -C source merge-base --is-ancestor "$PREVIOUS" "$CANDIDATE"
+          git -C source diff --name-only "$PREVIOUS" "$CANDIDATE" > "$RUNNER_TEMP/visual-changes.txt"
+          test -s "$RUNNER_TEMP/visual-changes.txt"
+          while IFS= read -r file; do
+            case "$file" in
+              *.css|index.html|offline-worker.js|tests/*.test.js|tests/*.test.cjs|.github/workflows/*-review.yml|review/production/package-update.cjs) ;;
+              *) echo "::error::Restricted release contains non-visual file: $file"; exit 1 ;;
+            esac
+          done < "$RUNNER_TEMP/visual-changes.txt"
+          # HTML can add stylesheet links or update stylesheet versions only.
+          # Disallow markup, script, script version, CSP, auth and DOM changes.
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const a=fs.readFileSync('previous/index.html','utf8');
+          const b=fs.readFileSync('source/index.html','utf8');
+          const strip=s=>s.replace(/^<link rel="stylesheet" href="\.\/[\w./-]+\.css\?v=\d+">\r?\n?/gm,'');
+          assert.equal(strip(a),strip(b),'Only stylesheet links can change in the production HTML');
+          const workerA=fs.readFileSync('previous/offline-worker.js','utf8');
+          const workerB=fs.readFileSync('source/offline-worker.js','utf8');
+          const cache=s=>s.replace(/const cacheName = prefix \+ '[^']+';/,'const cacheName = prefix + VERSION;');
+          assert.equal(cache(workerA),cache(workerB),'Only the scoped offline cache version can change');
+          const pkgA=fs.readFileSync('previous/review/production/package-update.cjs','utf8');
+          const pkgB=fs.readFileSync('source/review/production/package-update.cjs','utf8');
+          const pin=s=>s.replace(/const liveCommit='[0-9a-f]{40}';/,'const liveCommit=PREVIOUS;');
+          assert.equal(pin(pkgA),pin(pkgB),'Packaging code cannot change except its rollback pin');
+          assert.match(pkgB,new RegExp("const liveCommit='"+process.env.PREVIOUS+"';"));
+          NODE
+      - name: Run complete offline regressions
+        run: |
+          set -euo pipefail
+          (cd source && node --check app.js && node --check offline-worker.js && node tests/run-all.js)
+      - name: Package release, verify rollback and compare live site
+        env:
+          MLC2_REPLACEMENT_PACKAGE: ${{ github.workspace }}/output
+          CANDIDATE: ${{ steps.manifest.outputs.candidate }}
+          APPROVED_CANDIDATE: ${{ steps.manifest.outputs.candidate }}
+          MLC2_ACTIONS_READ_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          node source/review/production/package-update.cjs original previous output
+          node --test source/review/production/package-integration.test.cjs source/review/production/migration-preview.test.cjs source/review/production/pages-gate.test.cjs
+          tree_hash() {
+            (cd "$1" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)
+          }
+          [[ "$(tree_hash output/replacement)" == "$(jq -r .replacement_hash .github/visual-release.json)" ]]
+          [[ "$(tree_hash output/update-rollback)" == "$(jq -r .rollback_hash .github/visual-release.json)" ]]
+          for file in index.html manifest.json sw.js; do
+            curl --fail --silent --show-error --location "https://gcfd8hy5mb-ai.github.io/workout-tracker/$file" -o "$RUNNER_TEMP/live-$file"
+            cmp "output/update-rollback/$file" "$RUNNER_TEMP/live-$file"
+          done
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: output/replacement
+  deploy:
+    needs: package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+      actions: read
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: gcfd8hy5mb-ai/MYLIFTCOACH-2.0
+          ref: ${{ needs.package.outputs.candidate }}
+          path: source
+          token: ${{ secrets.MLC2_SOURCE_READ_TOKEN || github.token }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify competing deployers are disabled and target is production
+        env:
+          CANDIDATE: ${{ needs.package.outputs.candidate }}
+          APPROVED_CANDIDATE: ${{ needs.package.outputs.candidate }}
+          MLC2_ACTIONS_READ_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          node source/review/production/pages-gate.cjs
+          [[ "$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type)" == 'workflow' ]]
+      - uses: actions/configure-pages@v5
+        id: pages
+      - name: Confirm production URL
+        env:
+          TARGET: ${{ steps.pages.outputs.base_url }}
+        run: test "${TARGET%/}" = 'https://gcfd8hy5mb-ai.github.io/workout-tracker'
+      - uses: actions/deploy-pages@v4
+        id: deployment
