@@ -35,7 +35,7 @@ jobs:
           APPROVED_CANDIDATE: ${{ vars.MLC2_APPROVED_SESSION_EDIT_SHA }}
         run: |
           set -euo pipefail
-          [[ "$CANDIDATE" == '88149309f7b56e7c9c4ff5f67e53ed4ca3f5498a' ]]
+          [[ "$CANDIDATE" == 'be38607761228b265fc18a6b63f798ab7f8511dc' ]]
           [[ "$CANDIDATE" == "$APPROVED_CANDIDATE" ]]
           case "$OPERATION" in
             dry-run) [[ "$APPROVAL" == 'DRY RUN MYLIFTCOACH' ]] ;;
@@ -80,7 +80,7 @@ jobs:
           tree_hash() {
             (cd "$1" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)
           }
-          [[ "$(tree_hash output/replacement)" == 'd3dc4f507651514bd198ef20193a24c7670237ca81a5b05d99551b9138fded94' ]]
+          [[ "$(tree_hash output/replacement)" == '76691027c10f7b1eb83e57740672e5e1235c7fabaf66c9c31d652c92aaac0f62' ]]
           [[ "$(tree_hash output/update-rollback)" == 'afca8ca3177244c67bfb024f3b092fa0b199a9460f1192c5a25aae59835c8040' ]]
           test -f output/replacement/session-editor.js
           test -f output/replacement/schedule-library.js
@@ -139,7 +139,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          [[ "$CANDIDATE" == '88149309f7b56e7c9c4ff5f67e53ed4ca3f5498a' ]]
+          [[ "$CANDIDATE" == 'be38607761228b265fc18a6b63f798ab7f8511dc' ]]
           [[ "$(git -C source rev-parse HEAD)" == "$CANDIDATE" ]]
           node source/review/production/pages-gate.cjs
           [[ "$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type)" == 'workflow' ]]
